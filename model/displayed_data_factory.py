@@ -10,28 +10,51 @@ Concrete factory
 """
 
 import numpy as np
-import model.displayed_data_factory_abstract as ddabstract
+from abc import ABCMeta, abstractmethod
 
-class DisplayedFluoTraceFactory(ddabstract.DisplayedDataFactory):
+"""
+Abstract desplayeddata factory
+"""
+class DisplayedDataFactory(metaclass=ABCMeta):
+
+    @abstractmethod
+    def create_displayed_data(self, original_data):
+        pass
+
+
+"""
+Abstract desplayeddata product
+"""
+class DisplayedData(metaclass=ABCMeta):
+    
+    @abstractmethod
+    def get_data(self):
+        pass
+
+    @abstractmethod
+    def mod_data(self):
+        pass
+
+class DisplayedFluoTraceFactory(DisplayedDataFactory):
 
     def create_displayed_data(self, original_fluo_frame):
         return DisplayedFluoTrace(original_fluo_frame)
     
-class DisplayedElecTraceFactory(ddabstract.DisplayedDataFactory):
+class DisplayedElecTraceFactory(DisplayedDataFactory):
 
     def create_displayed_data(self, original_data):
         return DisplayedElecTrace(original_data)
     
-class DisplayedImageFactory(ddabstract.DisplayedDataFactory):
+class DisplayedImageFactory(DisplayedDataFactory):
 
     def create_displayed_data(self, original_data):
         return DisplayedImage(original_data)
 
 
 """
-Concrete product
+Concrete desplayeddata product
 """
-class DisplayedFluoTrace(ddabstract.DisplayedData):
+class DisplayedFluoTrace(DisplayedData):
     def __init__(self, original_fluo_frame):
         self.original_fluo_frame = original_fluo_frame
 
@@ -42,7 +65,7 @@ class DisplayedFluoTrace(ddabstract.DisplayedData):
         pass
 
 
-class DisplayedElecTrace(ddabstract.DisplayedData):
+class DisplayedElecTrace(DisplayedData):
     def __init__(self, original_elec_data):
         self.original_elec_data = original_elec_data
 
@@ -53,7 +76,7 @@ class DisplayedElecTrace(ddabstract.DisplayedData):
         pass
 
 
-class DisplayedImage(ddabstract.DisplayedData):
+class DisplayedImage(DisplayedData):
     def __init__(self, original_fluo_frame):
         self.original_fluo_frame = original_fluo_frame
 

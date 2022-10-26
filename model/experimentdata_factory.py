@@ -5,12 +5,62 @@ concrete classes for abstract factory method
 lunelukkio@gmail.com
 """
 import numpy as np
-import model.experimentdata_factory_abstract as dfabstract
+from abc import ABCMeta, abstractmethod
 
 """
-Concrete factory
+Abstract experimentdata factory
 """
-class TsmDataFactory(dfabstract.ExperimentDataFactory):
+class ExperimentDataFactory(metaclass=ABCMeta):
+
+    @abstractmethod
+    def create_FileInfor(self, filename, filepath):
+        pass
+
+    @abstractmethod
+    def create_ImagingData(self, file_infor):
+        pass
+
+    @abstractmethod
+    def create_ElecData(self, file_infor):
+        pass
+
+
+"""
+Abstract experimentdata product
+"""
+class FileInfor(metaclass=ABCMeta):
+
+    @abstractmethod
+    def read_fileinfor(self):
+        pass
+
+
+class ImagingData(metaclass=ABCMeta):
+    def __init__(self, file_infor):
+        self.file_infor = file_infor
+
+    @abstractmethod
+    def read_imaging_data(self):
+        pass
+
+
+class ElecData(metaclass=ABCMeta):
+    def __init__(self, file_infor):
+        self.file_infor = file_infor
+
+    @abstractmethod
+    def read_ElecData(self):
+        pass
+
+    @abstractmethod
+    def select_ch(self):
+        pass
+
+
+"""
+Concrete experimentdata factory
+"""
+class TsmDataFactory(ExperimentDataFactory):
     def create_FileInfor(self, filename, filepath):
         return TsmFileInfor(filename, filepath)
 
@@ -21,7 +71,7 @@ class TsmDataFactory(dfabstract.ExperimentDataFactory):
         return TbnElecData(file_infor)
 
 
-class DaDataFactory(dfabstract.ExperimentDataFactory):
+class DaDataFactory(ExperimentDataFactory):
     def create_FileInfor(self, filename):
         pass
 
@@ -33,9 +83,9 @@ class DaDataFactory(dfabstract.ExperimentDataFactory):
 
 
 """
-Concrete product
+Concrete experimentdata product
 """
-class TsmFileInfor(dfabstract.FileInfor):
+class TsmFileInfor(FileInfor):
     def __init__(self, filename, filepath):
         self.file_name = filename
         self.file_path = filepath
@@ -71,7 +121,7 @@ class TsmFileInfor(dfabstract.FileInfor):
             
             
 
-class TsmImagingData(dfabstract.ImagingData):
+class TsmImagingData(ImagingData):
     def __init__(self, file_infor):
         super().__init__(file_infor)
         
@@ -96,7 +146,7 @@ class TsmImagingData(dfabstract.ImagingData):
     def print_imaging_data(self):
         print(self.imaging_data)  
 
-class TbnElecData(dfabstract.ElecData):
+class TbnElecData(ElecData):
     def __init__(self, file_infor):
         super().__init__(file_infor)
 
