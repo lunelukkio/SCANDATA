@@ -3,13 +3,14 @@
 Created on Thu Jul 21 11:39:55 2022
 
 lunelukkio@gmail.com
-main module for model
+This is the main module for a model called by a controller
 """
 from model.experimentdata_factory import TsmDataFactory
 from model.experimentdata_factory import DaDataFactory
 from model.displayed_data_factory import DisplayedFluoTraceFactory
 from model.displayed_data_factory import DisplayedElecTraceFactory
 from model.displayed_data_factory import DisplayedImageFactory
+
 
 class Model:
     def __init__(self, filename, filepath):
@@ -36,13 +37,13 @@ class DataContainer:
             print('no file')
             return
         
-        """read data from a file"""
+        # read data from a file
         self.file_infor = data_factory_type.create_FileInfor(self.filename, self.filepath)
         self.imaging_data = data_factory_type.create_ImagingData(self.file_infor)
+        self.elec_data = data_factory_type.create_ElecData(self.file_infor)
         
         self.create_fluo_trace()  # add roi
         self.create_cell_image()
-        
 
 
     def create_fluo_trace(self):
@@ -52,28 +53,6 @@ class DataContainer:
     def create_cell_image(self):
         self.data_type = DisplayedImageFactory()
         self.cell_image = self.data_type.create_displayed_data(self.imaging_data)
-
-class DisplayedFluoTrace:
-    def __init__(self, original_data):
-        self.file_infor = original_data.file_infor
-
-
-class DisplayedElecTrace:
-    def __init__(self, original_data):
-        self.file_infor = original_data.file_infor
-
-
-class DisplayedImage:
-    def __init__(self, original_data):
-        self.file_infor = original_data.file_infor
-
-
-"""where should it be located"""
-class PrintFileName:
-    @staticmethod
-    def print_filename(self):
-        print(self.file_infor.filename)
-        print('This is a ' + self.__class__.__name__)
 
 
 """
@@ -95,11 +74,24 @@ class Subject:
 
 
 if __name__ == '__main__':
+
     filename = '20408A001.tsm'
     filepath = 'E:\\Data\\2022\\220408\\'
     #filepath = 'C:\\Users\\lulul\\マイドライブ\\Programing\\Python\\220408\\'
     test= Model(filename, filepath)
+    
     test.data_container.file_infor.print_fileinfor()
+    #test.data_container.imaging_data.print_full_frame()
+    #print(test.data_container.imaging_data.dark_frame)
+    #test.data_container.displayed_fluo_trace.get_data()
+    import matplotlib.pyplot as plt
+    import numpy as np
+    #plt.imshow(test.data_container.imaging_data.dark_frame)
+    #plt.imshow(test.data_container.imaging_data.full_frame[:,:,0])
+    
+    #print(test.data_container.elec_data.elec_trace)
+    print(test.data_container.elec_data.elec_trace.shape)
+    plt.plot(test.data_container.elec_data.elec_trace[:,0])
+    
 
-    #test.data_container.imaging_data.print_fluo_frame()
-    test.data_container.displayed_fluo_trace.get_data()
+
