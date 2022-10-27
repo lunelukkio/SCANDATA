@@ -99,9 +99,7 @@ if __name__ == '__main__':
     filepath = 'E:\\Data\\2022\\220408\\'
     #filepath = 'C:\\Users\\lulul\\マイドライブ\\Programing\\Python\\220408\\'
     test= Model(filename, filepath)
+    test.data_container.file_infor.print_fileinfor()
 
-    print(test.data_container.imaging_data.imaging_data.shape)
-    test.data_container.file_infor.print_header()
-    test.data_container.imaging_data.print_imaging_data()
-    print(vars(test.data_container.imaging_data))
+    #test.data_container.imaging_data.print_fluo_frame()
     test.data_container.displayed_fluo_trace.get_data()

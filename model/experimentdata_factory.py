@@ -87,64 +87,103 @@ Concrete experimentdata product
 """
 class TsmFileInfor(FileInfor):
     def __init__(self, filename, filepath):
-        self.file_name = filename
+        self.filename = filename
         self.file_path = filepath
         self.full_filename = filepath + filename
-        self.header = 0
+        self.header = 0 # byte: it needs to chage to str [self.header.decode()]
+        self.str_header = 0
 
-        self.num_fluo_ch = (2,)  # Use () for PMT
-        self.frame_interval = (0,)
-        self.num_frame = (0,)
-        self.data_pixel = (80, 80)  # tuple; The number of frame pixels.
+        self.num_fluo_ch = 2  # Use () for PMT
+        self.frame_interval = 0
+        self.num_frame = [0,]
+        self.data_pixel = 0
         
-        self.num_elec_ch = (8,)
-        self.elec_interval = (0,)
-        self.num_elec_data = (0,)
+        self.num_elec_ch = 8
+        self.elec_interval = 0
+        self.num_elec_data = 0
+        
+        self.fluo_ch_interval = self.frame_interval*self.num_fluo_ch
 
-        
         self.read_fileinfor()
-        
         print('imported file infor')
-
 
     def read_fileinfor(self):
         try:
             with open(self.full_filename, 'rb') as f:
+                # https://fits.gsfc.nasa.gov/fits_primer.html
+                
                 b = f.read(2880)
-                self.header = b.decode()
+                self.header = f.read(2880)
+                self.str_header = b.decode()
+
+                """x pixel"""
+                index = self.str_header.find('NAXIS1')
+                str_num_x = self.str_header[index+10:index+30]
+                num_x = int(str_num_x)
+                
+                """y pixel"""
+                index = self.str_header.find('NAXIS2')
+                str_num_y = self.str_header[index+10:index+30]
+                num_y = int(str_num_y)
+                
+                self.data_pixel = [num_x, num_y]
+                
+                """z: number of frames"""
+                index = self.str_header.find('NAXIS3')
+                str_num_frame = self.str_header[index+10:index+30]
+                self.num_frame = [int(str_num_frame)]
+                
+                """ frame interval"""
+                index = self.str_header.find('EXPOSURE')
+                str_frame_interval = self.str_header[index+10:index+30]
+                self.frame_interval = [1000*float(str_frame_interval)]
+                
         except OSError as e:
             print(e)
                 
-            
-    def print_header(self):
-        print(self.header)    
-            
-            
+    def print_fileinfor(self):
+        print(self.str_header)    
+        print('filenmae = ' + self.full_filename)
+        print('num fluo ch = ' + str(self.num_fluo_ch))
+        print('frame interval = ' + str(self.frame_interval))
+        print('num frame = ' + str(self.num_frame))
+        print('data pixel = ' + str(self.data_pixel))
+        print('num elec ch = ' + str(self.num_elec_ch))
+        print('elec interval = ' + str(self.elec_interval))
+        print('num elec data = ' + str(self.num_elec_data))
+
 
 class TsmImagingData(ImagingData):
     def __init__(self, file_infor):
         super().__init__(file_infor)
         
-        framesize = self.file_infor.data_pixel + \
-                    self.file_infor.num_frame + \
-                    self.file_infor.num_fluo_ch
-        self.imaging_data = np.empty(framesize)
+        self.framesize = tuple(self.file_infor.data_pixel +
+                    self.file_infor.num_frame)
+        self.fluo_frame = np.empty(self.framesize)
 
         self.read_imaging_data()
 
     def read_imaging_data(self):
         try:
+            # https://fits.gsfc.nasa.gov/fits_primer.html
             dtype = 'int16'
             path = self.file_infor.full_filename
-            self.imaging_data = np.fromfile(path, dtype=dtype, count=-1,
+            frame_count = self.file_infor.data_pixel[0] * \
+                          self.file_infor.data_pixel[1] * \
+                          self.file_infor.num_frame[0]
+            self.fluo_frame = np.fromfile(path, dtype=dtype,
+                                          count=frame_count,
                                             offset=2880)
-            print(self.imaging_data.shape)
-            print('Read data')
+            self.fluo_frame = self.fluo_frame.reshape(self.framesize)
+            
+            print(self.fluo_frame.shape)
+            print(self.fluo_frame.ndim)
+            print(self.framesize)
         except OSError as e:
             print(e)
         
-    def print_imaging_data(self):
-        print(self.imaging_data)  
+    def print_fluo_frame(self):
+        print(self.fluo_frame)  
 
 class TbnElecData(ElecData):
     def __init__(self, file_infor):
