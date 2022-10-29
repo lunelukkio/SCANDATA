@@ -14,15 +14,19 @@ Abstract experimentdata factory
 class ExperimentDataFactory(metaclass=ABCMeta):
 
     @abstractmethod
-    def create_FileInfor(self, filename, filepath):
+    def create_fileinfor(self, filename, filepath):
         pass
 
     @abstractmethod
-    def create_ImagingData(self, file_infor):
+    def create_imaging_data(self, file_infor):
         pass
 
     @abstractmethod
-    def create_ElecData(self, file_infor):
+    def create_elec_data(self, file_infor):
+        pass
+    
+    @abstractmethod
+    def create_cell_image(self, file_infor):
         pass
 
 
@@ -62,26 +66,31 @@ class ElecData(metaclass=ABCMeta):
 Concrete experimentdata factory
 """
 class TsmDataFactory(ExperimentDataFactory):
-    def create_FileInfor(self, filename, filepath):
+    def create_fileinfor(self, filename, filepath):
         return TsmFileInfor(filename, filepath)
 
-    def create_ImagingData(self, file_infor):
+    def create_imaging_data(self, file_infor):
         return TsmImagingData(file_infor)
 
-    def create_ElecData(self, file_infor):     #from tbn files
+    def create_elec_data(self, file_infor):     #from tbn files
         return TbnElecData(file_infor)
+    
+    def create_cell_image(self, file_infor):
+        pass
 
 
 class DaDataFactory(ExperimentDataFactory):
-    def create_FileInfor(self, filename):
+    def create_fileinfor(self, filename):
         pass
 
-    def create_ImagingData(self, file_infor):
+    def create_imaging_data(self, file_infor):
         pass
 
-    def create_ElecData(self, file_infor):
+    def create_elec_data(self, file_infor):
         pass
 
+    def create_cell_image(self, file_infor):
+        pass
 
 """
 Concrete experimentdata product

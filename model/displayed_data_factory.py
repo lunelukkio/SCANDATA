@@ -12,6 +12,7 @@ Concrete factory
 import numpy as np
 from abc import ABCMeta, abstractmethod
 
+
 """
 Abstract desplayeddata factory
 """
