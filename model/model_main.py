@@ -10,11 +10,11 @@ from abc import ABCMeta, abstractmethod
 from model.roi import Roi
 from model.experimentdata_factory import TsmDataFactory
 from model.experimentdata_factory import DaDataFactory
-from model.displayed_data_factory import FullFluoTraceFactory
-from model.displayed_data_factory import ChFluoTraceFactory
-from model.displayed_data_factory import ElecTraceFactory
-from model.displayed_data_factory import CellImageFactory
-from model.displayed_data_factory import DifImageFactory
+from model.displayed_data_factory import FullFluoTrace
+from model.displayed_data_factory import ChFluoTrace
+from model.displayed_data_factory import ElecTrace
+from model.displayed_data_factory import CellImage
+from model.displayed_data_factory import DifImage
 
 class ModelInterface(metaclass=ABCMeta):
 
@@ -31,11 +31,11 @@ class ModelMain(ModelInterface):
     def __init__(self, filename, filepath):
         self.data_container = DataContainer(filename, filepath)
         self.roi = Roi()
-        self.full_fluo_trace = 0
-        self.ch_fluo_trace = 0
+        self.full_fluo_trace = FullFluoTrace(self.data_container, self.roi)
+        self.ch_fluo_trace = ChFluoTrace(self.data_container, self.roi)
 
-        #self.elec_trae = np.array(0)
-        #self.cell_image = np.array(0)
+        self.elec_trace = ElecTrace(self.data_container)
+        self.cell_image = CellImage(self.data_container, self.roi)
         #self.dif_image = np.array(0)
         print('imported model')
 
@@ -44,14 +44,9 @@ class ModelMain(ModelInterface):
         
     def request_data(self, data_type):
         if data_type == 'full_fluo_trace':
-            factory_type = FullFluoTraceFactory()
-            self.full_fluo_trace = factory_type.create_displayed_data(self.data_container, self.roi)
+            return self.full_fluo_trace.get_data()
         elif data_type == 'ch_fluo_trace':
-            factory_type = ChFluoTraceFactory()
-            self.ch_fluo_trace = factory_type.create_displayed_data(self.data_container, self.roi)
-            
-
-
+            return self.ch_fluo_trace.get_data()
 
 
 class DataContainer:
@@ -101,8 +96,8 @@ if __name__ == '__main__':
     #filepath = 'C:\\Users\\lulul\\マイドライブ\\Programing\\Python\\220408\\'
     test = ModelMain(filename, filepath)
         
-    test.data_container.fileinfor.print_fileinfor()
-    #test.data_container.imaging_data.print_frame()
+    #test.data_container.fileinfor.print_fileinfor()
+
 
     print(test.data_container.imaging_data.full_frame.shape)
     #print(test.data_container.elec_data.elec_trace.shape)
@@ -110,14 +105,18 @@ if __name__ == '__main__':
     #print(test.data_container.elec_data.elec_trace.shape)
     
     a = plt.figure()
-    test.data_container.elec_data.plot_elec_data(1)
+    test.data_container.elec_data.plot_elec_data(4)
     b = plt.figure()
-    test.data_container.imaging_data.show_frame(2,0)
-    test.request_data('full_fluo_trace')
-    test.request_data('ch_fluo_trace')
+    test.data_container.imaging_data.show_frame(1,0)
+    #test.request_data('full_fluo_trace')
+    #test.request_data('ch_fluo_trace')
     c = plt.figure()
     test.full_fluo_trace.plot_trace()
     test.ch_fluo_trace.plot_trace(0)
+    d = plt.figure()
+    test.elec_trace.plot_trace(0)
+    e = plt.figure()
+    test.cell_image.show_frame(0)
     
     print(type(test.ch_fluo_trace))
     print(test.ch_fluo_trace.ch_fluo_trace.shape)

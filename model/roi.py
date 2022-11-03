@@ -13,6 +13,7 @@ class Roi:
         self.y_length = 3
         self.dif_base = 50
         self.dif_base_length = 5
+        self.ave_num_cell_image = [0,4]  # [start frame, end frame]
         self.dif_df = 100
         self.dif_df_length = 5
         
