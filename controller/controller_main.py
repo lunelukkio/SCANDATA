@@ -6,8 +6,8 @@ lunelukkio@gmail.com
 main for controller
 """
 
-from model import model_main
-from view import view_main
+from model.model import ModelMain
+from view.view import ViewMain
 from model.experimentdata_factory import TmsDataFactory
 
 class Controller:
@@ -19,8 +19,8 @@ class Controller:
         self.filepath = 'no file'
 
         
-        self.model = model_main.Model(self.filename, self.filepath)     #test code
-        self.view = view_main.View(self)
+        self.model = Model.ModelMain(self.filename, self.filepath)     #test code
+        self.view = View.View(self)
         
         self.filename = self.view.main.filename
         
