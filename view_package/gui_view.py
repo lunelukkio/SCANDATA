@@ -9,25 +9,34 @@ lunelukkio@gmail.com
 
 import tkinter as tk
 from tkinter import ttk
+from tkinter import filedialog
 from abc import abstractmethod
 import os
+import matplotlib.pyplot as plt
+import numpy as np
+
 #import tkinter.filedialog  #need this because of bug?
 import abc
 
-
+"""
+view interface
+"""
 class View(tk.Frame):
     @abstractmethod
     def create_view():
         raise NotImplementedError
-
+        
 class Observer(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def update(self, message):
         pass
 
 class MainWindow(View):
-    def __init__(self, master=None):
+    def __init__(self, controller, master=None):
         super().__init__(master)
+        self.main_controller = controller
+
+        
         self.master.title("Main Window")
         self.master.geometry("1000x200")
 
@@ -37,7 +46,6 @@ class MainWindow(View):
         self.__create_ROI_controller()
         self.__create_functions()
         self.move_position(1500, 500)
-        self.filename = 'no data'
 
     def __create_menu(self):
         menu_bar = tk.Menu(self)
@@ -64,14 +72,6 @@ class MainWindow(View):
         # parent menu
         self.master.config(menu = menu_bar)
 
-    def menu_open_click(self, event=None):
-
-        # file dialog
-        filename = tk.filedialog.askopenfilename(
-            initialdir = os.getcwd() # current directory
-            )
-        print(filename)
-        trace_window = TraceWindow(self)
 
     def __create_tool_bar(self):
 
@@ -128,7 +128,7 @@ class MainWindow(View):
         button_SMALL = tk.Button(roi_controller_frame, text = "SMALL",
                                  width = 5, height=5)
         button_RESET = tk.Button(roi_controller_frame, text = "RESET",
-                                 width = 5, height=5, command=self.open_window)
+                                 width = 5, height=5)
 
         button_up.grid(row=0, column=1)
         button_left.grid(row=1, column=0)
@@ -154,7 +154,7 @@ class MainWindow(View):
         tk.Grid.columnconfigure(functions_frame, index=4, weight=1)
 
         button_up = tk.Button(functions_frame, text = "Trace",
-                              width = 15, height=10, command=self.open_window)
+                              width = 15, height=10, command=self.open_trace_window)
         button_left = tk.Button(functions_frame, text = "Image",
                                 width = 15, height=10)
         button_right = tk.Button(functions_frame, text = "3",
@@ -179,8 +179,8 @@ class MainWindow(View):
 
         functions_frame.pack(side = tk.LEFT)
 
-    def open_window(self):
-        trace_window = TraceWindow(self)
+    def open_trace_window(self):
+        trace_window = TraceWindow(self.controller, None)
         #trace_window.grab_set() #This is for keeping a window at top
 
         #move the window position
@@ -190,21 +190,33 @@ class MainWindow(View):
         w = w - w_position
         h = h - h_position
         self.master.geometry("1000x200+"+str(w)+"+"+str(h))
+        
+    def menu_open_click(self, event=None):
+        ftypes = [("TSM Files", ".tsm"),
+                  ("DA", ".da"),
+                  ("All Files", ".*")]
+        # file dialog
+        fullname = filedialog.askopenfilename(
+            initialdir = os.getcwd(), # current directory
+            filetypes = ftypes
+            )
+        self.controller.menu_open_click(fullname)
 
     def func_1(self):
         """ for test"""
-        self.filename = "20408A001.tms"
+        print(self.controller.main_controller.filename)
 
     def func_2(self):
         """ not working because of no connection to model"""
         self.model.data_container.file_infor.print_filename()
 
-class TraceWindow(tk.Toplevel, View, Observer):
-    def __init__(self, parent):
+class TraceWindow(tk.Toplevel, View):
+    def __init__(self, controller, parent):
         super().__init__(parent)
         self.title("Trace Window")
         self.geometry("1500x700")
         self.create_status_bar()
+        self.controller = controller
 
         frame_tool_bar = ttk.Frame(self, borderwidth = 2, relief = tk.SUNKEN)
         button1 = ttk.Button(frame_tool_bar, text='close',
@@ -217,6 +229,11 @@ class TraceWindow(tk.Toplevel, View, Observer):
         fluorescnece_window.pack(expand=True, fill=tk.BOTH)
         fluorescnece_window.create_rectangle(50, 50, 800, 450, fill = "blue",
                                              stipple = "gray25")
+        
+        displayed_trace = self.controller.fluo_trace()
+        a = plt.figure()
+        plt.plot(displayed_trace)
+        
 
         # Electrical trace window
         electrical_window = tk.Canvas(self, background="#008080")
@@ -274,11 +291,16 @@ class DifferenceWindow(View):
         self.create_tool_bar()
         self.create_status_bar()
         self.create_side_panel()
+        
+        
+
+
 
 
 
 if __name__ == "__main__":
 
         root = tk.Tk()
+        root.title("SCANDATA")
         main = MainWindow(master = root)
         main.mainloop()

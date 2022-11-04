@@ -7,24 +7,28 @@ main for view
 """
 
 import tkinter as tk
-import view.gui_view
 from tkinter import ttk
 
 
-
 class View(tk.Tk):
-    def __init__(self, controller):
+    def __init__(self):
         print('imported view')
-        self.controller = controller
+        self.model = None
+        self.controller = None
 
         root = tk.Tk()
         root.title("SCANDATA")
-        main = view.gui_view.MainWindow(master = root)
+        main = MainWindow(self.controller, master = root)
         main.mainloop()
         #no programs are running after mainloop
+        
 
-    def main(self):
-        print('In main of veiw')
+class MainWindow(View):
+    def __init__(self, controller, master=None):
+        super().__init__(master)
+        self.controller = controller
+
+
 
 if __name__ == "__main__":
-    pass
+    test = View()

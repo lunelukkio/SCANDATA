@@ -16,6 +16,7 @@ class Roi:
         self.ave_num_cell_image = [0,4]  # [start frame, end frame]
         self.dif_df = 100
         self.dif_df_length = 5
+        self.mod_list = [list]
         
     def make_roi(self):
         pass

@@ -102,7 +102,10 @@ class ElecTrace(DisplayedData):
         pass
     
     def plot_trace(self, ch):
-        plt.plot(self.elec_trace[:, ch])
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.plot(self.elec_trace[:, ch])
+        plt.show()
 
 
 class CellImage(DisplayedData):

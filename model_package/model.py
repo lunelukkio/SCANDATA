@@ -7,16 +7,20 @@ This is the main module for a model called by a controller
 """
 
 from abc import ABCMeta, abstractmethod
-from model.roi import Roi
-from model.experimentdata_factory import TsmDataFactory
-from model.experimentdata_factory import DaDataFactory
-from model.displayed_data_factory import FullFluoTrace
-from model.displayed_data_factory import ChFluoTrace
-from model.displayed_data_factory import ElecTrace
-from model.displayed_data_factory import CellImage
-from model.displayed_data_factory import DifImage
+from model_package.roi import Roi
+from model_package.experimentdata_factory import TsmDataFactory
+from model_package.experimentdata_factory import DaDataFactory
+from model_package.displayed_data_factory import FullFluoTrace
+from model_package.displayed_data_factory import ChFluoTrace
+from model_package.displayed_data_factory import ElecTrace
+from model_package.displayed_data_factory import CellImage
+from model_package.displayed_data_factory import DifImage
 
 class ModelInterface(metaclass=ABCMeta):
+    
+    @abstractmethod
+    def create_model(self, filename, filepath):
+        pass
 
     @abstractmethod
     def set_roi(self, type, val):
@@ -27,9 +31,17 @@ class ModelInterface(metaclass=ABCMeta):
         pass
     
 
-class ModelMain(ModelInterface):
-    def __init__(self, filename, filepath):
+class Model(ModelInterface):
+    def __init__(self):
+        self.filename = 'no file'
+        self.filepath = 'no path'
+        self.data_container = None
+        
+    def create_model(self, filename, filepath):
         self.data_container = DataContainer(filename, filepath)
+        if self.data_container is None:
+            print('no file')
+            return
         self.roi = Roi()
         self.full_fluo_trace = FullFluoTrace(self.data_container, self.roi)
         self.ch_fluo_trace = ChFluoTrace(self.data_container, self.roi)
@@ -47,6 +59,8 @@ class ModelMain(ModelInterface):
             return self.full_fluo_trace.get_data()
         elif data_type == 'ch_fluo_trace':
             return self.ch_fluo_trace.get_data()
+        
+        print('Request received')
 
 
 class DataContainer:
@@ -70,31 +84,16 @@ class DataContainer:
         self.elec_data = factory_type.create_elec_data(self.fileinfor)
         
 
-"""
-for observer method
-"""
-class Subject:
-    def __init__(self):
-        self._observers = set()
-
-    def attach(self, observer):
-        self._observers.add(observer)
-
-    def detach(self, observer):
-        self._observers.discard(observer)
-
-    def _notify_update(self, message):
-        for observer in self._observers:
-            observer.update(message)
-
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
     
     filename = '20408A001.tsm'
+    #filepath = 'E:\\Data\\2022\\220408\\'
     filepath = 'E:\\Data\\2022\\220408\\'
     #filepath = 'C:\\Users\\lulul\\マイドライブ\\Programing\\Python\\220408\\'
-    test = ModelMain(filename, filepath)
+    test = Model()
+    test.create_model(filename, filepath)
         
     #test.data_container.fileinfor.print_fileinfor()
 
@@ -132,5 +131,7 @@ if __name__ == '__main__':
     
     #test.set_roi(diff, 50, 100, 5, 5)
     #オブザーバーでそれぞれのobjectに変更通知->それぞれのobjectが自身を変更
-    #test.create_data(dif_image)
+    a = test.request_data('ch_fluo_trace')
+    f = plt.figure()
+    plt.plot(a[:,0])
 
