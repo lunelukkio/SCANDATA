@@ -23,7 +23,7 @@ class ModelInterface(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def set_roi(self, type, val):
+    def set_roi(self, roi_type, val):
         pass
     
     @abstractmethod
@@ -36,6 +36,7 @@ class Model(ModelInterface):
         self.filename = 'no file'
         self.filepath = 'no path'
         self.data_container = None
+        self.roi = 0
         
     def create_model(self, filename, filepath):
         self.data_container = DataContainer(filename, filepath)
@@ -51,8 +52,11 @@ class Model(ModelInterface):
         #self.dif_image = np.array(0)
         print('imported model')
 
-    def set_roi(self, type, val):
-        pass
+    def set_roi(self, roi_type, val):
+        if roi_type == 'roi':
+            self.roi.set_data(val)
+
+
         
     def request_data(self, data_type):
         if data_type == 'full_fluo_trace':
@@ -92,33 +96,36 @@ if __name__ == '__main__':
     #filepath = 'E:\\Data\\2022\\220408\\'
     filepath = 'E:\\Data\\2022\\220408\\'
     #filepath = 'C:\\Users\\lulul\\マイドライブ\\Programing\\Python\\220408\\'
-    test = Model()
-    test.create_model(filename, filepath)
+    scan_test = Model()
+    scan_test.create_model(filename, filepath)
         
     #test.data_container.fileinfor.print_fileinfor()
+    val = [40,40,20,20,1]
+    scan_test.set_roi('roi', val)
+    #val = [2,80]
+    #scan_test.set_cell_image(val)
 
-
-    print(test.data_container.imaging_data.full_frame.shape)
+    print(scan_test.data_container.imaging_data.full_frame.shape)
     #print(test.data_container.elec_data.elec_trace.shape)
     #print(test.data_container.elec_data.elec_trace)
     #print(test.data_container.elec_data.elec_trace.shape)
     
     a = plt.figure()
-    test.data_container.elec_data.plot_elec_data(4)
+    scan_test.data_container.elec_data.plot_elec_data(4)
     b = plt.figure()
-    test.data_container.imaging_data.show_frame(1,0)
+    scan_test.data_container.imaging_data.show_frame(1,0)
     #test.request_data('full_fluo_trace')
     #test.request_data('ch_fluo_trace')
     c = plt.figure()
-    test.full_fluo_trace.plot_trace()
-    test.ch_fluo_trace.plot_trace(0)
+    scan_test.full_fluo_trace.plot_trace()
+    scan_test.ch_fluo_trace.plot_trace(0)
     d = plt.figure()
-    test.elec_trace.plot_trace(0)
+    scan_test.elec_trace.plot_trace(0)
     e = plt.figure()
-    test.cell_image.show_frame(0)
+    scan_test.cell_image.show_frame(0)
     
-    print(type(test.ch_fluo_trace))
-    print(test.ch_fluo_trace.ch_fluo_trace.shape)
+    print(type(scan_test.ch_fluo_trace))
+    print(scan_test.ch_fluo_trace.ch_fluo_trace.shape)
     #print(test.ch_fluo_trace.ch_fluo_trace)
     
     #roi_data = [45, 45]
@@ -131,7 +138,7 @@ if __name__ == '__main__':
     
     #test.set_roi(diff, 50, 100, 5, 5)
     #オブザーバーでそれぞれのobjectに変更通知->それぞれのobjectが自身を変更
-    a = test.request_data('ch_fluo_trace')
+    a = scan_test.request_data('ch_fluo_trace')
     f = plt.figure()
     plt.plot(a[:,0])
 

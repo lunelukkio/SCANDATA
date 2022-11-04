@@ -39,8 +39,8 @@ class FullFluoTrace(DisplayedData):
         
     def create_data(self, data_container, roi):
         print('this is a full fluo trace')
+        roi_xy_infor = roi.get_data()  # [x, y, x_length, y_length, roi_num]
         frame = data_container.imaging_data.full_frame
-        roi_xy_infor = [roi.x, roi.y, roi.x_length, roi.y_length]
         
         self.full_fluo_trace = FluoTraceCreator.fluo_trace_creator(
             frame, roi_xy_infor)
@@ -66,11 +66,11 @@ class ChFluoTrace(DisplayedData):
 
     def create_data(self, data_container, roi):
         print('this is ch fluo trace')
+        roi_xy_infor = roi.get_data()  # [x, y, x_length, y_length, roi_num]
         num_fluo_ch = data_container.fileinfor.num_fluo_ch
         num_frame = data_container.fileinfor.num_frame//num_fluo_ch
         
         frame = data_container.imaging_data.ch_frame
-        roi_xy_infor = [roi.x, roi.y, roi.x_length, roi.y_length]
         self.ch_fluo_trace = np.empty([num_frame, num_fluo_ch])
         
         for i in range(data_container.fileinfor.num_fluo_ch):
@@ -120,15 +120,15 @@ class CellImage(DisplayedData):
         print('this is a cell image')
         frame = data_container.imaging_data.ch_frame
         num_ch = data_container.fileinfor.num_fluo_ch
-        roi = roi.ave_num_cell_image
+        frame_num = roi.get_data()
         
-        if roi[1] - roi[0] == 0:
+        if frame_num[1] - frame_num[0] == 0:
             for i in range(num_ch):
-                self.cell_image[:, :, i] = frame[:, :, roi[0], i]
+                self.cell_image[:, :, i] = frame[:, :, frame_num[0], i]
                 
-        elif roi[1] - roi[0] > 0: 
+        elif frame_num[1] - frame_num[0] > 0: 
             for i in range(num_ch):
-                self.cell_image[:, :, i] = np.mean(frame[:, :, roi[0]:roi[1], i], axis = 2)
+                self.cell_image[:, :, i] = np.mean(frame[:, :, frame_num[0]:frame_num[1], i], axis = 2)
         
     def get_data(self):
         return self.cell.image
