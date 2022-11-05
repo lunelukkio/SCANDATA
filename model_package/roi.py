@@ -44,6 +44,7 @@ class RoiVal():
         self.__y_length = 2
         self.__roi_num = 1
 
+
     def create_roi(self, x):
         pass
 
@@ -52,11 +53,15 @@ class RoiVal():
         return [self.__x, self.__y, self.__x_length, self.__y_length, self.__roi_num]
     
     def set_val(self, val):
+        
         self.__x = val[0]
         self.__y = val[1]
         self.__x_length = val[2]
         self.__y_length = val[3]
         self.__roi_num = val[4]
+        
+        print("set val = " + str(val) + str(self.__x) + str(self.__y_length))
+        
         
         #self.notify_observer()
 

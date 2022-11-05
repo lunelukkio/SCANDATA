@@ -59,7 +59,7 @@ class Model(ModelInterface):
 
     def set_val(self, control_type, val):
         control_type.set_val(val)
-        print('val set')
+        print('sent val = ' + str(val))
 
     def request_data(self, data_type):
         data_type.get_data()
@@ -94,49 +94,52 @@ if __name__ == '__main__':
     filename = '20408A001.tsm'
     filepath = 'E:\\Data\\2022\\220408\\'
     #filepath = 'C:\\Users\\lulul\\マイドライブ\\Programing\\Python\\220408\\'
-    scan_test = Model()
-    scan_test.create_model(filename, filepath)
+    model= Model()
+    model.create_model(filename, filepath)
         
-    #test.data_container.fileinfor.print_fileinfor()
-    val = [40,40,20,20,1]
-    scan_test.set_val(RoiVal(), val)
-    #val = [2,80]
-    #scan_test.set_cell_image(val)
+    #model.data_container.fileinfor.print_fileinfor()
 
-    print(scan_test.data_container.imaging_data.full_frame.shape)
-    #print(test.data_container.elec_data.elec_trace.shape)
-    #print(test.data_container.elec_data.elec_trace)
-    #print(test.data_container.elec_data.elec_trace.shape)
+
+    print(model.data_container.imaging_data.full_frame.shape)
+    #print(model.data_container.elec_data.elec_trace.shape)
+    #print(model.data_container.elec_data.elec_trace)
+    #print(model.data_container.elec_data.elec_trace.shape)
     
+    val = [10,10,50,50,1]
+    model.set_val(model.roi_val, val)
+    model.ch_fluo_trace.create_data
     a = plt.figure()
-    scan_test.data_container.elec_data.plot_elec_data(4)
+    model.data_container.elec_data.plot_elec_data(0)
     b = plt.figure()
-    scan_test.data_container.imaging_data.show_frame(1,0)
-    #test.request_data('full_fluo_trace')
-    #test.request_data('ch_fluo_trace')
+    model.data_container.imaging_data.show_frame(1,0)
+    #model.request_data('full_fluo_trace')
+    #model.request_data('ch_fluo_trace')
     c = plt.figure()
-    scan_test.full_fluo_trace.plot_trace()
-    scan_test.ch_fluo_trace.plot_trace(0)
+    model.ch_fluo_trace.plot_trace(0)
     d = plt.figure()
-    scan_test.elec_trace.plot_trace(0)
+    model.elec_trace.plot_trace(0)
     e = plt.figure()
-    scan_test.cell_image.show_frame(0)
+    model.cell_image.show_frame(0)
     
-    print(type(scan_test.ch_fluo_trace))
-    print(scan_test.ch_fluo_trace.ch_fluo_trace.shape)
-    #print(test.ch_fluo_trace.ch_fluo_trace)
+    print(type(model.ch_fluo_trace))
+    print(model.ch_fluo_trace.ch_fluo_trace.shape)
+    #print(model.ch_fluo_trace.ch_fluo_trace)
     
     #roi_data = [45, 45]
-    #test.displayed_data.create_full_trace(roidata)
+    #model.displayed_data.create_full_trace(roidata)
+    val = [1,1,1,1,1]
+    model.set_val(model.roi_val, val)
+    print(model.roi_val.get_data())
     
+    a = model.request_data(ChFluoTrace())
+    print(a)
     
-    #最終的にこう書く
-    #test.set_roi(roi, 10, 10, 2, 2)  # (x, y, x_length, y_lentch)
-    #オブザーバーでそれぞれのobjectに変更通知->それぞれのobjectが自身を変更
+    #final code
+    #model.set_val(roi_cval, [10, 10, 2, 2, 1])  # (x, y, x_length, y_lentch, roi#)
+    #observer tell traces
+    #traces change data by myself
     
-    #test.set_roi(diff, 50, 100, 5, 5)
-    #オブザーバーでそれぞれのobjectに変更通知->それぞれのobjectが自身を変更
-    #a = scan_test.request_data(FullFluoTrace())
-    #f = plt.figure()
-    #plt.plot(a[:,0])
-
+    #model.get_data(ch_fluo_trace)
+    #send to view
+model.request_dataが空になる
+ch_fluo_trace.create_dataに引数を持たせてはいけない。自身で更新
