@@ -5,8 +5,12 @@ Created on Wed Nov  2 15:11:48 2022
 lunelukkio@gmail.com
 """
 from abc import ABCMeta, abstractmethod
+from model_package.displayed_data_factory import FullFluoTrace
+from model_package.displayed_data_factory import ChFluoTrace
+from model_package.displayed_data_factory import ElecTrace
+from model_package.displayed_data_factory import CellImage
 
-class ConfigInterface(metaclass=ABCMeta):
+class ControlVal(metaclass=ABCMeta):
     def __init__(self):
         self.__observers = []
 
@@ -17,21 +21,23 @@ class ConfigInterface(metaclass=ABCMeta):
         self.__observers.remove(observer)
 
     def notify_observer(self):
-        for o in self.__observers:
-            o.update(self)
+        for observer_name in self.__observers:
+            observer_name.update(self)
             
     @abstractmethod
     def get_data(self):
         pass
     
     @abstractmethod
-    def set_data(self, val):
+    def set_val(self, val):
         pass
     
 
 
-class Roi(ConfigInterface):
+class RoiVal():
     def __init__(self):
+        self.__observers = [FullFluoTrace()]
+        
         self.__x = 40
         self.__y = 40
         self.__x_length = 2
@@ -40,25 +46,26 @@ class Roi(ConfigInterface):
 
     def create_roi(self, x):
         pass
+
+        
+    def get_data(self) -> list:
+        return [self.__x, self.__y, self.__x_length, self.__y_length, self.__roi_num]
     
-    def set_data(self, val):
+    def set_val(self, val):
         self.__x = val[0]
         self.__y = val[1]
         self.__x_length = val[2]
         self.__y_length = val[3]
         self.__roi_num = val[4]
         
-        self.notify_observer()
-        
-    def get_data(self) -> list:
-        return [self.__x, self.__y, self.__x_length, self.__y_length, self.__roi_num]
+        #self.notify_observer()
 
     def delete_roi(self):
         pass
         
 
     
-class CellImageConfig(ConfigInterface):
+class CellImageVal():
     def __init__(self):
     
         self.__dif_base = 50
@@ -69,10 +76,9 @@ class CellImageConfig(ConfigInterface):
         self.__mod_list = ['mod_list']
         self.__spacial_filter = 8
         
-
-    
-    def set_data(self, val):
-        self.__ave_num_cell_image = [val[0], val[1]]
         
-        def get_data(self) -> list:
+    def get_data(self) -> list:
             return self.__ave_num_cell_image
+    
+    def set_val(self, val):
+        self.__ave_num_cell_image = [val[0], val[1]]
