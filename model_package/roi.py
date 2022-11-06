@@ -78,7 +78,7 @@ class RoiVal(ControlVal):
     def notify_observer(self):
         for observer_name in self.__observers:
             observer_name.update(self)
-            print('')
+            print('Notification')
     
     def print_val(self):
         print('set val = ' +
@@ -88,20 +88,58 @@ class RoiVal(ControlVal):
               str(self.__y_length) + ' ,' +
               str(self.__roi_num))
 
+
+class ElecVal(ControlVal):
+    def __init__(self):
+        self.__observers = []
+        
+    def set_val(self, val=None):  # Need an argument for val because of the abstract class
+        self.notify_observer()
+
+    def get_data(self):
+        pass
     
-class CellImageVal():
+    def add_observer(self, observer):
+        self.__observers.append(observer)
+        
+    def delete_observer(self, observer):
+        self.__observers.remove(observer)
+    
+    def notify_observer(self):
+        for observer_name in self.__observers:
+            observer_name.update(self)
+            print('Notification')
+    
+    def print_val(self):
+        pass
+    
+class CellImageVal(ControlVal):
     def __init__(self):
         self.__frame_start = 0
         self.__frame_end = 4
+        self.__observers = []
         print('Imported a cell image val class.')
 
     def set_val(self, val):
         self.__frame_start = val[0]
         self.__frame_end = val[1]
+        
+        self.notify_observer()
 
     def get_data(self) -> list:
         return [self.__frame_start,
                 self.__frame_end]
+    
+    def add_observer(self, observer):
+        self.__observers.append(observer)
+        
+    def delete_observer(self, observer):
+        self.__observers.remove(observer)
+    
+    def notify_observer(self):
+        for observer_name in self.__observers:
+            observer_name.update(self)
+            print('Notification')
 
     def print_val(self):
         print('cell image val = ' +

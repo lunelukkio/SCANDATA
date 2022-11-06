@@ -8,6 +8,7 @@ This is the main module for a model called by a controller
 
 from abc import ABCMeta, abstractmethod
 from model_package.roi import RoiVal
+from model_package.roi import ElecVal
 from model_package.roi import CellImageVal
 from model_package.experimentdata_factory import TsmDataFactory
 from model_package.experimentdata_factory import DaDataFactory
@@ -36,10 +37,10 @@ class Model(ModelInterface):
         self.filename = 'no file'
         self.filepath = 'no path'
         self.data_container = None
-        self.roi = 0
+        self.roi_val = 0
+        self.elec_val = 0
         self.cell_image_val = 0
         
-        self.control_type = 0
         print('Imported a model class.')
 
     def create_model(self, filename, filepath):
@@ -49,23 +50,22 @@ class Model(ModelInterface):
             print('No file')
             return None
         
+        # for displayed data
+        self.full_fluo_trace = FullFluoTrace(self.data_container)
+        self.ch_fluo_trace = ChFluoTrace(self.data_container)
+        self.elec_trace = ElecTrace(self.data_container)
+        self.cell_image = CellImage(self.data_container)
+        
         # for control valiables
         self.roi_val = RoiVal()
+        self.elec_val = ElecVal()
         self.cell_image_val = CellImageVal()
-        
-        # for displayed data
-        self.full_fluo_trace = FullFluoTrace(self.data_container, self.roi_val)
-        self.ch_fluo_trace = ChFluoTrace(self.data_container, self.roi_val)
-        self.elec_trace = ElecTrace(self.data_container)
-        self.cell_image = CellImage(self.data_container, self.cell_image_val)
-        
-        self.full_fluo_trace.create_data()
-        self.ch_fluo_trace.create_data()
-        self.elec_trace.create_data()
-        self.cell_image.create_data()
 
+        # add traces to roi_val observer
         self.roi_val.add_observer(self.full_fluo_trace)
         self.roi_val.add_observer(self.ch_fluo_trace)
+        self.elec_val.add_observer(self.elec_trace)
+        self.cell_image_val.add_observer(self.cell_image)
 
     def set_val(self, control_type, val):
         control_type.set_val(val)
@@ -106,24 +106,29 @@ if __name__ == '__main__':
         
     #model.data_container.fileinfor.print_fileinfor()
 
-
-    #print(model.data_container.imaging_data.full_frame.shape)
-    #print(model.data_container.elec_data.elec_trace.shape)
-    #print(model.data_container.elec_data.elec_trace)
-    #print(model.data_container.elec_data.elec_trace.shape)
-
+    model.set_val(model.roi_val,[5,5,1,1,1])
+    ch_trace = model.get_data(model.ch_fluo_trace)
+    c = plt.figure()
+    plt.plot(ch_trace[:,0])
     
-    model.set_val(model.cell_image_val,[0,1])
-    model.cell_image.create_data()
+    model.set_val(model.roi_val,[10,10,50,10,1])
+    ch_trace = model.get_data(model.ch_fluo_trace)
+    b = plt.figure()
+    plt.plot(ch_trace[:,0])
+    
+    model.set_val(model.elec_val, None)
+    elec = model.get_data(model.elec_trace)
+    e = plt.figure()
+    plt.plot(elec[:,1])
+    
+    model.set_val(model.cell_image_val,[0,0])
     cell = model.get_data(model.cell_image)
     d = plt.figure()
     plt.imshow(cell[:,:,0])
-
-
     
-    model.set_val(model.cell_image_val,[0,50])
+    model.set_val(model.cell_image_val,[1,1])
     cell = model.get_data(model.cell_image)
-    e = plt.figure()
+    b = plt.figure()
     plt.imshow(cell[:,:,0])
     
     """
@@ -135,6 +140,11 @@ if __name__ == '__main__':
     b = plt.figure()
     model.data_container.imaging_data.show_frame(1,0)
     
+    
+    print(model.data_container.imaging_data.full_frame.shape)
+    print(model.data_container.elec_data.elec_trace.shape)
+    print(model.data_container.elec_data.elec_trace)
+    print(model.data_container.elec_data.elec_trace.shape)
     
     e = plt.figure()
     model.cell_image.show_frame(0)
@@ -175,3 +185,4 @@ if __name__ == '__main__':
     """
     print('imshowでフィルターがかかる問題')
     print('オブジェクト指向での例外処理で変数をクリアして抜ける')
+    print('trace classとroi classにリセット関数をつけて、model interfaceに加える。その後mmodel test modelインスタンスを作った後に起動')

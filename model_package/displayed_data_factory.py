@@ -28,7 +28,7 @@ class DisplayedData(metaclass=ABCMeta):
         pass
     
     @abstractmethod
-    def update():
+    def update(self, val):
         pass
 
         
@@ -36,14 +36,13 @@ class DisplayedData(metaclass=ABCMeta):
 Concrete desplayeddata product
 """
 class FullFluoTrace(DisplayedData):
-    def __init__(self, data_container, roi_val):
+    def __init__(self, data_container):
         self.data_container = data_container
-        self.roi_val = roi_val
         self.full_fluo_trace = np.empty([0,])
 
-    def create_data(self):
+    def create_data(self, roi_val):
         print('This is a full fluo trace.')
-        roi_xy_infor = self.roi_val.get_data()  # [x, y, x_length, y_length, roi_num]
+        roi_xy_infor = roi_val.get_data()  # [x, y, x_length, y_length, roi_num]
         frame = self.data_container.imaging_data.full_frame
         
         self.full_fluo_trace = FluoTraceCreator.fluo_trace_creator(
@@ -57,8 +56,8 @@ class FullFluoTrace(DisplayedData):
     def mod_data(self):
         pass
     
-    def update(self):
-        self.create_data()
+    def update(self, roi_val):
+        self.create_data(roi_val)
     
     def print_trace(self):
         print(self.full_fluo_trace)
@@ -68,14 +67,13 @@ class FullFluoTrace(DisplayedData):
     
     
 class ChFluoTrace(DisplayedData):
-    def __init__(self, data_container, roi_val):
+    def __init__(self, data_container):
         self.data_container = data_container
-        self.roi_val = roi_val
         self.ch_fluo_trace = np.empty([0, 0])
 
-    def create_data(self):
+    def create_data(self, roi_val):
         print('This is a ch fluo trace.')
-        roi_xy_infor = self.roi_val.get_data()  # [x, y, x_length, y_length, roi_num]
+        roi_xy_infor = roi_val.get_data()  # [x, y, x_length, y_length, roi_num]
         num_fluo_ch = self.data_container.fileinfor.num_fluo_ch
         num_frame = self.data_container.fileinfor.num_frame//num_fluo_ch
         
@@ -92,8 +90,8 @@ class ChFluoTrace(DisplayedData):
     def mod_data(self):
         pass
     
-    def update():
-        pass
+    def update(self, roi_val):
+        self.create_data(roi_val)
     
     def plot_trace(self, ch):
         plt.plot(self.ch_fluo_trace[:, ch])
@@ -104,7 +102,7 @@ class ElecTrace(DisplayedData):
         self.data_container = data_container
         self.elec_trace = np.empty([0,])
 
-    def create_data(self):
+    def create_data(self, elec_val):
         print('This is a elec trace.')
         self.elec_trace = self.data_container.elec_data.elec_trace
 
@@ -114,8 +112,8 @@ class ElecTrace(DisplayedData):
     def mod_data(sel):
         pass
     
-    def update():
-        pass
+    def update(self, elec_val):
+        self.create_data(elec_val)
     
     def plot_trace(self, ch):
         fig = plt.figure()
@@ -125,20 +123,19 @@ class ElecTrace(DisplayedData):
 
 
 class CellImage(DisplayedData):
-    def __init__(self, data_container, cell_image_val):
+    def __init__(self, data_container):
         self.data_container = data_container
-        self.cell_image_val = cell_image_val
         
         pixel = data_container.fileinfor.data_pixel
         num_ch = data_container.fileinfor.num_fluo_ch
         self.cell_image_data = np.empty([pixel[0],pixel[1],num_ch])
         print('This is a cell image.')
 
-    def create_data(self):
+    def create_data(self, cell_image_val):
         print('Create a cell image.')
         frame = self.data_container.imaging_data.ch_frame
         num_ch = self.data_container.fileinfor.num_fluo_ch
-        frame_num = self.cell_image_val.get_data()
+        frame_num = cell_image_val.get_data()
         
         if frame_num[1] - frame_num[0] == 0:
             for i in range(num_ch):
@@ -158,8 +155,8 @@ class CellImage(DisplayedData):
     def mod_data(sel):
         pass
     
-    def update():
-        pass
+    def update(self, cell_image_val):
+        self.create_data(cell_image_val)
 
     def show_frame(self, ch):
             plt.imshow(self.cell_image_data[:, :, ch])
