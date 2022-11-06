@@ -26,30 +26,39 @@ class DisplayedData(metaclass=ABCMeta):
     @abstractmethod
     def mod_data(self):
         pass
-
+    
+    @abstractmethod
+    def update():
+        pass
 
         
 """
 Concrete desplayeddata product
 """
 class FullFluoTrace(DisplayedData):
-    def __init__(self):
-        self.full_fluo_trace = np.empty(0)
-        
-    def create_data(self, data_container, roi_val):
-        print('this is a full fluo trace')
-        roi_xy_infor = roi_val.get_data()  # [x, y, x_length, y_length, roi_num]
-        frame = data_container.imaging_data.full_frame
+    def __init__(self, data_container, roi_val):
+        self.data_container = data_container
+        self.roi_val = roi_val
+        self.full_fluo_trace = np.empty([0,])
+
+    def create_data(self):
+        print('This is a full fluo trace.')
+        roi_xy_infor = self.roi_val.get_data()  # [x, y, x_length, y_length, roi_num]
+        frame = self.data_container.imaging_data.full_frame
         
         self.full_fluo_trace = FluoTraceCreator.fluo_trace_creator(
             frame, roi_xy_infor)
         #return self.full_fluo_trace
         
     def get_data(self):
+        print('Get full fluo trace.')
         return self.full_fluo_trace
 
     def mod_data(self):
         pass
+    
+    def update(self):
+        self.create_data()
     
     def print_trace(self):
         print(self.full_fluo_trace)
@@ -59,27 +68,31 @@ class FullFluoTrace(DisplayedData):
     
     
 class ChFluoTrace(DisplayedData):
-    def __init__(self):
+    def __init__(self, data_container, roi_val):
+        self.data_container = data_container
+        self.roi_val = roi_val
         self.ch_fluo_trace = np.empty([0, 0])
 
-    def create_data(self, data_container, roi_val):
-        print('this is ch fluo trace')
-        roi_xy_infor = roi_val.get_data()  # [x, y, x_length, y_length, roi_num]
-        num_fluo_ch = data_container.fileinfor.num_fluo_ch
-        num_frame = data_container.fileinfor.num_frame//num_fluo_ch
+    def create_data(self):
+        print('This is a ch fluo trace.')
+        roi_xy_infor = self.roi_val.get_data()  # [x, y, x_length, y_length, roi_num]
+        num_fluo_ch = self.data_container.fileinfor.num_fluo_ch
+        num_frame = self.data_container.fileinfor.num_frame//num_fluo_ch
         
-        frame = data_container.imaging_data.ch_frame
+        frame = self.data_container.imaging_data.ch_frame
         self.ch_fluo_trace = np.empty([num_frame, num_fluo_ch])
         
-        for i in range(data_container.fileinfor.num_fluo_ch):
+        for i in range(self.data_container.fileinfor.num_fluo_ch):
             trace = FluoTraceCreator.fluo_trace_creator(frame[:,:,:,i], roi_xy_infor)
             self.ch_fluo_trace[:,i] = trace
         
-
     def get_data(self):
         return self.ch_fluo_trace
 
     def mod_data(self):
+        pass
+    
+    def update():
         pass
     
     def plot_trace(self, ch):
@@ -88,15 +101,20 @@ class ChFluoTrace(DisplayedData):
 
 class ElecTrace(DisplayedData):
     def __init__(self, data_container):
-        self.create_data(data_container)
+        self.data_container = data_container
+        self.elec_trace = np.empty([0,])
 
-    def create_data(self, data_container):
-        self.elec_trace = data_container.elec_data.elec_trace
+    def create_data(self):
+        print('This is a elec trace.')
+        self.elec_trace = self.data_container.elec_data.elec_trace
 
     def get_data(self):
         return self.elec_trace
 
     def mod_data(sel):
+        pass
+    
+    def update():
         pass
     
     def plot_trace(self, ch):
@@ -107,35 +125,44 @@ class ElecTrace(DisplayedData):
 
 
 class CellImage(DisplayedData):
-    def __init__(self, data_container, CellImageVal):
+    def __init__(self, data_container, cell_image_val):
+        self.data_container = data_container
+        self.cell_image_val = cell_image_val
+        
         pixel = data_container.fileinfor.data_pixel
         num_ch = data_container.fileinfor.num_fluo_ch
-        self.cell_image = np.empty([pixel[0],pixel[1],num_ch])
-        
-        self.create_data(data_container, CellImageVal)
+        self.cell_image_data = np.empty([pixel[0],pixel[1],num_ch])
+        print('This is a cell image.')
 
-    def create_data(self, data_container, CellImageVal):
-        print('this is a cell image')
-        frame = data_container.imaging_data.ch_frame
-        num_ch = data_container.fileinfor.num_fluo_ch
-        frame_num = CellImageVal.get_data()
+    def create_data(self):
+        print('Create a cell image.')
+        frame = self.data_container.imaging_data.ch_frame
+        num_ch = self.data_container.fileinfor.num_fluo_ch
+        frame_num = self.cell_image_val.get_data()
         
         if frame_num[1] - frame_num[0] == 0:
             for i in range(num_ch):
-                self.cell_image[:, :, i] = frame[:, :, frame_num[0], i]
+                self.cell_image_data[:, :, i] = frame[:, :, frame_num[0], i]
                 
         elif frame_num[1] - frame_num[0] > 0: 
             for i in range(num_ch):
-                self.cell_image[:, :, i] = np.mean(frame[:, :, frame_num[0]:frame_num[1], i], axis = 2)
+                self.cell_image_data[:, :, i] = np.mean(frame[:, :, frame_num[0]:frame_num[1], i], axis = 2)
+                
+        else:
+            print("The start frame shoud be less than the end frame.")
+            self.cell_image_data = None
         
     def get_data(self):
-        return self.cell.image
+        return self.cell_image_data
 
     def mod_data(sel):
         pass
+    
+    def update():
+        pass
 
     def show_frame(self, ch):
-            plt.imshow(self.cell_image[:, :, ch])
+            plt.imshow(self.cell_image_data[:, :, ch])
 
     
 class DifImage(DisplayedData):
@@ -143,12 +170,15 @@ class DifImage(DisplayedData):
         self.original_fluo_frame = original_fluo_frame
 
     def create_data(self):
-        print('this is a cell image')
+        print('This is a cell image.')
         
     def get_data(self):
         pass
 
     def mod_data(sel):
+        pass
+    
+    def update():
         pass
 
 """

@@ -27,7 +27,7 @@ class ModelInterface(metaclass=ABCMeta):
         pass
     
     @abstractmethod
-    def request_data(self, data_type):
+    def get_data(self, data_type):
         pass
     
 
@@ -37,33 +37,41 @@ class Model(ModelInterface):
         self.filepath = 'no path'
         self.data_container = None
         self.roi = 0
+        self.cell_image_val = 0
         
         self.control_type = 0
-        
+        print('Imported a model class.')
+
     def create_model(self, filename, filepath):
         self.data_container = DataContainer(filename, filepath)
+        
         if self.data_container is None:
-            print('no file')
-            return
+            print('No file')
+            return None
+        
+        # for control valiables
         self.roi_val = RoiVal()
         self.cell_image_val = CellImageVal()
-        self.full_fluo_trace = FullFluoTrace()
-        self.full_fluo_trace.create_data(self.data_container, self.roi_val)
-        self.ch_fluo_trace = ChFluoTrace()
-        self.ch_fluo_trace.create_data(self.data_container, self.roi_val)
-
+        
+        # for displayed data
+        self.full_fluo_trace = FullFluoTrace(self.data_container, self.roi_val)
+        self.ch_fluo_trace = ChFluoTrace(self.data_container, self.roi_val)
         self.elec_trace = ElecTrace(self.data_container)
-        self.cell_image = CellImage(self.data_container, self.roi_val)
-        #self.dif_image = np.array(0)
-        print('imported model')
+        self.cell_image = CellImage(self.data_container, self.cell_image_val)
+        
+        self.full_fluo_trace.create_data()
+        self.ch_fluo_trace.create_data()
+        self.elec_trace.create_data()
+        self.cell_image.create_data()
+
+        self.roi_val.add_observer(self.full_fluo_trace)
+        self.roi_val.add_observer(self.ch_fluo_trace)
 
     def set_val(self, control_type, val):
         control_type.set_val(val)
-        print('sent val = ' + str(val))
 
-    def request_data(self, data_type):
-        data_type.get_data()
-        print('Request received')
+    def get_data(self, data_type):
+        return data_type.get_data()
 
 
 class DataContainer:
@@ -71,7 +79,7 @@ class DataContainer:
         self.filename = filename
         self.filepath = filepath
         
-        print('imported Data Container')
+        print('Imported a data container class.')
         
         if filename.find('.tsm') > 0:
             factory_type = TsmDataFactory()
@@ -85,7 +93,6 @@ class DataContainer:
         self.fileinfor = factory_type.create_fileinfor(self.filename, self.filepath)
         self.imaging_data = factory_type.create_imaging_data(self.fileinfor)
         self.elec_data = factory_type.create_elec_data(self.fileinfor)
-        
 
 
 if __name__ == '__main__':
@@ -100,11 +107,26 @@ if __name__ == '__main__':
     #model.data_container.fileinfor.print_fileinfor()
 
 
-    print(model.data_container.imaging_data.full_frame.shape)
+    #print(model.data_container.imaging_data.full_frame.shape)
     #print(model.data_container.elec_data.elec_trace.shape)
     #print(model.data_container.elec_data.elec_trace)
     #print(model.data_container.elec_data.elec_trace.shape)
+
     
+    model.set_val(model.cell_image_val,[0,1])
+    model.cell_image.create_data()
+    cell = model.get_data(model.cell_image)
+    d = plt.figure()
+    plt.imshow(cell[:,:,0])
+
+
+    
+    model.set_val(model.cell_image_val,[0,50])
+    cell = model.get_data(model.cell_image)
+    e = plt.figure()
+    plt.imshow(cell[:,:,0])
+    
+    """
     val = [10,10,50,50,1]
     model.set_val(model.roi_val, val)
     model.ch_fluo_trace.create_data
@@ -112,12 +134,8 @@ if __name__ == '__main__':
     model.data_container.elec_data.plot_elec_data(0)
     b = plt.figure()
     model.data_container.imaging_data.show_frame(1,0)
-    #model.request_data('full_fluo_trace')
-    #model.request_data('ch_fluo_trace')
-    c = plt.figure()
-    model.ch_fluo_trace.plot_trace(0)
-    d = plt.figure()
-    model.elec_trace.plot_trace(0)
+    
+    
     e = plt.figure()
     model.cell_image.show_frame(0)
     
@@ -131,8 +149,21 @@ if __name__ == '__main__':
     model.set_val(model.roi_val, val)
     print(model.roi_val.get_data())
     
-    a = model.request_data(ChFluoTrace())
-    print(a)
+        
+    model.set_val(model.roi_val,[5,5,1,1,1])
+    ch_trace = model.get_data(model.ch_fluo_trace)
+    a = plt.figure()
+    plt.plot(ch_trace[:,0])
+    
+    model.set_val(model.roi_val,[10,10,50,50,1])
+    model.ch_fluo_trace.create_data()
+    ch_trace = model.get_data(model.ch_fluo_trace)
+    b = plt.figure()
+    plt.plot(ch_trace[:,0])
+    
+    electrace = model.get_data(model.elec_trace)
+    c = plt.figure()
+    plt.plot(electrace[:,1])
     
     #final code
     #model.set_val(roi_cval, [10, 10, 2, 2, 1])  # (x, y, x_length, y_lentch, roi#)
@@ -140,6 +171,7 @@ if __name__ == '__main__':
     #traces change data by myself
     
     #model.get_data(ch_fluo_trace)
-    #send to view
-model.request_dataが空になる
-ch_fluo_trace.create_dataに引数を持たせてはいけない。自身で更新
+
+    """
+    print('imshowでフィルターがかかる問題')
+    print('オブジェクト指向での例外処理で変数をクリアして抜ける')

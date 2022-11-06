@@ -118,8 +118,6 @@ class TsmFileInfor(FileInfor):
         
         self.read_fileinfor()
 
-        print('imported file infor')
-
     def read_fileinfor(self):
         try:
             with open(self.full_filename, 'rb') as f:
@@ -158,8 +156,12 @@ class TsmFileInfor(FileInfor):
                 self.ch_framesize = np.append(self.data_pixel, 
                                               self.num_frame//self.num_fluo_ch)
 
-        except OSError as e:
-            print(e)
+        except OSError as file_infor_error:
+            print(file_infor_error)
+            print('Failed to import a TMS file infor.')
+            
+        else:
+            print('Imported a TSM file infor class.')
                 
     def print_fileinfor(self):
         print(self.header.decode())
@@ -179,25 +181,25 @@ class TsmFileInfor(FileInfor):
 class TsmImagingData(ImagingData):
     def __init__(self, fileinfor):
         super().__init__(fileinfor)
+        self.fileinfor = fileinfor
         
         self.full_frame = 0
         self.ch_frame = 0
         self.dark_frame = 0
 
         self.read_imaging_data()
-        self.ch_frame = FrameSpliter.split_frame(self.full_frame, fileinfor.num_fluo_ch)
-        
 
     def read_imaging_data(self):
         try:
+            # read shirt camera header information
             # https://fits.gsfc.nasa.gov/fits_primer.html
             file_dtype = np.int16
             path = self.fileinfor.full_filename
             frame_count = (self.fileinfor.data_pixel[0] *
-                          self.fileinfor.data_pixel[1] *
-                          self.fileinfor.num_frame) + (
-                              self.fileinfor.data_pixel[0] *
-                              self.fileinfor.data_pixel[1])
+                           self.fileinfor.data_pixel[1] *
+                           self.fileinfor.num_frame) + (
+                           self.fileinfor.data_pixel[0] *
+                           self.fileinfor.data_pixel[1])
 
             full_with_dark_frame = np.fromfile(path, dtype=file_dtype,
                                           count=frame_count,
@@ -211,8 +213,14 @@ class TsmImagingData(ImagingData):
             self.dark_frame = full_with_dark_frame[:, :, -1]
             self.full_frame = self.full_frame - self.dark_frame[:, :, np.newaxis]
             
-        except OSError as e:
-            print(e)
+            self.ch_frame = FrameSpliter.split_frame(self.full_frame, self.fileinfor.num_fluo_ch)
+            
+        except IndexError as tsm_error:
+            print(tsm_error)
+            print('Failed to import a TMS imaging data.')
+            
+        else:
+            print('Imported a TSM imaging data class.')
         
     def show_frame(self, ch, frame):
         if ch == -1:
@@ -223,8 +231,6 @@ class TsmImagingData(ImagingData):
             plt.imshow(self.ch_frame[:, :, frame, 0])
         elif ch == 2:
             plt.imshow(self.ch_frame[:, :, frame, 1])
-        elif ch == 3:
-            plt.imshow(self.ch_frame[:, :, frame, 2])
             
     def print_frame(self):
         #np.set_printoptions(threshold=np.inf)
@@ -265,6 +271,10 @@ class TbnElecData(ElecData):
 
         except OSError as e:
             print(e)
+            print('Failed to import a TSM (.tbn) file')
+            
+        else:
+            print('Imported a TSM(.tbn) elec data file.')
 
     
     def plot_elec_data(self, elec_ch):
