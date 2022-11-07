@@ -23,6 +23,10 @@ class ControlVal(metaclass=ABCMeta):
     @abstractmethod
     def print_val(self):
         pass
+    
+    @abstractmethod
+    def reset(self):
+        pass
 
     @abstractmethod
     def add_observer(self, observer):
@@ -62,6 +66,9 @@ class RoiVal(ControlVal):
                 self.__x_length,
                 self.__y_length,
                 self.__roi_num]
+    
+    def reset(self):
+        pass
         
     def create_roi(self, x):
         pass
@@ -77,8 +84,7 @@ class RoiVal(ControlVal):
     
     def notify_observer(self):
         for observer_name in self.__observers:
-            observer_name.update(self)
-            print('Notification')
+            observer_name.update()
     
     def print_val(self):
         print('set val = ' +
@@ -99,6 +105,9 @@ class ElecVal(ControlVal):
     def get_data(self):
         pass
     
+    def reset(self):
+        pass
+    
     def add_observer(self, observer):
         self.__observers.append(observer)
         
@@ -107,8 +116,7 @@ class ElecVal(ControlVal):
     
     def notify_observer(self):
         for observer_name in self.__observers:
-            observer_name.update(self)
-            print('Notification')
+            observer_name.update()
     
     def print_val(self):
         pass
@@ -130,6 +138,9 @@ class CellImageVal(ControlVal):
         return [self.__frame_start,
                 self.__frame_end]
     
+    def reset(self):
+        pass
+    
     def add_observer(self, observer):
         self.__observers.append(observer)
         
@@ -138,8 +149,7 @@ class CellImageVal(ControlVal):
     
     def notify_observer(self):
         for observer_name in self.__observers:
-            observer_name.update(self)
-            print('Notification')
+            observer_name.update()
 
     def print_val(self):
         print('cell image val = ' +
@@ -166,6 +176,9 @@ class DifImageVal():
                 self.__dif_df, 
                 self.__dif_base_length, 
                 self.__dif_df_length]
+    
+    def reset(self):
+        pass
 
     def print_val(self):
         print('dif image val = ' +
@@ -185,6 +198,9 @@ class ModVal():
         
     def get_data(self) -> list:
         return self.__mod_list
+    
+    def reset(self):
+        pass
             
     def print_val(self):
         pass
@@ -200,6 +216,9 @@ class SpacialAveVal():
 
     def get_data(self):
         return self.__spacial_filter
+    
+    def reset(self):
+        pass
 
     def print_val(self):
         pass

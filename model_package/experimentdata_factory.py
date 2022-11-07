@@ -58,7 +58,6 @@ class ElecData(metaclass=ABCMeta):
         pass
 
 
-
 """
 Concrete experimentdata factory
 """
@@ -89,6 +88,7 @@ class DaDataFactory(ExperimentDataFactory):
     def create_cell_image(self, fileinfor):
         pass
 
+
 """
 Concrete experimentdata product
 """
@@ -106,9 +106,10 @@ class TsmFileInfor(FileInfor):
         self.full_frame_interval = 0  # (ms)
         self.ch_frame_interval = 0  # (ms)
         self.data_pixel = np.empty([0,0])
-        self.num_frame = np.empty([0,])
-        self.full_framesize = 0
-        self.ch_framesize = 0
+        self.num_full_frame = np.empty([0,])
+        self.num_ch_frame = np.empty([0,])
+        self.full_3D_size = 0
+        self.ch_3D_size = 0
 
         # about elec
         self.bnc_ratio = 0
@@ -140,8 +141,9 @@ class TsmFileInfor(FileInfor):
                 
                 # z: number of frames
                 index = str_header.find('NAXIS3')
-                str_num_frame = str_header[index+10:index+30]
-                self.num_frame = np.array(int(str_num_frame))
+                str_num_full_frame = str_header[index+10:index+30]
+                self.num_full_frame = np.array(int(str_num_full_frame))
+                self.num_ch_frame = self.num_full_frame // self.num_fluo_ch
                 
                 # frame interval
                 index = str_header.find('EXPOSURE')
@@ -151,10 +153,10 @@ class TsmFileInfor(FileInfor):
                 self.ch_frame_interval = self.full_frame_interval*self.num_fluo_ch
                 
                 # frame size
-                self.full_framesize = np.append(self.data_pixel, 
-                                                self.num_frame)
-                self.ch_framesize = np.append(self.data_pixel, 
-                                              self.num_frame//self.num_fluo_ch)
+                self.full_3D_size = np.append(self.data_pixel, 
+                                                self.num_full_frame)
+                self.ch_3D_size = np.append(self.data_pixel, 
+                                              self.num_full_frame//self.num_fluo_ch)
 
         except OSError as file_infor_error:
             print(file_infor_error)
@@ -170,11 +172,15 @@ class TsmFileInfor(FileInfor):
         print('num_fluo_ch = ' + str(self.num_fluo_ch))
         print('full_frame_interval = ' + str(self.full_frame_interval))
         print('ch_frame_interval = ' + str(self.ch_frame_interval))
-        print('num_frame = ' + str(self.num_frame))
+        print('num_full_frame = ' + str(self.num_full_frame))
+        print('num_ch_frame = ' + str(self.num_ch_frame))
+        print('full_3D_size = ' + str(self.full_3D_size))
+        print('ch_3D_size = ' + str(self.ch_3D_size))
+        
         print('data_pixel = ' + str(self.data_pixel))
         print('bnc_ratio = ' + str(self.bnc_ratio))
         print('num_elec_ch = ' + str(self.num_elec_ch))
-        print('elec+interval = ' + str(self.elec_interval))
+        print('elec_interval = ' + str(self.elec_interval))
         print('num_elec_data = ' + str(self.num_elec_data))
 
 
@@ -197,14 +203,14 @@ class TsmImagingData(ImagingData):
             path = self.fileinfor.full_filename
             frame_count = (self.fileinfor.data_pixel[0] *
                            self.fileinfor.data_pixel[1] *
-                           self.fileinfor.num_frame) + (
+                           self.fileinfor.num_full_frame) + (
                            self.fileinfor.data_pixel[0] *
                            self.fileinfor.data_pixel[1])
 
             full_with_dark_frame = np.fromfile(path, dtype=file_dtype,
                                           count=frame_count,
                                             offset=2880)
-            full_dark_framesize = tuple(self.fileinfor.full_framesize + [0, 0, 1] )  #including dark frame
+            full_dark_framesize = tuple(self.fileinfor.full_3D_size + [0, 0, 1] )  #including dark frame
             full_with_dark_frame = full_with_dark_frame.reshape(full_dark_framesize,
                                                                 order = 'F')
             full_with_dark_frame = np.rot90(full_with_dark_frame, 3)
@@ -234,8 +240,8 @@ class TsmImagingData(ImagingData):
             
     def print_frame(self):
         #np.set_printoptions(threshold=np.inf)
-        print(self.fileinfor.full_framesize)
-        print(self.fileinfor.ch_framesize)
+        print(self.fileinfor.full_3D_size)
+        print(self.fileinfor.ch_3D_size)
         print(self.ch1_frame.shape)
         print(self.ch2_frame.shape)
         #np.set_printoptions(threshold=1000)
@@ -261,7 +267,7 @@ class TbnElecData(ElecData):
             self.fileinfor.elec_interval = \
             self.fileinfor.full_frame_interval/self.fileinfor.bnc_ratio
             self.fileinfor.num_elec_data = \
-            self.fileinfor.num_frame * self.fileinfor.bnc_ratio
+            self.fileinfor.num_full_frame * self.fileinfor.bnc_ratio
             
             # read elec data
             raw_elec = np.fromfile(elec_full_filename, np.float64, offset=4)
@@ -276,7 +282,6 @@ class TbnElecData(ElecData):
         else:
             print('Imported a TSM(.tbn) elec data file.')
 
-    
     def plot_elec_data(self, elec_ch):
         plt.plot(self.elec_trace[:, elec_ch])
         

@@ -31,7 +31,11 @@ class ModelInterface(metaclass=ABCMeta):
     def get_data(self, data_type):
         pass
     
-
+    @abstractmethod
+    def get_object(self, data_type):
+        pass
+    
+    
 class Model(ModelInterface):
     def __init__(self):
         self.filename = 'no file'
@@ -50,17 +54,17 @@ class Model(ModelInterface):
             print('No file')
             return None
         
-        # for displayed data
-        self.full_fluo_trace = FullFluoTrace(self.data_container)
-        self.ch_fluo_trace = ChFluoTrace(self.data_container)
-        self.elec_trace = ElecTrace(self.data_container)
-        self.cell_image = CellImage(self.data_container)
-        
         # for control valiables
         self.roi_val = RoiVal()
         self.elec_val = ElecVal()
         self.cell_image_val = CellImageVal()
-
+        
+        # for displayed data
+        self.full_fluo_trace = FullFluoTrace(self.data_container, self.roi_val)
+        self.ch_fluo_trace = ChFluoTrace(self.data_container, self.roi_val)
+        self.elec_trace = ElecTrace(self.data_container, self.elec_val)
+        self.cell_image = CellImage(self.data_container, self.cell_image_val)
+        
         # add traces to roi_val observer
         self.roi_val.add_observer(self.full_fluo_trace)
         self.roi_val.add_observer(self.ch_fluo_trace)
@@ -72,6 +76,9 @@ class Model(ModelInterface):
 
     def get_data(self, data_type):
         return data_type.get_data()
+    
+    def get_object(self, data_type):
+        return data_type.get_object()
 
 
 class DataContainer:
@@ -97,7 +104,9 @@ class DataContainer:
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    import numpy as np
+    import time
+    import copy
+
     
     filename = '20408A001.tsm'
     filepath = 'E:\\Data\\2022\\220408\\'
@@ -107,34 +116,37 @@ if __name__ == '__main__':
         
     model.data_container.fileinfor.print_fileinfor()
 
+    fig, ax = plt.subplots()
+
+
     model.set_val(model.roi_val,[5,5,1,1,1])
-    ch_trace = model.get_data(model.ch_fluo_trace)
-    c = plt.figure()
-    plt.plot(ch_trace[:,0])
+    ch_trace1 =copy.deepcopy(model.get_object(model.ch_fluo_trace))
+
+
+
+    model.set_val(model.roi_val,[5,5,50,50,1])
+    ch_trace2 = model.get_object(model.ch_fluo_trace)
+        
+    ax.plot(ch_trace1.ch_fluo_time, ch_trace1.ch_fluo_trace[:,0], color='blue')
+
+    ax.plot(ch_trace2.ch_fluo_time, ch_trace2.ch_fluo_trace[:,0], color='red')
+    #ax.plot(ch_trace1.ch_fluo_time, ch_trace2.ch_fluo_trace[:,0], color='red')
+
+
     
-    model.set_val(model.roi_val,[10,10,50,10,1])
-    ch_trace = model.get_data(model.ch_fluo_trace)
-    b = plt.figure()
-    plt.plot(ch_trace[:,0])
-    
+   
+    """
+        
     model.set_val(model.elec_val, None)
     elec = model.get_data(model.elec_trace)
     e = plt.figure()
     plt.plot(elec[:,1])
-    
 
-
-    model.set_val(model.cell_image_val,[0,0])
-    cell = model.get_data(model.cell_image)
+    model.set_val(model.cell_image_val,[0,99])
+    cell = model.get_object(model.cell_image)
     d = plt.figure()
-    plt.imshow(cell[:,:,0], cmap='gray', interpolation='none')
+    plt.imshow(cell.cell_image_data[:,:,1], cmap='gray', interpolation='none')
     
-    model.set_val(model.cell_image_val,[0,0])
-    cell = model.get_data(model.cell_image)
-    b = plt.figure()
-    plt.imshow(cell[:,:,1], cmap='gray', interpolation='none')
-    
-    """
     val = [10,10,50,50,1]
     model.set_val(model.roi_val, val)
     model.ch_fluo_trace.create_data
@@ -186,6 +198,6 @@ if __name__ == '__main__':
     #model.get_data(ch_fluo_trace)
 
     """
-    print('imshowでフィルターがかかる問題')
+    print('複数の動的インスタンスの作り方')
     print('オブジェクト指向での例外処理で変数をクリアして抜ける')
     print('trace classとroi classにリセット関数をつけて、model interfaceに加える。その後mmodel test modelインスタンスを作った後に起動')
