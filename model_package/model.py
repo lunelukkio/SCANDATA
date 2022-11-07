@@ -97,6 +97,7 @@ class DataContainer:
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
+    import numpy as np
     
     filename = '20408A001.tsm'
     filepath = 'E:\\Data\\2022\\220408\\'
@@ -104,7 +105,7 @@ if __name__ == '__main__':
     model= Model()
     model.create_model(filename, filepath)
         
-    #model.data_container.fileinfor.print_fileinfor()
+    model.data_container.fileinfor.print_fileinfor()
 
     model.set_val(model.roi_val,[5,5,1,1,1])
     ch_trace = model.get_data(model.ch_fluo_trace)
@@ -121,15 +122,17 @@ if __name__ == '__main__':
     e = plt.figure()
     plt.plot(elec[:,1])
     
+
+
     model.set_val(model.cell_image_val,[0,0])
     cell = model.get_data(model.cell_image)
     d = plt.figure()
-    plt.imshow(cell[:,:,0])
+    plt.imshow(cell[:,:,0], cmap='gray', interpolation='none')
     
-    model.set_val(model.cell_image_val,[1,1])
+    model.set_val(model.cell_image_val,[0,0])
     cell = model.get_data(model.cell_image)
     b = plt.figure()
-    plt.imshow(cell[:,:,0])
+    plt.imshow(cell[:,:,1], cmap='gray', interpolation='none')
     
     """
     val = [10,10,50,50,1]

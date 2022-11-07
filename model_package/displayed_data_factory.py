@@ -144,6 +144,7 @@ class CellImage(DisplayedData):
         elif frame_num[1] - frame_num[0] > 0: 
             for i in range(num_ch):
                 self.cell_image_data[:, :, i] = np.mean(frame[:, :, frame_num[0]:frame_num[1], i], axis = 2)
+
                 
         else:
             print("The start frame shoud be less than the end frame.")
