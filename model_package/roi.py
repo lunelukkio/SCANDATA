@@ -89,8 +89,8 @@ class RoiVal(ControlVal):
     def print_val(self):
         print('set val = ' +
               str(self.__x) + ' ,' +
-              str(self.__x_length) + ' ,' +
               str(self.__y) + ' ,' +
+              str(self.__x_length) + ' ,' +
               str(self.__y_length) + ' ,' +
               str(self.__roi_num))
 

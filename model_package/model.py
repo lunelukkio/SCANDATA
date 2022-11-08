@@ -117,36 +117,36 @@ if __name__ == '__main__':
     filename = '20408B002.tsm'
     filepath = 'E:\\Data\\2022\\220408\\'
     #filepath = 'C:\\Users\\lulul\\マイドライブ\\Programing\\Python\\220408\\'
-    model= Model()
-    model.create_model(filename, filepath)
-        
-    #model.data_container.fileinfor.print_fileinfor()
+    model = []
+    model.append(Model())
+    model.append(Model())
+    model[0].create_model(filename, filepath)
+    model[1].create_model(filename, filepath)
+    #model[0].data_container.fileinfor.print_fileinfor()
 
-
-    model.set_val(model.cell_image_val,[0,0])
-    cell = model.get_object(model.cell_image)
+    
+    model[0].set_val(model[0].cell_image_val,[0,0])
+    cell = model[0].get_object(model[0].cell_image)
     d = plt.figure()
     plt.imshow(cell.cell_image_data[:,:,0], cmap='gray', interpolation='none')
 
     fig, ax = plt.subplots()
 
 
-    model.set_val(model.roi_val,[34,34,3,3,1])
-    ch_trace1 =copy.deepcopy(model.get_object(model.ch_fluo_trace))
+    model[0].set_val(model[0].roi_val,[34,34,3,3,1])
+    ch_trace1 =copy.deepcopy(model[0].get_object(model[0].ch_fluo_trace))
 
-    model.set_val(model.roi_val,[30,30,10,10,1])
-    model.set_val(model.bg_roi_val,[400,40,90,9,1])
-    ch_trace2 = model.get_object(model.ch_fluo_trace)
-    bg_ch_trace = model.get_object(model.bg_ch_fluo_trace)
+    model[0].set_val(model[0].roi_val,[30,30,10,10,1])
+    model[0].set_val(model[0].bg_roi_val,[40,40,9,9,1])
+    ch_trace2 = model[0].get_object(model[0].ch_fluo_trace)
+    bg_ch_trace = model[0].get_object(model[0].bg_ch_fluo_trace)
     
     ax.plot(ch_trace1.ch_fluo_time, ch_trace1.ch_fluo_trace[:,0], color='blue')
 
     ax.plot(ch_trace2.ch_fluo_time, ch_trace2.ch_fluo_trace[:,0], color='red')
     ax.plot(bg_ch_trace.ch_fluo_time, bg_ch_trace.ch_fluo_trace[:,0], color='green')
-
-
-
-    
+    model[0].roi_val.print_val()
+    model[1].roi_val.print_val()
    
     """
         
@@ -213,5 +213,4 @@ if __name__ == '__main__':
     """
     print('複数の動的インスタンスの作り方')
     print('オブジェクト指向での例外処理で変数をクリアして抜ける')
-    print('FluoTraceCreator　クラス　の例外処理')
     print('trace classとroi classにリセット関数をつけて、model interfaceに加える。その後mmodel test modelインスタンスを作った後に起動')

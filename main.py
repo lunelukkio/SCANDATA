@@ -12,21 +12,21 @@ from controller_package.controller import Controller
 class Main:
     def __init__(self):
         print('start the program')
-
-
-        self.scandata_model = Model()
-        self.scandata_view = View()
-        self.scandata_controller = Controller()
         
-        self.scandata_view.model = self.scan_model
-        self.scandata_view.controller = self.scandata_controller
+        # Make instance of a model, a view and a controller
+        self.model = Model()
+        self.view = View()
+        self.controller = Controller()
         
-        self.scandata_controller.model = self.scandata_model
-        self.scandata_controller.view = self.scandata_view
-
+        # The view knows model and controller .
+        self.view.model = self.model
+        self.view.controller = self.controller
         
+        # The controller knows model and view. 
+        self.controller.model = self.model
+        self.controller.view = self.view
         
-        print('SCANDATA End')
+        self.view.start_gui()
 
 
 if __name__ == '__main__':

@@ -71,7 +71,7 @@ class FullFluoTrace(DisplayedData):
         return self
 
     def mod_data(self):
-        pass
+        raise NotImplementedError
     
     def update(self, roi_val):
         self.create_data(roi_val)
@@ -119,7 +119,7 @@ class ChFluoTrace(DisplayedData):
         return self
 
     def mod_data(self):
-        pass
+        raise NotImplementedError
     
     def update(self, roi_val):
         self.create_data(roi_val)
@@ -145,7 +145,7 @@ class ElecTrace(DisplayedData):
         return self
 
     def mod_data(sel):
-        pass
+        raise NotImplementedError
     
     def update(self, elec_val):
         self.create_data(elec_val)
@@ -191,7 +191,7 @@ class CellImage(DisplayedData):
         return self
 
     def mod_data(sel):
-        pass
+        raise NotImplementedError
     
     def update(self, cell_image_val):
         self.create_data(cell_image_val)
@@ -209,17 +209,17 @@ class DifImage(DisplayedData):
         print('Dif cell image.')
         
     def get_data(self):
-        pass
+        raise NotImplementedError
     
     def get_object(self):
         return self
 
     def mod_data(sel):
-        pass
+        raise NotImplementedError
     
     def update():
-        pass
-
+        raise NotImplementedError
+        
 
 """
 common class
@@ -233,5 +233,13 @@ class FluoTraceCreator:
         y_length = roi_val[3]
         mean_data = np.mean(frame[x:x+x_length, y:y+y_length, :], axis = 0)
         mean_data = np.mean(mean_data, axis = 0)
+        
+        check_val = np.isnan(mean_data[0])
+        
+        if check_val == True:
+            mean_data = 0
+            print('------------------------')
+            print('Out of range')
+            print('------------------------')
         
         return mean_data

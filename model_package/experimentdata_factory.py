@@ -160,7 +160,9 @@ class TsmFileInfor(FileInfor):
 
         except OSError as file_infor_error:
             print(file_infor_error)
+            print('----------------------------------')
             print('Failed to import a TMS file infor.')
+            print('----------------------------------')
             
         else:
             print('Imported a TSM file infor class.')
@@ -223,7 +225,9 @@ class TsmImagingData(ImagingData):
             
         except IndexError as tsm_error:
             print(tsm_error)
+            print('------------------------------------')
             print('Failed to import a TMS imaging data.')
+            print('------------------------------------')
             
         else:
             print('Imported a TSM imaging data class.')
@@ -277,7 +281,9 @@ class TbnElecData(ElecData):
 
         except OSError as e:
             print(e)
+            print('----------------------------------')
             print('Failed to import a TSM (.tbn) file')
+            print('----------------------------------')
             
         else:
             print('Imported a TSM(.tbn) elec data file.')
