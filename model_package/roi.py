@@ -84,7 +84,7 @@ class RoiVal(ControlVal):
     
     def notify_observer(self):
         for observer_name in self.__observers:
-            observer_name.update()
+            observer_name.update(self)
     
     def print_val(self):
         print('set val = ' +
@@ -116,7 +116,7 @@ class ElecVal(ControlVal):
     
     def notify_observer(self):
         for observer_name in self.__observers:
-            observer_name.update()
+            observer_name.update(self)
     
     def print_val(self):
         pass
@@ -149,7 +149,7 @@ class CellImageVal(ControlVal):
     
     def notify_observer(self):
         for observer_name in self.__observers:
-            observer_name.update()
+            observer_name.update(self)
 
     def print_val(self):
         print('cell image val = ' +
