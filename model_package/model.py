@@ -42,6 +42,7 @@ class Model(ModelInterface):
         self.filepath = 'no path'
         self.data_container = None
         self.roi_val = 0
+        self.bg_roi_val = 0
         self.elec_val = 0
         self.cell_image_val = 0
         
@@ -56,18 +57,23 @@ class Model(ModelInterface):
         
         # for control valiables
         self.roi_val = RoiVal()
+        self.bg_roi_val = RoiVal()
         self.elec_val = ElecVal()
         self.cell_image_val = CellImageVal()
         
         # for displayed data
         self.full_fluo_trace = FullFluoTrace(self.data_container, self.roi_val)
+        self.bg_full_fluo_trace = FullFluoTrace(self.data_container, self.roi_val)
         self.ch_fluo_trace = ChFluoTrace(self.data_container, self.roi_val)
+        self.bg_ch_fluo_trace = ChFluoTrace(self.data_container, self.roi_val)
         self.elec_trace = ElecTrace(self.data_container, self.elec_val)
         self.cell_image = CellImage(self.data_container, self.cell_image_val)
         
         # add traces to roi_val observer
         self.roi_val.add_observer(self.full_fluo_trace)
         self.roi_val.add_observer(self.ch_fluo_trace)
+        self.bg_roi_val.add_observer(self.bg_full_fluo_trace)
+        self.bg_roi_val.add_observer(self.bg_ch_fluo_trace)
         self.elec_val.add_observer(self.elec_trace)
         self.cell_image_val.add_observer(self.cell_image)
 
@@ -116,21 +122,28 @@ if __name__ == '__main__':
         
     model.data_container.fileinfor.print_fileinfor()
 
+
+    model.set_val(model.cell_image_val,[0,99])
+    cell = model.get_object(model.cell_image)
+    d = plt.figure()
+    plt.imshow(cell.cell_image_data[:,:,1], cmap='gray', interpolation='none')
+
     fig, ax = plt.subplots()
 
 
     model.set_val(model.roi_val,[5,5,1,1,1])
     ch_trace1 =copy.deepcopy(model.get_object(model.ch_fluo_trace))
 
-
-
-    model.set_val(model.roi_val,[5,5,50,50,1])
+    model.set_val(model.roi_val,[5,5,10,10,1])
+    model.set_val(model.bg_roi_val,[5,5,90,90,1])
     ch_trace2 = model.get_object(model.ch_fluo_trace)
-        
+    bg_ch_trace = model.get_object(model.bg_ch_fluo_trace)
+    
     ax.plot(ch_trace1.ch_fluo_time, ch_trace1.ch_fluo_trace[:,0], color='blue')
 
     ax.plot(ch_trace2.ch_fluo_time, ch_trace2.ch_fluo_trace[:,0], color='red')
-    #ax.plot(ch_trace1.ch_fluo_time, ch_trace2.ch_fluo_trace[:,0], color='red')
+    ax.plot(bg_ch_trace.ch_fluo_time, bg_ch_trace.ch_fluo_trace[:,0], color='green')
+
 
 
     
