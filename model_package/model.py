@@ -54,20 +54,20 @@ class Model(ModelInterface):
         if self.data_container is None:
             print('No file')
             return None
+
+        # for displayed data
+        self.full_fluo_trace = FullFluoTrace(self.data_container)
+        self.bg_full_fluo_trace = FullFluoTrace(self.data_container)
+        self.ch_fluo_trace = ChFluoTrace(self.data_container)
+        self.bg_ch_fluo_trace = ChFluoTrace(self.data_container)
+        self.elec_trace = ElecTrace(self.data_container)
+        self.cell_image = CellImage(self.data_container)
         
         # for control valiables
         self.roi_val = RoiVal()
         self.bg_roi_val = RoiVal()
         self.elec_val = ElecVal()
         self.cell_image_val = CellImageVal()
-        
-        # for displayed data
-        self.full_fluo_trace = FullFluoTrace(self.data_container, self.roi_val)
-        self.bg_full_fluo_trace = FullFluoTrace(self.data_container, self.roi_val)
-        self.ch_fluo_trace = ChFluoTrace(self.data_container, self.roi_val)
-        self.bg_ch_fluo_trace = ChFluoTrace(self.data_container, self.roi_val)
-        self.elec_trace = ElecTrace(self.data_container, self.elec_val)
-        self.cell_image = CellImage(self.data_container, self.cell_image_val)
         
         # add traces to roi_val observer
         self.roi_val.add_observer(self.full_fluo_trace)
@@ -114,28 +114,28 @@ if __name__ == '__main__':
     import copy
 
     
-    filename = '20408A001.tsm'
+    filename = '20408B002.tsm'
     filepath = 'E:\\Data\\2022\\220408\\'
     #filepath = 'C:\\Users\\lulul\\マイドライブ\\Programing\\Python\\220408\\'
     model= Model()
     model.create_model(filename, filepath)
         
-    model.data_container.fileinfor.print_fileinfor()
+    #model.data_container.fileinfor.print_fileinfor()
 
 
-    model.set_val(model.cell_image_val,[0,99])
+    model.set_val(model.cell_image_val,[0,0])
     cell = model.get_object(model.cell_image)
     d = plt.figure()
-    plt.imshow(cell.cell_image_data[:,:,1], cmap='gray', interpolation='none')
+    plt.imshow(cell.cell_image_data[:,:,0], cmap='gray', interpolation='none')
 
     fig, ax = plt.subplots()
 
 
-    model.set_val(model.roi_val,[5,5,1,1,1])
+    model.set_val(model.roi_val,[34,34,3,3,1])
     ch_trace1 =copy.deepcopy(model.get_object(model.ch_fluo_trace))
 
-    model.set_val(model.roi_val,[5,5,10,10,1])
-    model.set_val(model.bg_roi_val,[5,5,90,90,1])
+    model.set_val(model.roi_val,[30,30,10,10,1])
+    model.set_val(model.bg_roi_val,[400,40,90,9,1])
     ch_trace2 = model.get_object(model.ch_fluo_trace)
     bg_ch_trace = model.get_object(model.bg_ch_fluo_trace)
     
@@ -213,4 +213,5 @@ if __name__ == '__main__':
     """
     print('複数の動的インスタンスの作り方')
     print('オブジェクト指向での例外処理で変数をクリアして抜ける')
+    print('FluoTraceCreator　クラス　の例外処理')
     print('trace classとroi classにリセット関数をつけて、model interfaceに加える。その後mmodel test modelインスタンスを作った後に起動')
