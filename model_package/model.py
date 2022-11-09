@@ -41,8 +41,8 @@ class Model(ModelInterface):
         self.filename = 'no file'
         self.filepath = 'no path'
         self.data_container = None
-        self.roi_val = 0
-        self.bg_roi_val = 0
+        self.roi = []
+        self.bg_roi = []
         self.elec_val = 0
         self.cell_image_val = 0
         
@@ -64,16 +64,16 @@ class Model(ModelInterface):
         self.cell_image = CellImage(self.data_container)
         
         # for control valiables
-        self.roi_val = RoiVal()
-        self.bg_roi_val = RoiVal()
+        self.roi.append(RoiVal())
+        self.bg_roi.append(RoiVal())
         self.elec_val = ElecVal()
         self.cell_image_val = CellImageVal()
         
         # add traces to roi_val observer
-        self.roi_val.add_observer(self.full_fluo_trace)
-        self.roi_val.add_observer(self.ch_fluo_trace)
-        self.bg_roi_val.add_observer(self.bg_full_fluo_trace)
-        self.bg_roi_val.add_observer(self.bg_ch_fluo_trace)
+        self.roi[0].add_observer(self.full_fluo_trace)
+        self.roi[0].add_observer(self.ch_fluo_trace)
+        self.bg_roi[0].add_observer(self.bg_full_fluo_trace)
+        self.bg_roi[0].add_observer(self.bg_ch_fluo_trace)
         self.elec_val.add_observer(self.elec_trace)
         self.cell_image_val.add_observer(self.cell_image)
 
@@ -117,36 +117,35 @@ if __name__ == '__main__':
     filename = '20408B002.tsm'
     filepath = 'E:\\Data\\2022\\220408\\'
     #filepath = 'C:\\Users\\lulul\\マイドライブ\\Programing\\Python\\220408\\'
-    model = []
-    model.append(Model())
-    model.append(Model())
-    model[0].create_model(filename, filepath)
-    model[1].create_model(filename, filepath)
-    #model[0].data_container.fileinfor.print_fileinfor()
+    model = Model()
+
+    model.create_model(filename, filepath)
+
+    #model.data_container.fileinfor.print_fileinfor()
 
     
-    model[0].set_val(model[0].cell_image_val,[0,0])
-    cell = model[0].get_object(model[0].cell_image)
+    model.set_val(model.cell_image_val,[0,0])
+    cell = model.get_object(model.cell_image)
     d = plt.figure()
     plt.imshow(cell.cell_image_data[:,:,0], cmap='gray', interpolation='none')
 
     fig, ax = plt.subplots()
 
 
-    model[0].set_val(model[0].roi_val,[34,34,3,3,1])
-    ch_trace1 =copy.deepcopy(model[0].get_object(model[0].ch_fluo_trace))
+    model.set_val(model.roi[0],[34,34,3,3])
+    ch_trace1 =copy.deepcopy(model.get_object(model.ch_fluo_trace))
 
-    model[0].set_val(model[0].roi_val,[30,30,10,10,1])
-    model[0].set_val(model[0].bg_roi_val,[40,40,9,9,1])
-    ch_trace2 = model[0].get_object(model[0].ch_fluo_trace)
-    bg_ch_trace = model[0].get_object(model[0].bg_ch_fluo_trace)
+    model.set_val(model.roi[0],[30,30,10,10])
+    model.set_val(model.bg_roi[0],[40,40,10,10])
+    ch_trace2 = model.get_object(model.ch_fluo_trace)
+    bg_ch_trace = model.get_object(model.bg_ch_fluo_trace)
     
     ax.plot(ch_trace1.ch_fluo_time, ch_trace1.ch_fluo_trace[:,0], color='blue')
 
     ax.plot(ch_trace2.ch_fluo_time, ch_trace2.ch_fluo_trace[:,0], color='red')
     ax.plot(bg_ch_trace.ch_fluo_time, bg_ch_trace.ch_fluo_trace[:,0], color='green')
-    model[0].roi_val.print_val()
-    model[1].roi_val.print_val()
+
+
    
     """
         

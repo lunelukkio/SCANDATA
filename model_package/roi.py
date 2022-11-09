@@ -48,7 +48,6 @@ class RoiVal(ControlVal):
         self.__y = 40
         self.__x_length = 2
         self.__y_length = 2
-        self.__roi_num = 1
         print('Imported a roi val class.')
 
     def set_val(self, val):
@@ -56,7 +55,6 @@ class RoiVal(ControlVal):
         self.__y = val[1]
         self.__x_length = val[2]
         self.__y_length = val[3]
-        self.__roi_num = val[4]
         
         self.notify_observer()
 
@@ -64,8 +62,7 @@ class RoiVal(ControlVal):
         return [self.__x,
                 self.__y,
                 self.__x_length,
-                self.__y_length,
-                self.__roi_num]
+                self.__y_length]
     
     def reset(self):
         pass
@@ -91,8 +88,7 @@ class RoiVal(ControlVal):
               str(self.__x) + ' ,' +
               str(self.__y) + ' ,' +
               str(self.__x_length) + ' ,' +
-              str(self.__y_length) + ' ,' +
-              str(self.__roi_num))
+              str(self.__y_length))
 
 
 class ElecVal(ControlVal):
