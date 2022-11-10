@@ -13,7 +13,7 @@ from model_package.displayed_data_factory import CellImage
 class ControlVal(metaclass=ABCMeta):
 
     @abstractmethod
-    def set_val(self, val):
+    def set_data(self, val):
         pass
 
     @abstractmethod
@@ -50,7 +50,7 @@ class RoiVal(ControlVal):
         self.__y_length = 2
         print('Imported a roi val class.')
 
-    def set_val(self, val):
+    def set_data(self, val):
         self.__x = val[0]
         self.__y = val[1]
         self.__x_length = val[2]
@@ -88,14 +88,16 @@ class RoiVal(ControlVal):
               str(self.__x) + ' ,' +
               str(self.__y) + ' ,' +
               str(self.__x_length) + ' ,' +
-              str(self.__y_length))
+              str(self.__y_length) + '\n' +
+              'observer = ' +
+              str(self.__observers))
 
 
 class ElecVal(ControlVal):
     def __init__(self):
         self.__observers = []
         
-    def set_val(self, val=None):  # Need an argument for val because of the abstract class
+    def set_data(self, val=None):  # Need an argument for val because of the abstract class
         self.notify_observer()
 
     def get_data(self):
@@ -124,7 +126,7 @@ class CellImageVal(ControlVal):
         self.__observers = []
         print('Imported a cell image val class.')
 
-    def set_val(self, val):
+    def set_data(self, val):
         self.__frame_start = val[0]
         self.__frame_end = val[1]
         
@@ -161,7 +163,7 @@ class DifImageVal():
         self.__dif_df_length = 5
         print('Imported a dif image val class.')
     
-    def set_val(self, val):
+    def set_data(self, val):
         self.__dif_base = val[0]
         self.__dif_df = val[1]
         self.__dif_base_length = val[2]
@@ -189,7 +191,7 @@ class ModVal():
         self.__mod_list = ['mod_list']
         print('Imported a mod val class.')
         
-    def set_val(self, val):
+    def set_data(self, val):
         pass
         
     def get_data(self) -> list:
@@ -207,7 +209,7 @@ class SpacialAveVal():
         self.__spacial_filter = 8
         print('Imported a spacial ave val class.')
     
-    def set_val(self, val):
+    def set_data(self, val):
         pass
 
     def get_data(self):

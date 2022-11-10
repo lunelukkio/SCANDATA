@@ -43,8 +43,8 @@ class FullFluoTrace(DisplayedData):
     def __init__(self, data_container):
         self.data_container = data_container
 
-        self.full_fluo_trace = np.empty([0,])
-        self.full_fluo_time = np.empty([0,])
+        self.full_fluo_trace_data = np.empty([0,])
+        self.full_fluo_time_data = np.empty([0,])
         self.full_fluo_mod = 0
         
         self.create_time()
@@ -54,18 +54,18 @@ class FullFluoTrace(DisplayedData):
         roi_xy_infor = roi_val.get_data()  # [x, y, x_length, y_length, roi_num]
         frame = self.data_container.imaging_data.full_frame
         
-        self.full_fluo_trace = FluoTraceCreator.fluo_trace_creator(
+        self.full_fluo_trace_data = FluoTraceCreator.fluo_trace_creator(
             frame, roi_xy_infor)
         
     def create_time(self):
         time_start = self.data_container.fileinfor.full_frame_interval
         num_frame = self.data_container.fileinfor.num_full_frame
         time_last = num_frame * time_start
-        self.full_fluo_time = np.linspace(time_start, time_last, num_frame)
+        self.full_fluo_time_data = np.linspace(time_start, time_last, num_frame)
         
     def get_data(self):
         print('Get full fluo trace.')
-        return self.full_fluo_trace
+        return self.full_fluo_trace_data
     
     def get_object(self):
         return self
@@ -78,17 +78,17 @@ class FullFluoTrace(DisplayedData):
         print('Updated')
     
     def print_trace(self):
-        print(self.full_fluo_trace)
+        print(self.full_fluo_trace_data)
         
     def plot_trace(self):
-        plt.plot(self.full_fluo_trace[:])
+        plt.plot(self.full_fluo_trace_data[:])
     
     
 class ChFluoTrace(DisplayedData):
     def __init__(self, data_container):
         self.data_container = data_container
-        self.ch_fluo_trace = np.empty([0, 0])
-        self.ch_fluo_time = np.empty([0,])
+        self.ch_fluo_trace_data = np.empty([0, 0])
+        self.ch_fluo_time_data = np.empty([0,])
         
         self.create_time()
 
@@ -99,21 +99,21 @@ class ChFluoTrace(DisplayedData):
         num_frame = self.data_container.fileinfor.num_ch_frame
         frame = self.data_container.imaging_data.ch_frame
         
-        self.ch_fluo_trace = np.empty([num_frame, num_fluo_ch])
+        self.ch_fluo_trace_data = np.empty([num_frame, num_fluo_ch])
         
         for i in range(self.data_container.fileinfor.num_fluo_ch):
             trace = FluoTraceCreator.fluo_trace_creator(frame[:,:,:,i], roi_xy_infor)  # abstract method
-            self.ch_fluo_trace[:,i] = trace
+            self.ch_fluo_trace_data[:,i] = trace
             
     def create_time(self):
 
         time_start = self.data_container.fileinfor.ch_frame_interval
         num_frame = self.data_container.fileinfor.num_ch_frame
         time_last = num_frame * time_start
-        self.ch_fluo_time = np.linspace(time_start, time_last, num_frame)
+        self.ch_fluo_time_data = np.linspace(time_start, time_last, num_frame)
         
     def get_data(self):
-        return self.ch_fluo_trace
+        return self.ch_fluo_trace_data
     
     def get_object(self):
         return self
@@ -126,7 +126,7 @@ class ChFluoTrace(DisplayedData):
         print('Updated')
     
     def plot_trace(self, ch):
-        plt.plot(self.ch_fluo_trace[:, ch])
+        plt.plot(self.ch_fluo_trace_data[:, ch])
 
 
 class ElecTrace(DisplayedData):
@@ -198,7 +198,7 @@ class CellImage(DisplayedData):
         print('updated')
 
     def show_frame(self, ch):
-            plt.imshow(self.cell_image_data[:, :, ch])
+            plt.imshow(self.cell_image_data[:, :, ch], cmap='gray', interpolation='none')
 
     
 class DifImage(DisplayedData):
@@ -231,15 +231,25 @@ class FluoTraceCreator:
         y = roi_val[1]
         x_length = roi_val[2]
         y_length = roi_val[3]
-        mean_data = np.mean(frame[x:x+x_length, y:y+y_length, :], axis = 0)
-        mean_data = np.mean(mean_data, axis = 0)
         
-        check_val = np.isnan(mean_data[0])
+        framesize = frame.shape
         
-        if check_val == True:
-            mean_data = 0
+        if framesize[0] <= x + x_length or framesize[1] <= y + y_length:
+            mean_data= 0
             print('------------------------')
             print('Out of range')
             print('------------------------')
+            return
+        if x_length == 0 and y_length == 0:
+            mean_data = frame[x, y, :]
+        elif x_length == 0 and y_length > 0:
+            mean_data = np.mean(frame[x, y:y+y_length, :], axis = 0)
+        elif y_length == 0 and x_length > 0:
+            mean_data = np.mean(frame[x:x+x_length, y, :], axis = 0)
+        elif x_length > 0 and y_length > 0:
+            mean_data = np.mean(frame[x:x+x_length, y:y+y_length, :], axis = 0)
+            mean_data = np.mean(mean_data, axis = 0)
+        else:
+            mean_data = 0
         
         return mean_data
