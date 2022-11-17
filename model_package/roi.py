@@ -5,12 +5,10 @@ Created on Wed Nov  2 15:11:48 2022
 lunelukkio@gmail.com
 """
 from abc import ABCMeta, abstractmethod
-from model_package.displayed_data_factory import FullFluoTrace
-from model_package.displayed_data_factory import ChFluoTrace
-from model_package.displayed_data_factory import ElecTrace
-from model_package.displayed_data_factory import CellImage
+from model_package.displayed_data_factory import FullFluoTrace, chFluoTrace, ElecTrace, CellImage
 
-class ControlVal(metaclass=ABCMeta):
+
+class ControlValInterface(metaclass=ABCMeta):
 
     @abstractmethod
     def set_data(self, val):
@@ -40,7 +38,7 @@ class ControlVal(metaclass=ABCMeta):
     def notify_observer(self):
         pass
 
-class RoiVal(ControlVal):
+class Roi(ControlValInterface):
     def __init__(self):
         self.__observers = []
         
@@ -92,37 +90,13 @@ class RoiVal(ControlVal):
               'observer = ' +
               str(self.__observers))
 
-
-class ElecVal(ControlVal):
-    def __init__(self):
-        self.__observers = []
-        
-    def set_data(self, val=None):  # Need an argument for val because of the abstract class
-        self.notify_observer()
-
-    def get_data(self):
-        pass
     
-    def reset(self):
-        pass
-    
-    def add_observer(self, observer):
-        self.__observers.append(observer)
-        
-    def delete_observer(self, observer):
-        self.__observers.remove(observer)
-    
-    def notify_observer(self):
-        for observer_name in self.__observers:
-            observer_name.update(self)
-    
-    def print_val(self):
-        pass
-    
-class CellImageVal(ControlVal):
+class time_window(ControlValInterface):
     def __init__(self):
         self.__frame_start = 0
-        self.__frame_end = 4
+        self.__frame_end = 1
+        self.__time_start_width
+        self.__time_end_width
         self.__observers = []
         print('Imported a cell image val class.')
 
@@ -153,71 +127,3 @@ class CellImageVal(ControlVal):
         print('cell image val = ' +
               str(self.__frame_start) + ' ,' +
               str(self.__frame_end))
-
-
-class DifImageVal():
-    def __init__(self):
-        self.__dif_base = 50
-        self.__dif_df = 100
-        self.__dif_base_length = 5
-        self.__dif_df_length = 5
-        print('Imported a dif image val class.')
-    
-    def set_data(self, val):
-        self.__dif_base = val[0]
-        self.__dif_df = val[1]
-        self.__dif_base_length = val[2]
-        self.__dif_df_length = val[3]
-        
-    def get_data(self) -> list:
-        return [self.__dif_base, 
-                self.__dif_df, 
-                self.__dif_base_length, 
-                self.__dif_df_length]
-    
-    def reset(self):
-        pass
-
-    def print_val(self):
-        print('dif image val = ' +
-              str(self.__dif_base) + ' ,' +
-              str(self.__dif_df) + ' ,' +
-              str(self.__dif_base_length) + ' ,' +
-              str(self.__dif_df_length))
-        
-    
-class ModVal():
-    def __init__(self):
-        self.__mod_list = ['mod_list']
-        print('Imported a mod val class.')
-        
-    def set_data(self, val):
-        pass
-        
-    def get_data(self) -> list:
-        return self.__mod_list
-    
-    def reset(self):
-        pass
-            
-    def print_val(self):
-        pass
-
-
-class SpacialAveVal():
-    def __init__(self):
-        self.__spacial_filter = 8
-        print('Imported a spacial ave val class.')
-    
-    def set_data(self, val):
-        pass
-
-    def get_data(self):
-        return self.__spacial_filter
-    
-    def reset(self):
-        pass
-
-    def print_val(self):
-        pass
-
