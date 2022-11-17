@@ -148,12 +148,12 @@ if __name__ == '__main__':
     model.data_file['20408A001.tsm'].create_data_3d('ch1_frame')
     model.data_file['20408A001.tsm'].create_data_3d('ch2_frame')
     
-    model.data_file['20408A001.tsm'].create_data_1d('ch2_frame')
+    #model.data_file['20408A001.tsm'].create_data_1d('ch2_frame')
     
     
     print(model.data_file['20408A001.tsm'].filename)
     print(model.data_file['20408A001.tsm'].data_3d)
-    model.data_file['20408A001.tsm'].data_3d['ch2_frame'].show_frame(10)
+    model.data_file['20408A001.tsm'].data_3d['ch1_frame'].show_frame(10)
 
 
     
