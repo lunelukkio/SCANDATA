@@ -64,7 +64,6 @@ class Model(ModelInterface):
         self.line_name = []
         self.line = {}
         
-
         print('Created a model.')
 
     def create_data_file(self, filename, filepath):
@@ -155,7 +154,5 @@ if __name__ == '__main__':
     print(model.data_file['20408A001.tsm'].data_3d)
     model.data_file['20408A001.tsm'].data_3d['ch1_frame'].show_frame(10)
 
-
-    
     
     print('オブジェクト指向での例外処理で変数をクリアして抜ける')
