@@ -5,11 +5,20 @@ Created on Wed Nov  2 15:11:48 2022
 lunelukkio@gmail.com
 """
 from abc import ABCMeta, abstractmethod
-from model_package.displayed_data_factory import FullFluoTrace, chFluoTrace, ElecTrace, CellImage
+from model_package.data_factory import Data3D, Data2D, Data1D
 
-
+"""
+abstract factory
+"""
+class ControlValFactory:
+    @abstractmethod
+    def create_control_val(self, val):
+        pass
+    
+"""
+abstract product
+"""
 class ControlValInterface(metaclass=ABCMeta):
-
     @abstractmethod
     def set_data(self, val):
         pass
@@ -38,15 +47,50 @@ class ControlValInterface(metaclass=ABCMeta):
     def notify_observer(self):
         pass
 
+"""
+contrete factory
+"""
+class RoiFactory:
+    def __init__(self):
+        self.val = []
+        
+    def create_control_val(self, val):
+        return Roi(val)
+        
+class TimeWindowFactory:
+    def __init__(self):
+        self.val = []
+        
+    def create_control_val(self, val):
+        return TimeWindow(val)
+    
+class FrameShiftFactory:
+    def __init__(self):
+        self.val = []
+        
+    def create_control_val(self, val):
+        return FrameShift(val)
+        
+class LineFactory:
+    def __init__(self):
+        self.val = []
+        
+    def create_control_val(self, val):
+        return Line(val)
+        
+
+"""
+concrete product
+"""
 class Roi(ControlValInterface):
     def __init__(self):
         self.__observers = []
         
         self.__x = 40
         self.__y = 40
-        self.__x_length = 2
-        self.__y_length = 2
-        print('Imported a roi val class.')
+        self.__x_length = 1
+        self.__y_length = 1
+        print('Created a ROI.')
 
     def set_data(self, val):
         self.__x = val[0]
@@ -55,6 +99,7 @@ class Roi(ControlValInterface):
         self.__y_length = val[3]
         
         self.notify_observer()
+        print('Set the ROI position ' + str(val) + ', and notified.')
 
     def get_data(self) -> list:
         return [self.__x,
@@ -79,7 +124,7 @@ class Roi(ControlValInterface):
     
     def notify_observer(self):
         for observer_name in self.__observers:
-            observer_name.update(self)
+            observer_name.update_data(self)
     
     def print_val(self):
         print('set val = ' +
@@ -91,12 +136,12 @@ class Roi(ControlValInterface):
               str(self.__observers))
 
     
-class time_window(ControlValInterface):
+class TimeWindow(ControlValInterface):
     def __init__(self):
         self.__frame_start = 0
         self.__frame_end = 1
-        self.__time_start_width
-        self.__time_end_width
+        self.__time_start_width = 10  #(ms)
+        self.__time_end_width = 10
         self.__observers = []
         print('Imported a cell image val class.')
 
@@ -121,9 +166,54 @@ class time_window(ControlValInterface):
     
     def notify_observer(self):
         for observer_name in self.__observers:
-            observer_name.update(self)
+            observer_name.update_data(self)
 
     def print_val(self):
         print('cell image val = ' +
               str(self.__frame_start) + ' ,' +
               str(self.__frame_end))
+        
+class FrameShift:
+    def set_data(self, val):
+        pass
+
+    def get_data(self):
+        pass
+
+    def print_val(self):
+        pass
+
+    def reset(self):
+        pass
+
+    def add_observer(self, observer):
+        pass
+
+    def delete_observer(self, observer):
+        pass
+
+    def notify_observer(self):
+        pass
+
+
+class Line:
+    def set_data(self, val):
+        pass
+
+    def get_data(self):
+        pass
+
+    def print_val(self):
+        pass
+
+    def reset(self):
+        pass
+
+    def add_observer(self, observer):
+        pass
+
+    def delete_observer(self, observer):
+        pass
+
+    def notify_observer(self):
+        pass

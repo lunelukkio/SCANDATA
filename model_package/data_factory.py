@@ -19,15 +19,15 @@ class DataFactory(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def create_data_3d(self, fileinfor, data_type):
+    def create_data_3d(self, file_io, data_type):
         pass
 
     @abstractmethod
-    def create_data_2d(self, fileinfor, data_type):
+    def create_data_2d(self, data_3d, data_type):
         pass
     
     @abstractmethod
-    def create_data_1d(self, fileinfor, data_type):
+    def create_data_1d(self, data_3d, data_type):
         pass
 
 
@@ -35,7 +35,6 @@ class DataFactory(metaclass=ABCMeta):
 Abstract experimentdata product
 """
 class FileIO(metaclass=ABCMeta):
-    
     @abstractmethod
     def read_fileinfor(self):
         pass
@@ -51,59 +50,37 @@ class FileIO(metaclass=ABCMeta):
     @abstractmethod
     def read_data_1d(self):
         pass
-
-class  Data3D(metaclass=ABCMeta):
-    def __init__(self, file_io, data_type):
-        self.file_io = file_io
+    
+    
+class Dimension(metaclass=ABCMeta):
+    def __init__(self, data_3d, data_type):
         self.data_type = data_type
+        self.data_3d = data_3d
 
     @abstractmethod
     def read_data(self):
         pass
 
-    @abstractmethod
-    def update_data(self):
-        pass
-    
-    @abstractmethod
-    def get_data(self):
-        pass
-    
-    
-class Data2D(metaclass=ABCMeta):
-    def __init__(self, file_io, data_type):
-        self.file_io = file_io
-        self.data_type = data_type
 
-    @abstractmethod
-    def read_edata(self):
-        pass
-    
-    @abstractmethod
-    def update_data(self):
-        pass
-    
-    @abstractmethod
-    def get_data(self):
-        pass
-    
-    
-class Data1D(metaclass=ABCMeta):
-    def __init__(self, file_io, data_type):
-        self.file_io = file_io
-        self.data_type = data_type
 
+
+class Frame(metaclass=ABCMeta):
     @abstractmethod
-    def read_edata(self):
+    def read_data(self):
         pass
     
+class Trace(metaclass=ABCMeta):
     @abstractmethod
-    def update_data(self):
+    def read_data(self):
         pass
     
+class Image(metaclass=ABCMeta):
     @abstractmethod
-    def get_data(self):
+    def read_data(self):
         pass
+    
+
+    
 
 """
 Concrete experimentdata factory
@@ -117,25 +94,25 @@ class TsmDataFactory(DataFactory):
         return TsmData3D(file_io, data_type)
     
     # This is emplty object. Image files will be created later.
-    def create_data_2d(self, file_io, data_type):
-        return TsmData2D()
+    def create_data_2d(self, data_3d, data_type):
+        return TsmData2D(data_3d, data_type)
     
     # From .tbn files. elec data. luo_trace will be crated later
-    def create_data_1d(self, file_io, data_type):
-        return TsmData1D(file_io, data_type)  
+    def create_data_1d(self, data_3d, data_type):
+        return TsmData1D(data_3d, data_type)  
     
 
 class DaDataFactory(DataFactory):
-    def create_file_io(self, filename):
+    def create_file_io(self, filename, filepath):
         raise NotImplementedError
 
     def create_data_3d(self, file_io, data_type):
         raise NotImplementedError
 
-    def create_data_2d(self, file_io, data_type):
+    def create_data_2d(self, data_3d, data_type):
         raise NotImplementedError
 
-    def create_data_1d(self, file_io, data_type):
+    def create_data_1d(self, data_3d, data_type):
         raise NotImplementedError
 
 
@@ -379,23 +356,44 @@ class TsmData3D(Data3D):
 
         
 class TsmData2D(Data2D):
-    def __init__(self, file_io, data_type):
-        super().__init__(file_io)
+    def __init__(self, data_3d, data_type):
+        super().__init__(data_3d, data_type)
         self.data = 0
+        def read_data(self):
+            pass
+        
+        def update_data(self):
+            pass
+
+        def get_data(self):
+            pass
         
         
 class TsmData1D(Data1D):
-    def __init__(self, file_io, data_type):
-        super().__init__(file_io)
-        self.data_type = data_type
-        self.num_elec_data = 0
-        self.elec_trace = 0
-        
-        self.read_elec_data()
+    def __init__(self, data_3d, data_type):
+        super().__init__(data_3d, data_type)
+        # data_3d and data_type are in super class
+        self.data = 0
+        self.time_data = 0
 
-    def read_data(self):
-        pass
-            
+    def read_data(self, roi_obj):
+        roi_xy_infor = roi_obj.get_data()  # [x, y, x_length, y_length, roi_num]
+        full_frame
+        num_frame = data_3d['full_frame']
+        frame = self.data_container.imaging_data.ch_frame
+        
+        self.ch_fluo_trace_data = np.empty([num_frame, num_fluo_ch])
+        
+        for i in range(self.data_container.fileinfor.num_fluo_ch):
+            trace = FluoTraceCreator.fluo_trace_creator(frame[:,:,:,i], roi_xy_infor)  # abstract method
+            self.ch_fluo_trace_data[:,i] = trace
+    
+        print('Unpated ROI = ' + str(roi_xy_infor))
+    
+    def update_data(self, roi_obj):
+        self.read_data(roi_obj)
+        print('Recieved a notify message.')
+    
     def get_data(self):
         pass
 
