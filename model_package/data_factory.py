@@ -61,42 +61,6 @@ class ChFrameFacoty(FrameFactory):
     def create_frame(self, data):  # data = file_io
         return ChFrame(data)
     
-class Frame(metaclass=ABCMeta):  # 3D frame data: full frame, ch image
-    def __init__(self, data):
-        self.data = 0
-        self.time_data = 0  # (ms)
-        
-        self.interval = 0  # (ms)
-        self.pixel = 0  # (um)
-        self.unit = 0  # No unit because of raw camera data.
-        
-        self.file_io = data
-
-        self.read_data()
-
-    @abstractmethod
-    def read_data(self):
-        pass
-    
-    def get_data(self):
-        frame = self.data
-        interval = self.full_frame_interval
-        return frame, interval
-
-    def update(self):
-        pass
-
-    def show_frame(self, frame):
-        plt.imshow(self.data[:, :, frame], cmap='gray', interpolation='none')
-
-    def print_3d_infor(self):
-        #np.set_printoptions(threshold=np.inf)
-        print(self.data_type)
-        print(self.data.shape)
-        print(self.time_data)
-
-        #np.set_printoptions(threshold=1000)
-
 
 """
 Image factory
@@ -113,23 +77,6 @@ class CellImageFactory(ImageFactory):
 class DifImageFactory(ImageFactory):
     def create_image(self, data):  # data = frame
         return DifImage(data)
-    
-class Image(metaclass=ABCMeta):  # cell image, dif image
-    @abstractmethod
-    def read_data(self):
-        pass
-    
-    @abstractmethod
-    def create_data(self):
-        pass
-    
-    @abstractmethod
-    def update(self):
-        pass
-    
-    @abstractmethod
-    def get_data(self):
-        pass
 
 
 """
@@ -148,25 +95,9 @@ class ElecTraceFactory(TraceFactory):
     def create_trace(self, data):  # data = file_io (.tbn)
         return ElecTrace(data)
     
-class Trace(metaclass=ABCMeta):  # Fluo trae, Elec trace
-    @abstractmethod
-    def read_data(self):
-        pass
-    
-    @abstractmethod
-    def create_data(self):
-        pass
-    
-    @abstractmethod
-    def update(self):
-        pass
-    
-    @abstractmethod
-    def get_data(self):
-        pass
 
 """
-Concrete product
+product
 """
 class TsmFileIO(FileIO):
     def __init__(self, filename, filepath):
@@ -178,9 +109,9 @@ class TsmFileIO(FileIO):
         self.elec_header = 0
         
         #about fluo frame
-        self.full_frame = 0
-        self.dark_frame = 0
-        self.ch_frame = 0
+        self.full_frame = np.array([0,])
+        self.dark_frame = np.array([0,])
+        self.ch_frame = np.array([0,])
         
         self.num_fluo_ch = 2  # Use () for PMT
         self.full_frame_interval = 0  # (ms)
@@ -326,8 +257,6 @@ class TsmFileIO(FileIO):
         else:
             print('Imported a TSM(.tbn) elec data file.')
             
-
-
     def print_fileinfor(self):
         print(self.header.decode())
         print('elec_header = ' + str(self.elec_header))
@@ -346,60 +275,146 @@ class TsmFileIO(FileIO):
         print('elec_interval = ' + str(self.elec_interval))
         print('num_elec_data = ' + str(self.num_elec_data)) 
         
+class Frame(metaclass=ABCMeta):  # 3D frame data: full frame, ch image
+    def __init__(self, data):  
+        self.frame_data = np.array([0,])
+        self.time_data = np.array([0,])  # (ms)
+        
+        self.interval = 0  # (ms)
+        self.pixel = 0  # (um)
+        self.unit = 0  # No unit because of raw camera data.
+        
+        self.file_io = data
+
+        self.read_data()
+
+    @abstractmethod
+    def read_data(self, ch):
+        pass
+    
+    def get_data(self):
+        frame = self.frame_data
+        interval = self.full_frame_interval
+        return frame, interval
+
+    def update(self):
+        pass
+
+    def show_frame(self, frame):
+        plt.imshow(self.data[:, :, frame], cmap='gray', interpolation='none')
+
+    def print_frame_infor(self):
+        #np.set_printoptions(threshold=np.inf)
+        print(self.data_type)
+        print(self.data.shape)
+        print(self.time_data)
+
+        #np.set_printoptions(threshold=1000)
 
 class FullFrame(Frame):
+    def __init__(self, data):
+        super().__init__(data)  # Need this???
+
+    def read_data(self, ch=0):
+        self.frame_data = copy.deepcopy(self.file_io.full_frame)
+        self.interval = copy.deepcopy(self.file_io.full_frame_interval)
+        len(self.frame_data)
+        
+        if len(self.frame_data) <= 1:
+            print('---------------------')
+            print('Can not make 3D data')
+            print('---------------------')
+            return None
+
+class ChFrame(Frame):
+    def __init__(self, data):
+        super().__init__(data)  # Need this???
+    
+    def read_data(self, ch):
+        self.data = copy.deepcopy(self.file_io.ch_frame[:,:,:,ch-1])
+        self.interval = copy.deepcopy(self.file_io.ch_frame_interval)
+
+        if len(self.frame_data) <= 1:
+            print('---------------------')
+            print('Can not make 3D data')
+            print('---------------------')
+            return None
+
+
+class Image(metaclass=ABCMeta):  # cell image, dif image
+    def __init__(self, data):
+        self.image_data = np.array([0,])
+        
+    @abstractmethod
+    def read_data(self):
+        pass
+    
+    @abstractmethod
+    def create_data(self):
+        pass
+    
+    @abstractmethod
+    def update(self):
+        pass
+    
+    @abstractmethod
+    def get_data(self):
+        pass
+
+class CellImage(Image):
+    def __init__(self, data):
+        super().__init__(data)
+        self.image_data = data
+
+    def read_data(self):
+        pass
+        
+    def update_data(self):
+        pass
+
+    def get_data(self):
+        pass
+        
+class DifImage(Image):
     def __init__(self, data):
         super().__init__(data)
 
     def read_data(self):
-        self.data = copy.deepcopy(self.file_io.full_frame)
-        self.interval = copy.deepcopy(self.file_io.full_frame_interval)
-
-        if self.data == 0:
-            print('---------------------')
-            print('Can not make 3D data')
-            print('---------------------')
-            return None
-
-
-class ChFrame(Frame):
-    def read_data(self):
-        if self.data_type.find('ch1') >= 0:
-            self.data = copy.deepcopy(self.file_io.ch_frame[:,:,:,0])
-            self.interval = copy.deepcopy(self.file_io.ch_frame_interval)
-
-        elif self.data_type.find('ch2') >= 0:
-            self.data = copy.deepcopy(self.file_io.ch_frame[:,:,:,1])
-            self.interval = copy.deepcopy(self.file_io.ch_frame_interval)
-            
-        else:
-            print('---------------------')
-            print('Can not make 3D data')
-            print('---------------------')
-            return None
-        
-class CellImage(Image):
-    def __init__(self, data_3d, data_type):
-        super().__init__(data_3d, data_type)
-        self.data = 0
-        def read_data(self):
-            pass
-        
-        def update_data(self):
-            pass
-
-        def get_data(self):
-            pass
-        
-class DifImage(Image):
         pass
         
+    def update_data(self):
+        pass
+
+    def get_data(self):
+        pass
+
+
+class Trace(metaclass=ABCMeta):  # Fluo trae, Elec trace
+    def __init__(self, data):
+        self.trace_data = np.array([0,])
+        self.time_data = np.array([0,])
+        
+    @abstractmethod
+    def read_data(self):
+        pass
+    
+    @abstractmethod
+    def create_data(self):
+        pass
+    
+    @abstractmethod
+    def update(self):
+        pass
+    
+    @abstractmethod
+    def get_data(self):
+        pass
+
 class FluoTrace(Trace):
-    def __init__(self, data_3d, data_type):
-        super().__init__(data_3d, data_type)
-        # data_3d and data_type are in super class
-        self.data = 0
-        self.time_data = 0
+    def __init__(self, data):
+        super().__init__(data)
+        self.frame_data = data
+        # trace_data and time_data are in the super class
 
     def read_data(self, roi_obj):
         roi_xy_infor = roi_obj.get_data()  # [x, y, x_length, y_length, roi_num]
@@ -427,7 +442,23 @@ class FluoTrace(Trace):
         
     
 class ElecTrace(Trace):
-    pass
+    def __init__(self, data):
+        super().__init__(data)
+        self.file_io = data  # from .tbn
+        # trace_data and time_data are in the super class
+
+    def read_data(self):
+        pass
+
+    def create_data(self):
+        pass
+    
+    def update(self):
+        pass
+
+    def get_data(self):
+        pass
+    
     
 if __name__ == '__main__':
     filename = '20408A001.tsm'
@@ -435,11 +466,8 @@ if __name__ == '__main__':
     factory_type = TmsIOFactory()
     data_file1 = factory_type.create_file_io(filename, filepath)
     
-    filename = '20408A002.tsm'
-    data_file2 = factory_type.create_file_io(filename, filepath)
-    
     
     print(data_file1.filename)
-    print(data_file2.filename)
+
     
 
