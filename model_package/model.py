@@ -171,7 +171,7 @@ class DataFile:
 
 
     def add_data_3d(self, data_type):
-        self.data_3d_obj.append(self.factory_type.create_data_3d(self.file_io, data_type))
+        self.data_3d_obj.append(self.factory_type.create_frame(self.file_io, data_type))
         self.data_3d_type.append(data_type)
         self.data_3d = dict(zip(self.data_3d_type, self.data_3d_obj))
          

@@ -9,117 +9,166 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 import matplotlib.pyplot as plt
 import copy
+
+
 """
-Abstract experimentdata factory
+IOfoctory
 """
-class DataFactory(metaclass=ABCMeta):
-    
+class IOFactory(metaclass=ABCMeta):
     @abstractmethod
+    def create_file_io(self, filename, filepath):  # Only this class is file format dependent.
+        pass
+
+class TmsIOFactory(IOFactory):
     def create_file_io(self, filename, filepath):
-        pass
-
-    @abstractmethod
-    def create_data_3d(self, file_io, data_type):
-        pass
-
-    @abstractmethod
-    def create_data_2d(self, data_3d, data_type):
-        pass
+        return TsmFileIO(filename, filepath)
     
-    @abstractmethod
-    def create_data_1d(self, data_3d, data_type):
-        pass
-
-
-"""
-Abstract experimentdata product
-"""
+class DaIOFactory(IOFactory):
+    def create_file_io(self, filename, filepath):
+        raise NotImplementedError
+    
 class FileIO(metaclass=ABCMeta):
     @abstractmethod
     def read_fileinfor(self):
         pass
 
     @abstractmethod
-    def read_data_3d(self):
+    def read_frame_data(self):
         pass
     
     @abstractmethod
-    def read_data_2d(self):
+    def read_image_data(self):
         pass
     
     @abstractmethod
-    def read_data_1d(self):
+    def read_trace_data(self):
+        pass
+
+
+"""
+Frame factory
+"""
+class FrameFactory(metaclass=ABCMeta):
+    @abstractmethod
+    def create_frame(self, data):
         pass
     
+class FullFrameFacoty(FrameFactory):
+    def create_frame(self, data):  # data = file_io
+        return FullFrame(data)
     
-class Dimension(metaclass=ABCMeta):
-    def __init__(self, data_3d, data_type):
-        self.data_type = data_type
-        self.data_3d = data_3d
+class ChFrameFacoty(FrameFactory):
+    def create_frame(self, data):  # data = file_io
+        return ChFrame(data)
+    
+class Frame(metaclass=ABCMeta):  # 3D frame data: full frame, ch image
+    def __init__(self, data):
+        self.data = 0
+        self.time_data = 0  # (ms)
+        
+        self.interval = 0  # (ms)
+        self.pixel = 0  # (um)
+        self.unit = 0  # No unit because of raw camera data.
+        
+        self.file_io = data
+
+        self.read_data()
 
     @abstractmethod
     def read_data(self):
         pass
+    
+    def get_data(self):
+        frame = self.data
+        interval = self.full_frame_interval
+        return frame, interval
+
+    def update(self):
+        pass
+
+    def show_frame(self, frame):
+        plt.imshow(self.data[:, :, frame], cmap='gray', interpolation='none')
+
+    def print_3d_infor(self):
+        #np.set_printoptions(threshold=np.inf)
+        print(self.data_type)
+        print(self.data.shape)
+        print(self.time_data)
+
+        #np.set_printoptions(threshold=1000)
 
 
-
-
-class Frame(metaclass=ABCMeta):
+"""
+Image factory
+"""
+class ImageFactory(metaclass=ABCMeta):
+    @abstractmethod
+    def create_image(self, data):
+        pass
+    
+class CellImageFactory(ImageFactory):
+    def create_image(self, data):  # data = frame
+        return CellImage(data)
+    
+class DifImageFactory(ImageFactory):
+    def create_image(self, data):  # data = frame
+        return DifImage(data)
+    
+class Image(metaclass=ABCMeta):  # cell image, dif image
     @abstractmethod
     def read_data(self):
         pass
     
-class Trace(metaclass=ABCMeta):
+    @abstractmethod
+    def create_data(self):
+        pass
+    
+    @abstractmethod
+    def update(self):
+        pass
+    
+    @abstractmethod
+    def get_data(self):
+        pass
+
+
+"""
+Trace factory
+"""
+class TraceFactory(metaclass=ABCMeta):
+    @abstractmethod
+    def create_trace(self, data):
+        pass
+    
+class FluoTraceFactory(TraceFactory):
+    def create_trace(self, data):  # data = frame
+        return FluoTrace(data)
+    
+class ElecTraceFactory(TraceFactory):
+    def create_trace(self, data):  # data = file_io (.tbn)
+        return ElecTrace(data)
+    
+class Trace(metaclass=ABCMeta):  # Fluo trae, Elec trace
     @abstractmethod
     def read_data(self):
         pass
     
-class Image(metaclass=ABCMeta):
     @abstractmethod
-    def read_data(self):
+    def create_data(self):
         pass
     
-
+    @abstractmethod
+    def update(self):
+        pass
     
+    @abstractmethod
+    def get_data(self):
+        pass
 
 """
-Concrete experimentdata factory
+Concrete product
 """
-class TsmDataFactory(DataFactory):
-    def create_file_io(self, filename, filepath):
-        return TsmFileIO(filename, filepath)
-
-    # full frame. ch_frame will be created later.
-    def create_data_3d(self, file_io, data_type):
-        return TsmData3D(file_io, data_type)
-    
-    # This is emplty object. Image files will be created later.
-    def create_data_2d(self, data_3d, data_type):
-        return TsmData2D(data_3d, data_type)
-    
-    # From .tbn files. elec data. luo_trace will be crated later
-    def create_data_1d(self, data_3d, data_type):
-        return TsmData1D(data_3d, data_type)  
-    
-
-class DaDataFactory(DataFactory):
-    def create_file_io(self, filename, filepath):
-        raise NotImplementedError
-
-    def create_data_3d(self, file_io, data_type):
-        raise NotImplementedError
-
-    def create_data_2d(self, data_3d, data_type):
-        raise NotImplementedError
-
-    def create_data_1d(self, data_3d, data_type):
-        raise NotImplementedError
-
-
-"""
-Concrete experimentdata product
-"""
-class TsmFileIO:
+class TsmFileIO(FileIO):
     def __init__(self, filename, filepath):
         # about file
         self.filename = filename
@@ -150,7 +199,7 @@ class TsmFileIO:
         
         # read data
         self.read_fileinfor()
-        self.read_data_3d()
+        self.read_frame_data()
         
     def read_fileinfor(self):
         try:
@@ -200,7 +249,7 @@ class TsmFileIO:
         else:
             print('Imported a TSM file infor class.')
             
-    def read_data_3d(self):
+    def read_frame_data(self):
         try:
             # read shirt camera header information
             # https://fits.gsfc.nasa.gov/fits_primer.html
@@ -245,10 +294,10 @@ class TsmFileIO:
                ch_frame[:, :, j//num_ch, i] = frame[:, :, j]
         return ch_frame
     
-    def read_data_2d(self):
+    def read_image_data(self):
         pass  # No cell image from tsm data
     
-    def read_data_1d(self):  # from .tbn files
+    def read_trace_data(self):  # from .tbn files
         try:
             # read a header
             # https://fits.gsfc.nasa.gov/fits_primer.html
@@ -298,29 +347,24 @@ class TsmFileIO:
         print('num_elec_data = ' + str(self.num_elec_data)) 
         
 
-
-class TsmData3D(Data3D):
-    def __init__(self, file_io, data_type):
-        super().__init__(file_io, data_type)
-        self.data_type = data_type
-        self.data = 0
-        self.time_data = 0  # (ms)
-        
-        self.interval = 0  # (ms)
-        self.pixel = 0  # (um)
-        self.unit = 0  # No unit because of raw camera data.
-        
-        self.file_io = file_io
-
-        self.read_data()
+class FullFrame(Frame):
+    def __init__(self, data):
+        super().__init__(data)
 
     def read_data(self):
-        # Temporary code. This is not object oriented.
-        if self.data_type.find('full') >= 0:
-            self.data = copy.deepcopy(self.file_io.full_frame)
-            self.interval = copy.deepcopy(self.file_io.full_frame_interval)
-            
-        elif self.data_type.find('ch1') >= 0:
+        self.data = copy.deepcopy(self.file_io.full_frame)
+        self.interval = copy.deepcopy(self.file_io.full_frame_interval)
+
+        if self.data == 0:
+            print('---------------------')
+            print('Can not make 3D data')
+            print('---------------------')
+            return None
+
+
+class ChFrame(Frame):
+    def read_data(self):
+        if self.data_type.find('ch1') >= 0:
             self.data = copy.deepcopy(self.file_io.ch_frame[:,:,:,0])
             self.interval = copy.deepcopy(self.file_io.ch_frame_interval)
 
@@ -333,29 +377,8 @@ class TsmData3D(Data3D):
             print('Can not make 3D data')
             print('---------------------')
             return None
-
-    def get_data(self):
-        frame = self.data
-        interval = self.full_frame_interval
-        return frame, interval
-    
-    def update_data(self):
-        pass
         
-    def show_frame(self, frame):
-        plt.imshow(self.data[:, :, frame], cmap='gray', interpolation='none')
-
-            
-    def print_3d_infor(self):
-        #np.set_printoptions(threshold=np.inf)
-        print(self.data_type)
-        print(self.data.shape)
-        print(self.time_data)
-
-        #np.set_printoptions(threshold=1000)
-
-        
-class TsmData2D(Data2D):
+class CellImage(Image):
     def __init__(self, data_3d, data_type):
         super().__init__(data_3d, data_type)
         self.data = 0
@@ -368,8 +391,10 @@ class TsmData2D(Data2D):
         def get_data(self):
             pass
         
+class DifImage(Image):
+        pass
         
-class TsmData1D(Data1D):
+class FluoTrace(Trace):
     def __init__(self, data_3d, data_type):
         super().__init__(data_3d, data_type)
         # data_3d and data_type are in super class
@@ -401,15 +426,17 @@ class TsmData1D(Data1D):
         plt.plot(self.elec_trace[:, elec_ch])
         
     
+class ElecTrace(Trace):
+    pass
+    
 if __name__ == '__main__':
     filename = '20408A001.tsm'
     filepath = '..\\220408\\'
-    data_file1 = TsmFileIO(filename, filepath)
+    factory_type = TmsIOFactory()
+    data_file1 = factory_type.create_file_io(filename, filepath)
     
     filename = '20408A002.tsm'
-    data_file2 = TsmFileIO(filename, filepath)
-    
-    data_file1.read_data_3d()
+    data_file2 = factory_type.create_file_io(filename, filepath)
     
     
     print(data_file1.filename)
