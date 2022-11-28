@@ -18,7 +18,11 @@ abstract class
 """
 class ModelInterface(metaclass=ABCMeta):
     @abstractmethod
-    def create_data_file(self, filename, filepath):
+    def create_data_objects(self, filename, filepath):
+        pass
+    
+    @abstractmethod
+    def create_control_objects(self):
         pass
         
     @abstractmethod
@@ -36,9 +40,31 @@ class ModelInterface(metaclass=ABCMeta):
     @abstractmethod
     def reset(self):
         pass
+    
+    
+class DataFactory(metaclass=ABCMeta):
+    @abstractmethod
+    def create_data_factory(self, filename, filepath):
+        pass
+    
+class TsmFactory(DataFactory):
+    def create_data_factory(self, filename, filepath):
+        return TsmData(filename, filepath)
+    
+class DaFactory(DataFactory):
+    def create_data_factory(self, filename, filepath):
+        raise NotImplementedError
+    
+class AbfFactory(DataFactory):
+    def create_data_factory(self, filename, filepath):
+        raise NotImplementedError
+        
+class WcpFactory(DataFactory):
+    def create_data_factory(self, filename, filepath):
+        raise NotImplementedError
 
 
-class DataFileInterface():
+class DataInterface(metaclass=ABCMeta):
     @abstractmethod
     def create_file_io(self):
         pass
@@ -87,21 +113,20 @@ class Model(ModelInterface):
         print('Created a model.')
         
         self.create_control_objects()
-        self.create_data_file()
-            
+          
+    def create_data_objects(self, filename, filepath):
+        factory_type = self.file_type_checker(filename)
+        
+        self.filename.append(filename)
+        self.filepath.append(filepath)
+        self.data_file_obj.append(factory_type.create_data_factory(filename, filepath))
+        self.data_file = dict(zip(self.filename, self.data_file_obj))
+        
     def create_control_objects(self):
         self.create_roi()
         self.create_time_window()
         self.create_frame_shift()
         self.create_line()
-
-    def create_data_file(self, filename, filepath):
-        self.filename.append(filename)
-        self.filepath.append(filepath)
-        self.data_file_obj.append(file_io(filename, filepath))
-        self.data_file = dict(zip(self.filename, self.data_file_obj))
-        
-        
 
     def create_roi(self):
         self.roi_name.append('ROI' + str(len(self.roi_obj)))
@@ -138,9 +163,13 @@ class Model(ModelInterface):
     @staticmethod
     def file_type_checker(filename):
         if filename.find('.tsm') > 0:
-            return TsmIOFactory()
+            return TsmFactory()
         elif filename.find('.da') > 0:
-            return DaIOFactory()
+            return DaFactory()
+        elif filename.find('.abf') > 0:
+            return AbfFactory()
+        elif filename.find('.wcp') > 0:
+            return WcpFactory()
         else:
             print('---------------------')
             print('Can not find the file')
@@ -148,35 +177,38 @@ class Model(ModelInterface):
             return None
 
 
-class TsmFile(DataFileInterface):
-    def __init__(self, filename, filepath, factory_type):
+class TsmData(DataInterface):
+    def __init__(self, filename, filepath):
         self.filename = filename
         self.filepath = filepath
-        self.factory_type = factory_type
-        self.file_io = factory_type.create_file_io(self.filename, self.filepath)
+        
+        self.factory_type = TsmIOFactory()
         
         # Main data objects
 
+        self.file_io_obj = []
+        self.filename = []
+        self.file_io = {}
+
         self.frame_obj = []  #data instances
         self.frame_type = []  # 'full_frame', 'ch_frame'
-        self.frame_data = {}  # dictionaly, 
+        self.frame = {}  # dictionaly, 
         
         self.image_obj = []
         self.image_type = []  # 'cell_image', 'dif_image'
-        self.image_data = {}
+        self.image = {}
         
         self.trace_obj = []
         self.trace_type = []  # 'full_trace', 'ch1_trace1', 'elec_trace1', 'bg_trace'
-        self.trace_data = {}
+        self.trace = {}
 
         print('created a data_file.')
         
     def create_file_io(self):
-        factory_type = self.file_type_checker(filename)
-        
-        self.data_file_obj.append(DataFile(filename, filepath, factory_type))
+        self.file_io = factory_type.create_file_io(self.filename, self.filepath)
+        self.file_io_obj.append(DataFile(filename, filepath, factory_type))
         self.data_file = dict(zip(self.filename, self.data_file_obj))  # filename = [list]
-
+        
     def create_frame_data(self, factory_type):
         self.frame_data = factroy_type.read_data()
         data_file1 = factory_type.create_file_io(filename, filepath)
@@ -212,7 +244,7 @@ class TsmFile(DataFileInterface):
     def print_fileinfor(self):
         self.file_io.print_fileinfor()
 
-        
+""" 
 class TsmData(FileType):
     pass
 
@@ -229,7 +261,7 @@ class TsmData(FileType):
         # create empty instancse of trace data.
         for data_type in ['full_trace', 'ch1_trace', 'ch2_trace', 'bg_trace']:
             self.add_data_1d(data_type)
-
+"""
 
 
 if __name__ == '__main__':
@@ -237,7 +269,12 @@ if __name__ == '__main__':
     filename = '20408A001.tsm'
     filepath = '..\\220408\\'
     model = Model()
-    model.create_data_file(filename, filepath)
+    model.create_data_objects(filename, filepath)
+    datafile = model.data_file[filename]
+    
+    filename = '20408A002.tsm'
+    model_2 = Model()
+    model.create_data_objects(filename, filepath)
     datafile = model.data_file[filename]
 
     
