@@ -5,7 +5,9 @@ Created on Wed Nov  2 15:11:48 2022
 lunelukkio@gmail.com
 """
 from abc import ABCMeta, abstractmethod
-from model_package.data_factory import Data3D, Data2D, Data1D
+from model_package.data_factory import FullFrame, ChFrame
+from model_package.data_factory import CellImage, DifImage
+from model_package.data_factory import FluoTrace, ElecTrace
 
 """
 abstract factory

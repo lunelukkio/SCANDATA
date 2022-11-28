@@ -19,7 +19,7 @@ class IOFactory(metaclass=ABCMeta):
     def create_file_io(self, filename, filepath):  # Only this class is file format dependent.
         pass
 
-class TmsIOFactory(IOFactory):
+class TsmIOFactory(IOFactory):
     def create_file_io(self, filename, filepath):
         return TsmFileIO(filename, filepath)
     
@@ -174,7 +174,7 @@ class TsmFileIO(FileIO):
         except OSError as file_infor_error:
             print(file_infor_error)
             print('----------------------------------')
-            print('Failed to import a TMS file infor.')
+            print('Failed to import a TSM file infor.')
             print('----------------------------------')
             
         else:
@@ -210,7 +210,7 @@ class TsmFileIO(FileIO):
         except IndexError as tsm_error:
             print(tsm_error)
             print('------------------------------------')
-            print('Failed to import a TMS imaging data.')
+            print('Failed to import a TSM imaging data.')
             print('------------------------------------')
             
         else:
@@ -399,16 +399,13 @@ class Trace(metaclass=ABCMeta):  # Fluo trae, Elec trace
         pass
     
     @abstractmethod
-    def create_data(self):
-        pass
-    
-    @abstractmethod
     def update(self):
         pass
     
     @abstractmethod
     def get_data(self):
         pass
+
 
 class FluoTrace(Trace):
     def __init__(self, data):
@@ -450,8 +447,6 @@ class ElecTrace(Trace):
     def read_data(self):
         pass
 
-    def create_data(self):
-        pass
     
     def update(self):
         pass
@@ -463,7 +458,7 @@ class ElecTrace(Trace):
 if __name__ == '__main__':
     filename = '20408A001.tsm'
     filepath = '..\\220408\\'
-    factory_type = TmsIOFactory()
+    factory_type = TsmIOFactory()
     data_file1 = factory_type.create_file_io(filename, filepath)
     
     
