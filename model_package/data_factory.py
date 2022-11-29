@@ -10,23 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import copy
 
-
-"""
-IOfoctory
-"""
-class IOFactory(metaclass=ABCMeta):
-    @abstractmethod
-    def create_file_io(self, filename, filepath):  # Only this class is file format dependent.
-        pass
-
-class TsmIOFactory(IOFactory):
-    def create_file_io(self, filename, filepath):
-        return TsmFileIO(filename, filepath)
-    
-class DaIOFactory(IOFactory):
-    def create_file_io(self, filename, filepath):
-        raise NotImplementedError
-    
+  
 class FileIO(metaclass=ABCMeta):
     @abstractmethod
     def read_fileinfor(self):

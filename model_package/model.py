@@ -9,8 +9,7 @@ This is the main module for a model called by a controller
 from abc import ABCMeta, abstractmethod
 import re  # call regular expression
 from model_package.roi import Roi, TimeWindow, FrameShift, Line
-from model_package.data_factory import TsmIOFactory, DaIOFactory
-from model_package.data_factory import FullFrame
+from model_package.data_factory import TsmFileIO, FullFrame
 
 
 """
@@ -181,14 +180,7 @@ class TsmData(DataInterface):
     def __init__(self, filename, filepath):
         self.filename = filename
         self.filepath = filepath
-        
-        self.factory_type = TsmIOFactory()
-        
-        # Main data objects
-
-        self.file_io_obj = []
-        self.filename = []
-        self.file_io = {}
+        self.file_io = TsmFileIO(filename, filepath)
 
         self.frame_obj = []  #data instances
         self.frame_type = []  # 'full_frame', 'ch_frame'
@@ -203,11 +195,6 @@ class TsmData(DataInterface):
         self.trace = {}
 
         print('created a data_file.')
-        
-    def create_file_io(self):
-        self.file_io = factory_type.create_file_io(self.filename, self.filepath)
-        self.file_io_obj.append(DataFile(filename, filepath, factory_type))
-        self.data_file = dict(zip(self.filename, self.data_file_obj))  # filename = [list]
         
     def create_frame_data(self, factory_type):
         self.frame_data = factroy_type.read_data()
@@ -269,11 +256,6 @@ if __name__ == '__main__':
     filename = '20408A001.tsm'
     filepath = '..\\220408\\'
     model = Model()
-    model.create_data_objects(filename, filepath)
-    datafile = model.data_file[filename]
-    
-    filename = '20408A002.tsm'
-    model_2 = Model()
     model.create_data_objects(filename, filepath)
     datafile = model.data_file[filename]
 
