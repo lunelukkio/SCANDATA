@@ -180,6 +180,8 @@ class TsmData(DataInterface):
     def __init__(self, filename, filepath):
         self.filename = filename
         self.filepath = filepath
+        
+        #Read .tsm and .tbn file set.
         self.file_io = TsmFileIO(filename, filepath)
 
         self.frame_obj = []  #data instances
@@ -196,22 +198,21 @@ class TsmData(DataInterface):
 
         print('created a data_file.')
         
-    def create_frame_data(self, factory_type):
+    def create_frame_obj(self, factory_type):
         self.frame_data = factroy_type.read_data()
         data_file1 = factory_type.create_file_io(filename, filepath)
 
-    def create_(self, data_type):
         
         
         self.data_3d_obj.append(self.factory_type.create_frame(self.file_io, data_type))
         self.data_3d_type.append(data_type)
         self.data_3d = dict(zip(self.data_3d_type, self.data_3d_obj))
          
-    def create_image_data(self, data_3d, data_type):
+    def create_image_obj(self, data_3d, data_type):
         self.data_2d.append(Data2D(data_type))
         self.data_2d[len(self.data_2d)-1].create_data()
         
-    def create_trace_data(self, data_3d, data_type):
+    def create_trace_obj(self, data_3d, data_type):
         check_num = len(self.dict_regex(self.data_1d, '^' + data_type))
         print(check_num)
         

@@ -11,24 +11,6 @@ import matplotlib.pyplot as plt
 import copy
 
   
-class FileIO(metaclass=ABCMeta):
-    @abstractmethod
-    def read_fileinfor(self):
-        pass
-
-    @abstractmethod
-    def read_frame_data(self):
-        pass
-    
-    @abstractmethod
-    def read_image_data(self):
-        pass
-    
-    @abstractmethod
-    def read_trace_data(self):
-        pass
-
-
 """
 Frame factory
 """
@@ -83,7 +65,7 @@ class ElecTraceFactory(TraceFactory):
 """
 product
 """
-class TsmFileIO(FileIO):
+class TsmFileIO():
     def __init__(self, filename, filepath):
         # about file
         self.filename = filename
@@ -115,6 +97,7 @@ class TsmFileIO(FileIO):
         # read data
         self.read_fileinfor()
         self.read_frame_data()
+        self.read_tbn_data()
         
     def read_fileinfor(self):
         try:
@@ -212,7 +195,7 @@ class TsmFileIO(FileIO):
     def read_image_data(self):
         pass  # No cell image from tsm data
     
-    def read_trace_data(self):  # from .tbn files
+    def read_tbn_data(self):  # from .tbn files
         try:
             # read a header
             # https://fits.gsfc.nasa.gov/fits_primer.html
