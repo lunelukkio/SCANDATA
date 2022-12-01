@@ -69,15 +69,19 @@ class DataInterface(metaclass=ABCMeta):
         pass
     
     @abstractmethod
-    def create_frame_data(self):
+    def create_frame_obj(self):
         pass
     
     @abstractmethod
-    def create_image_data(self):
+    def create_image_obj(self):
         pass
     
     @abstractmethod
-    def create_trace_data(self):
+    def create_trace_obj(self):
+        pass
+    
+    @abstractmethod
+    def get_data(self, data_type):
         pass
 
 
@@ -112,6 +116,7 @@ class Model(ModelInterface):
         print('Created a model.')
         
         self.create_control_objects()
+
           
     def create_data_objects(self, filename, filepath):
         factory_type = self.file_type_checker(filename)
@@ -182,7 +187,7 @@ class TsmData(DataInterface):
         self.filepath = filepath
         
         #Read .tsm and .tbn file set.
-        self.file_io = TsmFileIO(filename, filepath)
+        self.file_io = []
 
         self.frame_obj = []  #data instances
         self.frame_type = []  # 'full_frame', 'ch_frame'
@@ -197,6 +202,10 @@ class TsmData(DataInterface):
         self.trace = {}
 
         print('created a data_file.')
+        self.create_file_io()
+        
+    def create_file_io(self):
+        self.file_io = TsmFileIO(filename, filepath)
         
     def create_frame_obj(self, factory_type):
         self.frame_data = factroy_type.read_data()
@@ -228,6 +237,9 @@ class TsmData(DataInterface):
             if cp_search_word.search(k):
                 ret.append(dict_name[k])
         return ret
+    
+    def get_data(self, data_type):
+        pass
     
     def print_fileinfor(self):
         self.file_io.print_fileinfor()
