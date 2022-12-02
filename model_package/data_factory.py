@@ -268,7 +268,7 @@ class Frame(metaclass=ABCMeta):  # 3D frame data: full frame, ch image
         pass
 
     def show_frame(self, frame):
-        plt.imshow(self.data[:, :, frame], cmap='gray', interpolation='none')
+        plt.imshow(self.frame_data[:, :, frame], cmap='gray', interpolation='none')
 
     def print_frame_infor(self):
         #np.set_printoptions(threshold=np.inf)

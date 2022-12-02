@@ -22,7 +22,7 @@ abstract product
 """
 class ControlValInterface(metaclass=ABCMeta):
     @abstractmethod
-    def set_data(self, val):
+    def set_data(self):
         pass
 
     @abstractmethod

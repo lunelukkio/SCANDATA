@@ -153,8 +153,8 @@ class Model(ModelInterface):
         self.line_obj.append(Line())
         self.line = dict(zip(self.line_name, self.line_obj))  # filename = [list]
 
-    def set_data(self, control_type, val):
-        raise NotImplementedError
+    def set_data(self, control_type, val):  # e.g. model.set_data(roi[0], [10,10,3,3])
+        return control_type.set_data(val)
     
     def get_data(self, filename, data_type):
         return self.data_file[filename].get_data(data_type)
@@ -205,14 +205,17 @@ class TsmData(DataInterface):
         print('created a data_file.')
         
         self.create_file_io()
-        self.create_frame_obj(FullFrameFactory('full_frame'))
-        self.frame['full_frame1'].read_data()
+        self.create_frame_obj(FullFrameFactory())
+        #self.frame[0].read_data()
         
     def create_file_io(self):
         self.file_io = TsmFileIO(filename, filepath)
         
     def create_frame_obj(self, factory_type):  #FullFrameFactory, ChFrameFactory
         self.frame_obj.append(factory_type.create_frame(self.file_io))
+        
+        
+        # 'full_frame' is not good. it should be changable.full_frame1 ch_frame1
         self.frame_type.append('full_frame')
         self.frame = dict(zip(self.frame_type, self.frame_obj))
 
