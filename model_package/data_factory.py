@@ -19,11 +19,11 @@ class FrameFactory(metaclass=ABCMeta):
     def create_frame(self, data):
         pass
     
-class FullFrameFacoty(FrameFactory):
+class FullFrameFactory(FrameFactory):
     def create_frame(self, data):  # data = file_io
         return FullFrame(data)
     
-class ChFrameFacoty(FrameFactory):
+class ChFrameFactory(FrameFactory):
     def create_frame(self, data):  # data = file_io
         return ChFrame(data)
     
@@ -243,7 +243,9 @@ class TsmFileIO():
         print('num_elec_data = ' + str(self.num_elec_data)) 
         
 class Frame(metaclass=ABCMeta):  # 3D frame data: full frame, ch image
-    def __init__(self, data):  
+    def __init__(self, data):
+        self.file_io = data
+        
         self.frame_data = np.array([0,])
         self.time_data = np.array([0,])  # (ms)
         
@@ -251,8 +253,6 @@ class Frame(metaclass=ABCMeta):  # 3D frame data: full frame, ch image
         self.pixel = 0  # (um)
         self.unit = 0  # No unit because of raw camera data.
         
-        self.file_io = data
-
         self.read_data()
 
     @abstractmethod
@@ -297,7 +297,7 @@ class ChFrame(Frame):
     def __init__(self, data):
         super().__init__(data)  # Need this???
     
-    def read_data(self, ch):
+    def read_data(self, ch=1):
         self.data = copy.deepcopy(self.file_io.ch_frame[:,:,:,ch-1])
         self.interval = copy.deepcopy(self.file_io.ch_frame_interval)
 

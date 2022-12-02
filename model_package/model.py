@@ -9,7 +9,8 @@ This is the main module for a model called by a controller
 from abc import ABCMeta, abstractmethod
 import re  # call regular expression
 from model_package.roi import Roi, TimeWindow, FrameShift, Line
-from model_package.data_factory import TsmFileIO, FullFrame
+from model_package.data_factory import TsmFileIO
+from model_package.data_factory import FullFrameFactory, ChFrameFactory
 
 
 """
@@ -29,7 +30,7 @@ class ModelInterface(metaclass=ABCMeta):
         pass
     
     @abstractmethod
-    def get_object(self, data_type):
+    def get_data(self, filename, data_type):
         pass
     
     @abstractmethod
@@ -155,8 +156,8 @@ class Model(ModelInterface):
     def set_data(self, control_type, val):
         raise NotImplementedError
     
-    def get_object(self, data_file):
-        pass
+    def get_data(self, filename, data_type):
+        return self.data_file[filename].get_data(data_type)
     
     def set_mod(self, control_type, mod_type, val):
         raise NotImplementedError
@@ -202,20 +203,20 @@ class TsmData(DataInterface):
         self.trace = {}
 
         print('created a data_file.')
+        
         self.create_file_io()
+        self.create_frame_obj(FullFrameFactory('full_frame'))
+        self.frame['full_frame1'].read_data()
         
     def create_file_io(self):
         self.file_io = TsmFileIO(filename, filepath)
         
-    def create_frame_obj(self, factory_type):
-        self.frame_data = factroy_type.read_data()
-        data_file1 = factory_type.create_file_io(filename, filepath)
+    def create_frame_obj(self, factory_type):  #FullFrameFactory, ChFrameFactory
+        self.frame_obj.append(factory_type.create_frame(self.file_io))
+        self.frame_type.append('full_frame')
+        self.frame = dict(zip(self.frame_type, self.frame_obj))
 
-        
-        
-        self.data_3d_obj.append(self.factory_type.create_frame(self.file_io, data_type))
-        self.data_3d_type.append(data_type)
-        self.data_3d = dict(zip(self.data_3d_type, self.data_3d_obj))
+
          
     def create_image_obj(self, data_3d, data_type):
         self.data_2d.append(Data2D(data_type))
