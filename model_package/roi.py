@@ -12,7 +12,7 @@ from model_package.data_factory import FluoTrace, ElecTrace
 """
 abstract factory
 """
-class ControlValFactory:
+class ModelControllerFactory:
     @abstractmethod
     def create_control_val(self, val):
         pass
@@ -20,7 +20,7 @@ class ControlValFactory:
 """
 abstract product
 """
-class ControlValInterface(metaclass=ABCMeta):
+class ModelController(metaclass=ABCMeta):
     @abstractmethod
     def set_data(self):
         pass
@@ -84,8 +84,11 @@ class LineFactory:
 """
 concrete product
 """
-class Roi(ControlValInterface):
+class Roi(ModelController):
+    num_instance = 0  # Class member to count the number of instance
+    
     def __init__(self):
+        Roi.num_instance += 1
         self.__observers = []
         
         self.__x = 40
@@ -138,8 +141,12 @@ class Roi(ControlValInterface):
               str(self.__observers))
 
     
-class TimeWindow(ControlValInterface):
+class TimeWindow(ModelController):
+    num_instance = 0  # Class member to count the number of instance
+
     def __init__(self):
+        TimeWindow.num_instance += 1
+        
         self.__frame_start = 0
         self.__frame_end = 1
         self.__time_start_width = 10  #(ms)
@@ -175,7 +182,7 @@ class TimeWindow(ControlValInterface):
               str(self.__frame_start) + ' ,' +
               str(self.__frame_end))
         
-class FrameShift:
+class FrameShift(ModelController):
     def set_data(self, val):
         pass
 
@@ -198,7 +205,7 @@ class FrameShift:
         pass
 
 
-class Line:
+class Line(ModelController):
     def set_data(self, val):
         pass
 

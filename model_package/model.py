@@ -9,6 +9,7 @@ This is the main module for a model called by a controller
 from abc import ABCMeta, abstractmethod
 import re  # call regular expression
 from model_package.roi import Roi, TimeWindow, FrameShift, Line
+from model_package.data_factory import Frame, Image, Trace
 from model_package.data_factory import TsmFileIO
 from model_package.data_factory import FullFrameFactory, ChFrameFactory
 
@@ -82,7 +83,7 @@ class DataInterface(metaclass=ABCMeta):
         pass
     
     @abstractmethod
-    def get_data(self, data_type):
+    def get_data(self, data_name):
         pass
 
 
@@ -113,11 +114,10 @@ class Model(ModelInterface):
         self.line_name = []
         self.line_obj = []
         self.line = {}
-        
+
         print('Created a model.')
         
         self.create_control_objects()
-
           
     def create_data_objects(self, filename, filepath):
         factory_type = self.file_type_checker(filename)
@@ -134,30 +134,32 @@ class Model(ModelInterface):
         self.create_line()
 
     def create_roi(self):
-        self.roi_name.append('ROI' + str(len(self.roi_obj)))
-        self.roi_obj.append(Roi())
+        product = Roi()
+        self.roi_obj.append(product)
+        self.roi_name.append('Roi' + str(product.num_instance))
         self.roi = dict(zip(self.roi_name, self.roi_obj))  # filename = [list]
         
     def create_time_window(self):
-        self.time_window_name.append('time_window' + str(len(self.time_window_obj)))
+        self.time_window_name.append('TimeWindow' + str(len(self.time_window_obj)))
         self.time_window_obj.append(TimeWindow())
         self.time_window = dict(zip(self.time_window_name, self.time_window_obj))  # filename = [list]
         
     def create_frame_shift(self):
-        self.frame_shift_name.append('frame_shift' + str(len(self.frame_shift_obj)))
+        self.frame_shift_name.append('FrameShift' + str(len(self.frame_shift_obj)))
         self.frame_shift_obj.append(FrameShift())
         self.frame_shift = dict(zip(self.frame_shift_name, self.frame_shift_obj))  # filename = [list]
         
     def create_line(self):
-        self.line_name.append('line' + str(len(self.line_obj)))
+        self.line_name.append('Line' + str(len(self.line_obj)))
         self.line_obj.append(Line())
         self.line = dict(zip(self.line_name, self.line_obj))  # filename = [list]
 
-    def set_data(self, control_type, val):  # e.g. model.set_data(roi[0], [10,10,3,3])
-        return control_type.set_data(val)
+    def set_data(self, ModelController, val):  # e.g. model.set_data(roi[0], [10,10,3,3])
+        print(ModelController)
+        return self.ModelController.set_data(val)
     
-    def get_data(self, filename, data_type):
-        return self.data_file[filename].get_data(data_type)
+    def get_data(self, filename, data_name):  # e.g. model.get_data('20408A001,tsm, Trace['trace1'])
+        return self.data_file[filename].get_data(data_name)
     
     def set_mod(self, control_type, mod_type, val):
         raise NotImplementedError
@@ -192,7 +194,7 @@ class TsmData(DataInterface):
 
         self.frame_obj = []  #data instances
         self.frame_type = []  # 'full_frame', 'ch_frame'
-        self.frame = {}  # dictionaly, 
+        self.frame = {}  # dictionaly
         
         self.image_obj = []
         self.image_type = []  # 'cell_image', 'dif_image'
@@ -206,20 +208,20 @@ class TsmData(DataInterface):
         
         self.create_file_io()
         self.create_frame_obj(FullFrameFactory())
-        #self.frame[0].read_data()
+        self.create_frame_obj(ChFrameFactory(), 1)  # Ch 1, name ChFrame1
+        self.create_frame_obj(ChFrameFactory(), 2)  # Ch 2, name ChFrame2
         
     def create_file_io(self):
         self.file_io = TsmFileIO(filename, filepath)
         
-    def create_frame_obj(self, factory_type):  #FullFrameFactory, ChFrameFactory
-        self.frame_obj.append(factory_type.create_frame(self.file_io))
+    def create_frame_obj(self, factory_type, ch=0):  #FullFrameFactory, ChFrameFactory
+        product = factory_type.create_frame(self.file_io, ch)
+        object_name = product.__class__.__name__  # str
+        num_product = product.num_instance  # int
         
-        
-        # 'full_frame' is not good. it should be changable.full_frame1 ch_frame1
-        self.frame_type.append('full_frame')
+        self.frame_obj.append(product)
+        self.frame_type.append(object_name + str(num_product))
         self.frame = dict(zip(self.frame_type, self.frame_obj))
-
-
          
     def create_image_obj(self, data_3d, data_type):
         self.data_2d.append(Data2D(data_type))
@@ -242,21 +244,17 @@ class TsmData(DataInterface):
                 ret.append(dict_name[k])
         return ret
     
-    def get_data(self, data_type):
-        pass
+    def get_data(self, data_name):
+        return self.data_name
     
     def print_fileinfor(self):
         self.file_io.print_fileinfor()
 
+    
+
 """ 
 class TsmData(FileType):
-    pass
 
-    def create_data_set():
-        # create instance of 3D data.
-        self.add_data_3d('full_frame')
-        self.add_data_3d('ch1_frame')
-        self.add_data_3d('ch2_frame')
         
         # create empty instances of elec data.
         for i in range(0, 8):
@@ -275,9 +273,10 @@ if __name__ == '__main__':
     model = Model()
     model.create_data_objects(filename, filepath)
     datafile = model.data_file[filename]
-
     
-    #model.roi['ROI1'].set_data([10,10,40,40])
+    model.data_file[filename].frame['ChFrame1'].show_frame(6)
+    #model.set_data(model.roi['Roi1'],[10,10,40,40])
+    model.roi['Roi1'].set_data([10,10,40,40])
     
 
     #model.data_file[filename].data_3d['ch1_frame'].show_frame(1)  

@@ -16,16 +16,16 @@ Frame factory
 """
 class FrameFactory(metaclass=ABCMeta):
     @abstractmethod
-    def create_frame(self, data):
+    def create_frame(self, data, ch):
         pass
     
 class FullFrameFactory(FrameFactory):
-    def create_frame(self, data):  # data = file_io
-        return FullFrame(data)
+    def create_frame(self, data, ch):  # data = file_io
+        return FullFrame(data, ch)
     
 class ChFrameFactory(FrameFactory):
-    def create_frame(self, data):  # data = file_io
-        return ChFrame(data)
+    def create_frame(self, data, ch):  # data = file_io
+        return ChFrame(data, ch)
     
 
 """
@@ -243,7 +243,7 @@ class TsmFileIO():
         print('num_elec_data = ' + str(self.num_elec_data)) 
         
 class Frame(metaclass=ABCMeta):  # 3D frame data: full frame, ch image
-    def __init__(self, data):
+    def __init__(self, data, ch):
         self.file_io = data
         
         self.frame_data = np.array([0,])
@@ -253,7 +253,7 @@ class Frame(metaclass=ABCMeta):  # 3D frame data: full frame, ch image
         self.pixel = 0  # (um)
         self.unit = 0  # No unit because of raw camera data.
         
-        self.read_data()
+        self.read_data(ch)
 
     @abstractmethod
     def read_data(self, ch):
@@ -279,9 +279,11 @@ class Frame(metaclass=ABCMeta):  # 3D frame data: full frame, ch image
         #np.set_printoptions(threshold=1000)
 
 class FullFrame(Frame):
-    def __init__(self, data):
-        super().__init__(data)  # Need this???
-
+    num_instance = 0  # Class member to count the number of instance
+    def __init__(self, data, ch):
+        super().__init__(data, ch)
+        FullFrame.num_instance += 1
+        
     def read_data(self, ch=0):
         self.frame_data = copy.deepcopy(self.file_io.full_frame)
         self.interval = copy.deepcopy(self.file_io.full_frame_interval)
@@ -292,13 +294,20 @@ class FullFrame(Frame):
             print('Can not make 3D data')
             print('---------------------')
             return None
+        
+        print('Read full frames')
 
 class ChFrame(Frame):
-    def __init__(self, data):
-        super().__init__(data)  # Need this???
+    num_instance = 0  # Class member to count the number of instance
+    def __init__(self, data, ch):
+        super().__init__(data, ch)  # Need this???
+        ChFrame.num_instance += 1
+        if ch < 1:
+            print('Need a channel number')
     
-    def read_data(self, ch=1):
-        self.data = copy.deepcopy(self.file_io.ch_frame[:,:,:,ch-1])
+    def read_data(self, ch):  # ran by super class 'Frame'
+        print(str(ch))
+        self.frame_data = copy.deepcopy(self.file_io.ch_frame[:,:,:,ch-1])
         self.interval = copy.deepcopy(self.file_io.ch_frame_interval)
 
         if len(self.frame_data) <= 1:
@@ -306,7 +315,8 @@ class ChFrame(Frame):
             print('Can not make 3D data')
             print('---------------------')
             return None
-
+        
+        print('Read ch frames')
 
 class Image(metaclass=ABCMeta):  # cell image, dif image
     def __init__(self, data):
@@ -329,6 +339,7 @@ class Image(metaclass=ABCMeta):  # cell image, dif image
         pass
 
 class CellImage(Image):
+    num_instance = 0  # Class member to count the number of instance
     def __init__(self, data):
         super().__init__(data)
         self.image_data = data
@@ -343,6 +354,7 @@ class CellImage(Image):
         pass
         
 class DifImage(Image):
+    num_instance = 0  # Class member to count the number of instance
     def __init__(self, data):
         super().__init__(data)
 
@@ -375,6 +387,7 @@ class Trace(metaclass=ABCMeta):  # Fluo trae, Elec trace
 
 
 class FluoTrace(Trace):
+    num_instance = 0  # Class member to count the number of instance
     def __init__(self, data):
         super().__init__(data)
         self.frame_data = data
@@ -406,6 +419,7 @@ class FluoTrace(Trace):
         
     
 class ElecTrace(Trace):
+    num_instance = 0  # Class member to count the number of instance
     def __init__(self, data):
         super().__init__(data)
         self.file_io = data  # from .tbn
@@ -421,15 +435,18 @@ class ElecTrace(Trace):
     def get_data(self):
         pass
     
-    
+
+
 if __name__ == '__main__':
     filename = '20408A001.tsm'
     filepath = '..\\220408\\'
-    factory_type = TsmIOFactory()
-    data_file1 = factory_type.create_file_io(filename, filepath)
+
+    io = TsmFileIO(filename, filepath)
+    factory_type = FullFrameFactory()
+    data_file1 = factory_type.create_frame(io)
     
     
-    print(data_file1.filename)
+    data_file1.show_frame(0)
 
     
 
