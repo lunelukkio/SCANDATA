@@ -11,8 +11,8 @@ import re  # call regular expression
 from model_package.roi import Roi, TimeWindow, FrameShift, Line
 from model_package.data_factory import TsmFileIO
 from model_package.data_factory import FullFrameFactory, ChFrameFactory
-from model_package.data_factory import CellImageFactory
-
+from model_package.data_factory import CellImageFactory, DifImageFactory
+from model_package.data_factory import ElecTraceFactory, FluoTraceFactory
 
 """
 abstract class
@@ -192,7 +192,7 @@ class TsmData(DataInterface):
         self.filepath = filepath
         
         #Read .tsm and .tbn file set.
-        self.file_io = []
+        self.file_io = 0
 
         self.frame_obj = []  #data instances
         self.frame_type = []  # 'full_frame', 'ch_frame'
@@ -219,6 +219,9 @@ class TsmData(DataInterface):
         self.create_image_obj(CellImageFactory(), self.frame['ChFrame1'].frame_data)  # Ch 1 image.
         self.create_image_obj(CellImageFactory(), self.frame['ChFrame2'].frame_data)  # Ch 2 image.
         
+        #for i in range[1,9]:
+            #self.create_trace_obj(ElecTraceFactory(), i)
+        
         # Bind image observers to time controller
         model.time_window['TimeWindow1'].add_observer(self.image['CellImage1'])
         model.time_window['TimeWindow1'].add_observer(self.image['CellImage2'])
@@ -244,7 +247,17 @@ class TsmData(DataInterface):
         self.image_type.append(object_name + str(num_product))
         self.image = dict(zip(self.image_type, self.image_obj))
         
-    def create_trace_obj(self, data_3d, data_type):
+    def create_trace_obj(self, factory_type, ch):
+        product = factory_type.create_trace(self.file_io, ch)
+        object_name = product.__class__.__name__  # str
+        num_product = product.num_instance  # int
+        
+        self.frame_obj.append(product)
+        self.frame_type.append(object_name + str(num_product))
+        self.frame = dict(zip(self.frame_type, self.frame_obj))
+        
+        
+        
         check_num = len(self.dict_regex(self.data_1d, '^' + data_type))
         print(check_num)
         

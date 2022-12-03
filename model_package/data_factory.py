@@ -89,6 +89,7 @@ class TsmFileIO():
         self.ch_3D_size = 0
 
         # about elec
+        self.elec_trace = np.empty([0,])
         self.bnc_ratio = 0
         self.num_elec_ch = 0
         self.elec_interval = 0
@@ -287,7 +288,7 @@ class FullFrame(Frame):
     def read_data(self, ch=0):
         self.frame_data = copy.deepcopy(self.file_io.full_frame)
         self.interval = copy.deepcopy(self.file_io.full_frame_interval)
-        len(self.frame_data)
+        #len(self.frame_data)
         
         if len(self.frame_data) <= 1:
             print('---------------------')
@@ -384,7 +385,7 @@ class DifImage(Image):
 
 
 class Trace(metaclass=ABCMeta):  # Fluo trae, Elec trace
-    def __init__(self, data):
+    def __init__(self):
         self.trace_data = np.array([0,])
         self.time_data = np.array([0,])
         
@@ -437,15 +438,24 @@ class FluoTrace(Trace):
     
 class ElecTrace(Trace):
     num_instance = 0  # Class member to count the number of instance
-    def __init__(self, data):
+    def __init__(self):
         super().__init__(data)
         ElecTrace.num_instance += 1
         
         self.file_io = data  # from .tbn
         # trace_data and time_data are in the super class
 
-    def read_data(self):
-        pass
+    def read_data(self, ch):
+        self.trace_data = copy.deepcopy(self.file_io.elec_trace[ch-1])
+        self.interval = copy.deepcopy(self.file_io.elec_interval)
+        
+        if len(self.trace_data) <= 1:
+            print('---------------------')
+            print('Can not make 3D data')
+            print('---------------------')
+            return None
+        
+        print('Read full frames')
 
     
     def update(self):
