@@ -16,16 +16,16 @@ Frame factory
 """
 class FrameFactory(metaclass=ABCMeta):
     @abstractmethod
-    def create_frame(self, data, ch):
+    def create_frame(self, data, interval):
         pass
     
 class FullFrameFactory(FrameFactory):
-    def create_frame(self, data, ch=0):  # data = file_io
-        return FullFrame(data, ch)
+    def create_frame(self, data, interval):  # data = file_io
+        return FullFrame(data, interval)
     
 class ChFrameFactory(FrameFactory):
-    def create_frame(self, data, ch):  # data = file_io
-        return ChFrame(data, ch)
+    def create_frame(self, data, interval):  # data = file_io
+        return ChFrame(data, interval)
     
 
 """
@@ -252,7 +252,7 @@ class TsmFileIO():
         print('num_elec_data = ' + str(self.num_elec_data)) 
         
 class Frame(metaclass=ABCMeta):  # 3D frame data: full frame, ch image
-    def __init__(self, data, ch):
+    def __init__(self, data, interval):
         self.frame_data = np.array([0,])
         self.time_data = np.array([0,])  # (ms)
         
@@ -260,11 +260,19 @@ class Frame(metaclass=ABCMeta):  # 3D frame data: full frame, ch image
         self.pixel = 0  # (um)
         self.unit = 0  # No unit because of raw camera data.
         
-        self.read_data(data, ch)
+        self.read_data(data, interval)
 
-    @abstractmethod
-    def read_data(self, data, ch):
-        pass
+    def read_data(self, data, interval):
+        self.frame_data = copy.deepcopy(data)
+        self.interval = copy.deepcopy(interval)
+        
+        if len(self.frame_data) <= 1:
+            print('---------------------')
+            print('Can not make 3D data')
+            print('---------------------')
+            return None
+        
+        print('Read a frame data')
     
     def get_data(self):
         frame = self.frame_data
@@ -287,42 +295,15 @@ class Frame(metaclass=ABCMeta):  # 3D frame data: full frame, ch image
 
 class FullFrame(Frame):
     num_instance = 0  # Class member to count the number of instance
-    def __init__(self, data, ch):
-        super().__init__(data, ch)
+    def __init__(self, data, interval):
+        super().__init__(data, interval)
         FullFrame.num_instance += 1
-        
-    def read_data(self, data, ch=0):
-        self.frame_data = copy.deepcopy(data.full_frame)
-        self.interval = copy.deepcopy(data.full_frame_interval)
-        
-        if len(self.frame_data) <= 1:
-            print('---------------------')
-            print('Can not make 3D data')
-            print('---------------------')
-            return None
-        
-        print('Read full frames')
 
 class ChFrame(Frame):
     num_instance = 0  # Class member to count the number of instance
-    def __init__(self, data, ch):
-        super().__init__(data, ch)  # Need this???
+    def __init__(self, data, interval):
+        super().__init__(data, interval)
         ChFrame.num_instance += 1
-        if ch < 1:
-            print('Need a channel number')
-    
-    def read_data(self, data, ch):  # ran by super class 'Frame'
-        print(str(ch))
-        self.frame_data = copy.deepcopy(data.ch_frame[:,:,:,ch-1])
-        self.interval = copy.deepcopy(data.ch_frame_interval)
-
-        if len(self.frame_data) <= 1:
-            print('---------------------')
-            print('Can not make 3D data')
-            print('---------------------')
-            return None
-        
-        print('Read ch frames')
 
 class Image(metaclass=ABCMeta):  # cell image, dif image
     def __init__(self, data):
@@ -413,25 +394,35 @@ class Trace(metaclass=ABCMeta):  # Fluo trae, Elec trace
 class FluoTrace(Trace):
     num_instance = 0  # Class member to count the number of instance
     def __init__(self, data, interval):
-        super().__init__(data)
+        super().__init__()
         FluoTrace.num_instance += 1
         
         self.frame_data = data
+        self.interval = copy.deepcopy(interval)
         # trace_data and time_data are in the super class
+        
+        self.read_data([40, 40, 1, 1])
+        self.create_time_data()
 
-    def read_data(self, roi_obj):
-        roi_xy_infor = roi_obj.get_data()  # [x, y, x_length, y_length, roi_num]
-        full_frame
-        num_frame = data_3d['full_frame']
-        frame = self.data_container.imaging_data.ch_frame
+    def read_data(self, roi):  # roi[x, y, x_length, y_length]   
+        self.trace_data = self.fluo_trace_creator(self.frame_data, roi)
         
-        self.ch_fluo_trace_data = np.empty([num_frame, num_fluo_ch])
-        
-        for i in range(self.data_container.fileinfor.num_fluo_ch):
-            trace = FluoTraceCreator.fluo_trace_creator(frame[:,:,:,i], roi_xy_infor)  # abstract method
-            self.ch_fluo_trace_data[:,i] = trace
+    @staticmethod
+    def fluo_trace_creator(frame, roi):
+        x = roi[0]
+        y = roi[1]
+        x_length = roi[2]
+        y_length = roi[3]
+        mean_data = np.mean(frame[x:x+x_length, y:y+y_length, :], axis = 0)
+        mean_data = np.mean(mean_data, axis = 0)
+        return mean_data
+        print('Undated ROI = ' + str(roi))
     
-        print('Unpated ROI = ' + str(roi_xy_infor))
+    def create_time_data(self):
+        num_data_point = self.interval * np.shape(self.trace_data)[0]
+        self.time_data = np.linspace(self.interval, 
+                                     num_data_point, 
+                                     np.shape(self.trace_data)[0])
     
     def update(self, roi_obj):
         self.read_data(roi_obj)
@@ -453,7 +444,9 @@ class ElecTrace(Trace):
         self.trace_data = copy.deepcopy(data)
         self.interval = copy.deepcopy(interval)
         num_data_point = self.interval * np.shape(self.trace_data)[0]
-        self.time_data = np.linspace(self.interval, num_data_point, np.shape(self.trace_data)[0])
+        self.time_data = np.linspace(self.interval, 
+                                     num_data_point, 
+                                     np.shape(self.trace_data)[0])
         
         if len(self.trace_data) <= 1:
             print('---------------------')

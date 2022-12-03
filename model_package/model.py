@@ -8,6 +8,7 @@ This is the main module for a model called by a controller
 
 from abc import ABCMeta, abstractmethod
 import re  # call regular expression
+import pprint
 from model_package.roi import Roi, TimeWindow, FrameShift, Line
 from model_package.data_factory import TsmFileIO
 from model_package.data_factory import FullFrameFactory, ChFrameFactory
@@ -211,30 +212,53 @@ class TsmData(DataInterface):
         self.create_file_io()
         
         # create frame data
-        self.create_frame_obj(FullFrameFactory())
-        self.create_frame_obj(ChFrameFactory(), 1)  # Ch 1, name ChFrame1
-        self.create_frame_obj(ChFrameFactory(), 2)  # Ch 2, name ChFrame2
+        self.create_frame_obj(FullFrameFactory(),
+                              self.file_io.full_frame,
+                              self.file_io.full_frame_interval)
+        self.create_frame_obj(ChFrameFactory(), 
+                              self.file_io.ch_frame[:,:,:,0], 
+                              self.file_io.ch_frame_interval)  # Ch 1, name ChFrame1
+        self.create_frame_obj(ChFrameFactory(), 
+                              self.file_io.ch_frame[:,:,:,1], 
+                              self.file_io.ch_frame_interval)  # Ch 2, name ChFrame2
         
         # create image data
-        self.create_image_obj(CellImageFactory(), self.frame['ChFrame1'].frame_data)  # Ch 1 image.
-        self.create_image_obj(CellImageFactory(), self.frame['ChFrame2'].frame_data)  # Ch 2 image.
+        self.create_image_obj(CellImageFactory(), 
+                              self.frame['ChFrame1'].frame_data)  # Ch 1 image.
+        self.create_image_obj(CellImageFactory(), 
+                              self.frame['ChFrame2'].frame_data)  # Ch 2 image.
         
         # create elec trace
         for i in range(0,8):
-            self.create_trace_obj(ElecTraceFactory(), self.file_io.elec_trace[:, i], self.file_io.elec_interval)
-            
+            self.create_trace_obj(ElecTraceFactory(), 
+                                  self.file_io.elec_trace[:, i], 
+                                  self.file_io.elec_interval)
+        
         # create fluo trace
-        #self.create_trace_obj(FluoTraceFactory())
+        self.create_trace_obj(FluoTraceFactory(), 
+                              self.frame['FullFrame1'].frame_data, 
+                              self.file_io.full_frame_interval)
+        self.create_trace_obj(FluoTraceFactory(), 
+                              self.frame['ChFrame1'].frame_data, 
+                              self.file_io.ch_frame_interval)
+        self.create_trace_obj(FluoTraceFactory(), 
+                              self.frame['ChFrame2'].frame_data, 
+                              self.file_io.ch_frame_interval)
         
         # Bind image observers to time controller
         model.time_window['TimeWindow1'].add_observer(self.image['CellImage1'])
         model.time_window['TimeWindow1'].add_observer(self.image['CellImage2'])
         
+        # Bind trace observers to time controller
+        model.roi['Roi1'].add_observer(self.trace['FluoTrace1'])
+        model.roi['Roi1'].add_observer(self.trace['FluoTrace2'])
+        model.roi['Roi1'].add_observer(self.trace['FluoTrace3'])
+        
     def create_file_io(self):
         self.file_io = TsmFileIO(filename, filepath)
         
-    def create_frame_obj(self, factory_type, ch=0):  #FullFrameFactory, ChFrameFactory
-        product = factory_type.create_frame(self.file_io, ch)
+    def create_frame_obj(self, factory_type, data, interval):  #FullFrameFactory, ChFrameFactory
+        product = factory_type.create_frame(data, interval)
         object_name = product.__class__.__name__  # str
         num_product = product.num_instance  # int
         
@@ -274,8 +298,12 @@ class TsmData(DataInterface):
     
     def print_fileinfor(self):
         self.file_io.print_fileinfor()
-
-
+        print('Object List')
+        pprint.pprint(model.data_file[filename].file_io)
+        pprint.pprint(model.data_file[filename].frame)
+        pprint.pprint(model.data_file[filename].image)
+        pprint.pprint(model.data_file[filename].trace)
+    
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
     filename = '20408A001.tsm'
@@ -283,16 +311,20 @@ if __name__ == '__main__':
     model = Model()
     model.create_data_objects(filename, filepath)
     datafile = model.data_file[filename]
-
+    model.data_file[filename].print_fileinfor()
     
     model.data_file[filename].frame['ChFrame1'].show_frame(6)
-    model.set_data(model.roi['Roi1'],[10,10,40,40])
-    model.roi['Roi1'].set_data([1,1,20,30])
+
     model.time_window['TimeWindow1'].set_data([2,2,2,2])
     image = plt.figure()
     model.data_file[filename].image['CellImage1'].show_image()
-    trace = plt.figure()
-    model.data_file[filename].trace['ElecTrace2'].plot_trace()
+    electrace = plt.figure()
+    model.data_file[filename].trace['ElecTrace1'].plot_trace()
+    fluotrace = plt.figure()
+    model.data_file[filename].trace['FluoTrace2'].plot_trace()
+    #model.set_data(model.roi['Roi1'],[10,10,40,40])
+    model.roi['Roi1'].set_data([10,10,2,3])
+    model.data_file[filename].trace['FluoTrace1'].plot_trace()
     
     #elc1 = model.get_data(filename, 'ElecTrace1')
     

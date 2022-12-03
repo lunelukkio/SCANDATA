@@ -42,7 +42,7 @@ class ModelController(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def delete_observer(self, observer):
+    def remove_observer(self, observer):
         pass
 
     @abstractmethod
@@ -116,17 +116,11 @@ class Roi(ModelController):
     
     def reset(self):
         pass
-        
-    def create_roi(self, x):
-        pass
-
-    def delete_roi(self):
-        pass
     
     def add_observer(self, observer):
         self.__observers.append(observer)
         
-    def delete_observer(self, observer):
+    def remove_observer(self, observer):
         self.__observers.remove(observer)
     
     def notify_observer(self):
@@ -180,7 +174,7 @@ class TimeWindow(ModelController):
     def add_observer(self, observer):
         self.__observers.append(observer)
         
-    def delete_observer(self, observer):
+    def remove_observer(self, observer):
         self.__observers.remove(observer)
     
     def notify_observer(self):
@@ -214,7 +208,7 @@ class FrameShift(ModelController):
     def add_observer(self, observer):
         pass
 
-    def delete_observer(self, observer):
+    def remove_observer(self, observer):
         pass
 
     def notify_observer(self):
@@ -237,7 +231,7 @@ class Line(ModelController):
     def add_observer(self, observer):
         pass
 
-    def delete_observer(self, observer):
+    def remove_observer(self, observer):
         pass
 
     def notify_observer(self):
