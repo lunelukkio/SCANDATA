@@ -294,8 +294,21 @@ class TsmData(DataInterface):
         return ret
     
     def get_data(self, data_name):
-        pass
-    
+        # Should chage this code. 
+        if data_name.find('Frame') > 0:
+            obj = self.frame.get(data_name)
+        elif data_name.fine('Image') > 0:
+            obj = self.image.get(data_name) 
+        elif data_name.fine('Trace') > 0:
+            obj = self.trace.get(data_name) 
+        
+        if obj is None:
+            print('---------')
+            print('No object')
+            print('---------')
+        else:
+            return obj
+   
     def print_fileinfor(self):
         self.file_io.print_fileinfor()
         print('Object List')
@@ -331,6 +344,7 @@ if __name__ == '__main__':
     
 
     print('オブジェクト指向での例外処理で変数をクリアして抜ける')
+    print('オブザーバーのリストを辞書にしてキーで消せるようにする')
 
 
     
