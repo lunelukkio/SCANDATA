@@ -193,9 +193,11 @@ class TimeWindow(ModelController):
               str(self.__frame_start) + ' ,' +
               str(self.__frame_end) + ' ,' +
               str(self.__time_start_width) + ' ,' +
-              str(self.__time_end_width))
+              str(self.__time_end_width) + '\n' +
+              'observer = ' +
+              str(self.__observers))
 
-        
+
 class FrameShift(ModelController):
     def set_data(self, val):
         pass

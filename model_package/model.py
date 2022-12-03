@@ -219,8 +219,8 @@ class TsmData(DataInterface):
         self.create_image_obj(CellImageFactory(), self.frame['ChFrame1'].frame_data)  # Ch 1 image.
         self.create_image_obj(CellImageFactory(), self.frame['ChFrame2'].frame_data)  # Ch 2 image.
         
-        #for i in range[1,9]:
-            #self.create_trace_obj(ElecTraceFactory(), i)
+        for i in range(1,9):
+            self.create_trace_obj(ElecTraceFactory(), i)
         
         # Bind image observers to time controller
         model.time_window['TimeWindow1'].add_observer(self.image['CellImage1'])
@@ -252,18 +252,9 @@ class TsmData(DataInterface):
         object_name = product.__class__.__name__  # str
         num_product = product.num_instance  # int
         
-        self.frame_obj.append(product)
-        self.frame_type.append(object_name + str(num_product))
-        self.frame = dict(zip(self.frame_type, self.frame_obj))
-        
-        
-        
-        check_num = len(self.dict_regex(self.data_1d, '^' + data_type))
-        print(check_num)
-        
-        self.data_1d_obj.append(self.factory_type.create_data_1d(data_type))
-        self.data_1d_type.append(data_type + str(check_num+1))
-        self.data_1d = dict(zip(self.data_1d_type, self.data_1d_obj))
+        self.trace_obj.append(product)
+        self.trace_type.append(object_name + str(num_product))
+        self.trace = dict(zip(self.trace_type, self.trace_obj))
         
     # the function for searching key word in dict
     def dict_regex(self, dict_name, search_word):
@@ -274,8 +265,8 @@ class TsmData(DataInterface):
                 ret.append(dict_name[k])
         return ret
     
-    def get_data(self, data_name):
-        return self.data_name
+    def get_data(self):
+        pass
     
     def print_fileinfor(self):
         self.file_io.print_fileinfor()
@@ -303,15 +294,15 @@ if __name__ == '__main__':
     model = Model()
     model.create_data_objects(filename, filepath)
     datafile = model.data_file[filename]
-    # add to observers
 
     
     model.data_file[filename].frame['ChFrame1'].show_frame(6)
     model.set_data(model.roi['Roi1'],[10,10,40,40])
     model.roi['Roi1'].set_data([1,1,20,30])
-    model.time_window['TimeWindow1'].set_data([5,20,2,2])
+    model.time_window['TimeWindow1'].set_data([2,2,2,2])
+    model.data_file[filename].image['CellImage1'].show_image()
     
-
+    elc1 = model.get_data(filename, 'ElecTrace1')
     
     
 

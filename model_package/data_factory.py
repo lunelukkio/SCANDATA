@@ -58,8 +58,8 @@ class FluoTraceFactory(TraceFactory):
         return FluoTrace(data)
     
 class ElecTraceFactory(TraceFactory):
-    def create_trace(self, data):  # data = file_io (.tbn)
-        return ElecTrace(data)
+    def create_trace(self, data, ch):  # data = file_io (.tbn)
+        return ElecTrace(data, ch)
     
 
 """
@@ -245,8 +245,6 @@ class TsmFileIO():
         
 class Frame(metaclass=ABCMeta):  # 3D frame data: full frame, ch image
     def __init__(self, data, ch):
-        self.file_io = data
-        
         self.frame_data = np.array([0,])
         self.time_data = np.array([0,])  # (ms)
         
@@ -254,10 +252,10 @@ class Frame(metaclass=ABCMeta):  # 3D frame data: full frame, ch image
         self.pixel = 0  # (um)
         self.unit = 0  # No unit because of raw camera data.
         
-        self.read_data(ch)
+        self.read_data(data, ch)
 
     @abstractmethod
-    def read_data(self, ch):
+    def read_data(self, data, ch):
         pass
     
     def get_data(self):
@@ -285,10 +283,9 @@ class FullFrame(Frame):
         super().__init__(data, ch)
         FullFrame.num_instance += 1
         
-    def read_data(self, ch=0):
-        self.frame_data = copy.deepcopy(self.file_io.full_frame)
-        self.interval = copy.deepcopy(self.file_io.full_frame_interval)
-        #len(self.frame_data)
+    def read_data(self, data, ch=0):
+        self.frame_data = copy.deepcopy(data.full_frame)
+        self.interval = copy.deepcopy(data.full_frame_interval)
         
         if len(self.frame_data) <= 1:
             print('---------------------')
@@ -306,10 +303,10 @@ class ChFrame(Frame):
         if ch < 1:
             print('Need a channel number')
     
-    def read_data(self, ch):  # ran by super class 'Frame'
+    def read_data(self, data, ch):  # ran by super class 'Frame'
         print(str(ch))
-        self.frame_data = copy.deepcopy(self.file_io.ch_frame[:,:,:,ch-1])
-        self.interval = copy.deepcopy(self.file_io.ch_frame_interval)
+        self.frame_data = copy.deepcopy(data.ch_frame[:,:,:,ch-1])
+        self.interval = copy.deepcopy(data.ch_frame_interval)
 
         if len(self.frame_data) <= 1:
             print('---------------------')
@@ -348,12 +345,13 @@ class CellImage(Image):
         end = val[1]
 
         if end - start == 0:
-            self.image_data[:, :] = self.frame_data[:, :, val[0]]
+            self.image_data = self.frame_data[:, :, val[0]]
             print('Read a single cell image')
         elif end - start > 0: 
             self.image_data = np.mean(self.frame_data[:, :, start:end], axis = 2)
             print('Read an avarage cell image')
         else:
+            self.image_data = np.zeros((2, 2))
             print('-----------------------------------------------------')
             print('The end frame should be higher than the start frame.')
             print('-----------------------------------------------------')
@@ -438,17 +436,17 @@ class FluoTrace(Trace):
     
 class ElecTrace(Trace):
     num_instance = 0  # Class member to count the number of instance
-    def __init__(self):
-        super().__init__(data)
+    def __init__(self, data, ch):
+        super().__init__()
         ElecTrace.num_instance += 1
-        
-        self.file_io = data  # from .tbn
         # trace_data and time_data are in the super class
+        self.read_data(data, ch)
 
-    def read_data(self, ch):
-        self.trace_data = copy.deepcopy(self.file_io.elec_trace[ch-1])
-        self.interval = copy.deepcopy(self.file_io.elec_interval)
-        
+    def read_data(self, data, ch):
+        self.trace_data = copy.deepcopy(data.elec_trace[ch-1])
+        self.interval = copy.deepcopy(data.elec_interval)
+        self.time_data = np.linspace(0, ).
+        show_traceもコピー
         if len(self.trace_data) <= 1:
             print('---------------------')
             print('Can not make 3D data')
