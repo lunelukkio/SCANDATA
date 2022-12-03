@@ -20,7 +20,7 @@ class FrameFactory(metaclass=ABCMeta):
         pass
     
 class FullFrameFactory(FrameFactory):
-    def create_frame(self, data, ch):  # data = file_io
+    def create_frame(self, data, ch=0):  # data = file_io
         return FullFrame(data, ch)
     
 class ChFrameFactory(FrameFactory):
@@ -320,14 +320,10 @@ class ChFrame(Frame):
 
 class Image(metaclass=ABCMeta):  # cell image, dif image
     def __init__(self, data):
-        self.image_data = np.array([0,])
+        self.image_data = np.array([0, 0])
         
     @abstractmethod
     def read_data(self):
-        pass
-    
-    @abstractmethod
-    def create_data(self):
         pass
     
     @abstractmethod
@@ -342,26 +338,45 @@ class CellImage(Image):
     num_instance = 0  # Class member to count the number of instance
     def __init__(self, data):
         super().__init__(data)
-        self.image_data = data
-
-    def read_data(self):
-        pass
+        CellImage.num_instance += 1
         
-    def update_data(self):
-        pass
+        self.frame_data = data
+
+    def read_data(self, val):
+        start = val[0]
+        end = val[1]
+
+        if end - start == 0:
+            self.image_data[:, :] = self.frame_data[:, :, val[0]]
+            print('Read a single cell image')
+        elif end - start > 0: 
+            self.image_data = np.mean(self.frame_data[:, :, start:end], axis = 2)
+            print('Read an avarage cell image')
+        else:
+            print('-----------------------------------------------------')
+            print('The end frame should be higher than the start frame.')
+            print('-----------------------------------------------------')
+        
+    def update(self, val):
+        self.read_data(val)
+        print('Recieved a notify message.')
 
     def get_data(self):
         pass
+    
+    def show_image(self):
+            plt.imshow(self.image_data, cmap='gray', interpolation='none')
         
 class DifImage(Image):
     num_instance = 0  # Class member to count the number of instance
     def __init__(self, data):
         super().__init__(data)
+        DifImage.num_instance += 1
 
     def read_data(self):
         pass
         
-    def update_data(self):
+    def update(self):
         pass
 
     def get_data(self):
@@ -390,6 +405,8 @@ class FluoTrace(Trace):
     num_instance = 0  # Class member to count the number of instance
     def __init__(self, data):
         super().__init__(data)
+        FluoTrace.num_instance += 1
+        
         self.frame_data = data
         # trace_data and time_data are in the super class
 
@@ -407,7 +424,7 @@ class FluoTrace(Trace):
     
         print('Unpated ROI = ' + str(roi_xy_infor))
     
-    def update_data(self, roi_obj):
+    def update(self, roi_obj):
         self.read_data(roi_obj)
         print('Recieved a notify message.')
     
@@ -422,6 +439,8 @@ class ElecTrace(Trace):
     num_instance = 0  # Class member to count the number of instance
     def __init__(self, data):
         super().__init__(data)
+        ElecTrace.num_instance += 1
+        
         self.file_io = data  # from .tbn
         # trace_data and time_data are in the super class
 

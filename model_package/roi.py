@@ -104,7 +104,9 @@ class Roi(ModelController):
         self.__y_length = val[3]
         
         self.notify_observer()
-        print('Set the ROI position ' + str(val) + ', and notified.')
+        print('Set the ROI position and notified')
+        self.print_val()
+
 
     def get_data(self) -> list:
         return [self.__x,
@@ -128,11 +130,12 @@ class Roi(ModelController):
         self.__observers.remove(observer)
     
     def notify_observer(self):
+        val = self.get_data()
         for observer_name in self.__observers:
-            observer_name.update_data(self)
+            observer_name.update(val)
     
     def print_val(self):
-        print('set val = ' +
+        print('ROI = ' +
               str(self.__x) + ' ,' +
               str(self.__y) + ' ,' +
               str(self.__x_length) + ' ,' +
@@ -147,22 +150,29 @@ class TimeWindow(ModelController):
     def __init__(self):
         TimeWindow.num_instance += 1
         
-        self.__frame_start = 0
-        self.__frame_end = 1
-        self.__time_start_width = 10  #(ms)
-        self.__time_end_width = 10
+        self.__frame_start = 5
+        self.__frame_end = 10
+        self.__time_start_width = 1  #(ms)
+        self.__time_end_width = 1
         self.__observers = []
         print('Imported a cell image val class.')
 
     def set_data(self, val):
         self.__frame_start = val[0]
         self.__frame_end = val[1]
+        self.__time_start_width = val[2]
+        self.__time_end_width = val[3]
         
         self.notify_observer()
+        
+        print('Set the time window and notified')
+        self.print_val()
 
-    def get_data(self) -> list:
+    def get_data(self):
         return [self.__frame_start,
-                self.__frame_end]
+                self.__frame_end,
+                self.__time_start_width,
+                self.__time_end_width]
     
     def reset(self):
         pass
@@ -174,13 +184,17 @@ class TimeWindow(ModelController):
         self.__observers.remove(observer)
     
     def notify_observer(self):
+        val = self.get_data()
         for observer_name in self.__observers:
-            observer_name.update_data(self)
+            observer_name.update(val)
 
     def print_val(self):
-        print('cell image val = ' +
+        print('Time window = ' +
               str(self.__frame_start) + ' ,' +
-              str(self.__frame_end))
+              str(self.__frame_end) + ' ,' +
+              str(self.__time_start_width) + ' ,' +
+              str(self.__time_end_width))
+
         
 class FrameShift(ModelController):
     def set_data(self, val):

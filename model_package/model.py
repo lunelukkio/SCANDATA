@@ -9,9 +9,9 @@ This is the main module for a model called by a controller
 from abc import ABCMeta, abstractmethod
 import re  # call regular expression
 from model_package.roi import Roi, TimeWindow, FrameShift, Line
-from model_package.data_factory import Frame, Image, Trace
 from model_package.data_factory import TsmFileIO
 from model_package.data_factory import FullFrameFactory, ChFrameFactory
+from model_package.data_factory import CellImageFactory
 
 
 """
@@ -118,6 +118,8 @@ class Model(ModelInterface):
         print('Created a model.')
         
         self.create_control_objects()
+        
+
           
     def create_data_objects(self, filename, filepath):
         factory_type = self.file_type_checker(filename)
@@ -140,8 +142,9 @@ class Model(ModelInterface):
         self.roi = dict(zip(self.roi_name, self.roi_obj))  # filename = [list]
         
     def create_time_window(self):
-        self.time_window_name.append('TimeWindow' + str(len(self.time_window_obj)))
-        self.time_window_obj.append(TimeWindow())
+        product = TimeWindow()
+        self.time_window_obj.append(product)
+        self.time_window_name.append('TimeWindow' + str(product.num_instance))
         self.time_window = dict(zip(self.time_window_name, self.time_window_obj))  # filename = [list]
         
     def create_frame_shift(self):
@@ -154,9 +157,8 @@ class Model(ModelInterface):
         self.line_obj.append(Line())
         self.line = dict(zip(self.line_name, self.line_obj))  # filename = [list]
 
-    def set_data(self, ModelController, val):  # e.g. model.set_data(roi[0], [10,10,3,3])
-        print(ModelController)
-        return self.ModelController.set_data(val)
+    def set_data(self, data_type, val):  # e.g. model.set_data(roi[0], [10,10,3,3])
+        return data_type.set_data(val)
     
     def get_data(self, filename, data_name):  # e.g. model.get_data('20408A001,tsm, Trace['trace1'])
         return self.data_file[filename].get_data(data_name)
@@ -207,9 +209,19 @@ class TsmData(DataInterface):
         print('created a data_file.')
         
         self.create_file_io()
+        
+        # create frame data
         self.create_frame_obj(FullFrameFactory())
         self.create_frame_obj(ChFrameFactory(), 1)  # Ch 1, name ChFrame1
         self.create_frame_obj(ChFrameFactory(), 2)  # Ch 2, name ChFrame2
+        
+        # create image data
+        self.create_image_obj(CellImageFactory(), self.frame['ChFrame1'].frame_data)  # Ch 1 image.
+        self.create_image_obj(CellImageFactory(), self.frame['ChFrame2'].frame_data)  # Ch 2 image.
+        
+        # Bind image observers to time controller
+        model.time_window['TimeWindow1'].add_observer(self.image['CellImage1'])
+        model.time_window['TimeWindow1'].add_observer(self.image['CellImage2'])
         
     def create_file_io(self):
         self.file_io = TsmFileIO(filename, filepath)
@@ -223,9 +235,14 @@ class TsmData(DataInterface):
         self.frame_type.append(object_name + str(num_product))
         self.frame = dict(zip(self.frame_type, self.frame_obj))
          
-    def create_image_obj(self, data_3d, data_type):
-        self.data_2d.append(Data2D(data_type))
-        self.data_2d[len(self.data_2d)-1].create_data()
+    def create_image_obj(self, factory_type, data):
+        product = factory_type.create_image(data)
+        object_name = product.__class__.__name__  # str
+        num_product = product.num_instance  # int
+        
+        self.image_obj.append(product)
+        self.image_type.append(object_name + str(num_product))
+        self.image = dict(zip(self.image_type, self.image_obj))
         
     def create_trace_obj(self, data_3d, data_type):
         check_num = len(self.dict_regex(self.data_1d, '^' + data_type))
@@ -273,13 +290,17 @@ if __name__ == '__main__':
     model = Model()
     model.create_data_objects(filename, filepath)
     datafile = model.data_file[filename]
+    # add to observers
+
     
     model.data_file[filename].frame['ChFrame1'].show_frame(6)
-    #model.set_data(model.roi['Roi1'],[10,10,40,40])
-    model.roi['Roi1'].set_data([10,10,40,40])
+    model.set_data(model.roi['Roi1'],[10,10,40,40])
+    model.roi['Roi1'].set_data([1,1,20,30])
+    model.time_window['TimeWindow1'].set_data([5,20,2,2])
     
 
-    #model.data_file[filename].data_3d['ch1_frame'].show_frame(1)  
+    
+    
 
     print('オブジェクト指向での例外処理で変数をクリアして抜ける')
 
