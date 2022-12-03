@@ -50,16 +50,16 @@ Trace factory
 """
 class TraceFactory(metaclass=ABCMeta):
     @abstractmethod
-    def create_trace(self, data):
+    def create_trace(self, data, interval):
         pass
     
 class FluoTraceFactory(TraceFactory):
-    def create_trace(self, data):  # data = frame
-        return FluoTrace(data)
+    def create_trace(self, data, interval):  # data = frame
+        return FluoTrace(data, interval)
     
 class ElecTraceFactory(TraceFactory):
-    def create_trace(self, data, ch):  # data = file_io (.tbn)
-        return ElecTrace(data, ch)
+    def create_trace(self, data, interval):  # data = file_io (.tbn)
+        return ElecTrace(data, interval)
     
 
 """
@@ -89,7 +89,7 @@ class TsmFileIO():
         self.ch_3D_size = 0
 
         # about elec
-        self.elec_trace = np.empty([0,])
+        self.elec_trace = np.empty([0, 0])
         self.bnc_ratio = 0
         self.num_elec_ch = 0
         self.elec_interval = 0
@@ -205,17 +205,25 @@ class TsmFileIO():
                                                       np.int16, count=2)
             self.num_elec_ch = elec_header_list[0] * -1
             self.bnc_ratio = elec_header_list[1]
-            self.elec_interval = \
-            self.full_frame_interval/self.bnc_ratio
-            self.num_elec_data = \
-            self.num_full_frame * self.bnc_ratio
+            self.elec_interval = self.full_frame_interval/self.bnc_ratio
+            self.num_elec_data = self.num_full_frame * self.bnc_ratio
             
             # read elec data
-            raw_elec = np.fromfile(elec_full_filename, np.float64, offset=4)
-            self.elec_trace = raw_elec.reshape(self.num_elec_data, 
+            pre_raw_elec = np.fromfile(elec_full_filename, np.float64, offset=4)
+            self.elec_trace = pre_raw_elec.reshape(self.num_elec_data, 
                                                self.num_elec_ch, 
                                                order = 'F')
-
+            
+            # scale set
+            self.elec_trace[:, 0] = (self.elec_trace[:, 0]/10)*1000  # The amp output is Vm*10, and V to mV
+            self.elec_trace[:, 1] = (self.elec_trace[:, 1]*2)*1000  # Output of MaltiClamp700A is 0.5V/nA, and V to pA
+            self.elec_trace[:, 2] = (self.elec_trace[:, 2]/10)*1000
+            self.elec_trace[:, 3] = (self.elec_trace[:, 3]/10)*1000
+            self.elec_trace[:, 4] = (self.elec_trace[:, 4]/10)*1000
+            self.elec_trace[:, 5] = (self.elec_trace[:, 5]/10)*1000
+            self.elec_trace[:, 6] = (self.elec_trace[:, 6]/10)*1000
+            self.elec_trace[:, 7] = (self.elec_trace[:, 7]/10)*1000
+            
         except OSError as e:
             print(e)
             print('----------------------------------')
@@ -399,10 +407,12 @@ class Trace(metaclass=ABCMeta):  # Fluo trae, Elec trace
     def get_data(self):
         pass
 
+    def plot_trace(self):
+        plt.plot(self.time_data, self.trace_data)   
 
 class FluoTrace(Trace):
     num_instance = 0  # Class member to count the number of instance
-    def __init__(self, data):
+    def __init__(self, data, interval):
         super().__init__(data)
         FluoTrace.num_instance += 1
         
@@ -429,31 +439,29 @@ class FluoTrace(Trace):
     
     def get_data(self):
         pass
-
-    def plot_elec_data(self, elec_ch):
-        plt.plot(self.elec_trace[:, elec_ch])
-        
+ 
     
 class ElecTrace(Trace):
     num_instance = 0  # Class member to count the number of instance
-    def __init__(self, data, ch):
+    def __init__(self, data, interval):
         super().__init__()
         ElecTrace.num_instance += 1
         # trace_data and time_data are in the super class
-        self.read_data(data, ch)
+        self.read_data(data, interval)
 
-    def read_data(self, data, ch):
-        self.trace_data = copy.deepcopy(data.elec_trace[ch-1])
-        self.interval = copy.deepcopy(data.elec_interval)
-        self.time_data = np.linspace(0, ).
-        show_traceもコピー
+    def read_data(self, data, interval):
+        self.trace_data = copy.deepcopy(data)
+        self.interval = copy.deepcopy(interval)
+        num_data_point = self.interval * np.shape(self.trace_data)[0]
+        self.time_data = np.linspace(self.interval, num_data_point, np.shape(self.trace_data)[0])
+        
         if len(self.trace_data) <= 1:
             print('---------------------')
             print('Can not make 3D data')
             print('---------------------')
             return None
         
-        print('Read full frames')
+        print('Read Elec frames')
 
     
     def update(self):
@@ -461,7 +469,6 @@ class ElecTrace(Trace):
 
     def get_data(self):
         pass
-    
 
 
 if __name__ == '__main__':

@@ -219,8 +219,12 @@ class TsmData(DataInterface):
         self.create_image_obj(CellImageFactory(), self.frame['ChFrame1'].frame_data)  # Ch 1 image.
         self.create_image_obj(CellImageFactory(), self.frame['ChFrame2'].frame_data)  # Ch 2 image.
         
-        for i in range(1,9):
-            self.create_trace_obj(ElecTraceFactory(), i)
+        # create elec trace
+        for i in range(0,8):
+            self.create_trace_obj(ElecTraceFactory(), self.file_io.elec_trace[:, i], self.file_io.elec_interval)
+            
+        # create fluo trace
+        #self.create_trace_obj(FluoTraceFactory())
         
         # Bind image observers to time controller
         model.time_window['TimeWindow1'].add_observer(self.image['CellImage1'])
@@ -247,8 +251,8 @@ class TsmData(DataInterface):
         self.image_type.append(object_name + str(num_product))
         self.image = dict(zip(self.image_type, self.image_obj))
         
-    def create_trace_obj(self, factory_type, ch):
-        product = factory_type.create_trace(self.file_io, ch)
+    def create_trace_obj(self, factory_type, data, interval):
+        product = factory_type.create_trace(data, interval)
         object_name = product.__class__.__name__  # str
         num_product = product.num_instance  # int
         
@@ -265,30 +269,15 @@ class TsmData(DataInterface):
                 ret.append(dict_name[k])
         return ret
     
-    def get_data(self):
+    def get_data(self, data_name):
         pass
     
     def print_fileinfor(self):
         self.file_io.print_fileinfor()
 
-    
-
-""" 
-class TsmData(FileType):
-
-        
-        # create empty instances of elec data.
-        for i in range(0, 8):
-            self.add_data_1d('elec_trace')
-            
-        # create empty instancse of trace data.
-        for data_type in ['full_trace', 'ch1_trace', 'ch2_trace', 'bg_trace']:
-            self.add_data_1d(data_type)
-"""
-
 
 if __name__ == '__main__':
-
+    import matplotlib.pyplot as plt
     filename = '20408A001.tsm'
     filepath = '..\\220408\\'
     model = Model()
@@ -300,9 +289,12 @@ if __name__ == '__main__':
     model.set_data(model.roi['Roi1'],[10,10,40,40])
     model.roi['Roi1'].set_data([1,1,20,30])
     model.time_window['TimeWindow1'].set_data([2,2,2,2])
+    image = plt.figure()
     model.data_file[filename].image['CellImage1'].show_image()
+    trace = plt.figure()
+    model.data_file[filename].trace['ElecTrace2'].plot_trace()
     
-    elc1 = model.get_data(filename, 'ElecTrace1')
+    #elc1 = model.get_data(filename, 'ElecTrace1')
     
     
 
