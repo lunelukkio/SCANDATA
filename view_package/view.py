@@ -8,16 +8,10 @@ main for view
 
 import tkinter as tk
 from tkinter import ttk
+import tkinter.filedialog
 import inspect, pprint
 import os
 import matplotlib.pyplot as plt
-
-
-    def start_gui(self):
-        root = tk.Tk()
-        root.title("SCANDATA")
-        scandata = ScandataRoot(root)
-        scandata.mainloop()
 
 
 class View(tk.Frame):
@@ -39,6 +33,7 @@ class View(tk.Frame):
         
         pprint.pprint(self.window)
         pprint.pprint(self.data_window)
+
         
     def create_menu(self):
         menu_bar = tk.Menu(self)
@@ -57,13 +52,12 @@ class View(tk.Frame):
 
     def menu_open_click(self, event=None):
         # open file dialog
-        
         filename = tk.filedialog.askopenfilename(
             initialdir = os.getcwd() # current dir
             )
         self.window.append(tk.Toplevel())
         self.data_window.append(DataWindow(self.window[len(self.window)-1], filename))
-        print(filename)
+        self.controller.menu_open_click(filename)
         
     def create_button(self):
         self.button = tk.Button(self.master,text="Make a new window",command=self.buttonClick,width=10)
@@ -93,7 +87,7 @@ class DataWindow(tk.Frame):
     def buttonClick(self):
         print("こちらは"+str(self.num)+"つ目に作成されたウィンドウです。")
 
+
+
 if __name__ == '__main__':
-    view = View()
-    view.start_gui()
-    scandata.mainloop()
+    start_gui()

@@ -9,6 +9,7 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 import matplotlib.pyplot as plt
 import copy
+import os
 
   
 """
@@ -70,7 +71,7 @@ class TsmFileIO():
         # about file
         self.filename = filename
         self.file_path = filepath
-        self.full_filename = filepath + filename
+        self.full_filename = os.path.join(filepath, filename)
         self.header = 0 # byte: it needs to chage to str [self.header.decode()]
         self.elec_header = 0
         

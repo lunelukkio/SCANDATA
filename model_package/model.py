@@ -46,23 +46,23 @@ class ModelInterface(metaclass=ABCMeta):
     
 class DataFactory(metaclass=ABCMeta):
     @abstractmethod
-    def create_data_factory(self, filename, filepath):
+    def create_data_factory(self, model, filename, filepath):
         pass
     
 class TsmFactory(DataFactory):
-    def create_data_factory(self, filename, filepath):
-        return TsmData(filename, filepath)
+    def create_data_factory(self, model,filename, filepath):
+        return TsmData(model, filename, filepath)
     
 class DaFactory(DataFactory):
-    def create_data_factory(self, filename, filepath):
+    def create_data_factory(self, model, filename, filepath):
         raise NotImplementedError
     
 class AbfFactory(DataFactory):
-    def create_data_factory(self, filename, filepath):
+    def create_data_factory(self, model, filename, filepath):
         raise NotImplementedError
         
 class WcpFactory(DataFactory):
-    def create_data_factory(self, filename, filepath):
+    def create_data_factory(self, model, filename, filepath):
         raise NotImplementedError
 
 
@@ -119,15 +119,12 @@ class Model(ModelInterface):
         print('Created a model.')
         
         self.create_control_objects()
-        
-
           
     def create_data_objects(self, filename, filepath):
         factory_type = self.file_type_checker(filename)
-        
         self.filename.append(filename)
         self.filepath.append(filepath)
-        self.data_file_obj.append(factory_type.create_data_factory(filename, filepath))
+        self.data_file_obj.append(factory_type.create_data_factory(self, filename, filepath))
         self.data_file = dict(zip(self.filename, self.data_file_obj))
         
     def create_control_objects(self):
@@ -188,7 +185,8 @@ class Model(ModelInterface):
 
 
 class TsmData(DataInterface):
-    def __init__(self, filename, filepath):
+    def __init__(self, model, filename, filepath):
+        self.model = model
         self.filename = filename
         self.filepath = filepath
         
@@ -209,7 +207,7 @@ class TsmData(DataInterface):
 
         print('created a data_file.')
         
-        self.create_file_io()
+        self.create_file_io(self.filename, self.filepath)
         
         # create frame data
         self.create_frame_obj(FullFrameFactory(),
@@ -246,15 +244,15 @@ class TsmData(DataInterface):
                               self.file_io.ch_frame_interval)
         
         # Bind image observers to time controller
-        model.time_window['TimeWindow1'].add_observer(self.image['CellImage1'])
-        model.time_window['TimeWindow1'].add_observer(self.image['CellImage2'])
+        self.model.time_window['TimeWindow1'].add_observer(self.image['CellImage1'])
+        self.model.time_window['TimeWindow1'].add_observer(self.image['CellImage2'])
         
         # Bind trace observers to time controller
-        model.roi['Roi1'].add_observer(self.trace['FluoTrace1'])
-        model.roi['Roi1'].add_observer(self.trace['FluoTrace2'])
-        model.roi['Roi1'].add_observer(self.trace['FluoTrace3'])
+        self.model.roi['Roi1'].add_observer(self.trace['FluoTrace1'])
+        self.model.roi['Roi1'].add_observer(self.trace['FluoTrace2'])
+        self.model.roi['Roi1'].add_observer(self.trace['FluoTrace3'])
         
-    def create_file_io(self):
+    def create_file_io(self, filename, filepath):
         self.file_io = TsmFileIO(filename, filepath)
         
     def create_frame_obj(self, factory_type, data, interval):  #FullFrameFactory, ChFrameFactory
@@ -323,7 +321,6 @@ if __name__ == '__main__':
     filepath = '..\\220408\\'
     model = Model()
     model.create_data_objects(filename, filepath)
-    datafile = model.data_file[filename]
     model.data_file[filename].print_fileinfor()
     
     model.data_file[filename].frame['ChFrame1'].show_frame(6)

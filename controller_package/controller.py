@@ -20,21 +20,20 @@ class Controller:
         self.view = None
         self.model = None
         
-        self.filename = 'no file'
-        self.filepath = 'no file'
+        self.filename = []
+        self.filepath = []
         
     def menu_open_click(self, fullname):
-        self.filename = os.path.basename(fullname)
-        filepath = os.path.dirname(fullname)
-        self.filepath = os.path.join(filepath) +os.sep
-        
-        self.model = self.create_model()
+        filename = os.path.basename(fullname)
+        pre_filepath = os.path.dirname(fullname)
+        filepath = os.path.join(pre_filepath) + os.sep
+        self.filename.append(filename)
+        self.filepath.append(filepath)
+        self.create_model(filename, filepath)
 
-    def create_model(self):  
-        self.model = Model(self.filename, self.filepath)     #test code
-
-        print(self.filename)
-        self.model.data_container.fileinfor.print_fileinfor()
+    def create_model(self, filename, filepath):  
+        self.model.create_data_objects(filename, filepath)
+        print('222222222222222222222222222222')
         
     def fluo_trace(self):
         displayed_trace = self.model.request_data('ch_fluo_trace')
