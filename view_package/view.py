@@ -12,6 +12,8 @@ import tkinter.filedialog
 import inspect, pprint
 import os
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 
 class View(tk.Frame):
@@ -52,13 +54,18 @@ class View(tk.Frame):
 
     def menu_open_click(self, event=None):
         # open file dialog
-        filename = tk.filedialog.askopenfilename(
-            initialdir = os.getcwd() # current dir
+        fullname = tk.filedialog.askopenfilename(
+            initialdir = os.getcwd(), # current dir
+            filetypes=(('Tsm files', '*.tsm'),
+                       ('Da files', '*.da'), 
+                       ('Axon files', '*.abf'),
+                       ('WinCP files', '*.wcp'),
+                       ('All files', '*.*'))
             )
         self.window.append(tk.Toplevel())
-        self.data_window.append(DataWindow(self.window[len(self.window)-1], filename))
-        self.controller.menu_open_click(filename)
-        
+        self.data_window.append(DataWindow(self.window[len(self.window)-1], fullname))
+        self.controller.menu_open_click(fullname)
+
     def create_button(self):
         self.button = tk.Button(self.master,text="Make a new window",command=self.buttonClick,width=10)
         self.button.place(x=110, y=150)
@@ -78,7 +85,13 @@ class DataWindow(tk.Frame):
         master.geometry("1400x610")
         master.title(filename)
 
-
+        fig = Figure(figsize=(5, 5), dpi=100)   #Figure
+        ax = fig.add_subplot(1, 1, 1)           #Axes
+        #cell_image = self.contoller.get_data()
+        #image = ax.imshow(cell_image.image_data, cmap='gray', interpolation='none')
+        
+        canvas = FigureCanvasTkAgg(fig, master)
+        canvas.get_tk_widget().pack()
 
         self.button = tk.Button(master,text="コンソール上での確認",command=self.buttonClick,width=20)
         self.button.place(x=70, y=150)

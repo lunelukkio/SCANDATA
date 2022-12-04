@@ -13,7 +13,7 @@ from model_package.roi import Roi, TimeWindow, FrameShift, Line
 from model_package.data_factory import TsmFileIO
 from model_package.data_factory import FullFrameFactory, ChFrameFactory
 from model_package.data_factory import CellImageFactory, DifImageFactory
-from model_package.data_factory import ElecTraceFactory, FluoTraceFactory
+from model_package.data_factory import ElecTraceFactory, FullTraceFactory, ChTraceFactory
 
 """
 abstract class
@@ -126,7 +126,7 @@ class Model(ModelInterface):
         self.filepath.append(filepath)
         self.data_file_obj.append(factory_type.create_data_factory(self, filename, filepath))
         self.data_file = dict(zip(self.filename, self.data_file_obj))
-        
+
     def create_control_objects(self):
         self.create_roi()
         self.create_time_window()
@@ -213,33 +213,30 @@ class TsmData(DataInterface):
         self.create_frame_obj(FullFrameFactory(),
                               self.file_io.full_frame,
                               self.file_io.full_frame_interval)
-        self.create_frame_obj(ChFrameFactory(), 
-                              self.file_io.ch_frame[:,:,:,0], 
-                              self.file_io.ch_frame_interval)  # Ch 1, name ChFrame1
-        self.create_frame_obj(ChFrameFactory(), 
-                              self.file_io.ch_frame[:,:,:,1], 
-                              self.file_io.ch_frame_interval)  # Ch 2, name ChFrame2
+        for i in range(0, self.file_io.num_fluo_ch):
+            self.create_frame_obj(ChFrameFactory(), 
+                                  self.file_io.ch_frame[:,:,:,i], 
+                                  self.file_io.ch_frame_interval)
         
         # create image data
-        self.create_image_obj(CellImageFactory(), 
-                              self.frame['ChFrame1'].frame_data)  # Ch 1 image.
-        self.create_image_obj(CellImageFactory(), 
-                              self.frame['ChFrame2'].frame_data)  # Ch 2 image.
+        for i in range(1, self.file_io.num_fluo_ch + 1):
+            self.create_image_obj(CellImageFactory(), 
+                                  self.frame['ChFrame' + str(i)].frame_data)
         
         # create elec trace
-        for i in range(0,8):
+        for i in range(0, self.file_io.num_elec_ch):
             self.create_trace_obj(ElecTraceFactory(), 
                                   self.file_io.elec_trace[:, i], 
                                   self.file_io.elec_interval)
         
         # create fluo trace
-        self.create_trace_obj(FluoTraceFactory(), 
+        self.create_trace_obj(FullTraceFactory(), 
                               self.frame['FullFrame1'].frame_data, 
                               self.file_io.full_frame_interval)
-        self.create_trace_obj(FluoTraceFactory(), 
+        self.create_trace_obj(ChTraceFactory(), 
                               self.frame['ChFrame1'].frame_data, 
                               self.file_io.ch_frame_interval)
-        self.create_trace_obj(FluoTraceFactory(), 
+        self.create_trace_obj(ChTraceFactory(), 
                               self.frame['ChFrame2'].frame_data, 
                               self.file_io.ch_frame_interval)
         
@@ -248,9 +245,9 @@ class TsmData(DataInterface):
         self.model.time_window['TimeWindow1'].add_observer(self.image['CellImage2'])
         
         # Bind trace observers to time controller
-        self.model.roi['Roi1'].add_observer(self.trace['FluoTrace1'])
-        self.model.roi['Roi1'].add_observer(self.trace['FluoTrace2'])
-        self.model.roi['Roi1'].add_observer(self.trace['FluoTrace3'])
+        self.model.roi['Roi1'].add_observer(self.trace['FullTrace1'])
+        self.model.roi['Roi1'].add_observer(self.trace['ChTrace1'])
+        self.model.roi['Roi1'].add_observer(self.trace['ChTrace2'])
         
     def create_file_io(self, filename, filepath):
         self.file_io = TsmFileIO(filename, filepath)
@@ -310,10 +307,10 @@ class TsmData(DataInterface):
     def print_fileinfor(self):
         self.file_io.print_fileinfor()
         print('Object List')
-        pprint.pprint(model.data_file[filename].file_io)
-        pprint.pprint(model.data_file[filename].frame)
-        pprint.pprint(model.data_file[filename].image)
-        pprint.pprint(model.data_file[filename].trace)
+        pprint.pprint('file_io = ' + str(self.file_io))
+        pprint.pprint(self.frame)
+        pprint.pprint(self.image)
+        pprint.pprint(self.trace)
     
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
@@ -331,10 +328,10 @@ if __name__ == '__main__':
     electrace = plt.figure()
     model.data_file[filename].trace['ElecTrace1'].plot_trace()
     fluotrace = plt.figure()
-    model.data_file[filename].trace['FluoTrace2'].plot_trace()
+    model.data_file[filename].trace['FullTrace1'].plot_trace()
     #model.set_data(model.roi['Roi1'],[10,10,40,40])
     model.roi['Roi1'].set_data([10,10,2,3])
-    model.data_file[filename].trace['FluoTrace1'].plot_trace()
+    model.data_file[filename].trace['ChTrace1'].plot_trace()
     
     #elc1 = model.get_data(filename, 'ElecTrace1')
     
@@ -342,6 +339,7 @@ if __name__ == '__main__':
 
     print('オブジェクト指向での例外処理で変数をクリアして抜ける')
     print('オブザーバーのリストを辞書にしてキーで消せるようにする')
+    print('新しいdata_fileでFullFrame3から')
 
 
     

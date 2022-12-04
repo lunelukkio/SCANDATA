@@ -10,6 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import copy
 import os
+import inspect
 
   
 """
@@ -54,9 +55,17 @@ class TraceFactory(metaclass=ABCMeta):
     def create_trace(self, data, interval):
         pass
     
-class FluoTraceFactory(TraceFactory):
+class FullTraceFactory(TraceFactory):
     def create_trace(self, data, interval):  # data = frame
-        return FluoTrace(data, interval)
+        return FullTrace(data, interval)
+    
+class ChTraceFactory(TraceFactory):
+    def create_trace(self, data, interval):  # data = frame
+        return ChTrace(data, interval)
+    
+class BGTraceFactory(TraceFactory):
+    def create_trace(self, data, interval):  # data = frame
+        return BGTrace(data, interval)
     
 class ElecTraceFactory(TraceFactory):
     def create_trace(self, data, interval):  # data = file_io (.tbn)
@@ -272,8 +281,6 @@ class Frame(metaclass=ABCMeta):  # 3D frame data: full frame, ch image
             print('Can not make 3D data')
             print('---------------------')
             return None
-        
-        print('Read a frame data')
     
     def get_data(self):
         frame = self.frame_data
@@ -299,12 +306,14 @@ class FullFrame(Frame):
     def __init__(self, data, interval):
         super().__init__(data, interval)
         FullFrame.num_instance += 1
+        print('Read a Full frame data' + str(FullFrame.num_instance))
 
 class ChFrame(Frame):
     num_instance = 0  # Class member to count the number of instance
     def __init__(self, data, interval):
         super().__init__(data, interval)
         ChFrame.num_instance += 1
+        print('Read a Channel frame data' + str(ChFrame.num_instance))
 
 class Image(metaclass=ABCMeta):  # cell image, dif image
     def __init__(self, data):
@@ -393,10 +402,8 @@ class Trace(metaclass=ABCMeta):  # Fluo trae, Elec trace
         plt.plot(self.time_data, self.trace_data)   
 
 class FluoTrace(Trace):
-    num_instance = 0  # Class member to count the number of instance
     def __init__(self, data, interval):
         super().__init__()
-        FluoTrace.num_instance += 1
         
         self.frame_data = data
         self.interval = copy.deepcopy(interval)
@@ -432,7 +439,27 @@ class FluoTrace(Trace):
     def get_data(self):
         pass
  
-    
+class FullTrace(FluoTrace):
+    num_instance = 0  # Class member to count the number of instance
+    def __init__(self, data, interval):
+        super().__init__(data, interval)
+        FullTrace.num_instance += 1
+        print('Read Full trace' + str(FullTrace.num_instance))
+        
+class ChTrace(FluoTrace):
+    num_instance = 0  # Class member to count the number of instance
+    def __init__(self, data, interval):
+        super().__init__(data, interval)
+        ChTrace.num_instance += 1
+        print('Read Channel trace' + str(ChTrace.num_instance))
+        
+class BGTrace(FluoTrace):
+    num_instance = 0  # Class member to count the number of instance
+    def __init__(self, data, interval):
+        super().__init__(data, interval)
+        BGTrace.num_instance += 1
+        print('Read Background trace' + str(BGTrace.num_instance))
+
 class ElecTrace(Trace):
     num_instance = 0  # Class member to count the number of instance
     def __init__(self, data, interval):
@@ -440,6 +467,7 @@ class ElecTrace(Trace):
         ElecTrace.num_instance += 1
         # trace_data and time_data are in the super class
         self.read_data(data, interval)
+        print('Read Elec trace' + str(ElecTrace.num_instance))
 
     def read_data(self, data, interval):
         self.trace_data = copy.deepcopy(data)
@@ -454,8 +482,6 @@ class ElecTrace(Trace):
             print('Can not make 3D data')
             print('---------------------')
             return None
-        
-        print('Read Elec frames')
 
     
     def update(self):

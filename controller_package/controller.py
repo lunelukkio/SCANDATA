@@ -33,7 +33,6 @@ class Controller:
 
     def create_model(self, filename, filepath):  
         self.model.create_data_objects(filename, filepath)
-        print('222222222222222222222222222222')
         
     def fluo_trace(self):
         displayed_trace = self.model.request_data('ch_fluo_trace')
