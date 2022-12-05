@@ -292,9 +292,9 @@ class TsmData(DataInterface):
         # Should chage this code. 
         if data_name.find('Frame') > 0:
             obj = self.frame.get(data_name)
-        elif data_name.fine('Image') > 0:
+        elif data_name.find('Image') > 0:
             obj = self.image.get(data_name) 
-        elif data_name.fine('Trace') > 0:
+        elif data_name.find('Trace') > 0:
             obj = self.trace.get(data_name) 
         
         if obj is None:
@@ -339,7 +339,9 @@ if __name__ == '__main__':
 
     print('オブジェクト指向での例外処理で変数をクリアして抜ける')
     print('オブザーバーのリストを辞書にしてキーで消せるようにする')
-    print('新しいdata_fileでFullFrame3から')
+    print('新しいdata_fileでFullFrame3からになる。これは名前用のカウントがFullFrame classで共通にカウントされるからである。')
+    print('単体テストができるようにする')
+    
 
 
     

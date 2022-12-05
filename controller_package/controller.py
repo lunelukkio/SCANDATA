@@ -30,9 +30,13 @@ class Controller:
         self.filename.append(filename)
         self.filepath.append(filepath)
         self.create_model(filename, filepath)
+        
+
 
     def create_model(self, filename, filepath):  
         self.model.create_data_objects(filename, filepath)
+        self.filename.append(filename)
+        self.filepath.append(filepath)
         
     def fluo_trace(self):
         displayed_trace = self.model.request_data('ch_fluo_trace')
@@ -42,3 +46,6 @@ class Controller:
         
     def roi_controller(self):
         print('ROI controller')
+        
+    def get_data(self, filename, data_type):
+        return self.model.get_data(filename, data_type)

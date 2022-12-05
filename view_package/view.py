@@ -43,11 +43,11 @@ class View(tk.Frame):
         file_menu = tk.Menu(menu_bar, tearoff = tk.OFF)
         menu_bar.add_cascade(label='File', menu = file_menu) 
 
-        file_menu.add_command(label = 'Open', command = self.menu_open_click, accelerator = "Ctrl+O")
+        file_menu.add_command(label = 'Open', command = self.menu_open_click, accelerator = 'Ctrl+O')
         file_menu.add_separator()
         file_menu.add_command(label = 'Quit', command = self.master.destroy)
         # short cut
-        menu_bar.bind_all("<Control-o>", self.menu_open_click)
+        menu_bar.bind_all('<Control-o>', self.menu_open_click)
 
         # set to parent menue
         self.master.config(menu = menu_bar)
@@ -63,13 +63,13 @@ class View(tk.Frame):
                        ('All files', '*.*'))
             )
         self.window.append(tk.Toplevel())
-        self.data_window.append(DataWindow(self.window[len(self.window)-1], fullname))
+        self.data_window.append(DataWindow(self.window[len(self.window)-1], fullname, self.controller))
         self.controller.menu_open_click(fullname)
 
     def create_button(self):
-        self.button = tk.Button(self.master,text="Make a new window",command=self.buttonClick,width=10)
+        self.button = tk.Button(self.master,text='Make a new window',command=self.buttonClick,width=10)
         self.button.place(x=110, y=150)
-        self.button.config(fg="black", bg="skyblue")
+        self.button.config(fg='black', bg='skyblue')
         
     def buttonClick(self):
         
@@ -78,16 +78,18 @@ class View(tk.Frame):
         print(self.user)
         
 class DataWindow(tk.Frame):
-    def __init__(self, master, filename):
+    def __init__(self, master, filename, controller):
         super().__init__(master)
         self.pack()
         self.filename = filename
-        master.geometry("1400x610")
+        self.controller = controller
+        master.geometry('1400x610')
+        master.configure(background='azure')
         master.title(filename)
 
-        fig = Figure(figsize=(5, 5), dpi=100)   #Figure
+        fig = Figure(figsize=(5, 5), dpi=100, facecolor='azure')  #Figure
         ax = fig.add_subplot(1, 1, 1)           #Axes
-        #cell_image = self.contoller.get_data()
+        cell_image = self.controller.get_data(self.filename, 'CellImage1')
         #image = ax.imshow(cell_image.image_data, cmap='gray', interpolation='none')
         
         canvas = FigureCanvasTkAgg(fig, master)
