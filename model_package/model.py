@@ -136,7 +136,7 @@ class Model(ModelInterface):
     def create_roi(self):
         product = Roi()
         self.roi_obj.append(product)
-        self.roi_name.append('Roi' + str(product.num_instance))
+        self.roi_name.append('ROI' + str(product.num_instance))
         self.roi = dict(zip(self.roi_name, self.roi_obj))  # filename = [list]
         
     def create_time_window(self):
@@ -155,8 +155,8 @@ class Model(ModelInterface):
         self.line_obj.append(Line())
         self.line = dict(zip(self.line_name, self.line_obj))  # filename = [list]
 
-    def set_data(self, data_type, val):  # e.g. model.set_data(roi[0], [10,10,3,3])
-        return data_type.set_data(val)
+    def set_data(self, data_type, val):  # e.g. model.set_data('ROI1', [10,10,3,3])
+        return self.roi[data_type].set_data(val)
     
     def get_data(self, filename, data_name):  # e.g. model.get_data('20408A001,tsm, Trace['trace1'])
         return self.data_file[filename].get_data(data_name)
@@ -245,9 +245,13 @@ class TsmData(DataInterface):
         self.model.time_window['TimeWindow1'].add_observer(self.image['CellImage2'])
         
         # Bind trace observers to time controller
-        self.model.roi['Roi1'].add_observer(self.trace['FullTrace1'])
-        self.model.roi['Roi1'].add_observer(self.trace['ChTrace1'])
-        self.model.roi['Roi1'].add_observer(self.trace['ChTrace2'])
+        self.model.roi['ROI1'].add_observer(self.trace['FullTrace1'])
+        self.model.roi['ROI1'].add_observer(self.trace['ChTrace1'])
+        self.model.roi['ROI1'].add_observer(self.trace['ChTrace2'])
+        
+        # set default val
+        model.time_window['TimeWindow1'].set_data([2,2,2,2])
+        model.roi['ROI1'].set_data([40,40,1,1])
         
     def create_file_io(self, filename, filepath):
         self.file_io = TsmFileIO(filename, filepath)
@@ -330,7 +334,7 @@ if __name__ == '__main__':
     fluotrace = plt.figure()
     model.data_file[filename].trace['FullTrace1'].plot_trace()
     #model.set_data(model.roi['Roi1'],[10,10,40,40])
-    model.roi['Roi1'].set_data([10,10,2,3])
+    model.roi['ROI1'].set_data([10,10,2,3])
     model.data_file[filename].trace['ChTrace1'].plot_trace()
     
     #elc1 = model.get_data(filename, 'ElecTrace1')

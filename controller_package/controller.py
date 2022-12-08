@@ -11,6 +11,7 @@ from view_package.view import View
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 
 
 class Controller:
@@ -30,6 +31,8 @@ class Controller:
         self.filename.append(filename)
         self.filepath.append(filepath)
         self.create_model(filename, filepath)
+        #self.model.data_file[filename].print_fileinfor()
+        return filename
         
 
 
@@ -49,3 +52,10 @@ class Controller:
         
     def get_data(self, filename, data_type):
         return self.model.get_data(filename, data_type)
+    
+    def set_roi(self, event, roi_num=1, roi_length=[1, 1]):
+        print(event.button, event.x, event.y, event.xdata, event.ydata)
+        roi_x = math.floor(event.xdata)
+        roi_y = math.floor(event.ydata)
+        roi = [roi_x, roi_y] + roi_length
+        self.model.set_data('ROI' + str(roi_num), roi)
