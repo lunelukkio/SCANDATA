@@ -87,8 +87,11 @@ class DataWindow(tk.Frame):
         master.configure(background='azure')
         master.title(filename)
         
-        self.trace1_ax = None
-        self.trace2_ax = None
+        self.trace_ax1 = None
+        self.trace_ax2 = None
+        
+        self.trace_y1 = []
+        self.trace_y2 = []
         
         # set frames
         frame_top = tk.Frame(master, pady=5, padx=5, relief=tk.RAISED, bd=2, bg = 'white')
@@ -111,37 +114,46 @@ class DataWindow(tk.Frame):
 
         #frame_bottom = tk.Frame(master, pady=5, padx=5, relief=tk.RAISED, bd=2)
 
-        # matplotlib image
+        # tkinter image frame
         frame_left = tk.Frame(master, pady=0, padx=0)
         frame_left.pack(side=tk.LEFT)
+        # matplotlib image figure
         image_fig = Figure(figsize=(5, 5), dpi=100, facecolor='azure')  #Figure
-        image_ax = image_fig.add_subplot(1, 1, 1)           #Axes
-        canvas_image = FigureCanvasTkAgg(image_fig, frame_left)
+        # matplotlib image axis
+        self.image_ax = image_fig.add_subplot(1, 1, 1)           #Axes
+        self.image_ax.set_xticks([])
+        self.image_ax.set_yticks([])
+        self.canvas_image = FigureCanvasTkAgg(image_fig, frame_left)
         #canvas_image.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
-        canvas_image.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self.canvas_image.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
+        self.canvas_image.mpl_connect('button_press_event', self.onclick_image)
         
-        canvas_image.mpl_connect('button_press_event', self.onclick_image)
-        
-        # matplotlib trace
-        frame_right = tk.Frame(master, pady=0, padx=0)
-        frame_right.pack(side=tk.LEFT,expand = True)
+        # tkinter trace frame
+        frame_right = tk.Frame(master, pady=1, padx=1)
+        frame_right.pack(side=tk.RIGHT,expand=True,fill=tkinter.BOTH)
+        # matplotlib trace figure
         trace_fig = Figure(figsize=(5, 5), dpi=100, facecolor='azure')  #Figure
-        self.trace1_ax = trace_fig.add_subplot(211)
-        self.trace2_ax = trace_fig.add_subplot(212, sharex=self.trace1_ax)
-        canvas_trace = FigureCanvasTkAgg(trace_fig, frame_right)
+        gridspec_trace_fig = trace_fig.add_gridspec(20, 1)
+        # matplotlib trace axis
+        self.trace_ax1 = trace_fig.add_subplot(gridspec_trace_fig[0:15])
+        self.trace_ax2 = trace_fig.add_subplot(gridspec_trace_fig[16:20], sharex=self.trace_ax1)
+        #self.trace_ax1.set_ylim(auto = True)
+        #self.trace_ax2.set_ylim(auto = True)
+        self.canvas_trace = FigureCanvasTkAgg(trace_fig, frame_right)
         #canvas_trace.get_tk_widget().pack()
         
-        toolbar_trace = NavigationToolbarTrace(canvas_trace, frame_right)
+        toolbar_trace = NavigationToolbarTrace(self.canvas_trace, frame_right)
         toolbar_trace.update()
-        canvas_trace.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self.canvas_trace.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
-        #show data
-        self.show_image(image_ax, 'CellImage1')
-        self.show_trace(self.trace1_ax, 'ChTrace1')
-        self.show_trace(self.trace1_ax, 'ChTrace2')
-        self.show_trace(self.trace2_ax, 'ElecTrace1')
+        self.initialize()
 
+    def initialize(self):
+        self.show_image(self.image_ax, 'CellImage1')
+        self.show_trace(self.trace_ax1, 'ChTrace1')
+        self.show_trace(self.trace_ax1, 'ChTrace2')
+        self.show_trace(self.trace_ax2, 'ElecTrace1')
         
     def show_image(self, ax, image_type):
         image = self.controller.get_data(self.filename, image_type)
@@ -149,8 +161,15 @@ class DataWindow(tk.Frame):
         
     def show_trace(self, ax, trace_type):
         trace = self.controller.get_data(self.filename, trace_type)
-        ax.plot(trace.time_data, trace.trace_data) 
-        trace.plot_trace()
+        line, =ax.plot(trace.time_data, trace.trace_data) 
+        self.trace_y1.append(line)
+        
+    def set_trace(self, ax, trace_num, trace_type):
+        trace = self.controller.get_data(self.filename, trace_type)
+
+        self.trace_y1[trace_num].set_ydata(trace.trace_data)
+
+        self.canvas_trace.draw()
 
         
     def button_roi_click(self):
@@ -158,8 +177,8 @@ class DataWindow(tk.Frame):
         
     def onclick_image(self, event):
         self.controller.set_roi(event)
-        self.show_trace(self.trace1_ax, 'ChTrace1')
-
+        self.set_trace(self.trace_ax1, 0, 'ChTrace1')
+        self.set_trace(self.trace_ax1, 1, 'ChTrace2')
 
 
 class NavigationToolbarTrace(NavigationToolbar2Tk):

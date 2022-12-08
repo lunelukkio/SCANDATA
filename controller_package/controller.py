@@ -24,6 +24,7 @@ class Controller:
         self.filename = []
         self.filepath = []
         
+        
     def menu_open_click(self, fullname):
         filename = os.path.basename(fullname)
         pre_filepath = os.path.dirname(fullname)
@@ -59,3 +60,4 @@ class Controller:
         roi_y = math.floor(event.ydata)
         roi = [roi_x, roi_y] + roi_length
         self.model.set_data('ROI' + str(roi_num), roi)
+        
