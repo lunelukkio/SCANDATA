@@ -11,10 +11,7 @@ from tkinter import ttk
 import tkinter.filedialog
 import inspect, pprint
 import os
-import math
-import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
-import matplotlib.ticker as ticker
 import matplotlib.patches as patches
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
@@ -108,7 +105,7 @@ class DataWindow(tk.Frame):
         
                         
         frame_bottom = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=2, bg = 'azure')
-        button_roi = tk.Button(frame_bottom, text='ROI', command=self.button_roi_click,width=20)
+        button_roi = tk.Button(frame_bottom, text='Delete ROI', command=self.delete_roi, width=20)
         button_roi.place(x=1200, y=150)
         button_roi.config(fg="black", bg="pink")
         button2 = tk.Button(frame_bottom, text='Close')
@@ -160,6 +157,9 @@ class DataWindow(tk.Frame):
         self.create_trace(self.trace_ax1, 'ChTrace2')
         self.create_trace(self.trace_ax2, 'ElecTrace1')
         
+        roi_box = RoiBox(self.image_ax)
+        self.roi_box.append(roi_box)
+        
     def create_image(self, ax, image_type):
         image = self.controller.get_data(self.filename, image_type)
         ax.imshow(image.image_data, cmap='gray', interpolation='none')
@@ -169,19 +169,15 @@ class DataWindow(tk.Frame):
         line, =ax.plot(trace.time_data, trace.trace_data) 
         self.trace_y1.append(line)  # list for trace_y1 trace line objects
         
-        roi_box = RoiBox(self.image_ax)
-        self.roi_box.append(roi_box)
-        
     def set_trace(self, ax, trace_num, trace_type):
         trace = self.controller.get_data(self.filename, trace_type)
 
         self.trace_y1[trace_num].set_ydata(trace.trace_data)
         
-
-
-        
-    def button_roi_click(self):
-        self.controller.roi_controller()
+    def delete_roi(self):
+        num_box = len(self.roi_box)
+        del self.roi_box[num_box-1]
+        print(num_box)
         
     def onclick_image(self, event):
         roi = self.controller.set_roi(event)
@@ -189,27 +185,25 @@ class DataWindow(tk.Frame):
         self.set_trace(self.trace_ax1, 1, 'ChTrace2')
         
         self.roi_box[0].set_roi(roi)
-
-        self.canvas_trace.draw()
-        self.canvas_image.draw()
         self.trace_ax1.relim()
         self.trace_ax1.autoscale_view()
+        self.canvas_trace.draw()
+        self.canvas_image.draw()
+
+
 
 class RoiBox():
     def __init__(self, ax):
-        roi_x = 40
-        roi_y = 40
-        roi_width = 1
-        roi_height = 1
-        self.rectangle = patches.Rectangle(xy=(roi_x, roi_y), width=roi_width, height=roi_height, ec='r', fill=False)
+        self.rectangle = patches.Rectangle(xy=(40, 40), width=1, height=1, ec='r', fill=False)
         ax.add_patch(self.rectangle)
         
     def set_roi(self, roi):
         self.rectangle.xy = (roi[0], roi[1])
-        
-        
-        
+        self.rectangle.width = roi[2]
+        self.rectangle.height = roi[3]
 
+        
+        
 class NavigationToolbarTrace(NavigationToolbar2Tk):
     def __init__(self, canvas=None, master=None):
         super().__init__(canvas, master)   
