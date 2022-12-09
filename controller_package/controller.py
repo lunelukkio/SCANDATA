@@ -60,4 +60,5 @@ class Controller:
         roi_y = math.floor(event.ydata)
         roi = [roi_x, roi_y] + roi_length
         self.model.set_data('ROI' + str(roi_num), roi)
+        return roi
         

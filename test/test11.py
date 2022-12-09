@@ -1,20 +1,15 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Nov  8 15:23:10 2022
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 
-lunelukkio@gmail.com
-"""
+fig = plt.figure()
+ax = plt.axes()
 
-class InstanceMaker:
-    def __init__(self, instance_name):
-        self.instance_name = instance_name
-        
+# fc = face color, ec = edge color
 
+r = patches.Rectangle(xy=(0, 0), width=0.25, height=0.5, ec='#000000', fill=False)
 
-    
-if __name__ == '__main__':
-    instance_name = 'Mike'
-    oop_test = InstanceMaker(instance_name)
-    
-    instance_name = 'Ann'
-    
+ax.add_patch(r)
+
+plt.axis('scaled')
+ax.set_aspect('equal')
+

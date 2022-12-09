@@ -11,8 +11,11 @@ from tkinter import ttk
 import tkinter.filedialog
 import inspect, pprint
 import os
+import math
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
+import matplotlib.ticker as ticker
+import matplotlib.patches as patches
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 
@@ -93,6 +96,8 @@ class DataWindow(tk.Frame):
         self.trace_y1 = []
         self.trace_y2 = []
         
+        self.roi_box = []
+        
         # set frames
         frame_top = tk.Frame(master, pady=5, padx=5, relief=tk.RAISED, bd=2, bg = 'white')
         button_open = tk.Button(frame_top, text='Open')
@@ -119,7 +124,7 @@ class DataWindow(tk.Frame):
         frame_left.pack(side=tk.LEFT)
         # matplotlib image figure
         image_fig = Figure(figsize=(5, 5), dpi=100, facecolor='azure')  #Figure
-        # matplotlib image axis
+        # matplotlib image axes
         self.image_ax = image_fig.add_subplot(1, 1, 1)           #Axes
         self.image_ax.set_xticks([])
         self.image_ax.set_yticks([])
@@ -135,7 +140,7 @@ class DataWindow(tk.Frame):
         # matplotlib trace figure
         trace_fig = Figure(figsize=(5, 5), dpi=100, facecolor='azure')  #Figure
         gridspec_trace_fig = trace_fig.add_gridspec(20, 1)
-        # matplotlib trace axis
+        # matplotlib trace axes
         self.trace_ax1 = trace_fig.add_subplot(gridspec_trace_fig[0:15])
         self.trace_ax2 = trace_fig.add_subplot(gridspec_trace_fig[16:20], sharex=self.trace_ax1)
         #self.trace_ax1.set_ylim(auto = True)
@@ -150,36 +155,60 @@ class DataWindow(tk.Frame):
         self.initialize()
 
     def initialize(self):
-        self.show_image(self.image_ax, 'CellImage1')
-        self.show_trace(self.trace_ax1, 'ChTrace1')
-        self.show_trace(self.trace_ax1, 'ChTrace2')
-        self.show_trace(self.trace_ax2, 'ElecTrace1')
+        self.create_image(self.image_ax, 'CellImage1')
+        self.create_trace(self.trace_ax1, 'ChTrace1')
+        self.create_trace(self.trace_ax1, 'ChTrace2')
+        self.create_trace(self.trace_ax2, 'ElecTrace1')
         
-    def show_image(self, ax, image_type):
+    def create_image(self, ax, image_type):
         image = self.controller.get_data(self.filename, image_type)
         ax.imshow(image.image_data, cmap='gray', interpolation='none')
         
-    def show_trace(self, ax, trace_type):
+    def create_trace(self, ax, trace_type):
         trace = self.controller.get_data(self.filename, trace_type)
         line, =ax.plot(trace.time_data, trace.trace_data) 
-        self.trace_y1.append(line)
+        self.trace_y1.append(line)  # list for trace_y1 trace line objects
+        
+        roi_box = RoiBox(self.image_ax)
+        self.roi_box.append(roi_box)
         
     def set_trace(self, ax, trace_num, trace_type):
         trace = self.controller.get_data(self.filename, trace_type)
 
         self.trace_y1[trace_num].set_ydata(trace.trace_data)
+        
 
-        self.canvas_trace.draw()
 
         
     def button_roi_click(self):
         self.controller.roi_controller()
         
     def onclick_image(self, event):
-        self.controller.set_roi(event)
+        roi = self.controller.set_roi(event)
         self.set_trace(self.trace_ax1, 0, 'ChTrace1')
         self.set_trace(self.trace_ax1, 1, 'ChTrace2')
+        
+        self.roi_box[0].set_roi(roi)
 
+        self.canvas_trace.draw()
+        self.canvas_image.draw()
+        self.trace_ax1.relim()
+        self.trace_ax1.autoscale_view()
+
+class RoiBox():
+    def __init__(self, ax):
+        roi_x = 40
+        roi_y = 40
+        roi_width = 1
+        roi_height = 1
+        self.rectangle = patches.Rectangle(xy=(roi_x, roi_y), width=roi_width, height=roi_height, ec='r', fill=False)
+        ax.add_patch(self.rectangle)
+        
+    def set_roi(self, roi):
+        self.rectangle.xy = (roi[0], roi[1])
+        
+        
+        
 
 class NavigationToolbarTrace(NavigationToolbar2Tk):
     def __init__(self, canvas=None, master=None):
