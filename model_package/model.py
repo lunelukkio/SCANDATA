@@ -96,24 +96,12 @@ class Model(ModelInterface):
         # experiments data
         self.filename = []
         self.filepath = []
-        self.data_file_obj = []  # data_file instances
         self.data_file = {}  # dictionary for data_files
 
         # data controllers for any files
-        self.roi_name = []
-        self.roi_obj = []
         self.roi = {}
-        
-        self.time_window_name = []
-        self.time_window_obj = []
         self.time_window = {}
-        
-        self.frame_shift_name = []
-        self.frame_shift_obj = []
         self.frame_shift = {}
-        
-        self.line_name = []
-        self.line_obj = []
         self.line = {}
 
         print('Created a model.')
@@ -121,11 +109,11 @@ class Model(ModelInterface):
         self.create_control_objects()
           
     def create_data_objects(self, filename, filepath):
-        factory_type = self.file_type_checker(filename)
+        factory_type = self.file_type_checker(filename)  # check extension (.tsm)
         self.filename.append(filename)
         self.filepath.append(filepath)
-        self.data_file_obj.append(factory_type.create_data_factory(self, filename, filepath))
-        self.data_file = dict(zip(self.filename, self.data_file_obj))
+        new_data_file_obj = factory_type.create_data_factory(self, filename, filepath)
+        self.data_file[filename] = new_data_file_obj  # dict of data_file(key filename : object)
 
     def create_control_objects(self):
         self.create_roi()
@@ -134,26 +122,24 @@ class Model(ModelInterface):
         self.create_line()
 
     def create_roi(self):
-        product = Roi()
-        self.roi_obj.append(product)
-        self.roi_name.append('ROI' + str(product.num_instance))
-        self.roi = dict(zip(self.roi_name, self.roi_obj))  # filename = [list]
+        new_roi = Roi()
+        self.roi['ROI' + str(new_roi.num_instance)] = new_roi  # new_roi.num_instance : Roi class instance
+
         
     def create_time_window(self):
-        product = TimeWindow()
-        self.time_window_obj.append(product)
-        self.time_window_name.append('TimeWindow' + str(product.num_instance))
-        self.time_window = dict(zip(self.time_window_name, self.time_window_obj))  # filename = [list]
+        new_time_window = TimeWindow()
+        self.time_window['TimeWindow' + str(new_time_window.num_instance)] = new_time_window
+
         
     def create_frame_shift(self):
-        self.frame_shift_name.append('FrameShift' + str(len(self.frame_shift_obj)))
-        self.frame_shift_obj.append(FrameShift())
-        self.frame_shift = dict(zip(self.frame_shift_name, self.frame_shift_obj))  # filename = [list]
+        new_frame_shift = FrameShift()
+        self.frame_shift['FrameShift' + str(new_frame_shift.num_instance)] = new_frame_shift
+
         
     def create_line(self):
-        self.line_name.append('Line' + str(len(self.line_obj)))
-        self.line_obj.append(Line())
-        self.line = dict(zip(self.line_name, self.line_obj))  # filename = [list]
+        new_line = Line()
+        self.line['Line' + str(new_line.num_instance)] = new_line
+
 
     def set_data(self, data_type, val):  # e.g. model.set_data('ROI1', [10,10,3,3])
         return self.roi[data_type].set_data(val)
@@ -170,12 +156,16 @@ class Model(ModelInterface):
     @staticmethod
     def file_type_checker(filename):
         if filename.find('.tsm') > 0:
+            print('Found a .tsm file')
             return TsmFactory()
         elif filename.find('.da') > 0:
+            print('Found a .da file')
             return DaFactory()
         elif filename.find('.abf') > 0:
+            print('Found an .abf file')
             return AbfFactory()
         elif filename.find('.wcp') > 0:
+            print('Found a .wcp file')
             return WcpFactory()
         else:
             print('---------------------')
@@ -190,19 +180,15 @@ class TsmData(DataInterface):
         self.filename = filename
         self.filepath = filepath
         
+        # counter for frame, image and trace instance
+        self.counter = {}
+        
         #Read .tsm and .tbn file set.
         self.file_io = 0
 
-        self.frame_obj = []  #data instances
-        self.frame_type = []  # 'full_frame', 'ch_frame'
-        self.frame = {}  # dictionaly
-        
-        self.image_obj = []
-        self.image_type = []  # 'cell_image', 'dif_image'
+        # object dictionaly
+        self.frame = {}
         self.image = {}
-        
-        self.trace_obj = []
-        self.trace_type = []  # 'full_trace', 'ch1_trace1', 'elec_trace1', 'bg_trace'
         self.trace = {}
 
         print('created a data_file.')
@@ -259,29 +245,37 @@ class TsmData(DataInterface):
     def create_frame_obj(self, factory_type, data, interval):  #FullFrameFactory, ChFrameFactory
         product = factory_type.create_frame(data, interval)
         object_name = product.__class__.__name__  # str
-        num_product = product.num_instance  # int
         
-        self.frame_obj.append(product)
-        self.frame_type.append(object_name + str(num_product))
-        self.frame = dict(zip(self.frame_type, self.frame_obj))
+        last_num = self.counter.get(object_name, 0)  # Get counter num of instance.
+        new_num = last_num + 1
+        product.num = new_num  # Add counter num to instance.
+        
+        self.counter[object_name] = new_num  # Sdd key and num to counter dict.
+        self.frame[object_name + str(product.num)] = product
+
          
     def create_image_obj(self, factory_type, data):
         product = factory_type.create_image(data)
         object_name = product.__class__.__name__  # str
-        num_product = product.num_instance  # int
+
+        last_num = self.counter.get(object_name, 0)  # Get counter num of instance.
+        new_num = last_num + 1
+        product.num = new_num  # Add counter num to instance.
         
-        self.image_obj.append(product)
-        self.image_type.append(object_name + str(num_product))
-        self.image = dict(zip(self.image_type, self.image_obj))
+        self.counter[object_name] = new_num  # Sdd key and num to counter dict.
+        self.image[object_name + str(product.num)] = product        
+
         
     def create_trace_obj(self, factory_type, data, interval):
         product = factory_type.create_trace(data, interval)
         object_name = product.__class__.__name__  # str
-        num_product = product.num_instance  # int
         
-        self.trace_obj.append(product)
-        self.trace_type.append(object_name + str(num_product))
-        self.trace = dict(zip(self.trace_type, self.trace_obj))
+        last_num = self.counter.get(object_name, 0)  # Get counter num of instance.
+        new_num = last_num + 1
+        product.num = new_num  # Add counter num to instance.
+        
+        self.counter[object_name] = new_num  # Sdd key and num to counter dict.
+        self.trace[object_name + str(product.num)] = product 
         
     # the function for searching key word in dict
     def dict_regex(self, dict_name, search_word):
@@ -291,6 +285,7 @@ class TsmData(DataInterface):
             if cp_search_word.search(k):
                 ret.append(dict_name[k])
         return ret
+
     
     def get_data(self, data_name):
         # Should chage this code. 
@@ -318,7 +313,7 @@ class TsmData(DataInterface):
     
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    filename = '20408A001.tsm'
+    filename = '20408A001new.tsm'
     filepath = '..\\220408\\'
     model = Model()
     model.create_data_objects(filename, filepath)

@@ -193,6 +193,11 @@ class TimeWindow(ModelController):
 
 
 class FrameShift(ModelController):
+    num_instance = 0  # Class member to count the number of instance
+    
+    def __init__(self):
+        FrameShift.num_instance += 1
+    
     def set_data(self, val):
         pass
 
@@ -216,6 +221,11 @@ class FrameShift(ModelController):
 
 
 class Line(ModelController):
+    num_instance = 0  # Class member to count the number of instance
+    
+    def __init__(self):
+        Line.num_instance += 1
+    
     def set_data(self, val):
         pass
 

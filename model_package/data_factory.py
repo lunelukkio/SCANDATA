@@ -278,7 +278,7 @@ class Frame(metaclass=ABCMeta):  # 3D frame data: full frame, ch image
         
         if len(self.frame_data) <= 1:
             print('---------------------')
-            print('Can not make 3D data')
+            print('Can not make Frame data')
             print('---------------------')
             return None
     
@@ -302,18 +302,22 @@ class Frame(metaclass=ABCMeta):  # 3D frame data: full frame, ch image
         #np.set_printoptions(threshold=1000)
 
 class FullFrame(Frame):
-    num_instance = 0  # Class member to count the number of instance
     def __init__(self, data, interval):
         super().__init__(data, interval)
-        FullFrame.num_instance += 1
-        print('Read a Full frame data' + str(FullFrame.num_instance))
+        self.num = 0  # instance number
+        print('Made a FullFrame')
+        
+    def print_name(self):
+        print('This is FullFrame' + str(self.num))
 
 class ChFrame(Frame):
-    num_instance = 0  # Class member to count the number of instance
     def __init__(self, data, interval):
         super().__init__(data, interval)
-        ChFrame.num_instance += 1
-        print('Read a Channel frame data' + str(ChFrame.num_instance))
+        self.num = 0  # instance number
+        print('Made a ChFrame')
+        
+    def print_name(self):
+        print('This is ChFrame' + str(self.num))
 
 class Image(metaclass=ABCMeta):  # cell image, dif image
     def __init__(self, data):
@@ -332,10 +336,9 @@ class Image(metaclass=ABCMeta):  # cell image, dif image
         pass
 
 class CellImage(Image):
-    num_instance = 0  # Class member to count the number of instance
     def __init__(self, data):
         super().__init__(data)
-        CellImage.num_instance += 1
+        self.num = 0  # instance number
         
         self.frame_data = data
 
@@ -357,19 +360,21 @@ class CellImage(Image):
         
     def update(self, val):
         self.read_data(val)
-        print('Recieved a notify message.')
+        print('CellImage recieved a notify message.')
 
     def get_data(self):
         pass
     
     def show_image(self):
             plt.imshow(self.image_data, cmap='gray', interpolation='none')
+            
+    def print_name(self):
+        print('This is CellImage' + str(self.num))
         
 class DifImage(Image):
-    num_instance = 0  # Class member to count the number of instance
     def __init__(self, data):
         super().__init__(data)
-        DifImage.num_instance += 1
+        self.num = 0  # instance number
 
     def read_data(self):
         pass
@@ -379,6 +384,9 @@ class DifImage(Image):
 
     def get_data(self):
         pass
+    
+    def print_name(self):
+        print('This is DifImage' + str(self.num))
 
 
 class Trace(metaclass=ABCMeta):  # Fluo trae, Elec trace
@@ -404,7 +412,6 @@ class Trace(metaclass=ABCMeta):  # Fluo trae, Elec trace
 class FluoTrace(Trace):
     def __init__(self, data, interval):
         super().__init__()
-        
         self.frame_data = data
         self.interval = copy.deepcopy(interval)
         # trace_data and time_data are in the super class
@@ -434,40 +441,44 @@ class FluoTrace(Trace):
     
     def update(self, roi_obj):
         self.read_data(roi_obj)
-        print('Recieved a notify message.')
+        print('FluoTrace recieved a notify message.')
     
     def get_data(self):
         pass
  
 class FullTrace(FluoTrace):
-    num_instance = 0  # Class member to count the number of instance
     def __init__(self, data, interval):
         super().__init__(data, interval)
-        FullTrace.num_instance += 1
-        print('Read Full trace' + str(FullTrace.num_instance))
+        self.num = 0  # instance number
+        print('Made a FullTrace')
+        
+    def print_name(self):
+        print('This is FullTrace' + str(self.num))
         
 class ChTrace(FluoTrace):
-    num_instance = 0  # Class member to count the number of instance
     def __init__(self, data, interval):
         super().__init__(data, interval)
-        ChTrace.num_instance += 1
-        print('Read Channel trace' + str(ChTrace.num_instance))
+        self.num = 0  # instance number
+        print('Made a ChTrace')
+        
+    def print_name(self):
+        print('This is ChTrace' + str(self.num))
         
 class BGTrace(FluoTrace):
-    num_instance = 0  # Class member to count the number of instance
     def __init__(self, data, interval):
         super().__init__(data, interval)
-        BGTrace.num_instance += 1
-        print('Read Background trace' + str(BGTrace.num_instance))
+        self.num = 0  # instance number
+        print('Made a BGTrace')
+        
+    def print_name(self):
+        print('This is BGTrace' + str(self.num))
 
 class ElecTrace(Trace):
-    num_instance = 0  # Class member to count the number of instance
     def __init__(self, data, interval):
         super().__init__()
-        ElecTrace.num_instance += 1
-        # trace_data and time_data are in the super class
+        self.num = 0  # instance number
         self.read_data(data, interval)
-        print('Read Elec trace' + str(ElecTrace.num_instance))
+        print('Made a ElecTrace')
 
     def read_data(self, data, interval):
         self.trace_data = copy.deepcopy(data)
@@ -479,9 +490,11 @@ class ElecTrace(Trace):
         
         if len(self.trace_data) <= 1:
             print('---------------------')
-            print('Can not make 3D data')
+            print('Can not make Elec data')
             print('---------------------')
             return None
+        else:
+            print('Read a ElecTrace')
 
     
     def update(self):
@@ -489,6 +502,9 @@ class ElecTrace(Trace):
 
     def get_data(self):
         pass
+    
+    def print_name(self):
+        print('This is ElecTrace' + str(self.num))
 
 
 if __name__ == '__main__':

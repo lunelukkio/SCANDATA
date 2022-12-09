@@ -69,11 +69,11 @@ class View(tk.Frame):
 
 
     def create_button(self):
-        self.button = tk.Button(self.master,text='Open data',command=self.buttonClick,width=10)
+        self.button = tk.Button(self.master,text='Open data',command=self.open_file,width=10)
         self.button.place(x=110, y=150)
         self.button.config(fg='black', bg='skyblue')
         
-    def buttonClick(self): 
+    def open_file(self): 
         self.menu_open_click()
 
         
@@ -96,17 +96,16 @@ class DataWindow(tk.Frame):
         self.roi_box = []
         
         # set frames
-        frame_top = tk.Frame(master, pady=5, padx=5, relief=tk.RAISED, bd=2, bg = 'white')
-        button_open = tk.Button(frame_top, text='Open')
+        frame_top = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=2, bg = 'white')
+        button_open = tk.Button(frame_top, text='Open',command=self.button_reopen)
         button_close = tk.Button(frame_top, text='Close')
         button_open.pack(side=tk.LEFT)
         button_close.pack(side=tk.LEFT, padx=5)
         frame_top.pack(fill=tk.X)
         
                         
-        frame_bottom = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=2, bg = 'azure')
+        frame_bottom = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=0, bg = 'azure')
         button_roi = tk.Button(frame_bottom, text='Delete ROI', command=self.delete_roi, width=20)
-        button_roi.place(x=1200, y=150)
         button_roi.config(fg="black", bg="pink")
         button2 = tk.Button(frame_bottom, text='Close')
         button_roi.pack(side=tk.LEFT)
@@ -140,8 +139,7 @@ class DataWindow(tk.Frame):
         # matplotlib trace axes
         self.trace_ax1 = trace_fig.add_subplot(gridspec_trace_fig[0:15])
         self.trace_ax2 = trace_fig.add_subplot(gridspec_trace_fig[16:20], sharex=self.trace_ax1)
-        #self.trace_ax1.set_ylim(auto = True)
-        #self.trace_ax2.set_ylim(auto = True)
+
         self.canvas_trace = FigureCanvasTkAgg(trace_fig, frame_right)
         #canvas_trace.get_tk_widget().pack()
         
@@ -176,8 +174,12 @@ class DataWindow(tk.Frame):
         
     def delete_roi(self):
         num_box = len(self.roi_box)
-        del self.roi_box[num_box-1]
-        print(num_box)
+        if num_box == 1:
+            print('This is the last ROI')
+            return
+        else:
+            del self.roi_box[num_box-1]
+            print(num_box)
         
     def onclick_image(self, event):
         roi = self.controller.set_roi(event)
@@ -189,7 +191,11 @@ class DataWindow(tk.Frame):
         self.trace_ax1.autoscale_view()
         self.canvas_trace.draw()
         self.canvas_image.draw()
-
+        
+    def button_reopen(self):
+        del self.controller.model.data_file[self.filename]
+        # reopen window
+        
 
 
 class RoiBox():
