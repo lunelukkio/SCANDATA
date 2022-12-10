@@ -139,14 +139,19 @@ class Model(ModelInterface):
     def create_line(self):
         new_line = Line()
         self.line['Line' + str(new_line.num_instance)] = new_line
-
+        
+    def bind_data_controller(self, filename, data_type, controller_name):  # obj_type: 'ChTrace1, CellImage1, controller_type: ROI1, TimeWindow1 
+        pass
+        #self.data_file[filename].bind_data_controller(data_type, controller_type)
 
     def set_data(self, data_type, val):  # e.g. model.set_data('ROI1', [10,10,3,3])
         return self.roi[data_type].set_data(val)
     
-    def get_data(self, filename, data_name):  # e.g. model.get_data('20408A001,tsm, Trace['trace1'])
-        return self.data_file[filename].get_data(data_name)
+    def get_data(self, filename, data_type):  # e.g. model.get_data('20408A001,tsm, Trace['trace1'])
+        return self.data_file[filename].get_data(data_type)
     
+        
+        
     def set_mod(self, control_type, mod_type, val):
         raise NotImplementedError
     
@@ -172,6 +177,18 @@ class Model(ModelInterface):
             print('Can not find the file')
             print('---------------------')
             return None
+        
+    def check_data_type(self, data_name):
+        pass
+        #if data_name.find('Frame') > 0:
+        #    obj = self.frame.get(data_name)
+        #elif data_name.find('Image') > 0:
+        #    obj = self.image.get(data_name) 
+        #elif data_name.find('Trace') > 0:
+        #    obj = self.trace.get(data_name) 
+    
+    def check_control_type(self):
+        pass
 
 
 class TsmData(DataInterface):
@@ -285,8 +302,19 @@ class TsmData(DataInterface):
             if cp_search_word.search(k):
                 ret.append(dict_name[k])
         return ret
-
     
+    """ Not object oriented. Need refactoring"""
+    def bind_data_controller(self, data_type, controller_name):  # obj_type: 'ChTrace1, CellImage1, controller_type: ROI1, TimeWindow1 
+        if controller_name.find('ROI') > 0:
+            self.model.roi[controller_name].add_observer(self.trace[data_type])
+        elif controller_name.find('TimeWindow') > 0:
+            self.model.time_window[controller_name].add_observer(self.image[data_type])
+        elif controller_name.find('FrameShift') > 0:
+            self.model.frame_shift[controller_name].add_observer(self.frame[data_type])
+        elif controller_name.find('Line') > 0:
+            pass
+        
+    """ Not object oriented. Need refactoring"""
     def get_data(self, data_name):
         # Should chage this code. 
         if data_name.find('Frame') > 0:

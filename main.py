@@ -23,7 +23,6 @@ class Main:
         root = tk.Tk()
         root.title("SCANDATA")
 
-        
         # Make instance of a model, a view and a controller
         self.model = Model()
         self.view = View(root)

@@ -9,7 +9,6 @@ main for view
 import tkinter as tk
 from tkinter import ttk
 import tkinter.filedialog
-import inspect, pprint
 import os
 from matplotlib.figure import Figure
 import matplotlib.patches as patches
@@ -27,15 +26,10 @@ class View(tk.Frame):
         master.geometry('400x200')
         master.title('SCANDATA')
         
-        self.window = []
-        self.data_window = []
+        self.data_window = {}  # data window obj
         
         self.create_menu()
         self.create_button()
-        
-        pprint.pprint(self.window)
-        pprint.pprint(self.data_window)
-
         
     def create_menu(self):
         menu_bar = tk.Menu(self)
@@ -64,8 +58,8 @@ class View(tk.Frame):
             )
         
         filename = self.controller.menu_open_click(fullname)
-        self.window.append(tk.Toplevel())
-        self.data_window.append(DataWindow(self.window[len(self.window)-1], filename, self.controller))
+        new_window = tk.Toplevel()
+        self.data_window[filename] = DataWindow(new_window, filename, self.controller)
 
 
     def create_button(self):
@@ -103,14 +97,24 @@ class DataWindow(tk.Frame):
         button_close.pack(side=tk.LEFT, padx=5)
         frame_top.pack(fill=tk.X)
         
-                        
+        """Bottom Buttons"""
         frame_bottom = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=0, bg = 'azure')
-        button_roi = tk.Button(frame_bottom, text='Delete ROI', command=self.delete_roi, width=20)
-        button_roi.config(fg="black", bg="pink")
-        button2 = tk.Button(frame_bottom, text='Close')
-        button_roi.pack(side=tk.LEFT)
-        button2.pack(side=tk.LEFT, padx=5)
+        button_add_roi = tk.Button(frame_bottom, text='Add ROI', command=self.add_roi, width=20)
+        button_add_roi.config(fg="black", bg="pink")
+        button_add_roi.pack(side=tk.LEFT, padx=5)
+
+        button_delete_roi = tk.Button(frame_bottom, text='Delete ROI', command=self.delete_roi, width=20)
+        button_delete_roi.config(fg="black", bg="pink")
+        button_delete_roi.pack(side=tk.LEFT)
+        
+        button_delete_roi = tk.Button(frame_bottom, text='Large ROI', command=lambda: self.large_roi(1), width=20)
+        button_delete_roi.pack(side=tk.LEFT)
+        
+        button_delete_roi = tk.Button(frame_bottom, text='Small ROI', command=self.small_roi, width=20)
+        button_delete_roi.pack(side=tk.LEFT)
+        
         frame_bottom.pack(side=tk.BOTTOM, fill=tk.BOTH)
+
 
 
         #frame_bottom = tk.Frame(master, pady=5, padx=5, relief=tk.RAISED, bd=2)
@@ -164,13 +168,27 @@ class DataWindow(tk.Frame):
         
     def create_trace(self, ax, trace_type):
         trace = self.controller.get_data(self.filename, trace_type)
-        line, =ax.plot(trace.time_data, trace.trace_data) 
-        self.trace_y1.append(line)  # list for trace_y1 trace line objects
+        line, =ax.plot(trace.time_data, trace.trace_data)  # new line object
+        self.trace_y1.append(line)  # Add to the list for trace_y1 trace line objects
         
     def set_trace(self, ax, trace_num, trace_type):
         trace = self.controller.get_data(self.filename, trace_type)
 
         self.trace_y1[trace_num].set_ydata(trace.trace_data)
+        
+    def large_roi(self, roi_num):
+        pass
+        #self.controll.large_roi(roi_num)
+    
+    def small_roi(self):
+        pass
+        
+    def add_roi(self):
+        new_roi_box = RoiBox(self.image_ax)
+        self.roi_box.append(new_roi_box)
+        self.create_trace(self.filename, 'ChTrace1')
+        self.create_trace(self.filename, 'ChTrace2')
+        
         
     def delete_roi(self):
         num_box = len(self.roi_box)

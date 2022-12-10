@@ -52,4 +52,8 @@ class Controller:
         roi = [roi_x, roi_y] + roi_length
         self.model.set_data('ROI' + str(roi_num), roi)
         return roi
+    
+    def large_roi(self, roi_num):
+        self.model.get_infor
+        self.model.set_data('ROI' + str(roi_num), roi)
         

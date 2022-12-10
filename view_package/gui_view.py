@@ -32,9 +32,8 @@ class Observer(metaclass=abc.ABCMeta):
         pass
 
 class MainWindow(View):
-    def __init__(self, controller, master=None):
+    def __init__(self, master=None):
         super().__init__(master)
-        self.main_controller = controller
 
         
         self.master.title("Main Window")
@@ -180,7 +179,7 @@ class MainWindow(View):
         functions_frame.pack(side = tk.LEFT)
 
     def open_trace_window(self):
-        trace_window = TraceWindow(self.controller, None)
+        trace_window = TraceWindow(None)
         #trace_window.grab_set() #This is for keeping a window at top
 
         #move the window position
@@ -211,12 +210,12 @@ class MainWindow(View):
         self.model.data_container.file_infor.print_filename()
 
 class TraceWindow(tk.Toplevel, View):
-    def __init__(self, controller, parent):
+    def __init__(self , parent):
         super().__init__(parent)
         self.title("Trace Window")
         self.geometry("1500x700")
         self.create_status_bar()
-        self.controller = controller
+
 
         frame_tool_bar = ttk.Frame(self, borderwidth = 2, relief = tk.SUNKEN)
         button1 = ttk.Button(frame_tool_bar, text='close',
