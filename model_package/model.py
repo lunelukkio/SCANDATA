@@ -84,7 +84,7 @@ class DataInterface(metaclass=ABCMeta):
         pass
     
     @abstractmethod
-    def get_data(self, data_name):
+    def get_data(self):
         pass
 
 
@@ -104,7 +104,7 @@ class Model(ModelInterface):
         self.frame_shift = {}
         self.line = {}
 
-        print('Created a model.')
+        print('Created an empty model.')
         
         self.create_control_objects()
           
@@ -144,11 +144,11 @@ class Model(ModelInterface):
         pass
         #self.data_file[filename].bind_data_controller(data_type, controller_type)
 
-    def set_data(self, data_type, val):  # e.g. model.set_data('ROI1', [10,10,3,3])
-        return self.roi[data_type].set_data(val)
+    def set_data(self, data_key, val):  # e.g. model.set_data('ROI1', [10,10,3,3])
+        return self.roi[data_key].set_data(val)
     
-    def get_data(self, filename, data_type):  # e.g. model.get_data('20408A001,tsm, Trace['trace1'])
-        return self.data_file[filename].get_data(data_type)
+    def get_data(self, data_key, filename = None):  # e.g. model.get_data('20408A001,tsm, Trace['trace1'])
+        return self.data_file[filename].get_data(data_key)
     
         
         
@@ -178,18 +178,26 @@ class Model(ModelInterface):
             print('---------------------')
             return None
         
-    def check_data_type(self, data_name):
-        pass
-        #if data_name.find('Frame') > 0:
-        #    obj = self.frame.get(data_name)
-        #elif data_name.find('Image') > 0:
-        #    obj = self.image.get(data_name) 
-        #elif data_name.find('Trace') > 0:
-        #    obj = self.trace.get(data_name) 
-    
-    def check_control_type(self):
-        pass
-
+    def check_data_key(self, data_key):  # dict key checker
+        if data_key.find('Frame') > 0:
+            return 'Frame'
+        elif data_key.find('Image') > 0:
+            return 'Image' 
+        elif data_key.find('Trace') > 0:
+            return 'Trace'
+        elif data_key.find('ROI') > 0:
+            return 'ROI'
+        elif data_key.find('TimeWindow') > 0:
+            return 'TimeWindow'
+        elif data_key.find('FrameShift') > 0:
+            return 'FrameShift'
+        elif data_key.find('Line') > 0:
+            return 'Line'
+        else:
+            print('-----------------------')
+            print('No Key')
+            print('-----------------------')
+            return None
 
 class TsmData(DataInterface):
     def __init__(self, model, filename, filepath):
@@ -341,7 +349,7 @@ class TsmData(DataInterface):
     
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    filename = '20408A001new.tsm'
+    filename = '20408A001.tsm'
     filepath = '..\\220408\\'
     model = Model()
     model.create_data_objects(filename, filepath)

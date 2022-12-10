@@ -12,11 +12,32 @@ from model_package.data_factory import FluoTrace, ElecTrace
 """
 abstract factory
 """
-class ModelControllerFactory:
+class ModelControllerFactory(metaclass=ABCMeta):
     @abstractmethod
     def create_control_val(self, val):
         pass
+
+
+"""
+contrete factory
+"""
+class RoiFactory:
+    def create_control_val(self):
+        return Roi()
+        
+class TimeWindowFactory:
+    def create_control_val(self):
+        return TimeWindow()
     
+class FrameShiftFactory:
+    def create_control_val(self):
+        return FrameShift()
+        
+class LineFactory:
+    def create_control_val(self):
+        return Line()
+
+
 """
 abstract product
 """
@@ -49,37 +70,6 @@ class ModelController(metaclass=ABCMeta):
     def notify_observer(self):
         pass
 
-"""
-contrete factory
-"""
-class RoiFactory:
-    def __init__(self):
-        self.val = []
-        
-    def create_control_val(self, val):
-        return Roi(val)
-        
-class TimeWindowFactory:
-    def __init__(self):
-        self.val = []
-        
-    def create_control_val(self, val):
-        return TimeWindow(val)
-    
-class FrameShiftFactory:
-    def __init__(self):
-        self.val = []
-        
-    def create_control_val(self, val):
-        return FrameShift(val)
-        
-class LineFactory:
-    def __init__(self):
-        self.val = []
-        
-    def create_control_val(self, val):
-        return Line(val)
-        
 
 """
 concrete product

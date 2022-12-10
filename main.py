@@ -18,7 +18,7 @@ class Main:
     def __init__(self):
         gc.collect()
         
-        print('start the program')
+        print('start SCANDATA')
         
         root = tk.Tk()
         root.title("SCANDATA")
