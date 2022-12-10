@@ -98,11 +98,6 @@ class Model(ModelInterface):
         self.filepath = []
         self.data_file = {}  # dictionary for data_files
 
-        # data controllers for any files
-        self.roi = {}
-        self.time_window = {}
-        self.frame_shift = {}
-        self.line = {}
 
         print('Created an empty model.')
         
@@ -120,6 +115,8 @@ class Model(ModelInterface):
         self.create_time_window()
         self.create_frame_shift()
         self.create_line()
+        
+
 
     def create_roi(self):
         new_roi = Roi()
@@ -205,16 +202,22 @@ class TsmData(DataInterface):
         self.filename = filename
         self.filepath = filepath
         
+        # controller objects
+        self.model_controller = {}
+        self.model_controller_counter = {}
+        
         # counter for frame, image and trace instance
-        self.counter = {}
+
         
         #Read .tsm and .tbn file set.
         self.file_io = 0
+
 
         # object dictionaly
         self.frame = {}
         self.image = {}
         self.trace = {}
+        self.data_counter = {}
 
         print('created a data_file.')
         
@@ -264,6 +267,17 @@ class TsmData(DataInterface):
         model.time_window['TimeWindow1'].set_data([2,2,2,2])
         model.roi['ROI1'].set_data([40,40,1,1])
         
+    def create_model_controller(self, factory_type):
+        product = factory_type.create_model_controller()
+        object_name = product.__class__.__name__  # str
+        
+        last_num = self.model_controller_counter.get(object_name, 0)  # Get counter num of instance.
+        new_num = last_num + 1
+        product.num = new_num  # Add counter num to instance.
+        
+        self.mode_controller_counter[object_name] = new_num  # Sdd key and num to counter dict.
+        self.model_controller[object_name + str(product.num)] = product
+        
     def create_file_io(self, filename, filepath):
         self.file_io = TsmFileIO(filename, filepath)
         
@@ -271,11 +285,11 @@ class TsmData(DataInterface):
         product = factory_type.create_frame(data, interval)
         object_name = product.__class__.__name__  # str
         
-        last_num = self.counter.get(object_name, 0)  # Get counter num of instance.
+        last_num = self.data_counter.get(object_name, 0)  # Get counter num of instance.
         new_num = last_num + 1
         product.num = new_num  # Add counter num to instance.
         
-        self.counter[object_name] = new_num  # Sdd key and num to counter dict.
+        self.data_counter[object_name] = new_num  # Sdd key and num to counter dict.
         self.frame[object_name + str(product.num)] = product
 
          
@@ -283,11 +297,11 @@ class TsmData(DataInterface):
         product = factory_type.create_image(data)
         object_name = product.__class__.__name__  # str
 
-        last_num = self.counter.get(object_name, 0)  # Get counter num of instance.
+        last_num = self.data_counter.get(object_name, 0)  # Get counter num of instance.
         new_num = last_num + 1
         product.num = new_num  # Add counter num to instance.
         
-        self.counter[object_name] = new_num  # Sdd key and num to counter dict.
+        self.data_counter[object_name] = new_num  # Sdd key and num to counter dict.
         self.image[object_name + str(product.num)] = product        
 
         
@@ -295,11 +309,11 @@ class TsmData(DataInterface):
         product = factory_type.create_trace(data, interval)
         object_name = product.__class__.__name__  # str
         
-        last_num = self.counter.get(object_name, 0)  # Get counter num of instance.
+        last_num = self.data_counter.get(object_name, 0)  # Get counter num of instance.
         new_num = last_num + 1
         product.num = new_num  # Add counter num to instance.
         
-        self.counter[object_name] = new_num  # Sdd key and num to counter dict.
+        self.data_counter[object_name] = new_num  # Sdd key and num to counter dict.
         self.trace[object_name + str(product.num)] = product 
         
     # the function for searching key word in dict
