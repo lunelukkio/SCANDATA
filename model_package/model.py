@@ -20,52 +20,67 @@ abstract class
 """
 class ModelInterface(metaclass=ABCMeta):
     @abstractmethod
-    def create_data_objects(self, filename, filepath):
+    def create_data_file_objects(self, filename, filepath):
         pass
     
     @abstractmethod
-    def create_control_objects(self):
+    def create_controller_objects(self, control_type, filename):
+        pass
+    
+    @abstractmethod
+    def create_data_objects(self, data_type, filename):
+        pass
+    
+    @abstractmethod
+    def bind_controller_data(self, data_key, control_key, data_filename, control_filename):
         pass
         
     @abstractmethod
-    def set_data(self, control_type, val):
+    def set_data(self, deta_key, val):
         pass
     
     @abstractmethod
-    def get_data(self, filename, data_type):
+    def get_data(self, data_key, filename):
         pass
     
     @abstractmethod
-    def set_mod(self, control_type, mod_type, val):
+    def set_mod(self, mod_key, val):
         pass
     
     @abstractmethod
     def reset(self):
         pass
     
-    
+    def add_mod(self, mod_key, data_key):
+        pass
+
+""" Data file factory """
 class DataFactory(metaclass=ABCMeta):
     @abstractmethod
     def create_data_factory(self, model, filename, filepath):
         pass
-    
+
+
 class TsmFactory(DataFactory):
     def create_data_factory(self, model,filename, filepath):
         return TsmData(model, filename, filepath)
-    
+
+
 class DaFactory(DataFactory):
     def create_data_factory(self, model, filename, filepath):
         raise NotImplementedError
-    
+
+
 class AbfFactory(DataFactory):
     def create_data_factory(self, model, filename, filepath):
         raise NotImplementedError
-        
+
+
 class WcpFactory(DataFactory):
     def create_data_factory(self, model, filename, filepath):
         raise NotImplementedError
 
-
+""" Data file products"""
 class DataInterface(metaclass=ABCMeta):
     @abstractmethod
     def create_file_io(self):
@@ -154,6 +169,7 @@ class Model(ModelInterface):
     
     def reset(self):
         raise NotImplementedError
+
     
     @staticmethod
     def file_type_checker(filename):
