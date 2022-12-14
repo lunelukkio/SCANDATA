@@ -20,87 +20,86 @@ abstract class
 """
 class ModelInterface(metaclass=ABCMeta):
     @abstractmethod
-    def create_data_file_objects(self, filename, filepath):
-        pass
-    
+    def create_data_set(self, filename, filepath) -> key:
+        raise NotImplementedError()
+
     @abstractmethod
-    def create_controller_objects(self, control_type, filename):
-        pass
-    
+    def create_obj(self, filename, key) -> key:
+        raise NotImplementedError()
+
     @abstractmethod
-    def create_data_objects(self, data_type, filename):
-        pass
-    
+    def set_data(self, filename, key, val) -> None:  # key = 'ROI1','ChTrace','ModDF','ModAverage'
+        raise NotImplementedError()
+
     @abstractmethod
-    def bind_controller_data(self, data_key, control_key, data_filename, control_filename):
-        pass
-        
+    def get_data(self, filename, key) -> object:
+        raise NotImplementedError() 
+
     @abstractmethod
-    def set_data(self, deta_key, val):
-        pass
-    
+    def bind(self, filename_controller, model_controller_key, filename_data, data_key) -> None:
+        raise NotImplementedError()
+
     @abstractmethod
-    def get_data(self, data_key, filename):
-        pass
-    
-    @abstractmethod
-    def set_mod(self, mod_key, val):
-        pass
-    
-    @abstractmethod
-    def reset(self):
-        pass
-    
-    def add_mod(self, mod_key, data_key):
-        pass
+    def reset(self) -> None:
+        raise NotImplementedError()
+
+    def add_mod(self, mod_key, data_key) -> key:
+        raise NotImplementedError()
 
 """ Data file factory """
-class DataFactory(metaclass=ABCMeta):
+class DataSetFactory(metaclass=ABCMeta):
     @abstractmethod
-    def create_data_factory(self, model, filename, filepath):
-        pass
+    def create_data_set_factory(self, model, filename, filepath):
+        raise NotImplementedError()
 
 
-class TsmFactory(DataFactory):
-    def create_data_factory(self, model,filename, filepath):
+class TsmFactory(DataSetFactory):
+    def create_data_set_factory(self, model,filename, filepath):
         return TsmData(model, filename, filepath)
 
 
-class DaFactory(DataFactory):
-    def create_data_factory(self, model, filename, filepath):
+class DaFactory(DataSetFactory):
+    def create_data_set_factory(self, model, filename, filepath):
         raise NotImplementedError
 
 
-class AbfFactory(DataFactory):
-    def create_data_factory(self, model, filename, filepath):
+class AbfFactory(DataSetFactory):
+    def create_data_set_factory(self, model, filename, filepath):
         raise NotImplementedError
 
 
-class WcpFactory(DataFactory):
-    def create_data_factory(self, model, filename, filepath):
+class WcpFactory(DataSetFactory):
+    def create_data_set_factory(self, model, filename, filepath):
         raise NotImplementedError
+
 
 """ Data file products"""
-class DataInterface(metaclass=ABCMeta):
+class DataSetInterface(metaclass=ABCMeta):
     @abstractmethod
     def create_file_io(self):
-        pass
-    
+        raise NotImplementedError()
+
+    @abstractmethod
+    def create_object(self):
+        raise NotImplementedError()
+
+
+
     @abstractmethod
     def create_frame_obj(self):
-        pass
-    
+        raise NotImplementedError()
+
     @abstractmethod
     def create_image_obj(self):
-        pass
-    
+        raise NotImplementedError()
+
     @abstractmethod
     def create_trace_obj(self):
-        pass
-    
+        raise NotImplementedError()
+
     @abstractmethod
     def get_data(self):
-        pass
+        raise NotImplementedError()
 
 
 """
@@ -109,21 +108,51 @@ Concrete class
 class Model(ModelInterface):
     def __init__(self):
         # experiments data
-        self.filename = []
-        self.filepath = []
-        self.data_file = {}  # dictionary for data_files
-
-
+        self.__filename_list = []
+        self.__filepath_list = []
+        self.__data_set = {}  # dictionary for data_files
         print('Created an empty model.')
-        
-        self.create_control_objects()
-          
-    def create_data_objects(self, filename, filepath):
+
+    def create_data_set(self, filename, filepath) -> key:
         factory_type = self.file_type_checker(filename)  # check extension (.tsm)
-        self.filename.append(filename)
-        self.filepath.append(filepath)
-        new_data_file_obj = factory_type.create_data_factory(self, filename, filepath)
-        self.data_file[filename] = new_data_file_obj  # dict of data_file(key filename : object)
+        self.__filename.append(filename)
+        self.__filepath.append(filepath)
+        new_data_file_obj = factory_type.create_data_set_factory(self, filename, filepath)
+        self.__data_set[filename] = new_data_file_obj  # dict of data_file(key filename : object)
+        print(filename)
+        return filename
+
+    @abstractmethod
+    def create_obj(self, filename, key) -> key:
+        key_name = self.__filename[filename].create_obj(key)
+        return key_name
+        
+
+    
+    
+    
+    @abstractmethod
+    def set_data(self, filename, key, val) -> None:  # key = 'ROI1','ChTrace','ModDF','ModAverage'
+        raise NotImplementedError()
+
+    @abstractmethod
+    def get_data(self, filename, key) -> obj:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def bind(self, filename_controller, model_controller_key, filename_data, data_key):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def reset(self) -> None:
+        raise NotImplementedError()
+
+    def add_mod(self, mod_key, data_key) -> key:
+        raise NotImplementedError()
+    
+    
+    
+    
 
     def create_control_objects(self):
         self.create_roi()
@@ -212,11 +241,13 @@ class Model(ModelInterface):
             print('-----------------------')
             return None
 
-class TsmData(DataInterface):
-    def __init__(self, model, filename, filepath):
-        self.model = model
-        self.filename = filename
-        self.filepath = filepath
+class TsmData(DataSetInterface):
+    def __init__(self filename, filepath):
+        self.__filename = filename
+        self.__filepath = filepath
+        self.__key = {}
+        
+        key = self.check_key()
         
         # controller objects
         self.model_controller = {}
@@ -224,7 +255,7 @@ class TsmData(DataInterface):
         
         # counter for frame, image and trace instance
 
-        
+                self.create_control_objects()
         #Read .tsm and .tbn file set.
         self.file_io = 0
 
@@ -282,6 +313,13 @@ class TsmData(DataInterface):
         # set default val
         model.time_window['TimeWindow1'].set_data([2,2,2,2])
         model.roi['ROI1'].set_data([40,40,1,1])
+
+    def create_file_io(self, filename, filepath):
+        self.file_io = TsmFileIO(filename, filepath)
+        
+    def create_object(self, key):
+        
+        
         
     def create_model_controller(self, factory_type):
         product = factory_type.create_model_controller()
@@ -294,8 +332,7 @@ class TsmData(DataInterface):
         self.mode_controller_counter[object_name] = new_num  # Sdd key and num to counter dict.
         self.model_controller[object_name + str(product.num)] = product
         
-    def create_file_io(self, filename, filepath):
-        self.file_io = TsmFileIO(filename, filepath)
+
         
     def create_frame_obj(self, factory_type, data, interval):  #FullFrameFactory, ChFrameFactory
         product = factory_type.create_frame(data, interval)
@@ -406,6 +443,7 @@ if __name__ == '__main__':
     print('オブザーバーのリストを辞書にしてキーで消せるようにする')
     print('新しいdata_fileでFullFrame3からになる。これは名前用のカウントがFullFrame classで共通にカウントされるからである。')
     print('単体テストができるようにする')
+    print('Frame Ｔｒａｃｅ Roi TimeWindopwを並列に扱う。')
     
 
 

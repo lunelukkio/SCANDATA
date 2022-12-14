@@ -75,23 +75,27 @@ class ModelController(metaclass=ABCMeta):
 concrete product
 """
 class Roi(ModelController):
-    num_instance = 0  # Class member to count the number of instance
-    
     def __init__(self):
-        Roi.num_instance += 1
-        self.__observers = []
-        
         self.__x = 40
         self.__y = 40
         self.__x_length = 1
         self.__y_length = 1
-        print('Created a ROI.')
+        
+        self.num = 0  # instance number
+        self.__observers = []
+        print('Created a new ROI.')
+        
+    def check_val(self) -> None:
+        if self.__x < 0 or self.__y < 0 or self.__x_length < 0 or self.__y_length < 0:
+            raise ValueError('ROI value shold be more than 1')
 
-    def set_data(self, val):
+    def set_data(self, val) -> None:
         self.__x = val[0]
         self.__y = val[1]
         self.__x_length = val[2]
         self.__y_length = val[3]
+        
+        self.check_val()
         
         self.notify_observer()
         print('Set the ROI position and notified')
@@ -105,7 +109,13 @@ class Roi(ModelController):
                 self.__y_length]
     
     def reset(self):
-        pass
+        self.__x = 40
+        self.__y = 40
+        self.__x_length = 1
+        self.__y_length = 1
+        
+        self.__observers = []
+        print('Reset ROI' + str(self.num))
     
     def add_observer(self, observer):
         self.__observers.append(observer)
@@ -119,14 +129,14 @@ class Roi(ModelController):
             observer_name.update(val)
     
     def print_val(self):
-        print('ROI = ' +
+        print('ROI' + str(self.num) + ' = ' +
               str(self.__x) + ' ,' +
               str(self.__y) + ' ,' +
               str(self.__x_length) + ' ,' +
               str(self.__y_length) + '\n' +
               'observer = ' +
               str(self.__observers))
-
+            
     
 class TimeWindow(ModelController):
     num_instance = 0  # Class member to count the number of instance

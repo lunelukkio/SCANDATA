@@ -4,15 +4,15 @@ from abc import ABCMeta, abstractmethod
 class Dimension(metaclass=ABCMeta):    # 次元のインターフェイス
     @abstractmethod
     def print_dimension(self):
-        pass
+        raise NotImplementedError()
 
 class Shape(metaclass=ABCMeta):   # 図形のインターフェイス
     @abstractmethod
     def print_shape(self):
-        pass
+        raise NotImplementedError()
     @abstractmethod
     def print_dimension(self):
-        pass
+        raise NotImplementedError()
     
 
 class Dimension2D(Dimension):    # 2Dの次元
