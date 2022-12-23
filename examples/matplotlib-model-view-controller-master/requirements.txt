@@ -1,0 +1,4 @@
+# mac mojave crashes with tkinter; python 3.7.0 and mpl 3.0.3 is one fix
+python==3.7.0
+matplotlib==3.0.3  # mac mojave crashes with tkinter; suggest python 3.7.0 and mpl 3.0.3 to fix
+numpy
