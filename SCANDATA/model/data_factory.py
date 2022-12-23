@@ -90,16 +90,16 @@ class Data(metaclass=ABCMeta):
 "FluoFrame"
 class FluoFrame(Data):  # 3D frame data: full frame, ch image
     def __init__(self, data, interval):
-        self.frame_data = FrameData()
-        self.interval = 0  # (ms)
-        self.pixel = 0  # (um)
-        self.unit = 0  # No unit because of raw camera data.
+        self.__frame_data = FrameData()
+        self.__interval = 0  # (ms)
+        self.__pixel = 0  # (um)
+        self.__unit = 0  # No unit because of raw camera data.
 
         self.read_data(data, interval)
 
-    def read_data(self, data, interval):
-        self.frame_data = copy.deepcopy(data)
-        self.interval = copy.deepcopy(interval)
+    def read_data(self, data, interval) -> None:
+        self.__frame_data = copy.deepcopy(data)
+        self.__interval = copy.deepcopy(interval)
         
         if len(self.frame_data) <= 1:
             print('---------------------')
@@ -107,34 +107,33 @@ class FluoFrame(Data):  # 3D frame data: full frame, ch image
             print('---------------------')
             return None
     
-    def get_data(self):
-        frame = self.frame_data
-        interval = self.full_frame_interval
-        return frame, interval
+    def get_data(self) -> object:
+        return self
 
-    def update(self):
+    def update_data(self):
         pass
 
-    def show_frame(self, frame):
-        plt.imshow(self.frame_data[:, :, frame], cmap='gray', interpolation='none')
+    def show_data(self, frame) -> None:
+        plt.imshow(self.__frame_data[:, :, frame], cmap='gray', interpolation='none')
 
-    def print_frame_infor(self):
-        #np.set_printoptions(threshold=np.inf)
-        print(self.data_type)
-        print(self.data.shape)
-        print(self.time_data)
-
+    def print_infor(self) -> None:
+        #np.set_printoptions(threshold=np.inf)  # This is for showing all data values.
+        print(self.__frame_data_type)
+        print(self.__frame_data.shape)
+        print(self.__interval)
+        print(self.__pixel)
+        print(self.__unit)
         #np.set_printoptions(threshold=1000)
 
 
 class FullFrame(FluoFrame):
-    def __init__(self, data, interval):
-        super().__init__(data, interval)
+    def __init__(self, data):
+        super().__init__(data)
         self.object_num = 0  # instance number
         print('Made a FullFrame')
         
     def print_name(self):
-        print('This is FullFrame' + str(self.num))
+        print('This is FullFrame' + str(self.object_num))
 
 
 class ChFrame(FluoFrame):
@@ -144,23 +143,21 @@ class ChFrame(FluoFrame):
         print('Made a ChFrame')
         
     def print_name(self):
-        print('This is ChFrame' + str(self.num))
+        print('This is ChFrame' + str(self.object_num))
 
 
 "Value Object for Frames"
 class FrameData():
     def __init__(self):
-        self.data = np.empty(1, 1, 1)
+        self.__data = np.empty(3, dtype=float)
         
     def set_val(self, val):
-        self.data = val
+        self.__data = val
         
     def check_val(self):
-        if self.data.shape != 3:          
+        if self.__data.shape != (3,):          
             raise Exception("This object should be 3D data")
-            
-    def add(self,a,b):
-        return a+b
+
         
 
 
@@ -225,7 +222,7 @@ class CellImage(Image):
             plt.imshow(self.image_data, cmap='gray', interpolation='none')
             
     def print_name(self):
-        print('This is CellImage' + str(self.num))
+        print('This is CellImage' + str(self.object_num))
         
 class DifImage(Image):
     def __init__(self, data):
@@ -242,7 +239,7 @@ class DifImage(Image):
         pass
     
     def print_name(self):
-        print('This is DifImage' + str(self.num))
+        print('This is DifImage' + str(self.object_num))
 
 
 "Trace"
@@ -310,7 +307,7 @@ class FullTrace(FluoTrace):
         print('Made a FullTrace')
         
     def print_name(self):
-        print('This is FullTrace' + str(self.num))
+        print('This is FullTrace' + str(self.object_num))
         
 class ChTrace(FluoTrace):
     def __init__(self, data, interval):
@@ -319,7 +316,7 @@ class ChTrace(FluoTrace):
         print('Made a ChTrace')
         
     def print_name(self):
-        print('This is ChTrace' + str(self.num))
+        print('This is ChTrace' + str(self.object_num))
         
 class BGTrace(FluoTrace):
     def __init__(self, data, interval):
@@ -328,7 +325,7 @@ class BGTrace(FluoTrace):
         print('Made a BGTrace')
         
     def print_name(self):
-        print('This is BGTrace' + str(self.num))
+        print('This is BGTrace' + str(self.object_num))
 
 class ElecTrace(Trace):
     def __init__(self, data, interval):
@@ -361,7 +358,7 @@ class ElecTrace(Trace):
         pass
     
     def print_name(self):
-        print('This is ElecTrace' + str(self.num))
+        print('This is ElecTrace' + str(self.object_num))
 
 
 if __name__ == '__main__':
