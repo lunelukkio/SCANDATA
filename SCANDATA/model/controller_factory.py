@@ -21,19 +21,19 @@ class ModelControllerFactory(metaclass=ABCMeta):
 """
 contrete factory
 """
-class RoiFactory:
+class RoiFactory(ModelControllerFactory):
     def create_model_controller(self):
         return Roi()
         
-class TimeWindowFactory:
+class TimeWindowFactory(ModelControllerFactory):
     def create_model_controller(self):
         return TimeWindow()
     
-class FrameShiftFactory:
+class FrameShiftFactory(ModelControllerFactory):
     def create_model_controller(self):
         return FrameShift()
         
-class LineFactory:
+class LineFactory(ModelControllerFactory):
     def create_model_controller(self):
         return Line()
 
