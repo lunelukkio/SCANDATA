@@ -6,8 +6,6 @@ lunelukkio@gmail.com
 """
 from abc import ABCMeta, abstractmethod
 import numpy as np
-import matplotlib.pyplot as plt
-import copy
 import os
 
 class TsmFileIO():
@@ -19,17 +17,17 @@ class TsmFileIO():
         self.header = 0 # byte: it needs to chage to str [self.header.decode()]
         self.elec_header = 0
         
-        #about fluo frame
-        self.full_frame = np.array([0,])
+        #about fluo frames
+        self.full_frames = np.array([0,])
         self.dark_frame = np.array([0,])
-        self.ch_frame = np.array([0,])
+        self.ch_frames = np.array([0,])
         
         self.num_fluo_ch = 2  # Use () for PMT
         self.full_frame_interval = 0  # (ms)
         self.ch_frame_interval = 0  # (ms)
         self.data_pixel = np.empty([0,0])
-        self.num_full_frame = np.empty([0,])
-        self.num_ch_frame = np.empty([0,])
+        self.num_full_frames = np.empty([0,])
+        self.num_ch_frames = np.empty([0,])
         self.full_3D_size = 0
         self.ch_3D_size = 0
 
@@ -42,7 +40,7 @@ class TsmFileIO():
         
         # read data
         self.read_fileinfor()
-        self.read_frame_data()
+        self.read_frames_data()
         self.read_tbn_data()
         
     def read_fileinfor(self):
@@ -67,9 +65,9 @@ class TsmFileIO():
                 
                 # z: number of frames
                 index = str_header.find('NAXIS3')
-                str_num_full_frame = str_header[index+10:index+30]
-                self.num_full_frame = np.array(int(str_num_full_frame))
-                self.num_ch_frame = self.num_full_frame // self.num_fluo_ch
+                str_num_full_frames = str_header[index+10:index+30]
+                self.num_full_frames = np.array(int(str_num_full_frames))
+                self.num_ch_frames = self.num_full_frames // self.num_fluo_ch
                 
                 # frame interval
                 index = str_header.find('EXPOSURE')
@@ -78,11 +76,11 @@ class TsmFileIO():
                 
                 self.ch_frame_interval = self.full_frame_interval*self.num_fluo_ch
                 
-                # frame size
+                # frames size
                 self.full_3D_size = np.append(self.data_pixel, 
-                                                self.num_full_frame)
+                                                self.num_full_frames)
                 self.ch_3D_size = np.append(self.data_pixel, 
-                                              self.num_full_frame//self.num_fluo_ch)
+                                              self.num_full_frames//self.num_fluo_ch)
 
         except OSError as file_infor_error:
             print(file_infor_error)
@@ -93,31 +91,31 @@ class TsmFileIO():
         else:
             print('Imported a TSM file infor class.')
             
-    def read_frame_data(self):
+    def read_frames_data(self):
         try:
             # read shirt camera header information
             # https://fits.gsfc.nasa.gov/fits_primer.html
             file_dtype = np.int16
             path = self.full_filename
-            frame_count = (self.data_pixel[0] *
+            frames_count = (self.data_pixel[0] *
                            self.data_pixel[1] *
-                           self.num_full_frame) + (
+                           self.num_full_frames) + (
                            self.data_pixel[0] *
                            self.data_pixel[1])
 
             full_with_dark_frame = np.fromfile(path, dtype=file_dtype,
-                                          count=frame_count,
+                                          count=frames_count,
                                             offset=2880)
             full_dark_framesize = tuple(self.full_3D_size + [0, 0, 1] )  #including dark frame
             full_with_dark_frame = full_with_dark_frame.reshape(full_dark_framesize,
                                                                 order = 'F')
             full_with_dark_frame = np.rot90(full_with_dark_frame, 3)
             full_with_dark_frame = np.fliplr(full_with_dark_frame)
-            self.full_frame = full_with_dark_frame[:, :, 0:-1]
+            self.full_frames = full_with_dark_frame[:, :, 0:-1]
             self.dark_frame = full_with_dark_frame[:, :, -1]
-            self.full_frame = self.full_frame - self.dark_frame[:, :, np.newaxis]
+            self.full_frames = self.full_frames - self.dark_frame[:, :, np.newaxis]
 
-            self.ch_frame = self.split_frame(self.full_frame, self.num_fluo_ch)
+            self.ch_frames = self.split_frames(self.full_frames, self.num_fluo_ch)
 
 
         except IndexError as tsm_error:
@@ -130,13 +128,13 @@ class TsmFileIO():
             print('Imported a TSM imaging data class.')
             
     @staticmethod
-    def split_frame(frame, num_ch):
-        ch_frame = np.empty([frame.shape[0], frame.shape[1], frame.shape[2]//num_ch, num_ch])
+    def split_frames(frames, num_ch):
+        ch_frames = np.empty([frames.shape[0], frames.shape[1], frames.shape[2]//num_ch, num_ch])
         
         for i in range(0, num_ch):
-           for j in range(i, frame.shape[2], num_ch):
-               ch_frame[:, :, j//num_ch, i] = frame[:, :, j]
-        return ch_frame
+           for j in range(i, frames.shape[2], num_ch):
+               ch_frames[:, :, j//num_ch, i] = frames[:, :, j]
+        return ch_frames
     
     def read_image_data(self):
         pass  # No cell image from tsm data
@@ -151,7 +149,7 @@ class TsmFileIO():
             self.num_elec_ch = elec_header_list[0] * -1
             self.bnc_ratio = elec_header_list[1]
             self.elec_interval = self.full_frame_interval/self.bnc_ratio
-            self.num_elec_data = self.num_full_frame * self.bnc_ratio
+            self.num_elec_data = self.num_full_frames * self.bnc_ratio
             
             # read elec data
             pre_raw_elec = np.fromfile(elec_full_filename, np.float64, offset=4)
@@ -183,10 +181,10 @@ class TsmFileIO():
         print('elec_header = ' + str(self.elec_header))
         print('filenmae = ' + self.full_filename)
         print('num_fluo_ch = ' + str(self.num_fluo_ch))
-        print('full_frame_interval = ' + str(self.full_frame_interval))
-        print('ch_frame_interval = ' + str(self.ch_frame_interval))
-        print('num_full_frame = ' + str(self.num_full_frame))
-        print('num_ch_frame = ' + str(self.num_ch_frame))
+        print('full_frames_interval = ' + str(self.full_frames_interval))
+        print('ch_frames_interval = ' + str(self.ch_frames_interval))
+        print('num_full_frames = ' + str(self.num_full_frames))
+        print('num_ch_frames = ' + str(self.num_ch_frames))
         print('full_3D_size = ' + str(self.full_3D_size))
         print('ch_3D_size = ' + str(self.ch_3D_size))
         

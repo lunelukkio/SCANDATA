@@ -6,25 +6,36 @@ lunelukkio@gmail.com
 """
 
 import unittest
-from SCANDATA.model.data_factory import FrameData, FullFrame, ChFrame
+from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory
+from SCANDATA.model.data_factory import FramesData, FullFrames, ChFrames
 from SCANDATA.model.io_factory import TsmFileIO
 
 filename = '20408B002.tsm'
 filepath = '..\\220408\\'
 
-frame = FrameData()
-io_data = TsmFileIO(filename, filepath)
-fullframe = ChFrame(io_data)
 
-class TestFrameData(unittest.TestCase):
+
+
+class TestFramesData(unittest.TestCase):
     def test_check_val(self):
-        frame.check_val()
+        frames = FramesData()
+        
+        frames.check_val()
 
-class TestFullFrame(unittest.TestCase):
+class TestFullFrames(unittest.TestCase):
     def test_full_frame(self):
-        fullframe.print_infor()
-        fullframe.show_data(1)
-        fullframe.print_name()
+        io_data = TsmFileIO(filename, filepath)
+        data = io_data.full_frames
+        interval = io_data.full_frame_interval
+        pixel_size = 0.25
+        
+        data_factory = FullFramesFactory()
+
+        fullframes = data_factory.create_data(data, interval, pixel_size)
+        
+        fullframes.print_infor()
+        fullframes.show_data(1)
+        fullframes.print_name()
 
 
 if __name__ == '__main__':

@@ -17,48 +17,48 @@ data factory
 
 class DataFactory(metaclass=ABCMeta):
     @abstractmethod
-    def create_data(self, data):
+    def create_data(self, data, *args):
         pass
 
 
 "Frames"
 class FullFramesFactory(DataFactory):
-    def create_data(self, data):  # data = file_io
-        return FullFrame(data)
+    def create_data(self, data, *args):  # data = 3D raw data
+        return FullFrames(data, *args)
 
 
 class ChFramesFactory(DataFactory):
-    def create_data(self, data):  # data = file_io
-        return ChFrame(data)
+    def create_data(self, data, *args):  # data = 3D raw data
+        return ChFrames(data, *args)
 
 
 "Image"
 class CellImageFactory(DataFactory):
-    def create_data(self, data):  # data = frame
-        return CellImage(data)
+    def create_data(self, data, *args):  # data = frames object
+        return CellImage(data, *args)
 
 
 class DifImageFactory(DataFactory):
-    def create_data(self, data):  # data = frame
-        return DifImage(data)
+    def create_data(self, data, *args):  # data = frames object
+        return DifImage(data, *args)
 
 
 "Trace"
 class FullTraceFactory(DataFactory):
-    def create_data(self, data):  # data = frame
-        return FullTrace(data)
+    def create_data(self, data, *args):  # data = frames object
+        return FullTrace(data, *args)
 
 class ChTraceFactory(DataFactory):
-    def create_data(self, data):  # data = frame
-        return ChTrace(data)
+    def create_data(self, data, *args):  # data = frames object
+        return ChTrace(data, *args)
     
 class BGTraceFactory(DataFactory):
-    def create_data(self, data):  # data = frame
-        return BGTrace(data)
+    def create_data(self, data, *args):  # data = frames object
+        return BGTrace(data, *args)
     
 class ElecTraceFactory(DataFactory):
-    def create_data(self, data, interval):  # data = file_io (.tbn)
-        return ElecTrace(data)
+    def create_data(self, data, *args):  # data = 
+        return ElecTrace(data, *args)
     
 
 """
@@ -70,11 +70,11 @@ class Data(metaclass=ABCMeta):
         pass
     
     @abstractmethod
-    def update_data(self, val):
+    def get_data(self):
         pass
     
     @abstractmethod
-    def get_data(self):
+    def update_data(self, val):
         pass
     
     @abstractmethod
@@ -87,151 +87,144 @@ class Data(metaclass=ABCMeta):
 
 
 
-"FluoFrame"
-class FluoFrame(Data):  # 3D frame data: full frame, ch image
-    def __init__(self, data):  # data = file_io
-    dataは３Dnp.arraydえないとChが作れない。
-    
-        self.__frame_obj = FrameData()
-        self.__interval = 0  # (ms)
-        self.__pixel = 0  # (um)
-        self.__unit = 0  # No unit because of raw camera data.
+"FluoFrames"
+class FluoFrames(Data):  # 3D frames data: full frames, ch image
+    def __init__(self, data, interval=0, pixel_size=0, unit=0):  # data = 3D raw data for distingish Chframes
+        self.__frames_obj = FramesData()
+        self.__interval = copy.deepcopy(interval)  # (ms)
+        self.__pixel_size = copy.deepcopy(pixel_size)  # (um)
+        self.__unit = copy.deepcopy(unit)  # No unit because of raw camera data.
 
         self.read_data(data)
 
     def read_data(self, data) -> None:
-        val = copy.deepcopy(data.full_frame)
-        interval = copy.deepcopy(data.full_frame_interval)
-        self.__frame_obj.frame_data = val  # setter of FlameData
-        self.__interval = interval
-        
-        if len(val) <= 1:
+        self.__frames_obj.frames_data = copy.deepcopy(data)  # setter of FramesData
+        if len(self.__frames_obj.frames_data) <= 1:  # getter of FramesData
             raise Exception("This object should be 3D data")
     
     def get_data(self) -> object:
-        return self
+        return self.__frames_obj.frames_data, self.__interval, self.__pixel_size, self.__unit
 
     def update_data(self):
         pass
 
     def show_data(self, frame_num=0) -> None:
-        image = self.__frame_obj.frame_data
+        image = self.__frames_obj.frames_data
         plt.imshow(image[:, :, frame_num], cmap='gray', interpolation='none')
 
     def print_infor(self) -> None:
         #np.set_printoptions(threshold=np.inf)  # This is for showing all data values.
-        data = self.__frame_obj.frame_data
+        data = self.__frames_obj.frames_data  # getter of FramesData
         print(data)
         print(data.shape)
         print(self.__interval)
-        print(self.__pixel)
+        print(self.__pixel_size)
         print(self.__unit)
         #np.set_printoptions(threshold=1000)
 
 
-class FullFrame(FluoFrame):
-    def __init__(self, data):
-        super().__init__(data)
+class FullFrames(FluoFrames):
+    def __init__(self, data, *args):
+        super().__init__(data, *args)
         self.object_num = 0  # instance number, It shold be increased by data_set
-        print('Made a FullFrame')
+        print('Made a Fullframes')
         
     def print_name(self):
-        print('This is FullFrame' + str(self.object_num))
+        print('This is Fullframes' + str(self.object_num))
 
 
-class ChFrame(FluoFrame):
-    def __init__(self, data):
-        super().__init__(data)
+class ChFrames(FluoFrames):
+    def __init__(self, data, *args):
+        super().__init__(data, *args)
         self.object_num = 0  # instance number
-        print('Made a ChFrame')
+        print('Made a Chframes')
         
     def print_name(self):
-        print('This is ChFrame' + str(self.object_num))
+        print('This is Chframes' + str(self.object_num))
 
 
-"Value Object for Frames"
-class FrameData():
+"Value Object for frames"
+class FramesData():
     def __init__(self):
-        self.__frame_data = np.empty((1, 1, 1), dtype=float)
+        self.__frames_data = np.empty((1, 1, 1), dtype=float)
         
     @property
-    def frame_data(self):
-        return self.__frame_data
+    def frames_data(self):
+        return self.__frames_data
     
-    @frame_data.setter
-    def frame_data(self, val):
-        self.__frame_data = val
+    @frames_data.setter
+    def frames_data(self, val):
+        self.__frames_data = val
         self.check_val()
     
     def check_val(self):
-        if self.__frame_data.ndim != 3: 
+        if self.__frames_data.ndim != 3: 
             raise Exception("This object should be 3D data")
 
         
+"image"
+class Image(Data):  # cell image, dif image
+    def __init__(self, frames_data, frame_num, pixel_size=0, unit=0):
+        self._frames_data = frames_data
+        self._image_obj = ImageData()
+        self._frame_num = frame_num  # list [start, end]
+        self._pixel_size = copy.deepcopy(pixel_size)  # (um)
+        self._unit = copy.deepcopy(unit)  # No unit because of raw camera data.
 
-
-
-
-
-
-
-
-
-
-
-
-class Image(metaclass=ABCMeta):  # cell image, dif image
-    def __init__(self, data):
-        self.image_data = np.array([0, 0])
-        
-    @abstractmethod
-    def read_data(self):
+    def read_data(self, data) -> None:
         pass
     
-    @abstractmethod
-    def update(self):
+    def get_data(self) -> object:
+        return self._image_obj.image_data, 
+
+    def update_data(self):
         pass
     
-    @abstractmethod
-    def get_data(self):
-        pass
+    def show_data(self):
+        plt.imshow(self._image_obj.image_data, cmap='gray', interpolation='none')
+    
+    def print_infor(self):
+        #np.set_printoptions(threshold=np.inf)  # This is for showing all data values.
+        data = self._image_obj.image_data  # getter of FramesData
+        print(data)
+        print(data.shape)
+        print('The start frame number = ' + str(self._frame_num[0]))
+        print('The end frame number = ' + str(self._frame_num[1]))
+        print(self._pixel_size)
+        print(self._unit)
+        #np.set_printoptions(threshold=1000)
 
 "Image"
 class CellImage(Image):
-    def __init__(self, data):
-        super().__init__(data)
+    def __init__(self, frames_data, frame_num=[0,1], *args):  # data = 3D raw data, frame = [list]
+        super().__init__(frames_data, frame_num, *args)
         self.object_num = 0  # instance number
-        
-        self.frame_data = data
 
-    def read_data(self, val):
-        start = val[0]
-        end = val[1]
+        self.read_data(frame_num)
+        
+    def read_data(self, frame_num):
+        start = frame_num[0]
+        end = frame_num[1]
 
         if end - start == 0:
-            self.image_data = self.frame_data[:, :, val[0]]
+            self._image_obj.image_data = self._frames_data[:, :, frame_num[0]]
             print('Read a single cell image')
         elif end - start > 0: 
-            self.image_data = np.mean(self.frame_data[:, :, start:end], axis = 2)
+            self._image_obj.image_data = np.mean(self._frames_data[:, :, start:end], axis = 2)
             print('Read an avarage cell image')
         else:
-            self.image_data = np.zeros((2, 2))
+            self._image_data = np.zeros((2, 2))
             print('-----------------------------------------------------')
             print('The end frame should be higher than the start frame.')
             print('-----------------------------------------------------')
         
-    def update(self, val):
-        self.read_data(val)
+    def update_data(self, frame_num):  # frame_num = list
+        self.read_data(frame_num)
         print('CellImage recieved a notify message.')
-
-    def get_data(self):
-        pass
-    
-    def show_image(self):
-            plt.imshow(self.image_data, cmap='gray', interpolation='none')
             
     def print_name(self):
         print('This is CellImage' + str(self.object_num))
+        
         
 class DifImage(Image):
     def __init__(self, data):
@@ -251,12 +244,57 @@ class DifImage(Image):
         print('This is DifImage' + str(self.object_num))
 
 
+"Value Object for image"
+class ImageData():
+    def __init__(self):
+        self.__image_data = np.empty((1, 1), dtype=float)
+        
+    @property
+    def image_data(self):
+        return self.__image_data
+    
+    @image_data.setter
+    def image_data(self, val):
+        self.__image_data = val
+        self.check_val()
+    
+    def check_val(self):
+        if self.__image_data.ndim != 2: 
+            raise Exception("This object should be 3D data")
+
+
 "Trace"
 class Trace(metaclass=ABCMeta):  # Fluo trae, Elec trace
     def __init__(self):
         self.trace_data = np.array([0,])
         self.time_data = np.array([0,])
-        
+    @abstractmethod
+    def read_data(self):
+        pass
+    
+    @abstractmethod
+    def update(self):
+        pass
+    
+    @abstractmethod
+    def get_data(self):
+        pass
+    
+    @abstractmethod
+    def show_data(self):
+        pass
+    
+    @abstractmethod
+    def print_infor(self):
+        pass
+    
+    
+    
+    
+    
+    
+    
+    
     @abstractmethod
     def read_data(self):
         pass
@@ -275,7 +313,7 @@ class Trace(metaclass=ABCMeta):  # Fluo trae, Elec trace
 class FluoTrace(Trace):
     def __init__(self, data, interval):
         super().__init__()
-        self.frame_data = data
+        self.frames_data = data
         self.interval = copy.deepcopy(interval)
         # trace_data and time_data are in the super class
         
@@ -283,15 +321,15 @@ class FluoTrace(Trace):
         self.create_time_data()
 
     def read_data(self, roi):  # roi[x, y, x_length, y_length]   
-        self.trace_data = self.fluo_trace_creator(self.frame_data, roi)
+        self.trace_data = self.fluo_trace_creator(self.frames_data, roi)
         
     @staticmethod
-    def fluo_trace_creator(frame, roi):
+    def fluo_trace_creator(frames, roi):
         x = roi[0]
         y = roi[1]
         x_length = roi[2]
         y_length = roi[3]
-        mean_data = np.mean(frame[x:x+x_length, y:y+y_length, :], axis = 0)
+        mean_data = np.mean(frames[x:x+x_length, y:y+y_length, :], axis = 0)
         mean_data = np.mean(mean_data, axis = 0)
         return mean_data
         print('Undated ROI = ' + str(roi))
@@ -374,5 +412,5 @@ if __name__ == '__main__':
     filename = '20408A001.tsm'
     filepath = '..\\220408\\'
 
-    testframe = FrameData()
-    testframe.check_val()
+    testframes = framesData()
+    testframes.check_val()
