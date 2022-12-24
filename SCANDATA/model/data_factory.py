@@ -89,23 +89,24 @@ class Data(metaclass=ABCMeta):
 
 "FluoFrame"
 class FluoFrame(Data):  # 3D frame data: full frame, ch image
-    def __init__(self, data, interval):
-        self.__frame_data = FrameData()
+    def __init__(self, data):  # data = file_io
+    dataは３Dnp.arraydえないとChが作れない。
+    
+        self.__frame_obj = FrameData()
         self.__interval = 0  # (ms)
         self.__pixel = 0  # (um)
         self.__unit = 0  # No unit because of raw camera data.
 
-        self.read_data(data, interval)
+        self.read_data(data)
 
-    def read_data(self, data, interval) -> None:
-        self.__frame_data = copy.deepcopy(data)
-        self.__interval = copy.deepcopy(interval)
+    def read_data(self, data) -> None:
+        val = copy.deepcopy(data.full_frame)
+        interval = copy.deepcopy(data.full_frame_interval)
+        self.__frame_obj.frame_data = val  # setter of FlameData
+        self.__interval = interval
         
-        if len(self.frame_data) <= 1:
-            print('---------------------')
-            print('Can not make Frame data')
-            print('---------------------')
-            return None
+        if len(val) <= 1:
+            raise Exception("This object should be 3D data")
     
     def get_data(self) -> object:
         return self
@@ -113,13 +114,15 @@ class FluoFrame(Data):  # 3D frame data: full frame, ch image
     def update_data(self):
         pass
 
-    def show_data(self, frame) -> None:
-        plt.imshow(self.__frame_data[:, :, frame], cmap='gray', interpolation='none')
+    def show_data(self, frame_num=0) -> None:
+        image = self.__frame_obj.frame_data
+        plt.imshow(image[:, :, frame_num], cmap='gray', interpolation='none')
 
     def print_infor(self) -> None:
         #np.set_printoptions(threshold=np.inf)  # This is for showing all data values.
-        print(self.__frame_data_type)
-        print(self.__frame_data.shape)
+        data = self.__frame_obj.frame_data
+        print(data)
+        print(data.shape)
         print(self.__interval)
         print(self.__pixel)
         print(self.__unit)
@@ -129,7 +132,7 @@ class FluoFrame(Data):  # 3D frame data: full frame, ch image
 class FullFrame(FluoFrame):
     def __init__(self, data):
         super().__init__(data)
-        self.object_num = 0  # instance number
+        self.object_num = 0  # instance number, It shold be increased by data_set
         print('Made a FullFrame')
         
     def print_name(self):
@@ -137,8 +140,8 @@ class FullFrame(FluoFrame):
 
 
 class ChFrame(FluoFrame):
-    def __init__(self, data, interval):
-        super().__init__(data, interval)
+    def __init__(self, data):
+        super().__init__(data)
         self.object_num = 0  # instance number
         print('Made a ChFrame')
         
@@ -149,13 +152,19 @@ class ChFrame(FluoFrame):
 "Value Object for Frames"
 class FrameData():
     def __init__(self):
-        self.__data = np.empty(3, dtype=float)
+        self.__frame_data = np.empty((1, 1, 1), dtype=float)
         
-    def set_val(self, val):
-        self.__data = val
-        
+    @property
+    def frame_data(self):
+        return self.__frame_data
+    
+    @frame_data.setter
+    def frame_data(self, val):
+        self.__frame_data = val
+        self.check_val()
+    
     def check_val(self):
-        if self.__data.shape != (3,):          
+        if self.__frame_data.ndim != 3: 
             raise Exception("This object should be 3D data")
 
         

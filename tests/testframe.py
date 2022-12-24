@@ -6,10 +6,15 @@ lunelukkio@gmail.com
 """
 
 import unittest
-from SCANDATA.model.data_factory import FrameData, FullFrame
+from SCANDATA.model.data_factory import FrameData, FullFrame, ChFrame
+from SCANDATA.model.io_factory import TsmFileIO
+
+filename = '20408B002.tsm'
+filepath = '..\\220408\\'
 
 frame = FrameData()
-fullframe = FullFrame()
+io_data = TsmFileIO(filename, filepath)
+fullframe = ChFrame(io_data)
 
 class TestFrameData(unittest.TestCase):
     def test_check_val(self):
@@ -17,7 +22,9 @@ class TestFrameData(unittest.TestCase):
 
 class TestFullFrame(unittest.TestCase):
     def test_full_frame(self):
-        fullframe.print()
+        fullframe.print_infor()
+        fullframe.show_data(1)
+        fullframe.print_name()
 
 
 if __name__ == '__main__':
