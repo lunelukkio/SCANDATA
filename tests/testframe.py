@@ -9,6 +9,7 @@ import unittest
 from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory
 from SCANDATA.model.data_factory import FramesData, FullFrames, ChFrames
 from SCANDATA.model.io_factory import TsmFileIO
+import numpy as np
 
 filename = '20408B002.tsm'
 filepath = '..\\220408\\'
@@ -17,10 +18,11 @@ filepath = '..\\220408\\'
 
 
 class TestFramesData(unittest.TestCase):
-    def test_check_val(self):
+    def test_val(self):
         frames = FramesData()
-        
-        frames.check_val()
+        frames.frames_data =  np.empty((1, 1, 1), dtype=float)
+        print(frames.frames_data)
+
 
 class TestFullFrames(unittest.TestCase):
     def test_full_frame(self):

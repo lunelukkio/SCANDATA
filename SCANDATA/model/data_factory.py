@@ -66,7 +66,7 @@ product
 """
 class Data(metaclass=ABCMeta):
     @abstractmethod
-    def read_data(self, data):
+    def _read_data(self, data):
         pass
     
     @abstractmethod
@@ -74,7 +74,7 @@ class Data(metaclass=ABCMeta):
         pass
     
     @abstractmethod
-    def update_data(self, val):
+    def update(self, val):
         pass
     
     @abstractmethod
@@ -95,9 +95,9 @@ class FluoFrames(Data):  # 3D frames data: full frames, ch image
         self.__pixel_size = copy.deepcopy(pixel_size)  # (um)
         self.__unit = copy.deepcopy(unit)  # No unit because of raw camera data.
 
-        self.read_data(data)
+        self._read_data(data)
 
-    def read_data(self, data) -> None:
+    def _read_data(self, data) -> None:
         self.__frames_obj.frames_data = copy.deepcopy(data)  # setter of FramesData
         if len(self.__frames_obj.frames_data) <= 1:  # getter of FramesData
             raise Exception("This object should be 3D data")
@@ -105,7 +105,7 @@ class FluoFrames(Data):  # 3D frames data: full frames, ch image
     def get_data(self) -> object:
         return self.__frames_obj.frames_data, self.__interval, self.__pixel_size, self.__unit
 
-    def update_data(self):
+    def update(self):
         pass
 
     def show_data(self, frame_num=0) -> None:
@@ -154,12 +154,11 @@ class FramesData():
     
     @frames_data.setter
     def frames_data(self, val):
+        if val.ndim != 3: 
+            raise Exception("This object should be 3D data(x, y, t)")
+        
         self.__frames_data = val
-        self.check_val()
-    
-    def check_val(self):
-        if self.__frames_data.ndim != 3: 
-            raise Exception("This object should be 3D data")
+
 
         
 "image"
@@ -171,13 +170,13 @@ class Image(Data):  # cell image, dif image
         self._pixel_size = copy.deepcopy(pixel_size)  # (um)
         self._unit = copy.deepcopy(unit)  # No unit because of raw camera data.
 
-    def read_data(self, data) -> None:
+    def _read_data(self, data) -> None:
         pass
     
     def get_data(self) -> object:
         return self._image_obj.image_data, 
 
-    def update_data(self):
+    def update(self):
         pass
     
     def show_data(self):
@@ -200,9 +199,9 @@ class CellImage(Image):
         super().__init__(frames_data, frame_num, *args)
         self.object_num = 0  # instance number
 
-        self.read_data(frame_num)
+        self._read_data(frame_num)
         
-    def read_data(self, frame_num):
+    def _read_data(self, frame_num):
         start = frame_num[0]
         end = frame_num[1]
 
@@ -218,8 +217,8 @@ class CellImage(Image):
             print('The end frame should be higher than the start frame.')
             print('-----------------------------------------------------')
         
-    def update_data(self, frame_num):  # frame_num = list
-        self.read_data(frame_num)
+    def update(self, frame_num):  # frame_num = list
+        self._read_data(frame_num)
         print('CellImage recieved a notify message.')
             
     def print_name(self):
@@ -231,7 +230,7 @@ class DifImage(Image):
         super().__init__(data)
         self.object_num = 0  # instance number
 
-    def read_data(self):
+    def _read_data(self):
         pass
         
     def update(self):
@@ -255,12 +254,12 @@ class ImageData():
     
     @image_data.setter
     def image_data(self, val):
+        if val.ndim != 2: 
+            raise Exception("This object should be 2D data(x, y)")
+            
         self.__image_data = val
-        self.check_val()
-    
-    def check_val(self):
-        if self.__image_data.ndim != 2: 
-            raise Exception("This object should be 3D data")
+
+
 
 
 "Trace"
@@ -269,7 +268,7 @@ class Trace(metaclass=ABCMeta):  # Fluo trae, Elec trace
         self.trace_data = np.array([0,])
         self.time_data = np.array([0,])
     @abstractmethod
-    def read_data(self):
+    def _read_data(self):
         pass
     
     @abstractmethod
@@ -296,7 +295,7 @@ class Trace(metaclass=ABCMeta):  # Fluo trae, Elec trace
     
     
     @abstractmethod
-    def read_data(self):
+    def _read_data(self):
         pass
     
     @abstractmethod
@@ -317,10 +316,10 @@ class FluoTrace(Trace):
         self.interval = copy.deepcopy(interval)
         # trace_data and time_data are in the super class
         
-        self.read_data([40, 40, 1, 1])
+        self._read_data([40, 40, 1, 1])
         self.create_time_data()
 
-    def read_data(self, roi):  # roi[x, y, x_length, y_length]   
+    def _read_data(self, roi):  # roi[x, y, x_length, y_length]   
         self.trace_data = self.fluo_trace_creator(self.frames_data, roi)
         
     @staticmethod
@@ -341,7 +340,7 @@ class FluoTrace(Trace):
                                      np.shape(self.trace_data)[0])
     
     def update(self, roi_obj):
-        self.read_data(roi_obj)
+        self._read_data(roi_obj)
         print('FluoTrace recieved a notify message.')
     
     def get_data(self):
@@ -378,10 +377,10 @@ class ElecTrace(Trace):
     def __init__(self, data, interval):
         super().__init__()
         self.object_num = 0  # instance number
-        self.read_data(data, interval)
+        self.__read_data(data, interval)
         print('Made a ElecTrace')
 
-    def read_data(self, data, interval):
+    def _read_data(self, data, interval):
         self.trace_data = copy.deepcopy(data)
         self.interval = copy.deepcopy(interval)
         num_data_point = self.interval * np.shape(self.trace_data)[0]
