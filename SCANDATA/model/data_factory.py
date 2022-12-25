@@ -155,14 +155,14 @@ class FramesData():
     @frames_data.setter
     def frames_data(self, val):
         if val.ndim != 3: 
-            raise Exception("This object should be 3D data(x, y, t)")
+            raise Exception("This object should be numpy 3D data(x, y, t)")
         
         self.__frames_data = val
 
 
         
-"image"
-class Image(Data):  # cell image, dif image
+"Fluo Image"
+class FluoImage(Data):  # cell image, dif image
     def __init__(self, frames_data, frame_num, pixel_size=0, unit=0):
         self._frames_data = frames_data
         self._image_obj = ImageData()
@@ -174,7 +174,7 @@ class Image(Data):  # cell image, dif image
         pass
     
     def get_data(self) -> object:
-        return self._image_obj.image_data, 
+        return self._image_obj.image_data, self._pixel_size
 
     def update(self):
         pass
@@ -193,15 +193,19 @@ class Image(Data):  # cell image, dif image
         print(self._unit)
         #np.set_printoptions(threshold=1000)
 
-"Image"
-class CellImage(Image):
+
+class CellImage(FluoImage):
     def __init__(self, frames_data, frame_num=[0,1], *args):  # data = 3D raw data, frame = [list]
         super().__init__(frames_data, frame_num, *args)
         self.object_num = 0  # instance number
-
         self._read_data(frame_num)
         
     def _read_data(self, frame_num):
+        frame_length = self._frames_data.shape[2]
+        
+        if frame_num[1] > frame_length-1: 
+            raise Exception("The end frame should be the same as image size or less.")
+            
         start = frame_num[0]
         end = frame_num[1]
 
@@ -217,7 +221,7 @@ class CellImage(Image):
             print('The end frame should be higher than the start frame.')
             print('-----------------------------------------------------')
         
-    def update(self, frame_num):  # frame_num = list
+    def update(self, frame_num):  # frame_num = [start, end, start_width, end_width]
         self._read_data(frame_num)
         print('CellImage recieved a notify message.')
             
@@ -225,7 +229,7 @@ class CellImage(Image):
         print('This is CellImage' + str(self.object_num))
         
         
-class DifImage(Image):
+class DifImage(FluoImage):
     def __init__(self, data):
         super().__init__(data)
         self.object_num = 0  # instance number
@@ -243,7 +247,7 @@ class DifImage(Image):
         print('This is DifImage' + str(self.object_num))
 
 
-"Value Object for image"
+"Value Object for images"
 class ImageData():
     def __init__(self):
         self.__image_data = np.empty((1, 1), dtype=float)
@@ -255,106 +259,65 @@ class ImageData():
     @image_data.setter
     def image_data(self, val):
         if val.ndim != 2: 
-            raise Exception("This object should be 2D data(x, y)")
+            raise Exception("This object should be numpy 2D data(x, y)")
             
         self.__image_data = val
 
 
 
 
-"Trace"
-class Trace(metaclass=ABCMeta):  # Fluo trae, Elec trace
-    def __init__(self):
-        self.trace_data = np.array([0,])
-        self.time_data = np.array([0,])
-    @abstractmethod
-    def _read_data(self):
-        pass
-    
-    @abstractmethod
-    def update(self):
-        pass
-    
-    @abstractmethod
-    def get_data(self):
-        pass
-    
-    @abstractmethod
-    def show_data(self):
-        pass
-    
-    @abstractmethod
-    def print_infor(self):
-        pass
-    
-    
-    
-    
-    
-    
-    
-    
-    @abstractmethod
-    def _read_data(self):
-        pass
-    
-    @abstractmethod
-    def update(self):
-        pass
-    
-    @abstractmethod
-    def get_data(self):
-        pass
-
-    def plot_trace(self):
-        plt.plot(self.time_data, self.trace_data)   
-
-class FluoTrace(Trace):
+"Fluo Trace"
+class FluoTrace(Data):  # Fluo trae, Elec trace
     def __init__(self, data, interval):
-        super().__init__()
-        self.frames_data = data
-        self.interval = copy.deepcopy(interval)
-        # trace_data and time_data are in the super class
-        
-        self._read_data([40, 40, 1, 1])
-        self.create_time_data()
+        self.__trace_obj = TraceData()
+        self.__time_obj = TimeData()
+        self.__frames_data = data
+        self.__interval = copy.deepcopy(interval)
 
     def _read_data(self, roi):  # roi[x, y, x_length, y_length]   
-        self.trace_data = self.fluo_trace_creator(self.frames_data, roi)
-        
-    @staticmethod
-    def fluo_trace_creator(frames, roi):
-        x = roi[0]
-        y = roi[1]
-        x_length = roi[2]
-        y_length = roi[3]
-        mean_data = np.mean(frames[x:x+x_length, y:y+y_length, :], axis = 0)
-        mean_data = np.mean(mean_data, axis = 0)
-        return mean_data
-        print('Undated ROI = ' + str(roi))
-    
-    def create_time_data(self):
-        num_data_point = self.interval * np.shape(self.trace_data)[0]
-        self.time_data = np.linspace(self.interval, 
-                                     num_data_point, 
-                                     np.shape(self.trace_data)[0])
+        self.__trace_obj.trace_data = self.__fluo_trace_creator(self.__frames_data, roi)
     
     def update(self, roi_obj):
         self._read_data(roi_obj)
         print('FluoTrace recieved a notify message.')
     
     def get_data(self):
+        return self.__trace_obj.trace_data, self.__interval
+    
+    @staticmethod
+    def __fluo_trace_creator(frames_data, roi):
+        x = roi[0]
+        y = roi[1]
+        x_length = roi[2]
+        y_length = roi[3]
+        mean_data = np.mean(frames_data[x:x+x_length, y:y+y_length, :], axis = 0)
+        mean_data = np.mean(mean_data, axis = 0)
+        return mean_data
+        print('Undated ROI = ' + str(roi))
+        
+    def create_time_data(self):
+        num_data_point = self.__interval * np.shape(self.__trace_obj.trace_data)[0]
+        self.__time_obj.time_data = np.linspace(self.__interval, 
+                                     num_data_point, 
+                                     np.shape(self.__trace_obj.trace_data)[0])
+    
+    def show_data(self):
+        plt.plot(self.__time_obj.time_data, self.__trace_obj.trace_data)  
+    
+    def print_infor(self):
         pass
+
  
 class FullTrace(FluoTrace):
     def __init__(self, data, interval):
         super().__init__(data, interval)
         self.object_num = 0  # instance number
         print('Made a FullTrace')
-        
+
     def print_name(self):
         print('This is FullTrace' + str(self.object_num))
-        
+
+
 class ChTrace(FluoTrace):
     def __init__(self, data, interval):
         super().__init__(data, interval)
@@ -363,7 +326,8 @@ class ChTrace(FluoTrace):
         
     def print_name(self):
         print('This is ChTrace' + str(self.object_num))
-        
+
+
 class BGTrace(FluoTrace):
     def __init__(self, data, interval):
         super().__init__(data, interval)
@@ -373,7 +337,11 @@ class BGTrace(FluoTrace):
     def print_name(self):
         print('This is BGTrace' + str(self.object_num))
 
-class ElecTrace(Trace):
+
+
+
+
+class ElecTrace(Data):
     def __init__(self, data, interval):
         super().__init__()
         self.object_num = 0  # instance number
@@ -407,9 +375,38 @@ class ElecTrace(Trace):
         print('This is ElecTrace' + str(self.object_num))
 
 
+"Value Object for traces"
+class TraceData():
+    def __init__(self):
+        self.__trace_data = np.empty((1), dtype=float)
+        
+    @property
+    def trace_data(self):
+        return self.__trace_data
+    
+    @trace_data.setter
+    def trace_data(self, val):
+        if val.ndim != 1: 
+            raise Exception("This object should be numpy 1D data(x)")
+            
+        self.__trace_data = val
+        
+class TimeData():
+    def __init__(self):
+        self.__time_data = np.empty((1), dtype=float)
+        
+    @property
+    def time_data(self):
+        return self.__time_data
+    
+    @time_data.setter
+    def time_data(self, val):
+        if val.ndim != 1: 
+            raise Exception("This object should be numpy 1D data(x)")
+            
+        self.__time_data = val
+
 if __name__ == '__main__':
     filename = '20408A001.tsm'
     filepath = '..\\220408\\'
 
-    testframes = framesData()
-    testframes.check_val()

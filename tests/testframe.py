@@ -38,7 +38,9 @@ class TestFullFrames(unittest.TestCase):
         fullframes.print_infor()
         fullframes.show_data(1)
         fullframes.print_name()
-
+        data = fullframes.get_data()[0]
+        print('test')
+        print(data.shape[2])
 
 if __name__ == '__main__':
     unittest.main()
