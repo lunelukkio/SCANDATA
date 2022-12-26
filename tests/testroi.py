@@ -29,16 +29,16 @@ class TestRoi(unittest.TestCase):
         
         # make a 3D data
         io_data = TsmFileIO(filename, filepath)
-        data = io_data.full_frames
-        interval = io_data.full_frame_interval
+        data = io_data.ch_frames[:,:,:,0]
+        interval = io_data.ch_frame_interval
         pixel_size = 0.25
         
-        #make a fullframes
-        data_factory = FullFramesFactory()
-        fullframes = data_factory.create_data(data, interval, pixel_size)
-        frames_data, _, _, _ = fullframes.get_data()
+        #make a chframes
+        data_factory = ChFramesFactory()
+        chframes = data_factory.create_data(data, interval, pixel_size)
+        frames_data, _, _, _ = chframes.get_data()
         
-        data_factory = FullTraceFactory()
+        data_factory = ChTraceFactory()
         trace = data_factory.create_data(frames_data, interval)
         
         controller_factory = RoiFactory()
@@ -56,6 +56,7 @@ class TestRoi(unittest.TestCase):
         roi.reset()
         c = plt.figure()
         trace.show_data()
+        trace.print_name()
     
 
 

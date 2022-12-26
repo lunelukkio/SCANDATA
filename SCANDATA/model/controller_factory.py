@@ -80,7 +80,7 @@ class Roi(ModelController):
         self.__roi_obj = RoiVal(40, 40, 1, 1)
         self.object_num = 0  # instance number
         self.__observers = []
-        print('Created a new ROI.')
+        #print('Created ROI-{}.'.format(self.object_num))
         
     def check_val(self) -> None:
         if self.__x < 0 or self.__y < 0 or self.__x_length < 0 or self.__y_length < 0:
@@ -89,7 +89,7 @@ class Roi(ModelController):
     def set_data(self, x: int, y: int, x_width=0, y_width=0) -> None:
         self.__roi_obj = RoiVal(x, y, x_width, y_width)
         self.notify_observer()
-        print('Set the ROI{} and notified',format(self.object_num))
+        print('Set ROI-{} and notified'.format(self.object_num))
         self.print_val()
       
     def add_data(self, x: int, y: int, x_width=0, y_width=0) -> None:
@@ -97,7 +97,7 @@ class Roi(ModelController):
         new_roi_obj = self.__roi_obj + add_roi_obj
         self.__roi_obj = new_roi_obj
         self.notify_observer()
-        print('Added to the ROI and notified')
+        print('Add to ROI-{} and notified'.format(self.object_num))
         self.print_val()
 
     def get_data(self) -> object:
@@ -106,7 +106,7 @@ class Roi(ModelController):
     def reset(self) -> None:
         self.__roi_obj = RoiVal(40, 40, 1, 1)
         self.notify_observer()
-        print('Reset the ROI and notified')
+        print('Reset ROI-{} and notified'.format(self.object_num))
         self.print_val()
 
     def add_observer(self, observer):
@@ -122,7 +122,7 @@ class Roi(ModelController):
     
     
     def print_val(self) -> None:
-        print('ROI = ' + str(self.get_data()) + 
+        print('ROI-{} = '.format(self.object_num) + str(self.get_data()) + 
               ', observer = ' + str(self.__observers))
         
             
@@ -141,7 +141,8 @@ class RoiVal():
         print(self.__data_type + ' made a RoiVal' + '  myId= {}'.format(id(self)))
         
     def __del__(self):
-        print('Deleted a RoiVal object.' + '  myId={}'.format(id(self)))
+        print('.')
+        #print('Deleted a RoiVal object.' + '  myId={}'.format(id(self)))
         
     #override for "+"
     def __add__(self, other: object) -> object:
@@ -174,12 +175,12 @@ class FrameWindow(ModelController):
         self.__frame_window_obj = FrameWindowVal(0, 0, 1, 1)
         self.__observers = []
         self.object_num = 0
-        print('Create a new FrameWindow.')
+        print('Create FrameWindow-{}.'.format(self.object_num))
 
     def set_data(self, start: int, end: int, start_width=0, end_width=0) -> None:
         self.__frame_window_obj = FrameWindowVal(start, end, start_width, end_width)
         self.notify_observer()
-        print('Set the frame_window_val and notified')
+        print('Set FrameWindow-{} and notified'.format(self.object_num))
         self.print_val()
         
     def add_data(self, start: int, end: int, start_width=0, end_width=0) -> None:
@@ -187,7 +188,7 @@ class FrameWindow(ModelController):
         new_frame_window_obj = self.__frame_window_obj + add_frame_window_obj
         self.__frame_window_obj = new_frame_window_obj
         self.notify_observer()
-        print('Added to the frame_window_val and notified')
+        print('Add to FrameWindow-{} and notified'.format(self.object_num))
         self.print_val()
 
     def get_data(self) -> object:
@@ -196,7 +197,7 @@ class FrameWindow(ModelController):
     def reset(self) -> None:
         self.__frame_window_obj = FrameWindowVal(0, 0, 0, 0)
         self.notify_observer()
-        print('Reset the frame_window_val and notified')
+        print('Reset FrameWindow-{} and notified'.format(self.object_num))
         self.print_val()
     
     def add_observer(self, observer: object) -> None:
@@ -210,7 +211,7 @@ class FrameWindow(ModelController):
             observer_name.update(self.get_data())
 
     def print_val(self) -> None:
-        print('frame_window_val = ' + str(self.get_data()) + 
+        print('FrameWindow-{} = '.format(self.object_num) + str(self.get_data()) + 
               ', observer = ' + str(self.__observers))
 
 

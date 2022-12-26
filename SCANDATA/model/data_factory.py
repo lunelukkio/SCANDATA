@@ -106,7 +106,7 @@ class FluoFrames(Data):  # 3D frames data: full frames, ch image
         if len(data.shape) == 3:
             self.__frames_obj = FramesData(copy.deepcopy(data))
         elif len(data.shape) == 4:
-            raise Exception("It might have more than 1 ch in the data. use [:,:,:,ch]")
+            raise Exception("It might have more than 1 ch in the data. Use [:,:,:,ch]")
         else:
             raise Exception("The data for FluoFrames is not 3D data")
 
@@ -226,7 +226,7 @@ class CellImage(FluoImage):
     def _read_data(self, frame_num) -> None:
         frame_length = self._frames_data.shape[2]
         if frame_num[0] > frame_length-1 or frame_num[1] > frame_length-1: 
-            raise Exception("The end frame should be the same as the frames length or less.")
+            raise Exception('The end frame should be the same as the frames length or less.')
             
         start = frame_num[0]
         end = frame_num[1]
@@ -234,23 +234,21 @@ class CellImage(FluoImage):
         if end - start == 0:
             val = self._frames_data[:, :, frame_num[0]]
             self._image_obj = ImageData(val)
-            print('Read a single cell image')
+            #print('Read a single cell image')
         elif end - start > 0: 
             val = np.mean(self._frames_data[:, :, start:end], axis = 2)
             self._image_obj = ImageData(val)
-            print('Read an avarage cell image')
+            #print('Read an avarage cell image')
         else:
             self._image_data = np.zeros((2, 2))
-            print('-----------------------------------------------------')
-            print('The end frame should be higher than the start frame.')
-            print('-----------------------------------------------------')
+            raise Exception('The end frame should be higher than the start frame.')
         
     def update(self, frame_num) -> None:  # frame_num = [start, end, start_width, end_width]
         self._read_data(frame_num)
-        print('CellImage recieved a notify message.')
+        print('CellImage-{} recieved a notify message.'.format(self.object_num))
             
     def print_name(self) -> None:
-        print('This is CellImage' + str(self.object_num))
+        print('This is CellImage-{}'.format(self.object_num))
         
         
 class DifImage(FluoImage):
@@ -268,7 +266,7 @@ class DifImage(FluoImage):
         pass
     
     def print_name(self):
-        print('This is DifImage' + str(self.object_num))
+        print('This is DifImage-{}'.format(self.object_num))
 
 
 "Value Object for images"
@@ -333,8 +331,7 @@ class FluoTrace(Data):  # Fluo trae, Elec trace
             raise Exception("The trace and time is not the same length")
     
     def update(self, roi_obj) -> None:
-        self._read_data(roi_obj)
-        print('FluoTrace recieved a notify message.')
+        pass
     
     def get_data(self) -> tuple:
         return self.__trace_obj.trace_data, self.__interval
@@ -348,7 +345,7 @@ class FluoTrace(Data):  # Fluo trae, Elec trace
         mean_data = np.mean(frames_data[x:x+x_length, y:y+y_length, :], axis = 0)
         mean_data = np.mean(mean_data, axis = 0)
         return mean_data
-        print('Undated ROI = ' + str(roi))
+        print('Updated ROI = ' + str(roi))
         
     def __create_time_data(self, trace, interval) -> np.ndarray:
         num_data_point = interval * np.shape(trace)[0]
@@ -367,8 +364,12 @@ class FullTrace(FluoTrace):
         super().__init__(data, interval)
         self.object_num = 0  # instance number
 
+    def update(self, roi_obj) -> None:
+        super()._read_data(roi_obj)
+        print('FullTrace-{} recieved a notify message.'.format(self.object_num))
+        
     def print_name(self) -> None:
-        print('This is FullTrace' + str(self.object_num))
+        print('This is FullTrace-{}'.format(self.object_num))
 
 
 class ChTrace(FluoTrace):
@@ -376,8 +377,12 @@ class ChTrace(FluoTrace):
         super().__init__(data, interval)
         self.object_num = 0  # instance number
         
+    def update(self, roi_obj) -> None:
+        super()._read_data(roi_obj)
+        print('ChTrace-{} recieved a notify message.'.format(self.object_num))
+        
     def print_name(self) -> None:
-        print('This is ChTrace' + str(self.object_num))
+        print('This is ChTrace-{}'.format(self.object_num))
 
 
 class BGTrace(FluoTrace):
@@ -386,7 +391,7 @@ class BGTrace(FluoTrace):
         self.object_num = 0  # instance number
         
     def print_name(self) -> None:
-        print('This is BGTrace' + str(self.object_num))
+        print('This is BGTrace-{}'.format(self.object_num))
 
 
 

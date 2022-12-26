@@ -56,6 +56,7 @@ class TestFrameWindow(unittest.TestCase):
         framewindow.reset()
         c = plt.figure()
         cellimage.show_data()
+        cellimage.print_name()
 
         
 
