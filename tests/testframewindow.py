@@ -8,12 +8,13 @@ Created on Sun Dec 25 00:06:40 2022
 
 
 import unittest
-from SCANDATA.model.controller_factory import RoiFactory, FrameWindowFactory
-from SCANDATA.model.controller_factory import Roi, FrameWindow, FrameWindowVal
+from SCANDATA.model.controller_factory import FrameWindowFactory
+from SCANDATA.model.controller_factory import FrameWindow, FrameWindowVal
 from SCANDATA.model.data_factory import CellImageFactory, FullFramesFactory
 from SCANDATA.model.data_factory import ImageData
 from SCANDATA.model.io_factory import TsmFileIO
 import numpy as np
+import matplotlib.pyplot as plt
 
 filename = '20408B002.tsm'
 filepath = '..\\220408\\'
@@ -23,11 +24,10 @@ class TestFrameWindowVal(unittest.TestCase):
     def test_check_val(self):
         framewindowval = FrameWindowVal()
         framewindowval.frame_window_val = [2,5]
-        print('time_window_val test')
         print(framewindowval.frame_window_val)
 """
 
-class TestRoiFrameWindow(unittest.TestCase):
+class TestFrameWindow(unittest.TestCase):
     def test_FrameWindow(self):
 
         io_data = TsmFileIO(filename, filepath)
@@ -47,9 +47,14 @@ class TestRoiFrameWindow(unittest.TestCase):
         framewindow = controller_factory.create_model_controller()
         framewindow.add_observer(cellimage)
         framewindow.set_data(0,0,1,1)
+        a = plt.figure()
         cellimage.show_data()
         
-        framewindow.add_data(0,0,8,1)
+        framewindow.add_data(1,40)
+        b = plt.figure()
+        cellimage.show_data()
+        framewindow.reset()
+        c = plt.figure()
         cellimage.show_data()
 
         

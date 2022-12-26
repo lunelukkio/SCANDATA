@@ -109,10 +109,6 @@ class FluoFrames(Data):  # 3D frames data: full frames, ch image
             raise Exception("It might have more than 1 ch in the data. use [:,:,:,ch]")
         else:
             raise Exception("The data for FluoFrames is not 3D data")
-            
-        
-
-
 
     def update(self):
         pass
@@ -155,9 +151,9 @@ class ChFrames(FluoFrames):
 
 "Value Object for frames"       
 class FramesData():
-    def __init__(self, val):
+    def __init__(self, val: np.ndarray):
         if val.ndim != 3: 
-            raise Exception("This object should be numpy 3D data(x, y, t)")
+            raise Exception("The argument of FrameData should be numpy 3D data(x, y, t)")
         size = val.shape
         called_class = inspect.stack()[1].frame.f_locals['self']
         self.__frames_data = val
@@ -175,7 +171,7 @@ class FramesData():
     
     @frames_data.setter
     def frames_data(self, val):
-        raise Exception("This is a value object (Immutable).")
+        raise Exception("FrameData is a value object (Immutable).")
         
     @property
     def frame_size(self) -> int:
@@ -277,9 +273,9 @@ class DifImage(FluoImage):
 
 "Value Object for images"
 class ImageData():
-    def __init__(self, val):
+    def __init__(self, val: np.ndarray):
         if val.ndim != 2: 
-            raise Exception("This object should be numpy 2D data(x, y)")
+            raise Exception("The argument of ImageData should be numpy 2D data(x, y)")
         size = val.shape
         called_class = inspect.stack()[1].frame.f_locals['self']
         self.__image_data = val
@@ -297,7 +293,7 @@ class ImageData():
     
     @image_data.setter
     def image_data(self, val):
-        raise Exception("This is a value object (Immutable).")
+        raise Exception("ImageData is a value object (Immutable).")
         
     @property
     def image_size(self) -> int:
@@ -324,6 +320,9 @@ class FluoTrace(Data):  # Fluo trae, Elec trace
 
         if roi[0] + roi[2] > x_size - 1 or roi[1] + roi[3] > y_size - 1: 
             raise Exception("The roi size should be the same as the image size or less")
+            
+        if roi[0] < 0 or roi[1] < 0: 
+            raise Exception("The roi should be the same as 0 or more")
 
         trace_val = self.__create_fluo_trace(self.__frames_data, roi)
         self.__trace_obj = TraceData(trace_val)
@@ -430,7 +429,7 @@ class ElecTrace(Data):
 class TraceData():
     def __init__(self, val: np.ndarray):
         if val.ndim != 1: 
-            raise Exception("This object should be numpy 1D data(x)")
+            raise Exception("The argument of TraceData should be numpy 1D data(x)")
         length = val.shape[0]
         called_class = inspect.stack()[1].frame.f_locals['self']
         self.__trace_data = val
@@ -448,7 +447,7 @@ class TraceData():
     
     @trace_data.setter
     def trace_data(self, val):
-        raise Exception("This is a value object (Immutable).")
+        raise Exception("TraceData is a value object (Immutable).")
             
     @property
     def length(self) -> int:
@@ -465,7 +464,7 @@ class TraceData():
 class TimeData():
     def __init__(self, val: np.ndarray):
         if val.ndim != 1: 
-            raise Exception("This object should be numpy 1D data(x)")
+            raise Exception("The argument of TImeData should be numpy 1D data(x)")
         length = val.shape[0]
         called_class = inspect.stack()[1].frame.f_locals['self']
         self.__time_data = val
@@ -483,7 +482,7 @@ class TimeData():
     
     @time_data.setter
     def time_data(self, val):
-        raise Exception("This is a value object (Immutable).")
+        raise Exception("TimeData is a value object (Immutable).")
         
     @property
     def length(self) -> int:
