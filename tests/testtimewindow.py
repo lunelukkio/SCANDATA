@@ -46,7 +46,7 @@ class TestRoiTimeWindow(unittest.TestCase):
 
         timewindow = controller_factory.create_model_controller()
         timewindow.add_observer(cellimage)
-        timewindow.set_data([1,1,8,8])
+        timewindow.set_data([1,1,9,8])
         
         cellimage.print_infor()
         cellimage.show_data()

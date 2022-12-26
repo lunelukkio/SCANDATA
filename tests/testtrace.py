@@ -18,14 +18,12 @@ filepath = '..\\220408\\'
 
 class TestTraceData(unittest.TestCase):
     def test_val(self):
-        trace = TraceData()
-        trace.trace_data =  np.empty((100), dtype=float)
+        trace = TraceData(np.empty((100), dtype=float))
         print(trace.trace_data)
         
 class TestTimeData(unittest.TestCase):
     def test_val(self):
-        time = TimeData()
-        time.time_data =  np.empty((100), dtype=float)
+        time = TimeData( np.empty((100), dtype=float))
         print(time.time_data)
 
 
@@ -44,10 +42,10 @@ class TestTrace(unittest.TestCase):
         data_factory = FullTraceFactory()
         
         fulltrace = data_factory.create_data(frames_data, interval)
-        fulltrace._read_data([1,1,1,1])
-        #fulltrace.print_infor()
+        fulltrace._read_data([40,40,10,30])
+        fulltrace.print_infor()
         fulltrace.show_data()
-        #fulltrace.print_name()
+        fulltrace.print_name()
 
 
 if __name__ == '__main__':

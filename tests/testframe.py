@@ -19,8 +19,7 @@ filepath = '..\\220408\\'
 
 class TestFramesData(unittest.TestCase):
     def test_val(self):
-        frames = FramesData()
-        frames.frames_data =  np.empty((1, 1, 1), dtype=float)
+        frames = FramesData(np.empty((1, 1, 1), dtype=float))
         print(frames.frames_data)
 
 
@@ -32,7 +31,6 @@ class TestFullFrames(unittest.TestCase):
         pixel_size = 0.25
         
         data_factory = FullFramesFactory()
-
         fullframes = data_factory.create_data(data, interval, pixel_size)
         
         fullframes.print_infor()

@@ -17,11 +17,9 @@ filepath = '..\\220408\\'
 
 
 
-
 class TestImageData(unittest.TestCase):
     def test_val(self):
-        image = ImageData()
-        image.image_data =  np.empty((1, 1), dtype=float)
+        image = ImageData( np.empty((1, 1), dtype=float))
         print(image.image_data)
 
 

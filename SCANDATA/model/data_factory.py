@@ -90,7 +90,8 @@ class Data(metaclass=ABCMeta):
 "FluoFrames"
 class FluoFrames(Data):  # 3D frames data: full frames, ch image
     def __init__(self, data, interval=0, pixel_size=0, unit=0):  # data = 3D raw data for distingish Chframes
-        self.__frames_obj = FramesData()
+        val = np.empty((1, 1, 1), dtype=float)
+        self.__frames_obj = FramesData(val)
         self.__interval = copy.deepcopy(interval)  # (ms)
         self.__pixel_size = copy.deepcopy(pixel_size)  # (um)
         self.__unit = copy.deepcopy(unit)  # No unit because of raw camera data.
@@ -98,7 +99,7 @@ class FluoFrames(Data):  # 3D frames data: full frames, ch image
         self._read_data(data)
 
     def _read_data(self, data) -> None:
-        self.__frames_obj.frames_data = copy.deepcopy(data)  # setter of FramesData
+        self.__frames_obj = FramesData(copy.deepcopy(data))
         if len(self.__frames_obj.frames_data) <= 1:  # getter of FramesData
             raise Exception("This object should be 3D data")
     
@@ -143,29 +144,32 @@ class ChFrames(FluoFrames):
         print('This is Chframes' + str(self.object_num))
 
 
-"Value Object for frames"
+"Value Object for frames"       
 class FramesData():
-    def __init__(self):
-        self.__frames_data = np.empty((1, 1, 1), dtype=float)
+    def __init__(self, val):
+        if val.ndim != 3: 
+            raise Exception("This object should be numpy 3D data(x, y, t)")
+        self.__frames_data = val
         
+    def __del__(self):
+        print('Deleted a FramesData object.' + '  myId={}'.format(id(self)))
+    
     @property
     def frames_data(self):
         return self.__frames_data
     
     @frames_data.setter
     def frames_data(self, val):
-        if val.ndim != 3: 
-            raise Exception("This object should be numpy 3D data(x, y, t)")
-        
-        self.__frames_data = val
+        raise Exception("This is a value object (Immutable).")
 
 
         
 "Fluo Image"
 class FluoImage(Data):  # cell image, dif image
     def __init__(self, frames_data, frame_num, pixel_size=0, unit=0):
+        val = np.empty((1, 1), dtype=float)
+        self._image_obj = ImageData(val)
         self._frames_data = frames_data
-        self._image_obj = ImageData()
         self._frame_num = frame_num  # list [start, end]
         self._pixel_size = copy.deepcopy(pixel_size)  # (um)
         self._unit = copy.deepcopy(unit)  # No unit because of raw camera data.
@@ -204,16 +208,18 @@ class CellImage(FluoImage):
         frame_length = self._frames_data.shape[2]
         
         if frame_num[1] > frame_length-1: 
-            raise Exception("The end frame should be the same as image size or less.")
+            raise Exception("The end frame should be the same as the frames length or less.")
             
         start = frame_num[0]
         end = frame_num[1]
 
         if end - start == 0:
-            self._image_obj.image_data = self._frames_data[:, :, frame_num[0]]
+            val = self._frames_data[:, :, frame_num[0]]
+            self._image_obj = ImageData(val)
             print('Read a single cell image')
         elif end - start > 0: 
-            self._image_obj.image_data = np.mean(self._frames_data[:, :, start:end], axis = 2)
+            val = np.mean(self._frames_data[:, :, start:end], axis = 2)
+            self._image_obj = ImageData(val)
             print('Read an avarage cell image')
         else:
             self._image_data = np.zeros((2, 2))
@@ -249,8 +255,13 @@ class DifImage(FluoImage):
 
 "Value Object for images"
 class ImageData():
-    def __init__(self):
-        self.__image_data = np.empty((1, 1), dtype=float)
+    def __init__(self, val):
+        if val.ndim != 2: 
+            raise Exception("This object should be numpy 2D data(x, y)")
+        self.__image_data = val
+        
+    def __del__(self):
+        print('Deleted a ImageData object.' + '  myId={}'.format(id(self)))
         
     @property
     def image_data(self):
@@ -258,24 +269,28 @@ class ImageData():
     
     @image_data.setter
     def image_data(self, val):
-        if val.ndim != 2: 
-            raise Exception("This object should be numpy 2D data(x, y)")
+        raise Exception("This is a value object (Immutable).")
             
-        self.__image_data = val
-
-
 
 
 "Fluo Trace"
 class FluoTrace(Data):  # Fluo trae, Elec trace
     def __init__(self, data, interval):
-        self.__trace_obj = TraceData()
-        self.__time_obj = TimeData()
+        val = np.empty((1), dtype=float)
+        self.__trace_obj = TraceData(val)
+        self.__time_obj = TimeData(val)
         self.__frames_data = data
         self.__interval = copy.deepcopy(interval)
 
-    def _read_data(self, roi):  # roi[x, y, x_length, y_length]   
-        self.__trace_obj.trace_data = self.__fluo_trace_creator(self.__frames_data, roi)
+    def _read_data(self, roi):  # roi[x, y, x_length, y_length]  
+    
+        if roi[1] > roi[2]-1----: 
+            raise Exception("The roi size should be the same as the image size or less")
+    
+        trace_val = self.__create_fluo_trace(self.__frames_data, roi)
+        self.__trace_obj = TraceData(trace_val)
+        time_val = self.__create_time_data(trace_val, self.__interval)
+        self.__time_obj = TimeData(time_val)
     
     def update(self, roi_obj):
         self._read_data(roi_obj)
@@ -285,7 +300,7 @@ class FluoTrace(Data):  # Fluo trae, Elec trace
         return self.__trace_obj.trace_data, self.__interval
     
     @staticmethod
-    def __fluo_trace_creator(frames_data, roi):
+    def __create_fluo_trace(frames_data, roi):
         x = roi[0]
         y = roi[1]
         x_length = roi[2]
@@ -295,11 +310,10 @@ class FluoTrace(Data):  # Fluo trae, Elec trace
         return mean_data
         print('Undated ROI = ' + str(roi))
         
-    def create_time_data(self):
-        num_data_point = self.__interval * np.shape(self.__trace_obj.trace_data)[0]
-        self.__time_obj.time_data = np.linspace(self.__interval, 
-                                     num_data_point, 
-                                     np.shape(self.__trace_obj.trace_data)[0])
+    def __create_time_data(self, trace, interval):
+        num_data_point = interval * np.shape(trace)[0]
+        time_val = np.linspace(interval, num_data_point, np.shape(trace)[0])
+        return time_val
     
     def show_data(self):
         plt.plot(self.__time_obj.time_data, self.__trace_obj.trace_data)  
@@ -377,8 +391,13 @@ class ElecTrace(Data):
 
 "Value Object for traces"
 class TraceData():
-    def __init__(self):
-        self.__trace_data = np.empty((1), dtype=float)
+    def __init__(self, val):
+        if val.ndim != 1: 
+            raise Exception("This object should be numpy 1D data(x)")
+        self.__trace_data = val
+        
+    def __del__(self):
+        print('Deleted a TraceData object.' + '  myId={}'.format(id(self)))
         
     @property
     def trace_data(self):
@@ -386,14 +405,18 @@ class TraceData():
     
     @trace_data.setter
     def trace_data(self, val):
-        if val.ndim != 1: 
-            raise Exception("This object should be numpy 1D data(x)")
+        raise Exception("This is a value object (Immutable).")
             
-        self.__trace_data = val
+
         
 class TimeData():
-    def __init__(self):
-        self.__time_data = np.empty((1), dtype=float)
+    def __init__(self, val):
+        if val.ndim != 1: 
+            raise Exception("This object should be numpy 1D data(x)")
+        self.__time_data = val
+        
+    def __del__(self):
+        print('Deleted a TimeData object.' + '  myId={}'.format(id(self)))
         
     @property
     def time_data(self):
@@ -401,10 +424,9 @@ class TimeData():
     
     @time_data.setter
     def time_data(self, val):
-        if val.ndim != 1: 
-            raise Exception("This object should be numpy 1D data(x)")
+        raise Exception("This is a value object (Immutable).")
             
-        self.__time_data = val
+
 
 if __name__ == '__main__':
     filename = '20408A001.tsm'
