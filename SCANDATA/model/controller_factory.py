@@ -144,12 +144,12 @@ class FrameWindow(ModelController):
         self.__frame_window_obj = FrameWindowVal(0, 0, 1, 1)
         self.__observers = []
         self.object_num = 0
-        print('Create a new time window.')
+        print('Create a new FrameWindow.')
 
     def set_data(self, start, end, start_width=1, end_width=1):
         self.__frame_window_obj = FrameWindowVal(start, end, start_width, end_width)
         self.notify_observer()
-        print('Set the time window and notified')
+        print('Set the frame_window_val and notified')
         self.print_val()
         
     def add_data(self, start, end, start_width=0, end_width=0):
@@ -157,7 +157,7 @@ class FrameWindow(ModelController):
         new_frame_window_obj = self.__frame_window_obj + add_frame_window_obj
         self.__frame_window_obj = new_frame_window_obj
         self.notify_observer()
-        print('Set the time window and notified')
+        print('Added to the frame_window_val and notified')
         self.print_val()
 
     def get_data(self):
@@ -166,7 +166,7 @@ class FrameWindow(ModelController):
     def reset(self):
         self.__frame_window_obj = FrameWindowVal(40, 40, 1, 1)
         self.notify_observer()
-        print('Reset the time window and notified')
+        print('Reset the frame_window_val and notified')
         self.print_val()
     
     def add_observer(self, observer):
@@ -180,7 +180,7 @@ class FrameWindow(ModelController):
             observer_name.update(self.get_data())
 
     def print_val(self):
-        print('Time window = ' + str(self.get_data()) + 
+        print('frame_window_val = ' + str(self.get_data()) + 
               ', observer = ' + str(self.__observers))
 
 
@@ -191,15 +191,15 @@ class FrameWindow(ModelController):
 class FrameWindowVal():
     def __init__(self, start, end, start_width, end_width):
         if start > end: 
-            raise Exception("Time Window the end values should be the same or larger than the start value")
+            raise Exception("FrameWindow the end values should be the same or larger than the start value")
             
 
         if start_width < 0 or end_width < 0:
-            raise Exception("Time Window width values should be 0 or more")
+            raise Exception("FrameWindow width values should be 0 or more")
         self.__frame_start = start  # (frame)
         self.__frame_end = end  # (frame)
-        self.__time_start_width = start_width
-        self.__time_end_width = end_width
+        self.__frame_start_width = start_width
+        self.__frame_end_width = end_width
         
         called_class = inspect.stack()[1].frame.f_locals['self']
         self.__data_type = called_class.__class__.__name__
@@ -211,19 +211,18 @@ class FrameWindowVal():
     def __add__(self, other):
         if self.__data_type != other.data_type:
             raise Exception("Wrong FrameWindowVal data")
-        print(self.__data_type)
         self.__frame_start += other.frame_window_val[0]
         self.__frame_end += other.frame_window_val[1]
-        self.__time_start_width += other.frame_window_val[2]
-        self.__time_end_width += other.frame_window_val[3]
+        self.__frame_start_width += other.frame_window_val[2]
+        self.__frame_end_width += other.frame_window_val[3]
         return self
         
     @property
     def frame_window_val(self):
         return [self.__frame_start,
                 self.__frame_end,
-                self.__time_start_width,
-                self.__time_end_width]
+                self.__frame_start_width,
+                self.__frame_end_width]
     
     @frame_window_val.setter
     def frame_window_val(self, start, end, start_width=1, end_width=1):  
