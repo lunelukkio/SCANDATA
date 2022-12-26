@@ -146,13 +146,13 @@ class FrameWindow(ModelController):
         self.object_num = 0
         print('Create a new FrameWindow.')
 
-    def set_data(self, start, end, start_width=1, end_width=1):
+    def set_data(self, start: int, end: int, start_width=1, end_width=1) -> None:
         self.__frame_window_obj = FrameWindowVal(start, end, start_width, end_width)
         self.notify_observer()
         print('Set the frame_window_val and notified')
         self.print_val()
         
-    def add_data(self, start, end, start_width=0, end_width=0):
+    def add_data(self, start: int, end: int, start_width=0, end_width=0) -> None:
         add_frame_window_obj = FrameWindowVal(start, end, start_width, end_width)
         new_frame_window_obj = self.__frame_window_obj + add_frame_window_obj
         self.__frame_window_obj = new_frame_window_obj
@@ -160,55 +160,51 @@ class FrameWindow(ModelController):
         print('Added to the frame_window_val and notified')
         self.print_val()
 
-    def get_data(self):
+    def get_data(self) -> object:
         return self.__frame_window_obj.frame_window_val
     
-    def reset(self):
+    def reset(self) -> None:
         self.__frame_window_obj = FrameWindowVal(40, 40, 1, 1)
         self.notify_observer()
         print('Reset the frame_window_val and notified')
         self.print_val()
     
-    def add_observer(self, observer):
+    def add_observer(self, observer: object) -> None:
         self.__observers.append(observer)
         
-    def remove_observer(self, observer):
+    def remove_observer(self, observer: object) -> None:
         self.__observers.remove(observer)
     
-    def notify_observer(self):
+    def notify_observer(self) -> None:
         for observer_name in self.__observers:
             observer_name.update(self.get_data())
 
-    def print_val(self):
+    def print_val(self) -> None:
         print('frame_window_val = ' + str(self.get_data()) + 
               ', observer = ' + str(self.__observers))
 
 
-
-
-
 "Value object for FrameWindow value"
 class FrameWindowVal():
-    def __init__(self, start, end, start_width, end_width):
+    def __init__(self, start: int, end: int, start_width: int, end_width: int):
         if start > end: 
             raise Exception("FrameWindow the end values should be the same or larger than the start value")
             
 
         if start_width < 0 or end_width < 0:
             raise Exception("FrameWindow width values should be 0 or more")
+        called_class = inspect.stack()[1].frame.f_locals['self']
         self.__frame_start = start  # (frame)
         self.__frame_end = end  # (frame)
         self.__frame_start_width = start_width
         self.__frame_end_width = end_width
-        
-        called_class = inspect.stack()[1].frame.f_locals['self']
         self.__data_type = called_class.__class__.__name__
         
     def __del__(self):
         print('Deleted a FrameWindowVal object.' + '  myId={}'.format(id(self)))
         
     #override for "+"
-    def __add__(self, other):
+    def __add__(self, other: object) -> object:
         if self.__data_type != other.data_type:
             raise Exception("Wrong FrameWindowVal data")
         self.__frame_start += other.frame_window_val[0]
@@ -218,7 +214,7 @@ class FrameWindowVal():
         return self
         
     @property
-    def frame_window_val(self):
+    def frame_window_val(self) -> list:
         return [self.__frame_start,
                 self.__frame_end,
                 self.__frame_start_width,
@@ -229,7 +225,7 @@ class FrameWindowVal():
         raise Exception("This is a value object (Immutable).")
     
     @property
-    def data_type(self):
+    def data_type(self) -> str:
         return self.__data_type
         
 

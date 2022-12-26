@@ -9,6 +9,7 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 import matplotlib.pyplot as plt
 import copy
+import inspect
 
 
 """
@@ -91,7 +92,7 @@ class Data(metaclass=ABCMeta):
 class FluoFrames(Data):  # 3D frames data: full frames, ch image
     def __init__(self, data, interval=0, pixel_size=0, unit=0):  # data = 3D raw data for distingish Chframes
         val = np.empty((1, 1, 1), dtype=float)
-        self.__frames_obj = FramesData(val)
+        self.__frames_obj = FramesData(val)  # Initialised
         self.__interval = copy.deepcopy(interval)  # (ms)
         self.__pixel_size = copy.deepcopy(pixel_size)  # (um)
         self.__unit = copy.deepcopy(unit)  # No unit because of raw camera data.
@@ -99,15 +100,25 @@ class FluoFrames(Data):  # 3D frames data: full frames, ch image
         self._read_data(data)
 
     def _read_data(self, data) -> None:
-        self.__frames_obj = FramesData(copy.deepcopy(data))
-        if len(self.__frames_obj.frames_data) <= 1:  # getter of FramesData
-            raise Exception("This object should be 3D data")
-    
-    def get_data(self) -> object:
-        return self.__frames_obj.frames_data, self.__interval, self.__pixel_size, self.__unit
+        if len(data) <= 1:  # getter of FramesData
+            raise Exception("This x or y size is too small for FluoFrames")
+            
+        if len(data.shape) == 3:
+            self.__frames_obj = FramesData(copy.deepcopy(data))
+        elif len(data.shape) == 4:
+            raise Exception("It might have more than 1 ch in the data. use [:,:,:,ch]")
+        else:
+            raise Exception("The data for FluoFrames is not 3D data")
+            
+        
+
+
 
     def update(self):
         pass
+    
+    def get_data(self) -> object:
+        return self.__frames_obj.frames_data, self.__interval, self.__pixel_size, self.__unit
 
     def show_data(self, frame_num=0) -> None:
         image = self.__frames_obj.frames_data
@@ -128,9 +139,8 @@ class FullFrames(FluoFrames):
     def __init__(self, data, *args):
         super().__init__(data, *args)
         self.object_num = 0  # instance number, It shold be increased by data_set
-        print('Made a Fullframes')
         
-    def print_name(self):
+    def print_name(self) -> None:
         print('This is Fullframes' + str(self.object_num))
 
 
@@ -138,9 +148,8 @@ class ChFrames(FluoFrames):
     def __init__(self, data, *args):
         super().__init__(data, *args)
         self.object_num = 0  # instance number
-        print('Made a Chframes')
         
-    def print_name(self):
+    def print_name(self) -> None:
         print('This is Chframes' + str(self.object_num))
 
 
@@ -149,18 +158,32 @@ class FramesData():
     def __init__(self, val):
         if val.ndim != 3: 
             raise Exception("This object should be numpy 3D data(x, y, t)")
+        size = val.shape
+        called_class = inspect.stack()[1].frame.f_locals['self']
         self.__frames_data = val
+        self.__frames_size = size
+        self.__data_type = called_class.__class__.__name__
+        print(self.__data_type + ' made a FramesData' + '  myId= {}'.format(id(self)))
         
     def __del__(self):
-        print('Deleted a FramesData object.' + '  myId={}'.format(id(self)))
+        print('.')
+        #print('Deleted a FramesData object.' + '  myId= {}'.format(id(self)))
     
     @property
-    def frames_data(self):
+    def frames_data(self) -> np.ndarray:
         return self.__frames_data
     
     @frames_data.setter
     def frames_data(self, val):
         raise Exception("This is a value object (Immutable).")
+        
+    @property
+    def frame_size(self) -> int:
+        return self.__frame_size
+    
+    @property
+    def data_type(self) -> str:
+        return self.__data_type
 
 
         
@@ -176,17 +199,17 @@ class FluoImage(Data):  # cell image, dif image
 
     def _read_data(self, data) -> None:
         pass
-    
-    def get_data(self) -> object:
-        return self._image_obj.image_data, self._pixel_size
 
     def update(self):
         pass
     
-    def show_data(self):
+    def get_data(self) -> object:
+        return self._image_obj.image_data, self._pixel_size
+    
+    def show_data(self) -> None:
         plt.imshow(self._image_obj.image_data, cmap='gray', interpolation='none')
     
-    def print_infor(self):
+    def print_infor(self) -> None:
         #np.set_printoptions(threshold=np.inf)  # This is for showing all data values.
         data = self._image_obj.image_data  # getter of FramesData
         print(data)
@@ -204,7 +227,7 @@ class CellImage(FluoImage):
         self.object_num = 0  # instance number
         self._read_data(frame_num)
 
-    def _read_data(self, frame_num):
+    def _read_data(self, frame_num) -> None:
         frame_length = self._frames_data.shape[2]
         if frame_num[0] > frame_length-1 or frame_num[1] > frame_length-1: 
             raise Exception("The end frame should be the same as the frames length or less.")
@@ -226,11 +249,11 @@ class CellImage(FluoImage):
             print('The end frame should be higher than the start frame.')
             print('-----------------------------------------------------')
         
-    def update(self, frame_num):  # frame_num = [start, end, start_width, end_width]
+    def update(self, frame_num) -> None:  # frame_num = [start, end, start_width, end_width]
         self._read_data(frame_num)
         print('CellImage recieved a notify message.')
             
-    def print_name(self):
+    def print_name(self) -> None:
         print('This is CellImage' + str(self.object_num))
         
         
@@ -257,18 +280,32 @@ class ImageData():
     def __init__(self, val):
         if val.ndim != 2: 
             raise Exception("This object should be numpy 2D data(x, y)")
+        size = val.shape
+        called_class = inspect.stack()[1].frame.f_locals['self']
         self.__image_data = val
+        self.__image_size = size
+        self.__data_type = called_class.__class__.__name__
+        print(self.__data_type + ' made a ImageData' + '  myId= {}'.format(id(self)))
         
     def __del__(self):
-        print('Deleted a ImageData object.' + '  myId={}'.format(id(self)))
+        print('.')
+        #print('Deleted a ImageData object.' + '  myId= {}'.format(id(self)))
         
     @property
-    def image_data(self):
+    def image_data(self) -> np.ndarray:
         return self.__image_data
     
     @image_data.setter
     def image_data(self, val):
         raise Exception("This is a value object (Immutable).")
+        
+    @property
+    def image_size(self) -> int:
+        return self.__image_size
+    
+    @property
+    def data_type(self) -> str:
+        return self.__data_type
             
 
 
@@ -281,25 +318,30 @@ class FluoTrace(Data):  # Fluo trae, Elec trace
         self.__frames_data = data
         self.__interval = copy.deepcopy(interval)
 
-    def _read_data(self, roi):  # roi[x, y, x_length, y_length]  
-    
-        #if roi[1] > roi[2]-1----: 
-        #    raise Exception("The roi size should be the same as the image size or less")
-    
+    def _read_data(self, roi: list) -> None:  # roi[x, y, x_length, y_length]
+        x_size = self.__frames_data.shape[0]
+        y_size = self.__frames_data.shape[1]
+
+        if roi[0] + roi[2] > x_size - 1 or roi[1] + roi[3] > y_size - 1: 
+            raise Exception("The roi size should be the same as the image size or less")
+
         trace_val = self.__create_fluo_trace(self.__frames_data, roi)
         self.__trace_obj = TraceData(trace_val)
         time_val = self.__create_time_data(trace_val, self.__interval)
         self.__time_obj = TimeData(time_val)
+        
+        if self.__trace_obj.check_length(self.__time_obj) == False:
+            raise Exception("The trace and time is not the same length")
     
-    def update(self, roi_obj):
+    def update(self, roi_obj) -> None:
         self._read_data(roi_obj)
         print('FluoTrace recieved a notify message.')
     
-    def get_data(self):
+    def get_data(self) -> tuple:
         return self.__trace_obj.trace_data, self.__interval
     
     @staticmethod
-    def __create_fluo_trace(frames_data, roi):
+    def __create_fluo_trace(frames_data, roi) -> np.ndarray:
         x = roi[0]
         y = roi[1]
         x_length = roi[2]
@@ -309,12 +351,12 @@ class FluoTrace(Data):  # Fluo trae, Elec trace
         return mean_data
         print('Undated ROI = ' + str(roi))
         
-    def __create_time_data(self, trace, interval):
+    def __create_time_data(self, trace, interval) -> np.ndarray:
         num_data_point = interval * np.shape(trace)[0]
         time_val = np.linspace(interval, num_data_point, np.shape(trace)[0])
         return time_val
     
-    def show_data(self):
+    def show_data(self) -> None:
         plt.plot(self.__time_obj.time_data, self.__trace_obj.trace_data)  
     
     def print_infor(self):
@@ -325,9 +367,8 @@ class FullTrace(FluoTrace):
     def __init__(self, data, interval):
         super().__init__(data, interval)
         self.object_num = 0  # instance number
-        print('Made a FullTrace')
 
-    def print_name(self):
+    def print_name(self) -> None:
         print('This is FullTrace' + str(self.object_num))
 
 
@@ -335,9 +376,8 @@ class ChTrace(FluoTrace):
     def __init__(self, data, interval):
         super().__init__(data, interval)
         self.object_num = 0  # instance number
-        print('Made a ChTrace')
         
-    def print_name(self):
+    def print_name(self) -> None:
         print('This is ChTrace' + str(self.object_num))
 
 
@@ -345,9 +385,8 @@ class BGTrace(FluoTrace):
     def __init__(self, data, interval):
         super().__init__(data, interval)
         self.object_num = 0  # instance number
-        print('Made a BGTrace')
         
-    def print_name(self):
+    def print_name(self) -> None:
         print('This is BGTrace' + str(self.object_num))
 
 
@@ -359,7 +398,6 @@ class ElecTrace(Data):
         super().__init__()
         self.object_num = 0  # instance number
         self.__read_data(data, interval)
-        print('Made a ElecTrace')
 
     def _read_data(self, data, interval):
         self.trace_data = copy.deepcopy(data)
@@ -390,41 +428,73 @@ class ElecTrace(Data):
 
 "Value Object for traces"
 class TraceData():
-    def __init__(self, val):
+    def __init__(self, val: np.ndarray):
         if val.ndim != 1: 
             raise Exception("This object should be numpy 1D data(x)")
+        length = val.shape[0]
+        called_class = inspect.stack()[1].frame.f_locals['self']
         self.__trace_data = val
+        self.__length = length
+        self.__data_type = called_class.__class__.__name__
+        print(self.__data_type + ' made a TraceData' + '  myId= {}'.format(id(self)))
         
     def __del__(self):
-        print('Deleted a TraceData object.' + '  myId={}'.format(id(self)))
+        print('.')
+        #print('Deleted a TraceData object.' + '  myId= {}'.format(id(self)))
         
     @property
-    def trace_data(self):
+    def trace_data(self) -> np.ndarray:
         return self.__trace_data
     
     @trace_data.setter
     def trace_data(self, val):
         raise Exception("This is a value object (Immutable).")
             
-
+    @property
+    def length(self) -> int:
+        return self.__length
+    
+    @property
+    def data_type(self) -> str:
+        return self.__data_type
+    
+    def check_length(self, data: object) -> bool:
+        return bool(self.__length == data.length)
+    
         
 class TimeData():
-    def __init__(self, val):
+    def __init__(self, val: np.ndarray):
         if val.ndim != 1: 
             raise Exception("This object should be numpy 1D data(x)")
+        length = val.shape[0]
+        called_class = inspect.stack()[1].frame.f_locals['self']
         self.__time_data = val
+        self.__length = length
+        self.__data_type = called_class.__class__.__name__
+        print(self.__data_type + ' made a TimeData' + '  myId= {}'.format(id(self)))
         
     def __del__(self):
-        print('Deleted a TimeData object.' + '  myId={}'.format(id(self)))
+        print('.')
+        #print('Deleted a TimeData object.' + '  myId= {}'.format(id(self)))
         
     @property
-    def time_data(self):
+    def time_data(self) -> np.ndarray:
         return self.__time_data
     
     @time_data.setter
     def time_data(self, val):
         raise Exception("This is a value object (Immutable).")
+        
+    @property
+    def length(self) -> int:
+        return self.__length
+        
+    @property
+    def data_type(self) -> str:
+        return self.__data_type
             
+    def check_length(self, data: object) -> bool:
+        return bool(self.__length == object.length)
 
 
 if __name__ == '__main__':
