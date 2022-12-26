@@ -203,11 +203,10 @@ class CellImage(FluoImage):
         super().__init__(frames_data, frame_num, *args)
         self.object_num = 0  # instance number
         self._read_data(frame_num)
-        
+
     def _read_data(self, frame_num):
         frame_length = self._frames_data.shape[2]
-        
-        if frame_num[1] > frame_length-1: 
+        if frame_num[0] > frame_length-1 or frame_num[1] > frame_length-1: 
             raise Exception("The end frame should be the same as the frames length or less.")
             
         start = frame_num[0]
@@ -284,8 +283,8 @@ class FluoTrace(Data):  # Fluo trae, Elec trace
 
     def _read_data(self, roi):  # roi[x, y, x_length, y_length]  
     
-        if roi[1] > roi[2]-1----: 
-            raise Exception("The roi size should be the same as the image size or less")
+        #if roi[1] > roi[2]-1----: 
+        #    raise Exception("The roi size should be the same as the image size or less")
     
         trace_val = self.__create_fluo_trace(self.__frames_data, roi)
         self.__trace_obj = TraceData(trace_val)

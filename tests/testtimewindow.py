@@ -8,8 +8,8 @@ Created on Sun Dec 25 00:06:40 2022
 
 
 import unittest
-from SCANDATA.model.controller_factory import RoiFactory, TimeWindowFactory
-from SCANDATA.model.controller_factory import Roi, TimeWindow, TimeWindowVal
+from SCANDATA.model.controller_factory import RoiFactory, FrameWindowFactory
+from SCANDATA.model.controller_factory import Roi, FrameWindow, FrameWindowVal
 from SCANDATA.model.data_factory import CellImageFactory, FullFramesFactory
 from SCANDATA.model.data_factory import ImageData
 from SCANDATA.model.io_factory import TsmFileIO
@@ -19,16 +19,16 @@ filename = '20408B002.tsm'
 filepath = '..\\220408\\'
 
 """
-class TestTimeWindowVal(unittest.TestCase):
+class TestFrameWindowVal(unittest.TestCase):
     def test_check_val(self):
-        timewindowval = TimeWindowVal()
-        timewindowval.time_window_val = [2,5]
+        framewindowval = FrameWindowVal()
+        framewindowval.frame_window_val = [2,5]
         print('time_window_val test')
-        print(timewindowval.time_window_val)
+        print(framewindowval.frame_window_val)
 """
 
-class TestRoiTimeWindow(unittest.TestCase):
-    def test_timewindow(self):
+class TestRoiFrameWindow(unittest.TestCase):
+    def test_FrameWindow(self):
 
         io_data = TsmFileIO(filename, filepath)
         data = io_data.full_frames
@@ -42,15 +42,16 @@ class TestRoiTimeWindow(unittest.TestCase):
         data_factory = CellImageFactory()
         cellimage = data_factory.create_data(frames_data, [0,3], pixel_size)
         
-        controller_factory = TimeWindowFactory()
+        controller_factory = FrameWindowFactory()
 
-        timewindow = controller_factory.create_model_controller()
-        timewindow.add_observer(cellimage)
-        timewindow.set_data([1,1,9,8])
-        
-        cellimage.print_infor()
+        framewindow = controller_factory.create_model_controller()
+        framewindow.add_observer(cellimage)
+        framewindow.set_data(0,0,1,1)
         cellimage.show_data()
-        cellimage.print_name()
+        
+        framewindow.add_data(0,0,8,1)
+        cellimage.show_data()
+
         
 
 

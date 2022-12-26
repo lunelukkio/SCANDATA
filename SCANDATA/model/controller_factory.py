@@ -8,6 +8,7 @@ from abc import ABCMeta, abstractmethod
 from SCANDATA.model.data_factory import FullFrames, ChFrames
 from SCANDATA.model.data_factory import CellImage, DifImage
 from SCANDATA.model.data_factory import FluoTrace, ElecTrace
+import inspect
 
 """
 abstract factory
@@ -25,9 +26,9 @@ class RoiFactory(ModelControllerFactory):
     def create_model_controller(self):
         return Roi()
         
-class TimeWindowFactory(ModelControllerFactory):
+class FrameWindowFactory(ModelControllerFactory):
     def create_model_controller(self):
-        return TimeWindow()
+        return FrameWindow()
     
 class FrameShiftFactory(ModelControllerFactory):
     def create_model_controller(self):
@@ -138,24 +139,35 @@ class Roi(ModelController):
               str(self.__observers))
             
     
-class TimeWindow(ModelController):
+class FrameWindow(ModelController):
     def __init__(self):
-        self.__time_window_obj = TimeWindowVal()
+        self.__frame_window_obj = FrameWindowVal(0, 0, 1, 1)
         self.__observers = []
         self.object_num = 0
-        print('Imported a cell image val class.')
+        print('Create a new time window.')
 
-    def set_data(self, val):
-        self.__time_window_obj.time_window_val = val
+    def set_data(self, start, end, start_width=1, end_width=1):
+        self.__frame_window_obj = FrameWindowVal(start, end, start_width, end_width)
+        self.notify_observer()
+        print('Set the time window and notified')
+        self.print_val()
+        
+    def add_data(self, start, end, start_width=0, end_width=0):
+        add_frame_window_obj = FrameWindowVal(start, end, start_width, end_width)
+        new_frame_window_obj = self.__frame_window_obj + add_frame_window_obj
+        self.__frame_window_obj = new_frame_window_obj
         self.notify_observer()
         print('Set the time window and notified')
         self.print_val()
 
     def get_data(self):
-        return self.__time_window_obj.time_window_val
+        return self.__frame_window_obj.frame_window_val
     
     def reset(self):
-        pass
+        self.__frame_window_obj = FrameWindowVal(40, 40, 1, 1)
+        self.notify_observer()
+        print('Reset the time window and notified')
+        self.print_val()
     
     def add_observer(self, observer):
         self.__observers.append(observer)
@@ -172,39 +184,55 @@ class TimeWindow(ModelController):
               ', observer = ' + str(self.__observers))
 
 
-"Value object for timewindow value"
-class TimeWindowVal():
-    def __init__(self):
-        self.__frame_start = 0
-        self.__frame_end = 0
-        self.__time_start_width = 1  #(ms)
-        self.__time_end_width = 1
+
+
+
+"Value object for FrameWindow value"
+class FrameWindowVal():
+    def __init__(self, start, end, start_width, end_width):
+        if start > end: 
+            raise Exception("Time Window the end values should be the same or larger than the start value")
+            
+
+        if start_width < 0 or end_width < 0:
+            raise Exception("Time Window width values should be 0 or more")
+        self.__frame_start = start  # (frame)
+        self.__frame_end = end  # (frame)
+        self.__time_start_width = start_width
+        self.__time_end_width = end_width
+        
+        called_class = inspect.stack()[1].frame.f_locals['self']
+        self.__data_type = called_class.__class__.__name__
+        
+    def __del__(self):
+        print('Deleted a FrameWindowVal object.' + '  myId={}'.format(id(self)))
+        
+    #override for "+"
+    def __add__(self, other):
+        if self.__data_type != other.data_type:
+            raise Exception("Wrong FrameWindowVal data")
+        print(self.__data_type)
+        self.__frame_start += other.frame_window_val[0]
+        self.__frame_end += other.frame_window_val[1]
+        self.__time_start_width += other.frame_window_val[2]
+        self.__time_end_width += other.frame_window_val[3]
+        return self
         
     @property
-    def time_window_val(self):
+    def frame_window_val(self):
         return [self.__frame_start,
                 self.__frame_end,
                 self.__time_start_width,
                 self.__time_end_width]
     
-    @time_window_val.setter
-    def time_window_val(self, val):  #val = [start, end, start_width, end_width]
-        if val[0] > val[1]: 
-            raise Exception("Time Window the end values should be the same or larger than the start value")
+    @frame_window_val.setter
+    def frame_window_val(self, start, end, start_width=1, end_width=1):  
+        raise Exception("This is a value object (Immutable).")
+    
+    @property
+    def data_type(self):
+        return self.__data_type
         
-        try:
-            val[3] = val[3]
-
-        except IndexError:
-            pass
-        else:
-            if val[2] < 1 or val[3] < 1:
-                raise Exception("Time Window width values should be 1 or more")
-            self.__time_start_width = val[2]
-            self.__time_end_width = val[3]
-            
-        self.__frame_start = val[0]
-        self.__frame_end = val[1]
 
 
 class FrameShift(ModelController):
