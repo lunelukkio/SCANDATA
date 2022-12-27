@@ -33,9 +33,10 @@ class TestTrace(unittest.TestCase):
 
         io_factory = TsmFileIOFactory()
         io_data = io_factory.create_file_io(filename, filepath)
-        data = io_data.ch_frames[:,:,:,0]
-        print(data.shape)
-        interval = io_data.ch_frame_interval
+        _, data = io_data.get_data()
+        data = data[:,:,:,0]
+        _, interval = io_data.get_infor()
+
         pixel_size = 0.25
         
         data_factory = ChFramesFactory()

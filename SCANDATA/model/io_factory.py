@@ -173,10 +173,10 @@ class TsmFileIO():
         return ch_frames  # = [:,:,:,ch]
     
     def get_data(self):
-        pass
+        return self.full_frames, self.ch_frames
 
     def get_infor(self):
-        pass
+        return self.full_frame_interval, self.ch_frame_interval
 
     def print_fileinfor(self):
         print(self.header.decode())
@@ -252,10 +252,10 @@ class TbnFileIO():
             print('Imported a .tbn(.tsm) elec data file.')
             
     def get_data(self):
-        return self.elec_trace
+        return self.elec_trace  # [data, ch]
 
     def get_infor(self):
-        return self.elec_interval, self.num_elec_data, self.num_elec_ch
+        return self.elec_interval
             
     def print_fileinfor(self):
         print('elec_header = ' + str(self.elec_header))

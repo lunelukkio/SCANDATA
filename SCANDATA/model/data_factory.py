@@ -216,7 +216,10 @@ class FluoImage(Data):  # cell image, dif image
     def show_data(self) -> None:
         plt.imshow(self._image_obj.image_data, cmap='gray', interpolation='none')
     
-    def print_infor(self) -> None:
+    def print_infor(self):
+        pass
+    
+    def print_add_infor(self) -> None:
         #np.set_printoptions(threshold=np.inf)  # This is for showing all data values.
         data = self._image_obj.image_data  # getter of FramesData
         print(data)
@@ -258,8 +261,10 @@ class CellImage(FluoImage):
         self._read_data(frame_num)
         print('CellImage-{} recieved a notify message.'.format(self.object_num))
             
-    def print_name(self) -> None:
+        
+    def print_infor(self) -> None:
         print('This is CellImage-{}'.format(self.object_num))
+        super().print_add_infor()
         
         
 class DifImage(FluoImage):
@@ -276,8 +281,9 @@ class DifImage(FluoImage):
     def get_data(self):
         pass
     
-    def print_name(self):
+    def print_infor(self):
         print('This is DifImage-{}'.format(self.object_num))
+        super().print_add_infor()
 
 
 "Value Object for images"
@@ -401,7 +407,7 @@ class BGFullTrace(FluoTrace):
         super().__init__(data, interval)
         self.object_num = 0  # instance number
         
-    def print_name(self) -> None:
+    def print_infor(self) -> None:
         print('This is BGTrace-{}'.format(self.object_num))
         
         
@@ -410,7 +416,7 @@ class BGChTrace(FluoTrace):
         super().__init__(data, interval)
         self.object_num = 0  # instance number
         
-    def print_name(self) -> None:
+    def print_infor(self) -> None:
         print('This is BGTrace-{}'.format(self.object_num))
 
 

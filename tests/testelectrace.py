@@ -24,9 +24,9 @@ class TestTrace(unittest.TestCase):
         io_factory = TbnFileIOFactory()
         io_elec_data = io_factory.create_file_io(filename, filepath, io_data)
 
-        elec_infor = io_elec_data.get_infor()
+        interval = io_elec_data.get_infor()
         elec_data = io_elec_data.get_data()
-        interval = elec_infor[0]
+
         
         data_factory = CameraSyncElecTraceFactory()
         

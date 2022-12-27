@@ -28,8 +28,8 @@ class Testimage(unittest.TestCase):
 
         io_factory = TsmFileIOFactory()
         io_data = io_factory.create_file_io(filename, filepath)
-        data = io_data.full_frames
-        interval = io_data.full_frame_interval
+        data, _ = io_data.get_data()
+        interval, _ = io_data.get_infor()
         pixel_size = 0.25
         
         data_factory = FullFramesFactory()
@@ -39,9 +39,7 @@ class Testimage(unittest.TestCase):
         data_factory = CellImageFactory()
         
         cellimage = data_factory.create_data(frames_data, [0,3], pixel_size)
-        cellimage.print_infor()
         cellimage.show_data()
-        cellimage.print_name()
 
 
 if __name__ == '__main__':

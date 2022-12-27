@@ -34,8 +34,8 @@ class TestFrameWindow(unittest.TestCase):
         io_data = io_factory.create_file_io(filename, filepath)
         
 
-        data = io_data.full_frames
-        interval = io_data.full_frame_interval
+        data, _ = io_data.get_data()
+        interval, _ = io_data.get_infor()
         pixel_size = 0.25
         
         data_factory = FullFramesFactory()
@@ -59,7 +59,6 @@ class TestFrameWindow(unittest.TestCase):
         framewindow.reset()
         c = plt.figure()
         cellimage.show_data()
-        cellimage.print_name()
 
         
 
