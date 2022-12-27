@@ -10,7 +10,7 @@ from SCANDATA.model.controller_factory import RoiFactory
 from SCANDATA.model.controller_factory import RoiVal, Roi
 from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory
 from SCANDATA.model.data_factory import FullTraceFactory, ChTraceFactory
-from SCANDATA.model.io_factory import TsmFileIO
+from SCANDATA.model.io_factory import TsmFileIOFactory
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -28,7 +28,8 @@ class TestRoi(unittest.TestCase):
     def test_Roi(self):
         
         # make a 3D data
-        io_data = TsmFileIO(filename, filepath)
+        io_factory = TsmFileIOFactory()
+        io_data = io_factory.create_file_io(filename, filepath)
         data = io_data.ch_frames[:,:,:,0]
         interval = io_data.ch_frame_interval
         pixel_size = 0.25
@@ -56,7 +57,7 @@ class TestRoi(unittest.TestCase):
         roi.reset()
         c = plt.figure()
         trace.show_data()
-        trace.print_name()
+        trace.print_infor()
     
 
 

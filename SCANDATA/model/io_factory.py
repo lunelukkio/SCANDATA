@@ -8,6 +8,51 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 import os
 
+
+"""
+IO Factory
+"""
+class FileIOFactory(metaclass=ABCMeta):
+    @abstractmethod
+    def create_file_io(self):
+        pass
+
+
+class TsmFileIOFactory(FileIOFactory):
+    def create_file_io(self, filename, filepath):
+        return TsmFileIO(filename, filepath)
+
+
+class TbnFileIOFactory(FileIOFactory):
+    def create_file_io(self, filename, filepath, tsm_file_io):
+        return TbnFileIO( filename, filepath, tsm_file_io)
+
+
+"""
+Product
+"""
+class IORepositoryInterface():
+    @abstractmethod
+    def read_fileinfor(self):
+        pass
+    
+    @abstractmethod
+    def read_data(self):
+        pass
+    
+    @abstractmethod
+    def get_data(self):
+        pass
+
+    @abstractmethod
+    def get_infor(self):
+        pass
+    
+    @abstractmethod
+    def print_fileinfor(self):
+        pass
+    
+
 class TsmFileIO():
     def __init__(self, filename, filepath):
         # about file
@@ -15,7 +60,6 @@ class TsmFileIO():
         self.file_path = filepath
         self.full_filename = os.path.join(filepath, filename)
         self.header = 0 # byte: it needs to chage to str [self.header.decode()]
-        self.elec_header = 0
         
         #about fluo frames
         self.full_frames = np.array([0,])
@@ -30,18 +74,10 @@ class TsmFileIO():
         self.num_ch_frames = np.empty([0,])
         self.full_3D_size = 0
         self.ch_3D_size = 0
-
-        # about elec
-        self.elec_trace = np.empty([0, 0])
-        self.bnc_ratio = 0
-        self.num_elec_ch = 0
-        self.elec_interval = 0
-        self.num_elec_data = 0
         
         # read data
         self.read_fileinfor()
-        self.read_frames_data()
-        self.read_tbn_data()
+        self.read_data()
         
     def read_fileinfor(self):
         try:
@@ -91,7 +127,7 @@ class TsmFileIO():
         else:
             print('Imported a TSM file infor class.')
             
-    def read_frames_data(self):
+    def read_data(self):
         try:
             # read shirt camera header information
             # https://fits.gsfc.nasa.gov/fits_primer.html
@@ -134,18 +170,57 @@ class TsmFileIO():
         for i in range(0, num_ch):
            for j in range(i, frames.shape[2], num_ch):
                ch_frames[:, :, j//num_ch, i] = frames[:, :, j]
-        return ch_frames
+        return ch_frames  # = [:,:,:,ch]
     
-    def read_image_data(self):
-        pass  # No cell image from tsm data
+    def get_data(self):
+        pass
+
+    def get_infor(self):
+        pass
+
+    def print_fileinfor(self):
+        print(self.header.decode())
+        print('filenmae = ' + self.full_filename)
+        print('num_fluo_ch = ' + str(self.num_fluo_ch))
+        print('full_frames_interval = ' + str(self.full_frames_interval))
+        print('ch_frames_interval = ' + str(self.ch_frames_interval))
+        print('num_full_frames = ' + str(self.num_full_frames))
+        print('num_ch_frames = ' + str(self.num_ch_frames))
+        print('full_3D_size = ' + str(self.full_3D_size))
+        print('ch_3D_size = ' + str(self.ch_3D_size))
+        print('data_pixel = ' + str(self.data_pixel))
+
+        
+class TbnFileIO():
+    def __init__(self, filename, filepath, tsm_file_io):
+        # about file
+        self.filename = filename
+        self.file_path = filepath
+        self.full_filename = os.path.join(filepath, filename)
+        
+        # from a .tsm file
+        self.full_frame_interval = tsm_file_io.full_frame_interval
+        self.num_full_frames = tsm_file_io.num_full_frames
+        
+        # about elec
+        self.elec_header = 0
+        self.elec_trace = np.empty([0, 0])  # = [data, ch]
+        self.bnc_ratio = 0
+        self.num_elec_ch = 0
+        self.elec_interval = 0
+        self.num_elec_data = 0
+        
+        # read data
+        self.read_data()
     
-    def read_tbn_data(self):  # from .tbn files
+    def read_data(self):  # from .tbn files
         try:
             # read a header
             # https://fits.gsfc.nasa.gov/fits_primer.html
             elec_full_filename = self.full_filename[0:-3] + ('tbn')
             elec_header_list = np.fromfile(elec_full_filename,
                                                       np.int16, count=2)
+            self.elec_header = elec_header_list
             self.num_elec_ch = elec_header_list[0] * -1
             self.bnc_ratio = elec_header_list[1]
             self.elec_interval = self.full_frame_interval/self.bnc_ratio
@@ -174,23 +249,29 @@ class TsmFileIO():
             print('----------------------------------')
             
         else:
-            print('Imported a TSM(.tbn) elec data file.')
+            print('Imported a .tbn(.tsm) elec data file.')
+            
+    def get_data(self):
+        return self.elec_trace
+
+    def get_infor(self):
+        return self.elec_interval, self.num_elec_data, self.num_elec_ch
             
     def print_fileinfor(self):
-        print(self.header.decode())
         print('elec_header = ' + str(self.elec_header))
         print('filenmae = ' + self.full_filename)
-        print('num_fluo_ch = ' + str(self.num_fluo_ch))
-        print('full_frames_interval = ' + str(self.full_frames_interval))
-        print('ch_frames_interval = ' + str(self.ch_frames_interval))
-        print('num_full_frames = ' + str(self.num_full_frames))
-        print('num_ch_frames = ' + str(self.num_ch_frames))
-        print('full_3D_size = ' + str(self.full_3D_size))
-        print('ch_3D_size = ' + str(self.ch_3D_size))
-        
-        print('data_pixel = ' + str(self.data_pixel))
         print('bnc_ratio = ' + str(self.bnc_ratio))
         print('num_elec_ch = ' + str(self.num_elec_ch))
         print('elec_interval = ' + str(self.elec_interval))
-        print('num_elec_data = ' + str(self.num_elec_data)) 
+        print('num_elec_data = ' + str(self.num_elec_data))
+        
+if __name__ == '__main__':
+    filename = '20408B002.tsm'
+    filepath = '..\\..\\220408\\'
+    
+    io_factory = TsmFileIOFactory()
+    tsm = io_factory.create_file_io(filename, filepath)
+    
+    io_factory = TbnFileIOFactory()
+    tsm = io_factory.create_file_io(filename, filepath, tsm)
         

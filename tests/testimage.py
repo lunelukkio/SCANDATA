@@ -9,7 +9,7 @@ Created on Sat Dec 24 11:25:49 2022
 import unittest
 from SCANDATA.model.data_factory import CellImageFactory, FullFramesFactory
 from SCANDATA.model.data_factory import ImageData
-from SCANDATA.model.io_factory import TsmFileIO
+from SCANDATA.model.io_factory import TsmFileIOFactory
 import numpy as np
 
 filename = '20408B002.tsm'
@@ -26,7 +26,8 @@ class TestImageData(unittest.TestCase):
 class Testimage(unittest.TestCase):
     def test_cell_image(self):
 
-        io_data = TsmFileIO(filename, filepath)
+        io_factory = TsmFileIOFactory()
+        io_data = io_factory.create_file_io(filename, filepath)
         data = io_data.full_frames
         interval = io_data.full_frame_interval
         pixel_size = 0.25

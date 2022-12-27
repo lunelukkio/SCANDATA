@@ -53,13 +53,17 @@ class ChTraceFactory(DataFactory):
     def create_data(self, data, *args):  # data = frames object
         return ChTrace(data, *args)
     
-class BGTraceFactory(DataFactory):
+class BGFullTraceFactory(DataFactory):
     def create_data(self, data, *args):  # data = frames object
-        return BGTrace(data, *args)
+        return BGFullTrace(data, *args)
     
-class ElecTraceFactory(DataFactory):
+class BGChTraceFactory(DataFactory):
+    def create_data(self, data, *args):  # data = frames object
+        return BGChTrace(data, *args)
+    
+class CameraSyncElecTraceFactory(DataFactory):
     def create_data(self, data, *args):  # data = 
-        return ElecTrace(data, *args)
+        return CameraSyncElecTrace(data, *args)
     
 
 """
@@ -120,7 +124,10 @@ class FluoFrames(Data):  # 3D frames data: full frames, ch image
         image = self.__frames_obj.frames_data
         plt.imshow(image[:, :, frame_num], cmap='gray', interpolation='none')
 
-    def print_infor(self) -> None:
+    def print_infor(self):
+        pass
+    
+    def print_additional_infor(self):
         #np.set_printoptions(threshold=np.inf)  # This is for showing all data values.
         data = self.__frames_obj.frames_data  # getter of FramesData
         print(data)
@@ -136,8 +143,10 @@ class FullFrames(FluoFrames):
         super().__init__(data, *args)
         self.object_num = 0  # instance number, It shold be increased by data_set
         
-    def print_name(self) -> None:
+    def print_infor(self) -> None:
         print('This is Fullframes' + str(self.object_num))
+        super().print_additional_infor()
+
 
 
 class ChFrames(FluoFrames):
@@ -145,8 +154,10 @@ class ChFrames(FluoFrames):
         super().__init__(data, *args)
         self.object_num = 0  # instance number
         
-    def print_name(self) -> None:
+    def print_infor(self) -> None:
         print('This is Chframes' + str(self.object_num))
+        #np.set_printoptions(threshold=np.inf)  # This is for showing all data values.
+        super().print_additional_infor()
 
 
 "Value Object for frames"       
@@ -368,7 +379,7 @@ class FullTrace(FluoTrace):
         super()._read_data(roi_obj)
         print('FullTrace-{} recieved a notify message.'.format(self.object_num))
         
-    def print_name(self) -> None:
+    def print_infor(self) -> None:
         print('This is FullTrace-{}'.format(self.object_num))
 
 
@@ -381,11 +392,20 @@ class ChTrace(FluoTrace):
         super()._read_data(roi_obj)
         print('ChTrace-{} recieved a notify message.'.format(self.object_num))
         
-    def print_name(self) -> None:
+    def print_infor(self) -> None:
         print('This is ChTrace-{}'.format(self.object_num))
 
 
-class BGTrace(FluoTrace):
+class BGFullTrace(FluoTrace):
+    def __init__(self, data, interval):
+        super().__init__(data, interval)
+        self.object_num = 0  # instance number
+        
+    def print_name(self) -> None:
+        print('This is BGTrace-{}'.format(self.object_num))
+        
+        
+class BGChTrace(FluoTrace):
     def __init__(self, data, interval):
         super().__init__(data, interval)
         self.object_num = 0  # instance number
@@ -394,40 +414,57 @@ class BGTrace(FluoTrace):
         print('This is BGTrace-{}'.format(self.object_num))
 
 
-
-
-
-class ElecTrace(Data):
-    def __init__(self, data, interval):
-        super().__init__()
-        self.object_num = 0  # instance number
-        self.__read_data(data, interval)
-
-    def _read_data(self, data, interval):
-        self.trace_data = copy.deepcopy(data)
-        self.interval = copy.deepcopy(interval)
-        num_data_point = self.interval * np.shape(self.trace_data)[0]
-        self.time_data = np.linspace(self.interval, 
-                                     num_data_point, 
-                                     np.shape(self.trace_data)[0])
+"Elec trace"
+class ElecTrace(Data):  # Fluo trae, Elec trace
+    def __init__(self, interval):
+        val = np.empty((1), dtype=float)
+        self._trace_obj = TraceData(val)
+        self._time_obj = TimeData(val)
+        self._interval = copy.deepcopy(interval)
         
-        if len(self.trace_data) <= 1:
+    def _read_data(self):
+        pass
+    
+    def update(self, roi_obj) -> None:
+        pass
+    
+    def get_data(self) -> tuple:
+        return self._trace_obj.trace_data, self._interval
+    
+    def show_data(self) -> None:
+        plt.plot(self._time_obj.time_data, self._trace_obj.trace_data)  
+    
+    def print_infor(self):
+        pass
+        
+class CameraSyncElecTrace(ElecTrace):
+    def __init__(self, data, interval):
+        super().__init__(interval)
+        self.object_num = 0  # instance number
+        self._read_data(data)
+
+    def _read_data(self, data: np.ndarray) -> None:
+        self._trace_obj = TraceData(copy.deepcopy(data))
+
+        num_data_point = self._interval * np.shape(data)[0]
+        time_val = np.linspace(self._interval, 
+                                     num_data_point, 
+                                     np.shape(data)[0])
+        self._time_obj = TimeData(time_val)
+        
+        if len(self._trace_obj.trace_data) <= 1:
             print('---------------------')
             print('Can not make Elec data')
             print('---------------------')
             return None
         else:
             print('Read a ElecTrace')
-
     
-    def update(self):
-        pass
-
-    def get_data(self):
-        pass
-    
-    def print_name(self):
+    def print_infor(self):
         print('This is ElecTrace' + str(self.object_num))
+        
+class LongElecTrace(ElecTrace):
+    pass
 
 
 "Value Object for traces"
@@ -502,6 +539,5 @@ class TimeData():
 
 
 if __name__ == '__main__':
-    filename = '20408A001.tsm'
-    filepath = '..\\220408\\'
+    pass
 

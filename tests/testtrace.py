@@ -10,7 +10,7 @@ import unittest
 from SCANDATA.model.data_factory import FullTraceFactory, ChTraceFactory
 from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory
 from SCANDATA.model.data_factory import TraceData, TimeData
-from SCANDATA.model.io_factory import TsmFileIO
+from SCANDATA.model.io_factory import TsmFileIOFactory
 import numpy as np
 
 filename = '20408B002.tsm'
@@ -31,7 +31,8 @@ class TestTimeData(unittest.TestCase):
 class TestTrace(unittest.TestCase):
     def test_gull_trace(self):
 
-        io_data = TsmFileIO(filename, filepath)
+        io_factory = TsmFileIOFactory()
+        io_data = io_factory.create_file_io(filename, filepath)
         data = io_data.ch_frames[:,:,:,0]
         print(data.shape)
         interval = io_data.ch_frame_interval
@@ -47,6 +48,7 @@ class TestTrace(unittest.TestCase):
         chtrace._read_data([40,39,39,40])
 
         chtrace.show_data()
+        chtrace.print_infor()
 
 
 

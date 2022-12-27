@@ -12,7 +12,7 @@ from SCANDATA.model.controller_factory import FrameWindowFactory
 from SCANDATA.model.controller_factory import FrameWindow, FrameWindowVal
 from SCANDATA.model.data_factory import CellImageFactory, FullFramesFactory
 from SCANDATA.model.data_factory import ImageData
-from SCANDATA.model.io_factory import TsmFileIO
+from SCANDATA.model.io_factory import TsmFileIOFactory
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -30,7 +30,10 @@ class TestFrameWindowVal(unittest.TestCase):
 class TestFrameWindow(unittest.TestCase):
     def test_FrameWindow(self):
 
-        io_data = TsmFileIO(filename, filepath)
+        io_factory = TsmFileIOFactory()
+        io_data = io_factory.create_file_io(filename, filepath)
+        
+
         data = io_data.full_frames
         interval = io_data.full_frame_interval
         pixel_size = 0.25
