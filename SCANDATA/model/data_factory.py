@@ -24,44 +24,44 @@ class DataFactory(metaclass=ABCMeta):
 
 "Frames"
 class FullFramesFactory(DataFactory):
-    def create_data(self, data, *args):  # data = 3D raw data
+    def create_data(self, data, *args):  # data = 3D raw data. *args is for interval, pixel_size, unit
         return FullFrames(data, *args)
 
 
 class ChFramesFactory(DataFactory):
-    def create_data(self, data, *args):  # data = 3D raw data
+    def create_data(self, data, *args):  # data = 3D raw data. *args is for interval, pixel_size, unit
         return ChFrames(data, *args)
 
 
 "Image"
 class CellImageFactory(DataFactory):
-    def create_data(self, data, *args):  # data = frames object
+    def create_data(self, data, *args):  # data = 3D raw data, frame = [list]
         return CellImage(data, *args)
 
 
 class DifImageFactory(DataFactory):
-    def create_data(self, data, *args):  # data = frames object
+    def create_data(self, data, *args):  
         return DifImage(data, *args)
 
 
 "Trace"
 class FullTraceFactory(DataFactory):
-    def create_data(self, data, *args):  # data = frames object
+    def create_data(self, data, *args):  # data = 3D raw data, interval
         return FullTrace(data, *args)
 
 class ChTraceFactory(DataFactory):
-    def create_data(self, data, *args):  # data = frames object
+    def create_data(self, data, *args):  # data = 3D raw data, interval
         return ChTrace(data, *args)
     
 class BGFullTraceFactory(DataFactory):
-    def create_data(self, data, *args):  # data = frames object
+    def create_data(self, data, *args):  # data = 3D raw data, interval
         return BGFullTrace(data, *args)
     
 class BGChTraceFactory(DataFactory):
-    def create_data(self, data, *args):  # data = frames object
+    def create_data(self, data, *args):  # data = 3D raw data, interval
         return BGChTrace(data, *args)
     
-class CameraSyncElecTraceFactory(DataFactory):
+class CameraSyncElecTraceFactory(DataFactory):  # data = 3D raw data, interval
     def create_data(self, data, *args):  # data = 
         return CameraSyncElecTrace(data, *args)
     
@@ -76,6 +76,10 @@ class Data(metaclass=ABCMeta):
     
     @abstractmethod
     def get_data(self):
+        pass
+    
+    @abstractmethod
+    def get_infor(self):
         pass
     
     @abstractmethod
@@ -117,8 +121,11 @@ class FluoFrames(Data):  # 3D frames data: full frames, ch image
     def update(self):
         pass
     
-    def get_data(self) -> object:
-        return self.__frames_obj.frames_data, self.__interval, self.__pixel_size, self.__unit
+    def get_data(self) -> np.ndarray:
+        return self.__frames_obj.frames_data
+    
+    def get_infor(self) -> tuple:
+        return self.__interval, self.__pixel_size, self.__unit
 
     def show_data(self, frame_num=0) -> None:
         image = self.__frames_obj.frames_data
@@ -210,8 +217,11 @@ class FluoImage(Data):  # cell image, dif image
     def update(self):
         pass
     
-    def get_data(self) -> object:
-        return self._image_obj.image_data, self._pixel_size
+    def get_data(self) -> np.ndarray:
+        return self._image_obj.image_data
+    
+    def get_infor(self) -> float:
+        return self._pixel_size
     
     def show_data(self) -> None:
         plt.imshow(self._image_obj.image_data, cmap='gray', interpolation='none')
@@ -281,6 +291,9 @@ class DifImage(FluoImage):
     def get_data(self):
         pass
     
+    def get_infor(self):
+        pass
+    
     def print_infor(self):
         print('This is DifImage-{}'.format(self.object_num))
         super().print_add_infor()
@@ -323,9 +336,8 @@ class ImageData():
 "Fluo Trace"
 class FluoTrace(Data):  # Fluo trae, Elec trace
     def __init__(self, data, interval):
-        val = np.empty((1), dtype=float)
-        self.__trace_obj = TraceData(val)
-        self.__time_obj = TimeData(val)
+        #self.__trace_obj
+        #self.__time_obj
         self.__frames_data = data
         self.__interval = copy.deepcopy(interval)
 
@@ -350,8 +362,11 @@ class FluoTrace(Data):  # Fluo trae, Elec trace
     def update(self, roi_obj) -> None:
         pass
     
-    def get_data(self) -> tuple:
-        return self.__trace_obj.trace_data, self.__interval
+    def get_data(self) -> np.ndarray:
+        return self.__trace_obj.trace_data
+    
+    def get_infor(self) -> float:
+        return self.__interval
     
     @staticmethod
     def __create_fluo_trace(frames_data, roi) -> np.ndarray:
@@ -374,6 +389,14 @@ class FluoTrace(Data):  # Fluo trae, Elec trace
     
     def print_infor(self):
         pass
+    
+    def print_add_infor(self) -> None:
+        #np.set_printoptions(threshold=np.inf)  # This is for showing all data values.
+        data = self.__trace_obj.trace_data  # getter of FramesData
+        print(data)
+        print(data.shape)
+        print(self.__interval)
+        #np.set_printoptions(threshold=1000)
 
  
 class FullTrace(FluoTrace):
@@ -387,7 +410,8 @@ class FullTrace(FluoTrace):
         
     def print_infor(self) -> None:
         print('This is FullTrace-{}'.format(self.object_num))
-
+        super().print_add_infor()
+        
 
 class ChTrace(FluoTrace):
     def __init__(self, data, interval):
@@ -400,6 +424,7 @@ class ChTrace(FluoTrace):
         
     def print_infor(self) -> None:
         print('This is ChTrace-{}'.format(self.object_num))
+        super().print_add_infor()
 
 
 class BGFullTrace(FluoTrace):
@@ -409,6 +434,7 @@ class BGFullTrace(FluoTrace):
         
     def print_infor(self) -> None:
         print('This is BGTrace-{}'.format(self.object_num))
+        super().print_add_infor()
         
         
 class BGChTrace(FluoTrace):
@@ -418,12 +444,13 @@ class BGChTrace(FluoTrace):
         
     def print_infor(self) -> None:
         print('This is BGTrace-{}'.format(self.object_num))
+        super().print_add_infor()
 
 
 "Elec trace"
 class ElecTrace(Data):  # Fluo trae, Elec trace
     def __init__(self, interval):
-        val = np.empty((1), dtype=float)
+        val = np.empty((5), dtype=float)
         self._trace_obj = TraceData(val)
         self._time_obj = TimeData(val)
         self._interval = copy.deepcopy(interval)
@@ -434,8 +461,11 @@ class ElecTrace(Data):  # Fluo trae, Elec trace
     def update(self, roi_obj) -> None:
         pass
     
-    def get_data(self) -> tuple:
-        return self._trace_obj.trace_data, self._interval
+    def get_data(self) -> np.ndarray:
+        return self._trace_obj.trace_data
+    
+    def get_infor(self) -> float:
+        return self.__interval
     
     def show_data(self) -> None:
         plt.plot(self._time_obj.time_data, self._trace_obj.trace_data)  
@@ -468,6 +498,7 @@ class CameraSyncElecTrace(ElecTrace):
     
     def print_infor(self):
         print('This is ElecTrace' + str(self.object_num))
+        print(self._trace_obj.trace_data)
         
 class LongElecTrace(ElecTrace):
     pass
@@ -475,19 +506,33 @@ class LongElecTrace(ElecTrace):
 
 "Value Object for traces"
 class TraceData():
-    def __init__(self, val: np.ndarray):
+    def __init__(self, val: np.ndarray) -> None:
         if val.ndim != 1: 
             raise Exception("The argument of TraceData should be numpy 1D data(x)")
+        if  val.shape[0] < 5: 
+            print('----------------------------------------------------------')
+            print('Warning!!! The number of the data points of TraceData is less than 5!!!')
+            print('----------------------------------------------------------')
+            print(val)
+            
+            
         length = val.shape[0]
         called_class = inspect.stack()[1].frame.f_locals['self']
         self.__trace_data = val
+        #self.__time = self.__create_time_data()
         self.__length = length
         self.__data_type = called_class.__class__.__name__
         print(self.__data_type + ' made a TraceData' + '  myId= {}'.format(id(self)))
+
         
     def __del__(self):
         print('.')
         #print('Deleted a TraceData object.' + '  myId= {}'.format(id(self)))
+        
+    def __create_time_data(self, trace, interval) -> np.ndarray:
+        num_data_point = interval * np.shape(trace)[0]
+        time_val = np.linspace(interval, num_data_point, np.shape(trace)[0])
+        return time_val
         
     @property
     def trace_data(self) -> np.ndarray:
@@ -505,6 +550,7 @@ class TraceData():
     def data_type(self) -> str:
         return self.__data_type
     
+    
     def check_length(self, data: object) -> bool:
         return bool(self.__length == data.length)
     
@@ -513,6 +559,11 @@ class TimeData():
     def __init__(self, val: np.ndarray):
         if val.ndim != 1: 
             raise Exception("The argument of TImeData should be numpy 1D data(x)")
+        if  val.shape[0] < 5: 
+            print('----------------------------------------------------------')
+            print('Warning!!! The number of the data points of TraceData is less than 5!!!')
+            print('----------------------------------------------------------')
+            print(val)
         length = val.shape[0]
         called_class = inspect.stack()[1].frame.f_locals['self']
         self.__time_data = val

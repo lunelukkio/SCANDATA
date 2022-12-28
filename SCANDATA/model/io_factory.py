@@ -14,18 +14,18 @@ IO Factory
 """
 class FileIOFactory(metaclass=ABCMeta):
     @abstractmethod
-    def create_file_io(self):
+    def create_file_io(self, *args):
         pass
 
 
 class TsmFileIOFactory(FileIOFactory):
-    def create_file_io(self, filename, filepath):
+    def create_file_io(self, filename, filepath, *args):
         return TsmFileIO(filename, filepath)
 
 
 class TbnFileIOFactory(FileIOFactory):
-    def create_file_io(self, filename, filepath, tsm_file_io):
-        return TbnFileIO( filename, filepath, tsm_file_io)
+    def create_file_io(self, filename, filepath, *args):
+        return TbnFileIO(filename, filepath, *args)
 
 
 """
@@ -33,23 +33,23 @@ Product
 """
 class IORepositoryInterface():
     @abstractmethod
-    def read_fileinfor(self):
+    def read_fileinfor(self) -> None:
         pass
     
     @abstractmethod
-    def read_data(self):
+    def read_data(self) -> None:
         pass
     
     @abstractmethod
-    def get_data(self):
+    def get_data(self) -> tuple:
         pass
 
     @abstractmethod
-    def get_infor(self):
+    def get_infor(self) -> tuple:
         pass
     
     @abstractmethod
-    def print_fileinfor(self):
+    def print_fileinfor(self) -> None:
         pass
     
 
@@ -74,6 +74,8 @@ class TsmFileIO():
         self.num_ch_frames = np.empty([0,])
         self.full_3D_size = 0
         self.ch_3D_size = 0
+        
+        self.object_num = 0  # for counter
         
         # read data
         self.read_fileinfor()
@@ -172,10 +174,10 @@ class TsmFileIO():
                ch_frames[:, :, j//num_ch, i] = frames[:, :, j]
         return ch_frames  # = [:,:,:,ch]
     
-    def get_data(self):
+    def get_data(self) -> tuple:
         return self.full_frames, self.ch_frames
 
-    def get_infor(self):
+    def get_infor(self) -> tuple:
         return self.full_frame_interval, self.ch_frame_interval
 
     def print_fileinfor(self):
@@ -209,6 +211,8 @@ class TbnFileIO():
         self.num_elec_ch = 0
         self.elec_interval = 0
         self.num_elec_data = 0
+        
+        self.object_num = 0  # for counter
         
         # read data
         self.read_data()

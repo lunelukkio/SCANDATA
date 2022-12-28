@@ -5,9 +5,6 @@ concrete classes for model controllers
 lunelukkio@gmail.com
 """
 from abc import ABCMeta, abstractmethod
-from SCANDATA.model.data_factory import FullFrames, ChFrames
-from SCANDATA.model.data_factory import CellImage, DifImage
-from SCANDATA.model.data_factory import FluoTrace, ElecTrace
 import inspect
 
 """
