@@ -7,7 +7,7 @@ lunelukkio@gmail.com
 
 import unittest
 from SCANDATA.model.model_main import DataSet
-
+import matplotlib.pyplot as plt
 
 class TestDataSet(unittest.TestCase):
     def test_data_set(self):
@@ -15,10 +15,14 @@ class TestDataSet(unittest.TestCase):
         filepath = '..\\220408\\'
         dataset = DataSet(filename, filepath)
         
-        print(dataset.data['ChTrace1'].print_infor())
-        #print(dataset.model_controller['Roi1'].get_data())
+        a = plt.figure()
+        dataset.data['ChTrace1'].show_data()
+        dataset.controller['Roi1'].set_data(50,50,10,10)
+        
 
-        print('TraceDataにTimeDataを移植。初期値を消す。これで5以下はなくなる')
+        dataset.data['ChTrace1'].show_data()
+        dataset.data['FullTrace1'].show_data()
+
 
 if __name__ == '__main__':
     unittest.main()

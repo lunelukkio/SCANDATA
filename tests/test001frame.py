@@ -9,6 +9,7 @@ import unittest
 from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory
 from SCANDATA.model.data_factory import FramesData, FullFrames, ChFrames
 from SCANDATA.model.io_factory import TsmFileIOFactory
+from SCANDATA.model.data_factory import ValueObjConverter
 import numpy as np
 
 filename = '20408B002.tsm'
@@ -25,18 +26,20 @@ class TestFramesData(unittest.TestCase):
 
 class TestFullFrames(unittest.TestCase):
     def test_full_frame(self):
+        converter = ValueObjConverter()
+        
         io_factory = TsmFileIOFactory()
         io_data = io_factory.create_file_io(filename, filepath)
-        data, _ = io_data.get_data()
+        rawdata, _ = io_data.get_data()
         interval, _ = io_data.get_infor()
-
+        data = converter.frames_converter(rawdata)
         pixel_size = 0.25
         
         data_factory = FullFramesFactory()
         fullframes = data_factory.create_data(data, interval, pixel_size)
         
         fullframes.show_data(1)
-        data = fullframes.get_data()[0]
+        data = fullframes.get_data().data[0]
 
 if __name__ == '__main__':
     unittest.main()

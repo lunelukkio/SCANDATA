@@ -11,6 +11,7 @@ from SCANDATA.model.controller_factory import RoiVal
 from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory
 from SCANDATA.model.data_factory import FullTraceFactory, ChTraceFactory
 from SCANDATA.model.io_factory import TsmFileIOFactory
+from SCANDATA.model.data_factory import ValueObjConverter
 import matplotlib.pyplot as plt
 
 filename = '20408B002.tsm'
@@ -20,19 +21,24 @@ filepath = '..\\220408\\'
 class TestRoiVal(unittest.TestCase):
     def test_check_val(self):
         roival = RoiVal(2,5,1,1)
-        print(roival.roi_val)
+        print(roival.data)
+        roival2 = RoiVal(1,1,1,1)
+        
+        a = roival + roival2
+        print(a.data)
 """
 
 class TestRoi(unittest.TestCase):
     def test_Roi(self):
-        
+        converter = ValueObjConverter()
         # make a 3D data
         io_factory = TsmFileIOFactory()
         io_data = io_factory.create_file_io(filename, filepath)
         _, data = io_data.get_data()
         _, interval = io_data.get_infor()
-        data = data[:,:,:,0]
+        rawdata = data[:,:,:,0]
         pixel_size = 0.25
+        data = converter.frames_converter(rawdata)
         
         #make a chframes
         data_factory = ChFramesFactory()
@@ -44,21 +50,21 @@ class TestRoi(unittest.TestCase):
         
         controller_factory = RoiFactory()
 
-        roi = controller_factory.create_model_controller()
+        roi = controller_factory.create_controller()
         roi.add_observer(trace)
         roi.set_data(0,0,1,1)
         a = plt.figure()
         trace.show_data()
         
-        roi.add_data(2,3,60,70)
+        roi.add_data(2,5,60,70)
         b = plt.figure()
         trace.show_data()
         
         roi.reset()
         c = plt.figure()
         trace.show_data()
-        trace.print_infor()
-            
+        #trace.print_infor()
+      
 
 
 if __name__ == '__main__':
