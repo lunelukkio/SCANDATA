@@ -18,7 +18,7 @@ class TestDataSet(unittest.TestCase):
         print(dataset.data['ChTrace1'].print_infor())
         #print(dataset.model_controller['Roi1'].get_data())
 
-        
+        print('TraceDataにTimeDataを移植。初期値を消す。これで5以下はなくなる')
 
 if __name__ == '__main__':
     unittest.main()
