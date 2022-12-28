@@ -41,7 +41,7 @@ class TestTrace(unittest.TestCase):
         
         data_factory = ChFramesFactory()
         chframes = data_factory.create_data(data, interval, pixel_size)
-        frames_data, _, _, _ = chframes.get_data()
+        frames_data = chframes.get_data()
         
         data_factory = ChTraceFactory()
         

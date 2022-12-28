@@ -7,11 +7,10 @@ lunelukkio@gmail.com
 
 import unittest
 from SCANDATA.model.controller_factory import RoiFactory
-from SCANDATA.model.controller_factory import RoiVal, Roi
+from SCANDATA.model.controller_factory import RoiVal
 from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory
 from SCANDATA.model.data_factory import FullTraceFactory, ChTraceFactory
 from SCANDATA.model.io_factory import TsmFileIOFactory
-import numpy as np
 import matplotlib.pyplot as plt
 
 filename = '20408B002.tsm'
@@ -38,7 +37,7 @@ class TestRoi(unittest.TestCase):
         #make a chframes
         data_factory = ChFramesFactory()
         chframes = data_factory.create_data(data, interval, pixel_size)
-        frames_data, _, _, _ = chframes.get_data()
+        frames_data = chframes.get_data()
         
         data_factory = ChTraceFactory()
         trace = data_factory.create_data(frames_data, interval)
@@ -59,7 +58,7 @@ class TestRoi(unittest.TestCase):
         c = plt.figure()
         trace.show_data()
         trace.print_infor()
-    
+            
 
 
 if __name__ == '__main__':

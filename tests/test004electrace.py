@@ -26,7 +26,7 @@ class TestTrace(unittest.TestCase):
 
         interval = io_elec_data.get_infor()
         elec_data = io_elec_data.get_data()
-
+        print(elec_data.shape[1])
         
         data_factory = CameraSyncElecTraceFactory()
         

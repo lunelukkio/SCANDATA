@@ -40,7 +40,7 @@ class TestFrameWindow(unittest.TestCase):
         
         data_factory = FullFramesFactory()
         fullframes = data_factory.create_data(data, interval, pixel_size)
-        frames_data, _, _, _ = fullframes.get_data()
+        frames_data = fullframes.get_data()
         
         data_factory = CellImageFactory()
         cellimage = data_factory.create_data(frames_data, [0,3], pixel_size)
