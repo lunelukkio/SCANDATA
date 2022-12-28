@@ -5,6 +5,7 @@ concrete classes for model controllers
 lunelukkio@gmail.com
 """
 from abc import ABCMeta, abstractmethod
+import numpy as np
 import inspect
 
 """
@@ -91,14 +92,13 @@ class Roi(ModelController):
       
     def add_data(self, x: int, y: int, x_width=0, y_width=0) -> None:
         add_roi_obj = RoiVal(x, y, x_width, y_width)
-        new_roi_obj = self.__roi_obj + add_roi_obj
-        self.__roi_obj = new_roi_obj
+        self.__roi_obj = self.__roi_obj + add_roi_obj
         self.notify_observer()
         print('Add to ROI-{} and notified'.format(self.object_num))
         self.print_val()
 
     def get_data(self) -> object:
-        return self.__roi_obj.roi_val
+        return self.__roi_obj
     
     def reset(self) -> None:
         self.__roi_obj = RoiVal(40, 40, 1, 1)
@@ -119,21 +119,18 @@ class Roi(ModelController):
     
     
     def print_val(self) -> None:
-        print('ROI-{} = '.format(self.object_num) + str(self.get_data()) + 
+        print('ROI-{} = '.format(self.object_num) + str(self.get_data().data) + 
               ', observer = ' + str(self.__observers))
         
             
 "Value object for Roi value"
-class RoiVal():
+class RoiVal:
     def __init__(self, x: int, y: int, x_width: int, y_width: int):         
 
         if x < 0 or y < 0 or x_width < 0 or y_width < 0:
             raise Exception("ROI values should be 0 or more")
         called_class = inspect.stack()[1].frame.f_locals['self']
-        self.__x = x
-        self.__y = y
-        self.__x_width = x_width
-        self.__y_width = y_width
+        self.__data = np.array([x, y, x_width, y_width])
         self.__data_type = called_class.__class__.__name__
         print(self.__data_type + ' made a RoiVal' + '  myId= {}'.format(id(self)))
         
@@ -144,22 +141,16 @@ class RoiVal():
     #override for "+"
     def __add__(self, other: object) -> object:
         if self.__data_type != other.data_type:
-            raise Exception("Wrong FrameWindowVal data")
-        self.__x += other.roi_val[0]
-        self.__y += other.roi_val[1]
-        self.__x_width += other.roi_val[2]
-        self.__y_width += other.roi_val[3]
+            raise Exception("Wrong RoiVal data")
+        self.__data += other.data
         return self
         
     @property
-    def roi_val(self) -> list:
-        return [self.__x,
-                self.__y,
-                self.__x_width,
-                self.__y_width]
+    def data(self) -> list:
+        return self.__data
     
-    @roi_val.setter
-    def roi_val(self, x, y, x_width=1, y_width=1):  
+    @data.setter
+    def data(self, x, y, x_width=1, y_width=1):  
         raise Exception("RoiVal is a value object (Immutable).")
     
     @property
@@ -182,14 +173,13 @@ class FrameWindow(ModelController):
         
     def add_data(self, start: int, end: int, start_width=0, end_width=0) -> None:
         add_frame_window_obj = FrameWindowVal(start, end, start_width, end_width)
-        new_frame_window_obj = self.__frame_window_obj + add_frame_window_obj
-        self.__frame_window_obj = new_frame_window_obj
+        self.__frame_window_obj = self.__frame_window_obj + add_frame_window_obj
         self.notify_observer()
         print('Add to FrameWindow-{} and notified'.format(self.object_num))
         self.print_val()
 
     def get_data(self) -> object:
-        return self.__frame_window_obj.frame_window_val
+        return self.__frame_window_obj
     
     def reset(self) -> None:
         self.__frame_window_obj = FrameWindowVal(0, 0, 0, 0)
@@ -213,7 +203,7 @@ class FrameWindow(ModelController):
 
 
 "Value object for FrameWindow value"
-class FrameWindowVal():
+class FrameWindowVal:
     def __init__(self, start: int, end: int, start_width: int, end_width: int):
         if start > end: 
             raise Exception("FrameWindow the end values should be the same or larger than the start value")
@@ -222,10 +212,7 @@ class FrameWindowVal():
         if start_width < 0 or end_width < 0:
             raise Exception("FrameWindow width values should be 0 or more")
         called_class = inspect.stack()[1].frame.f_locals['self']
-        self.__frame_start = start  # (frame)
-        self.__frame_end = end  # (frame)
-        self.__frame_start_width = start_width
-        self.__frame_end_width = end_width
+        self.__data = np.array([start, end, start_width, end_width])  # frame number
         self.__data_type = called_class.__class__.__name__
         print(self.__data_type + ' made a FrameWindowVal' + '  myId= {}'.format(id(self)))
         
@@ -237,20 +224,14 @@ class FrameWindowVal():
     def __add__(self, other: object) -> object:
         if self.__data_type != other.data_type:
             raise Exception("Wrong FrameWindowVal data")
-        self.__frame_start += other.frame_window_val[0]
-        self.__frame_end += other.frame_window_val[1]
-        self.__frame_start_width += other.frame_window_val[2]
-        self.__frame_end_width += other.frame_window_val[3]
+        self.__data += other.data
         return self
         
     @property
-    def frame_window_val(self) -> list:
-        return [self.__frame_start,
-                self.__frame_end,
-                self.__frame_start_width,
-                self.__frame_end_width]
+    def data(self) -> list:
+        return self.__data
     
-    @frame_window_val.setter
+    @data.setter
     def frame_window_val(self, start, end, start_width=1, end_width=1):  
         raise Exception("FrameWindowVal is a value object (Immutable).")
     

@@ -9,17 +9,21 @@ lunelukkio@gmail.com
 from abc import ABCMeta, abstractmethod
 from weakref import WeakValueDictionary
 import pprint
+import copy
 from SCANDATA.model.io_factory import TsmFileIOFactory, TbnFileIOFactory
 from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory
 from SCANDATA.model.data_factory import CellImageFactory
 from SCANDATA.model.data_factory import FullTraceFactory, ChTraceFactory
 from SCANDATA.model.data_factory import ChElecTraceFactory
 from SCANDATA.model.controller_factory import RoiFactory, FrameWindowFactory
+from SCANDATA.model.data_factory import ValueObjConverter
 
-class Experiments():
+
+class Experiments:
     pass
 
-class DataSet():
+
+class DataSet:
     def __init__(self, filename, filepath):
         self.__filename = filename
         self.__filepath = filepath
@@ -199,9 +203,10 @@ class WcpFileBuilder(Builder):
         raise NotImplementedError()
     
 
-class Director():
+class Director:
     def __init__(self) -> None:
         self.__builder = None  # This decide which file_type will it use. (e.g. .tsm)
+        self.converter = ValueObjConverter()
 
     @property
     def builder(self) -> Builder:
@@ -216,12 +221,16 @@ class Director():
         tsm = self.builder.create_file_io(TsmFileIOFactory(), filename, filepath)
         tbn = self.builder.create_file_io(TbnFileIOFactory(), filename, filepath, tsm)
         
+        # get raw frames data and interval
+        tsm_raw_data_tuple = copy.deepcopy(tsm.get_data())  # made indipendent from the file
+        interval = copy.deepcopy(tsm.get_infor())  # made indipendent from the file
+
+        # Convert from raw data to a value object
+        full_frames = self.converter.frames_converter(tsm_raw_data_tuple[0])
+        ch1_frames = self.converter.frames_converter(tsm_raw_data_tuple[1][:, :, :, 0])
+        ch2_frames = self.converter.frames_converter(tsm_raw_data_tuple[1][:, :, :, 1])
+        
         # make frames
-        data = tsm.get_data()
-        interval = tsm.get_infor()
-        full_frames = data[0]
-        ch1_frames = data[1][:, :, :, 0]
-        ch2_frames = data[1][:, :, :, 1]
         full_interval = interval[0]
         ch_interval = interval[1]
         self.builder.create_data(FullFramesFactory(), full_frames, full_interval)
@@ -238,12 +247,15 @@ class Director():
         ch2_trace = self.builder.create_data(ChTraceFactory(), ch2_frames, ch_interval)
         
         #make elec traes
-        elec_data = tbn.get_data()
-        elec_interval = tbn.get_infor()
+        elec_data = copy.deepcopy(tbn.get_data())  # made indipendent from the file
+        elec_interval = copy.deepcopy(tbn.get_infor())    # made indipendent from the file
         num_elec_ch = elec_data.shape[1]
 
         for i in range(0, num_elec_ch):
-            self.builder.create_data(ChElecTraceFactory(), elec_data[:,i], elec_interval)
+            # Convert from raw data to a value object
+            elec_trace_obj = self.converter.elec_trace_converter(elec_data[:,i], elec_interval)
+            # make ElecTrace
+            self.builder.create_data(ChElecTraceFactory(), elec_trace_obj, elec_interval)
 
         # make model controller
         roi = self.builder.create_controller(RoiFactory())

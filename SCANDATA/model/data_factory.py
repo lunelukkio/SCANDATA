@@ -8,7 +8,6 @@ lunelukkio@gmail.com
 from abc import ABCMeta, abstractmethod
 import numpy as np
 import matplotlib.pyplot as plt
-import copy
 import inspect
 
 
@@ -98,21 +97,20 @@ class Data(metaclass=ABCMeta):
 
 "FluoFrames"
 class FluoFrames(Data):  # 3D frames data: full frames, ch image
-    def __init__(self, data, interval=0, pixel_size=0, unit=0):  # data = 3D raw data for distingish Chframes
+    def __init__(self, frames_obj, interval=0, pixel_size=0, unit=0):  # frames_obj = value object
         #self.__frames_obj  # create in _read_data
-        self.__interval = copy.deepcopy(interval)  # (ms)
-        self.__pixel_size = copy.deepcopy(pixel_size)  # (um)
-        self.__unit = copy.deepcopy(unit)  # No unit because of raw camera data.
+        self.__interval = interval  # (ms)
+        self.__pixel_size = pixel_size  # (um)
+        self.__unit = unit  # No unit because of raw camera data.
 
-        self._read_data(data)
+        self._read_data(frames_obj)
 
-    def _read_data(self, data) -> None:
-        if len(data) <= 1:  # getter of FramesData
+    def _read_data(self, frames_obj) -> None:
+        if len(frames_obj.data) <= 1:  # getter of FramesData
             raise Exception("This x or y size is too small for FluoFrames")
-            
-        if len(data.shape) == 3:
-            self.__frames_obj = FramesData(copy.deepcopy(data))
-        elif len(data.shape) == 4:
+        if len(frames_obj.data.shape) == 3:
+            self.__frames_obj = frames_obj
+        elif len(frames_obj.data.shape) == 4:
             raise Exception("It might have more than 1 ch in the data. Use [:,:,:,ch]")
         else:
             raise Exception("The data for FluoFrames is not 3D data")
@@ -120,8 +118,8 @@ class FluoFrames(Data):  # 3D frames data: full frames, ch image
     def update(self):
         pass
     
-    def get_data(self) -> np.ndarray:
-        return self.__frames_obj.data
+    def get_data(self) -> object:  # -> Value object
+        return self.__frames_obj
     
     def get_infor(self) -> tuple:
         return self.__interval, self.__pixel_size, self.__unit
@@ -135,9 +133,8 @@ class FluoFrames(Data):  # 3D frames data: full frames, ch image
     
     def print_additional_infor(self):
         #np.set_printoptions(threshold=np.inf)  # This is for showing all data values.
-        data = self.__frames_obj.data  # getter of FramesData
-        print(data)
-        print(data.shape)
+        print(self.__frames_obj.data)
+        print(self.__frames_obj.data.shape)
         print(self.__interval)
         #print(self.__pixel_size)
         #print(self.__unit)
@@ -145,8 +142,8 @@ class FluoFrames(Data):  # 3D frames data: full frames, ch image
 
 
 class FullFrames(FluoFrames):
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, frames_obj, *args):
+        super().__init__(frames_obj, *args)
         self.object_num = 0  # instance number, It shold be increased by data_set
         
     def print_infor(self) -> None:
@@ -156,8 +153,8 @@ class FullFrames(FluoFrames):
 
 
 class ChFrames(FluoFrames):
-    def __init__(self, data, *args):
-        super().__init__(data, *args)
+    def __init__(self, frames_obj, *args):
+        super().__init__(frames_obj, *args)
         self.object_num = 0  # instance number
         
     def print_infor(self) -> None:
@@ -167,7 +164,7 @@ class ChFrames(FluoFrames):
 
 
 "Value Object for frames"       
-class FramesData():
+class FramesData:
     def __init__(self, val: np.ndarray):
         if val.ndim != 3: 
             raise Exception("The argument of FrameData should be numpy 3D data(x, y, t)")
@@ -202,12 +199,12 @@ class FramesData():
         
 "Fluo Image"
 class FluoImage(Data):  # cell image, dif image
-    def __init__(self, frames_data, pixel_size=0, unit=0):
+    def __init__(self, frames_obj: object, pixel_size=0, unit=0):  # 3D raw data from IO
         #self._image_obj  # create in _read_data
-        self._frames_data = frames_data
-        self._frame_num = [0,0]  # default [start, end] 
-        self._pixel_size = copy.deepcopy(pixel_size)  # (um)
-        self._unit = copy.deepcopy(unit)  # No unit because of raw camera data.
+        self._frames_obj = frames_obj
+        self._frame_window = [0,0]  # default [start, end] 
+        self._pixel_size = pixel_size  # (um)
+        self._unit = unit  # No unit because of raw camera data.
 
     def _read_data(self, data) -> None:
         pass
@@ -215,8 +212,8 @@ class FluoImage(Data):  # cell image, dif image
     def update(self):
         pass
     
-    def get_data(self) -> np.ndarray:
-        return self._image_obj.data
+    def get_data(self) -> object:  # -> Value object
+        return self._image_obj
     
     def get_infor(self) -> float:
         return self._pixel_size
@@ -229,46 +226,45 @@ class FluoImage(Data):  # cell image, dif image
     
     def print_add_infor(self) -> None:
         #np.set_printoptions(threshold=np.inf)  # This is for showing all data values.
-        data = self._image_obj.data  # getter of FramesData
-        print(data)
-        print(data.shape)
-        print('The start frame number = ' + str(self._frame_num[0]))
-        print('The end frame number = ' + str(self._frame_num[1]))
+        print(self._image_obj.data)
+        print(self._image_obj.data.shape)
+        print('The start frame number = ' + str(self._frame_window[0]))
+        print('The end frame number = ' + str(self._frame_window[1]))
         #print(self._pixel_size)
         #print(self._unit)
         #np.set_printoptions(threshold=1000)
 
 
 class CellImage(FluoImage):
-    def __init__(self, frames_data, *args):  # data = 3D raw data, frame = [list]
-        super().__init__(frames_data, *args)
+    def __init__(self, frames_obj, *args):
+        super().__init__(frames_obj, *args)
         self.object_num = 0  # instance number
         
-        self._read_data(self._frame_num)
+        self._read_data(self._frame_window)
 
-    def _read_data(self, frame_num) -> None:
-        frame_length = self._frames_data.shape[2]
-        if frame_num[0] > frame_length-1 or frame_num[1] > frame_length-1: 
+    def _read_data(self, frame_window) -> None:
+        frame_length = self._frames_obj.data.shape[2]
+        if frame_window[0] > frame_length-1 or frame_window[1] > frame_length-1: 
             raise Exception('The end frame should be the same as the frames length or less.')
-            
-        start = frame_num[0]
-        end = frame_num[1]
-
+        start = frame_window[0]
+        end = frame_window[1]
         if end - start == 0:
-            val = self._frames_data[:, :, frame_num[0]]
+            val = self._frames_obj.data[:, :, frame_window[0]]
             self._image_obj = ImageData(val)
             #print('Read a single cell image')
         elif end - start > 0: 
-            val = np.mean(self._frames_data[:, :, start:end], axis = 2)
+            val = np.mean(self._frames_obj.data[:, :, start:end], axis = 2)
             self._image_obj = ImageData(val)
+            print(self._image_obj.data)
             #print('Read an avarage cell image')
         else:
             self._data = np.zeros((2, 2))
             raise Exception('The end frame should be higher than the start frame.')
         
-    def update(self, frame_num) -> None:  # frame_num = [start, end, start_width, end_width]
-        self._read_data(frame_num)
-        print('CellImage-{} recieved a notify message.'.format(self.object_num))
+    def update(self, frame_window_obj) -> None:  # value object
+        self._frame_window = frame_window_obj.data  # frame_window = [start, end, start_width, end_width]
+        self._read_data(self._frame_window)
+        print('CellImage-{} recieved a notify message.'.format(self.object_num) + str(self._frame_window))
             
         
     def print_infor(self) -> None:
@@ -277,8 +273,8 @@ class CellImage(FluoImage):
         
         
 class DifImage(FluoImage):
-    def __init__(self, data):
-        super().__init__(data)
+    def __init__(self, frames_obj):
+        super().__init__(frames_obj)
         self.object_num = 0  # instance number
 
     def _read_data(self):
@@ -299,7 +295,7 @@ class DifImage(FluoImage):
 
 
 "Value Object for images"
-class ImageData():
+class ImageData:
     def __init__(self, val: np.ndarray):
         if val.ndim != 2: 
             raise Exception("The argument of ImageData should be numpy 2D data(x, y)")
@@ -333,42 +329,42 @@ class ImageData():
 
 "Fluo Trace"
 class FluoTrace(Data):  # Fluo trae, Elec trace
-    def __init__(self, data, interval):
+    def __init__(self, frames_obj, interval):
         #self.__trace_obj  # create in _read_data
-        self.__frames_data = data
-        self.__interval = copy.deepcopy(interval)
+        self.__frames_obj = frames_obj
+        self.__interval = interval
         self._roi = [40,40,1,1]  #default
         
         self._read_data(self._roi)
 
     def _read_data(self, roi: list) -> None:  # roi[x, y, x_length, y_length]
-        x_size = self.__frames_data.shape[0]
-        y_size = self.__frames_data.shape[1]
+        x_size = self.__frames_obj.data.shape[0]
+        y_size = self.__frames_obj.data.shape[1]
 
         if roi[0] + roi[2] > x_size - 1 or roi[1] + roi[3] > y_size - 1: 
             raise Exception("The roi size should be the same as the image size or less")
         if roi[0] < 0 or roi[1] < 0: 
             raise Exception("The roi should be the same as 0 or more")
 
-        trace_val = self.__create_fluo_trace(self.__frames_data, roi)
+        trace_val = self.__create_fluo_trace(self.__frames_obj, roi)
         self.__trace_obj = TraceData(trace_val, self.__interval)
     
     def update(self, roi_obj) -> None:
         pass
     
-    def get_data(self) -> np.ndarray:
-        return self.__trace_obj.data
+    def get_data(self) -> object:  # -> Value object
+        return self.__trace_obj
     
     def get_infor(self) -> float:
         return self.__interval
     
     @staticmethod
-    def __create_fluo_trace(frames_data, roi) -> np.ndarray:
+    def __create_fluo_trace(frames_obj, roi) -> np.ndarray:
         x = roi[0]
         y = roi[1]
         x_length = roi[2]
         y_length = roi[3]
-        mean_data = np.mean(frames_data[x:x+x_length, y:y+y_length, :], axis = 0)
+        mean_data = np.mean(frames_obj.data[x:x+x_length, y:y+y_length, :], axis = 0)
         mean_data = np.mean(mean_data, axis = 0)
         return mean_data
         print('Updated ROI = ' + str(roi))
@@ -386,21 +382,20 @@ class FluoTrace(Data):  # Fluo trae, Elec trace
     
     def print_add_infor(self) -> None:
         #np.set_printoptions(threshold=np.inf)  # This is for showing all data values.
-        data = self.__trace_obj.data  # getter of FramesData
-        print(data)
-        print(data.shape)
+        print(self.__trace_obj.data)
+        print(self.__trace_obj.data.shape)
         print(self.__interval)
         #np.set_printoptions(threshold=1000)
 
  
 class FullTrace(FluoTrace):
-    def __init__(self, data, interval):
-        super().__init__(data, interval)
+    def __init__(self, frames_obj, interval):
+        super().__init__(frames_obj, interval)
         self.object_num = 0  # instance number
 
-    def update(self, roi: list) -> None:
-        self._roi = roi
-        super()._read_data(roi)
+    def update(self, roi_obj: object) -> None:  # value object
+        self._roi = roi_obj.data
+        super()._read_data(self._roi)
         print('FullTrace-{} recieved a notify message.'.format(self.object_num))
         
     def print_infor(self) -> None:
@@ -409,13 +404,13 @@ class FullTrace(FluoTrace):
         
 
 class ChTrace(FluoTrace):
-    def __init__(self, data, interval):
-        super().__init__(data, interval)
+    def __init__(self, frames_obj, interval):
+        super().__init__(frames_obj, interval)
         self.object_num = 0  # instance number
         
-    def update(self, roi: list) -> None:
-        self._roi = roi
-        super()._read_data(roi)
+    def update(self, roi_obj: list) -> None:  # value object
+        self._roi = roi_obj.data
+        super()._read_data(self._roi)
         print('ChTrace-{} recieved a notify message.'.format(self.object_num))
         
     def print_infor(self) -> None:
@@ -424,8 +419,8 @@ class ChTrace(FluoTrace):
 
 
 class BGFullTrace(FluoTrace):
-    def __init__(self, data, interval):
-        super().__init__(data, interval)
+    def __init__(self, frames_obj, interval):
+        super().__init__(frames_obj, interval)
         self.object_num = 0  # instance number
         
     def print_infor(self) -> None:
@@ -434,8 +429,8 @@ class BGFullTrace(FluoTrace):
         
         
 class BGChTrace(FluoTrace):
-    def __init__(self, data, interval):
-        super().__init__(data, interval)
+    def __init__(self, frames_obj, interval):
+        super().__init__(frames_obj, interval)
         self.object_num = 0  # instance number
         
     def print_infor(self) -> None:
@@ -447,7 +442,7 @@ class BGChTrace(FluoTrace):
 class ElecTrace(Data):  # Fluo trae, Elec trace
     def __init__(self, interval):
         #self._trace_obj  # create in _read_data of sub classes
-        self._interval = copy.deepcopy(interval)
+        self._interval = interval
         
     def _read_data(self):
         pass
@@ -455,8 +450,8 @@ class ElecTrace(Data):  # Fluo trae, Elec trace
     def update(self, roi_obj) -> None:
         pass
     
-    def get_data(self) -> np.ndarray:
-        return self._trace_obj.data
+    def get_data(self) -> object:  # -> Value object
+        return self._trace_obj
     
     def get_infor(self) -> float:
         return self.__interval
@@ -468,13 +463,13 @@ class ElecTrace(Data):  # Fluo trae, Elec trace
         pass
         
 class ChElecTrace(ElecTrace):
-    def __init__(self, data, interval):
+    def __init__(self, trace_data_obj, interval):
         super().__init__(interval)
         self.object_num = 0  # instance number
-        self._read_data(data)
+        self._read_data(trace_data_obj)
 
-    def _read_data(self, data: np.ndarray) -> None:
-        self._trace_obj = TraceData(copy.deepcopy(data), self._interval)
+    def _read_data(self, trace_data_obj: np.ndarray) -> None:
+        self._trace_obj = trace_data_obj
         
         if len(self._trace_obj.data) <= 1:
             print('---------------------')
@@ -491,7 +486,7 @@ class LongElecTrace(ElecTrace):
 
 
 "Value Object for traces"
-class TraceData():
+class TraceData:
     def __init__(self, val: np.ndarray, interval) -> None:
         if val.ndim != 1: 
             raise Exception("The argument of TraceData should be numpy 1D data(x)")
@@ -547,6 +542,18 @@ class TraceData():
     
     def check_length(self, data: object) -> bool:
         return bool(self.__length == data.length)
+
+
+# Class for changing from raw data to a value object 
+class ValueObjConverter:
+    def frames_converter(self, raw_data):
+        frames_value_obj = FramesData(raw_data)
+        return frames_value_obj
+    
+    def elec_trace_converter(self, raw_data, interval):
+        elec_trace_value_obj = TraceData(raw_data, interval)
+        return elec_trace_value_obj
+        
 
 if __name__ == '__main__':
     pass

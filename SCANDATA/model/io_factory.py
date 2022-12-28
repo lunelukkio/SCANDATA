@@ -31,7 +31,7 @@ class TbnFileIOFactory(FileIOFactory):
 """
 Product
 """
-class IORepositoryInterface():
+class IORepositoryInterface:
     @abstractmethod
     def read_fileinfor(self) -> None:
         pass
@@ -53,7 +53,7 @@ class IORepositoryInterface():
         pass
     
 
-class TsmFileIO():
+class TsmFileIO(IORepositoryInterface):
     def __init__(self, filename, filepath):
         # about file
         self.filename = filename
@@ -193,7 +193,7 @@ class TsmFileIO():
         print('data_pixel = ' + str(self.data_pixel))
 
         
-class TbnFileIO():
+class TbnFileIO(IORepositoryInterface):
     def __init__(self, filename, filepath, tsm_file_io):
         # about file
         self.filename = filename
