@@ -42,10 +42,6 @@ class DataSet():
         pprint.pprint('Data Keys = ' + str(self.__data.keys()))
         pprint.pprint('Controller Keys = ' + str(self.__controller.keys()))
         
-        
-    """
-    waht is best
-    """    
     @property
     def data(self):
         return self.__data
@@ -55,11 +51,7 @@ class DataSet():
         return self.__controller
 
     def get_data(self, data_type):
-        self.__data[data_type].get_data()
-    """
-    ???
-    """
-
+        return self.__data[data_type].get_data()
 
     @staticmethod
     def file_type_checker(filename):

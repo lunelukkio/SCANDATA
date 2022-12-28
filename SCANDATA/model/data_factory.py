@@ -121,13 +121,13 @@ class FluoFrames(Data):  # 3D frames data: full frames, ch image
         pass
     
     def get_data(self) -> np.ndarray:
-        return self.__frames_obj.frames_data
+        return self.__frames_obj.data
     
     def get_infor(self) -> tuple:
         return self.__interval, self.__pixel_size, self.__unit
 
     def show_data(self, frame_num=0) -> None:
-        image = self.__frames_obj.frames_data
+        image = self.__frames_obj.data
         plt.imshow(image[:, :, frame_num], cmap='gray', interpolation='none')
 
     def print_infor(self):
@@ -135,7 +135,7 @@ class FluoFrames(Data):  # 3D frames data: full frames, ch image
     
     def print_additional_infor(self):
         #np.set_printoptions(threshold=np.inf)  # This is for showing all data values.
-        data = self.__frames_obj.frames_data  # getter of FramesData
+        data = self.__frames_obj.data  # getter of FramesData
         print(data)
         print(data.shape)
         print(self.__interval)
@@ -173,7 +173,7 @@ class FramesData():
             raise Exception("The argument of FrameData should be numpy 3D data(x, y, t)")
         size = val.shape
         called_class = inspect.stack()[1].frame.f_locals['self']
-        self.__frames_data = val
+        self.__data = val
         self.__frames_size = size
         self.__data_type = called_class.__class__.__name__
         print(self.__data_type + ' made a FramesData' + '  myId= {}'.format(id(self)))
@@ -183,11 +183,11 @@ class FramesData():
         #print('Deleted a FramesData object.' + '  myId= {}'.format(id(self)))
     
     @property
-    def frames_data(self) -> np.ndarray:
-        return self.__frames_data
+    def data(self) -> np.ndarray:
+        return self.__data
     
-    @frames_data.setter
-    def frames_data(self, val):
+    @data.setter
+    def data(self, val):
         raise Exception("FrameData is a value object (Immutable).")
         
     @property
@@ -216,20 +216,20 @@ class FluoImage(Data):  # cell image, dif image
         pass
     
     def get_data(self) -> np.ndarray:
-        return self._image_obj.image_data
+        return self._image_obj.data
     
     def get_infor(self) -> float:
         return self._pixel_size
     
     def show_data(self) -> None:
-        plt.imshow(self._image_obj.image_data, cmap='gray', interpolation='none')
+        plt.imshow(self._image_obj.data, cmap='gray', interpolation='none')
     
     def print_infor(self):
         pass
     
     def print_add_infor(self) -> None:
         #np.set_printoptions(threshold=np.inf)  # This is for showing all data values.
-        data = self._image_obj.image_data  # getter of FramesData
+        data = self._image_obj.data  # getter of FramesData
         print(data)
         print(data.shape)
         print('The start frame number = ' + str(self._frame_num[0]))
@@ -263,7 +263,7 @@ class CellImage(FluoImage):
             self._image_obj = ImageData(val)
             #print('Read an avarage cell image')
         else:
-            self._image_data = np.zeros((2, 2))
+            self._data = np.zeros((2, 2))
             raise Exception('The end frame should be higher than the start frame.')
         
     def update(self, frame_num) -> None:  # frame_num = [start, end, start_width, end_width]
@@ -305,7 +305,7 @@ class ImageData():
             raise Exception("The argument of ImageData should be numpy 2D data(x, y)")
         size = val.shape
         called_class = inspect.stack()[1].frame.f_locals['self']
-        self.__image_data = val
+        self.__data = val
         self.__image_size = size
         self.__data_type = called_class.__class__.__name__
         print(self.__data_type + ' made a ImageData' + '  myId= {}'.format(id(self)))
@@ -315,11 +315,11 @@ class ImageData():
         #print('Deleted a ImageData object.' + '  myId= {}'.format(id(self)))
         
     @property
-    def image_data(self) -> np.ndarray:
-        return self.__image_data
+    def data(self) -> np.ndarray:
+        return self.__data
     
-    @image_data.setter
-    def image_data(self, val):
+    @data.setter
+    def data(self, val):
         raise Exception("ImageData is a value object (Immutable).")
         
     @property
