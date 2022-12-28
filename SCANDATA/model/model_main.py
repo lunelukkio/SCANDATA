@@ -13,7 +13,7 @@ from SCANDATA.model.io_factory import TsmFileIOFactory, TbnFileIOFactory
 from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory
 from SCANDATA.model.data_factory import CellImageFactory
 from SCANDATA.model.data_factory import FullTraceFactory, ChTraceFactory
-from SCANDATA.model.data_factory import CameraSyncElecTraceFactory
+from SCANDATA.model.data_factory import ChElecTraceFactory
 from SCANDATA.model.controller_factory import RoiFactory, FrameWindowFactory
 
 class Experiments():
@@ -36,11 +36,11 @@ class DataSet():
         objects = self.__builder.get_result()
         self.__file_io = objects[0]
         self.__data = objects[1]
-        self.__model_controller = objects[2]
+        self.__controller = objects[2]
         
-        pprint.pprint(self.__file_io.keys())
-        pprint.pprint(self.__data.keys())
-        pprint.pprint(self.__model_controller.keys())
+        pprint.pprint('IO Keys = ' + str(self.__file_io.keys()))
+        pprint.pprint('Data Keys = ' + str(self.__data.keys()))
+        pprint.pprint('Controller Keys = ' + str(self.__controller.keys()))
         
         
     """
@@ -51,8 +51,8 @@ class DataSet():
         return self.__data
     
     @property
-    def model_controller(self):
-        return self.__model_controller
+    def controller(self):
+        return self.__controller
 
     def get_data(self, data_type):
         self.__data[data_type].get_data()
@@ -96,7 +96,7 @@ class Builder(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def create_model_controller(self, factory_type) -> None:
+    def create_controller(self, factory_type) -> None:
         pass
     
     @abstractmethod
@@ -111,15 +111,15 @@ class TsmFileBuilder(Builder):
     def reset(self) -> None:
         #self.__file_io = WeakValueDictionary()  # weak referece dictionary
         #self.__data = WeakValueDictionary()  # weak referece dictionary
-        #self.__model_controller = WeakValueDictionary()  # weak referece dictionary
+        #self.__controller = WeakValueDictionary()  # weak referece dictionary
         
         self.__file_io = {}
         self.__data = {}
-        self.__model_controller = {}
+        self.__controller = {}
         
         self.__file_io_counter = {}  # dict
         self.__data_counter = {}  # dict
-        self.__model_controller_counter = {}  # dict
+        self.__controller_counter = {}  # dict
         
     def create_file_io(self, factory_type, filename, filepath, *args) -> object:  # factory_type from director???
         product = factory_type.create_file_io(filename, filepath, *args)
@@ -145,16 +145,16 @@ class TsmFileBuilder(Builder):
         self.__data[object_name + str(product.object_num)] = product
         return product
     
-    def create_model_controller(self, factory_type) -> object:
-        product = factory_type.create_model_controller()
+    def create_controller(self, factory_type) -> object:
+        product = factory_type.create_controller()
         object_name = product.__class__.__name__  # str
         
-        last_num = self.__model_controller_counter.get(object_name, 0)  # Get counter num of instance. If not exist, num is 0.
+        last_num = self.__controller_counter.get(object_name, 0)  # Get counter num of instance. If not exist, num is 0.
         new_num = last_num + 1
         product.object_num = new_num  # Add counter num to instance.
         
-        self.__model_controller_counter[object_name] = new_num  # Add key and object_num to counter dict.
-        self.__model_controller[object_name + str(product.object_num)] = product
+        self.__controller_counter[object_name] = new_num  # Add key and object_num to counter dict.
+        self.__controller[object_name + str(product.object_num)] = product
         return product
     
     @property
@@ -166,11 +166,11 @@ class TsmFileBuilder(Builder):
         return self.__data
     
     @property
-    def model_controller(self) -> dict:
-        return self.__model_controller
+    def controller(self) -> dict:
+        return self.__controller
         
     def get_result(self) -> tuple:
-        return self.__file_io, self.__data, self.__model_controller
+        return self.__file_io, self.__data, self.__controller
 
 
 class AbfFileBuilder(Builder):
@@ -182,7 +182,7 @@ class AbfFileBuilder(Builder):
         raise NotImplementedError()
 
 
-    def create_model_controller(self, factory_type) -> None:
+    def create_controller(self, factory_type) -> None:
         raise NotImplementedError()
     
 
@@ -199,7 +199,7 @@ class WcpFileBuilder(Builder):
         raise NotImplementedError()
 
 
-    def create_model_controller(self, factory_type) -> None:
+    def create_controller(self, factory_type) -> None:
         raise NotImplementedError()
     
 
@@ -251,11 +251,11 @@ class Director():
         num_elec_ch = elec_data.shape[1]
 
         for i in range(0, num_elec_ch):
-            self.builder.create_data(CameraSyncElecTraceFactory(), elec_data[:,i], elec_interval)
+            self.builder.create_data(ChElecTraceFactory(), elec_data[:,i], elec_interval)
 
         # make model controller
-        roi = self.builder.create_model_controller(RoiFactory())
-        frame_window = self.builder.create_model_controller(FrameWindowFactory())
+        roi = self.builder.create_controller(RoiFactory())
+        frame_window = self.builder.create_controller(FrameWindowFactory())
         
         #bind controller to data
         roi.add_observer(full_trace)
@@ -269,7 +269,7 @@ class Director():
         ch1_trace = self.builder.create_data(FullTraceFactory(), ch1_frames.get_data(), ch2_frames.get_infor())
         ch2_trace = self.builder.create_data(FullTraceFactory(), ch2_frames.get_data(), ch2_frames.get_infor())
         
-        roi = self.builder.create_model_controller(RoiFactory())
+        roi = self.builder.create_controller(RoiFactory())
         
         roi.add_observer(full_trace)
         roi.add_observer(ch1_trace)
@@ -279,7 +279,7 @@ class Director():
         ch1_image = self.builder.create_data(CellImageFactory(), ch1_frames.get_data())
         ch2_image = self.builder.create_data(CellImageFactory(), ch2_frames.get_data())
         
-        frame_window = self.builder.create_model_controller(FrameWindowFactory())
+        frame_window = self.builder.create_controller(FrameWindowFactory())
         
         frame_window.add_observer(ch1_image)
         frame_window.add_observer(ch2_image)

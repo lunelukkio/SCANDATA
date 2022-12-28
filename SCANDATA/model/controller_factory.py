@@ -12,7 +12,7 @@ abstract factory
 """
 class ModelControllerFactory(metaclass=ABCMeta):
     @abstractmethod
-    def create_model_controller(self, val):
+    def create_controller(self, val):
         pass
 
 
@@ -20,19 +20,19 @@ class ModelControllerFactory(metaclass=ABCMeta):
 contrete factory
 """
 class RoiFactory(ModelControllerFactory):
-    def create_model_controller(self):
+    def create_controller(self):
         return Roi()
         
 class FrameWindowFactory(ModelControllerFactory):
-    def create_model_controller(self):
+    def create_controller(self):
         return FrameWindow()
     
 class FrameShiftFactory(ModelControllerFactory):
-    def create_model_controller(self):
+    def create_controller(self):
         return FrameShift()
         
 class LineFactory(ModelControllerFactory):
-    def create_model_controller(self):
+    def create_controller(self):
         return Line()
 
 
