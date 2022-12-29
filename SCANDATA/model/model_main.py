@@ -227,29 +227,29 @@ class Director:
         # get raw frames data and interval
         tsm_raw_data_tuple = copy.deepcopy(tsm.get_data())  # made indipendent from the file
         interval = copy.deepcopy(tsm.get_infor())  # made indipendent from the file
-
-        # Convert from raw data to a value object
-        full_frames = self.converter.frames_converter(tsm_raw_data_tuple[0])
-        #for i in range(0, tsm_raw_data_tuple[1].shape(3)):
-        ch1_frames = self.converter.frames_converter(tsm_raw_data_tuple[1][:, :, :, 0])
-        ch2_frames = self.converter.frames_converter(tsm_raw_data_tuple[1][:, :, :, 1])
-        
-        # make frames
         full_interval = interval[0]
         ch_interval = interval[1]
+
+        # make model controller
+        roi = self.builder.create_controller(RoiFactory())
+        frame_window = self.builder.create_controller(FrameWindowFactory())
+
+        # make full data 
+        full_frames = self.converter.frames_converter(tsm_raw_data_tuple[0])
         self.builder.create_data(FullFramesFactory(), full_frames, full_interval)
-        self.builder.create_data(ChFramesFactory(), ch1_frames, ch_interval)
-        self.builder.create_data(ChFramesFactory(), ch2_frames, ch_interval)
-
-        # make images
-        ch1_image = self.builder.create_data(CellImageFactory(), ch1_frames)
-        ch2_image = self.builder.create_data(CellImageFactory(), ch2_frames)
-
-        # make fluo traces
         full_trace = self.builder.create_data(FullTraceFactory(), full_frames, full_interval)
-        ch1_trace = self.builder.create_data(ChTraceFactory(), ch1_frames, ch_interval)
-        ch2_trace = self.builder.create_data(ChTraceFactory(), ch2_frames, ch_interval)
+        roi.add_observer(full_trace)
         
+        #make ch data set
+        for i in range(0, tsm_raw_data_tuple[1].shape[3]):
+            ch_frames = self.converter.frames_converter(tsm_raw_data_tuple[1][:, :, :, i])
+            self.builder.create_data(ChFramesFactory(), ch_frames, ch_interval)
+            image = self.builder.create_data(CellImageFactory(), ch_frames)
+            trace = self.builder.create_data(ChTraceFactory(), ch_frames, ch_interval)
+            #bind controller to data
+            frame_window.add_observer(image)
+            roi.add_observer(trace)
+
         #make elec traes
         elec_data = copy.deepcopy(tbn.get_data())  # made indipendent from the file
         elec_interval = copy.deepcopy(tbn.get_infor())    # made indipendent from the file
@@ -260,17 +260,6 @@ class Director:
             elec_trace_obj = self.converter.elec_trace_converter(elec_data[:,i], elec_interval)
             # make ElecTrace
             self.builder.create_data(ChElecTraceFactory(), elec_trace_obj, elec_interval)
-
-        # make model controller
-        roi = self.builder.create_controller(RoiFactory())
-        frame_window = self.builder.create_controller(FrameWindowFactory())
-        
-        #bind controller to data
-        roi.add_observer(full_trace)
-        roi.add_observer(ch1_trace)
-        roi.add_observer(ch2_trace)
-        frame_window.add_observer(ch1_image)
-        frame_window.add_observer(ch2_image)
         
     def build_images_data_set(self, full_frame, *args) -> None:
         frame_window = self.builder.create_controller(FrameWindowFactory())
