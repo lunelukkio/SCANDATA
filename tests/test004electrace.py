@@ -10,10 +10,10 @@ import unittest
 from SCANDATA.model.data_factory import ChElecTraceFactory
 from SCANDATA.model.io_factory import TsmFileIOFactory, TbnFileIOFactory
 from SCANDATA.model.data_factory import ValueObjConverter
+from SCANDATA.model.model_main import Filename
 
 
-filename = '20408B002.tsm'
-filepath = '..\\220408\\'
+filename = Filename('..\\220408\\20408B002.tsm')
 
 
 
@@ -21,9 +21,9 @@ class TestTrace(unittest.TestCase):
     def test_gull_trace(self):
         converter = ValueObjConverter()
         io_factory = TsmFileIOFactory()
-        io_data = io_factory.create_file_io(filename, filepath)
+        io_data = io_factory.create_file_io(filename)
         io_factory = TbnFileIOFactory()
-        io_elec_data = io_factory.create_file_io(filename, filepath, io_data)
+        io_elec_data = io_factory.create_file_io(filename, io_data)
 
         interval = io_elec_data.get_infor()
         rawelec_data = io_elec_data.get_data()

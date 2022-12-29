@@ -6,14 +6,14 @@ lunelukkio@gmail.com
 """
 
 import unittest
+from SCANDATA.model.model_main import Filename
 from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory
 from SCANDATA.model.data_factory import FramesData, FullFrames, ChFrames
 from SCANDATA.model.io_factory import TsmFileIOFactory
 from SCANDATA.model.data_factory import ValueObjConverter
 import numpy as np
 
-filename = '20408B002.tsm'
-filepath = '..\\220408\\'
+filename = Filename('..\\220408\\20408B002.tsm')
 
 
 
@@ -29,7 +29,7 @@ class TestFullFrames(unittest.TestCase):
         converter = ValueObjConverter()
         
         io_factory = TsmFileIOFactory()
-        io_data = io_factory.create_file_io(filename, filepath)
+        io_data = io_factory.create_file_io(filename)
         rawdata, _ = io_data.get_data()
         interval, _ = io_data.get_infor()
         data = converter.frames_converter(rawdata)
@@ -38,7 +38,7 @@ class TestFullFrames(unittest.TestCase):
         data_factory = FullFramesFactory()
         fullframes = data_factory.create_data(data, interval, pixel_size)
         
-        fullframes.show_data(1)
+        fullframes.show_data(2)
         data = fullframes.get_data().data[0]
 
 if __name__ == '__main__':

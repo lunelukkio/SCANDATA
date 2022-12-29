@@ -13,9 +13,10 @@ from SCANDATA.model.data_factory import TraceData
 from SCANDATA.model.io_factory import TsmFileIOFactory
 from SCANDATA.model.data_factory import ValueObjConverter
 import numpy as np
+from SCANDATA.model.model_main import Filename
 
-filename = '20408B002.tsm'
-filepath = '..\\220408\\'
+
+filename = Filename('..\\220408\\20408B002.tsm')
 
 """
 class TestTraceData(unittest.TestCase):
@@ -33,7 +34,7 @@ class TestTrace(unittest.TestCase):
     def test_gull_trace(self):
         converter = ValueObjConverter()
         io_factory = TsmFileIOFactory()
-        io_data = io_factory.create_file_io(filename, filepath)
+        io_data = io_factory.create_file_io(filename)
         _, data = io_data.get_data()
         rawdata = data[:,:,:,0]
         _, interval = io_data.get_infor()

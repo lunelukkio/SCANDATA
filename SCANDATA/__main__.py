@@ -6,7 +6,7 @@ lunelukkio@gmail.com
 """
 
     
-from model_package.model import Model
+from model import Model
 from view_package.view import View
 from controller_package.controller import Controller
 import tkinter as tk

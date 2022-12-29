@@ -12,10 +12,10 @@ from SCANDATA.model.data_factory import ImageData
 from SCANDATA.model.io_factory import TsmFileIOFactory
 from SCANDATA.model.data_factory import ValueObjConverter
 import numpy as np
+from SCANDATA.model.model_main import Filename
 
-filename = '20408B002.tsm'
-filepath = '..\\220408\\'
 
+filename = Filename('..\\220408\\20408B002.tsm')
 
 """
 class TestImageData(unittest.TestCase):
@@ -28,7 +28,7 @@ class Testimage(unittest.TestCase):
     def test_cell_image(self):
         converter = ValueObjConverter()
         io_factory = TsmFileIOFactory()
-        io_data = io_factory.create_file_io(filename, filepath)
+        io_data = io_factory.create_file_io(filename)
         rawdata, _ = io_data.get_data()
         interval, _ = io_data.get_infor()
         pixel_size = 0.25

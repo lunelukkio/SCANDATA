@@ -13,9 +13,10 @@ from SCANDATA.model.data_factory import FullTraceFactory, ChTraceFactory
 from SCANDATA.model.io_factory import TsmFileIOFactory
 from SCANDATA.model.data_factory import ValueObjConverter
 import matplotlib.pyplot as plt
+from SCANDATA.model.model_main import Filename
 
-filename = '20408B002.tsm'
-filepath = '..\\220408\\'
+
+filename = Filename('..\\220408\\20408B002.tsm')
 
 """
 class TestRoiVal(unittest.TestCase):
@@ -33,7 +34,7 @@ class TestRoi(unittest.TestCase):
         converter = ValueObjConverter()
         # make a 3D data
         io_factory = TsmFileIOFactory()
-        io_data = io_factory.create_file_io(filename, filepath)
+        io_data = io_factory.create_file_io(filename)
         _, data = io_data.get_data()
         _, interval = io_data.get_infor()
         rawdata = data[:,:,:,0]

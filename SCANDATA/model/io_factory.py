@@ -19,13 +19,13 @@ class FileIOFactory(metaclass=ABCMeta):
 
 
 class TsmFileIOFactory(FileIOFactory):
-    def create_file_io(self, filename, filepath, *args):
-        return TsmFileIO(filename, filepath)
+    def create_file_io(self, filename: object, *args):
+        return TsmFileIO(filename)
 
 
 class TbnFileIOFactory(FileIOFactory):
-    def create_file_io(self, filename, filepath, *args):
-        return TbnFileIO(filename, filepath, *args)
+    def create_file_io(self, filename: object, *args):
+        return TbnFileIO(filename, *args)
 
 
 """
@@ -54,11 +54,11 @@ class IORepositoryInterface:
     
 
 class TsmFileIO(IORepositoryInterface):
-    def __init__(self, filename, filepath):
+    def __init__(self, filename):
         # about file
-        self.filename = filename
-        self.file_path = filepath
-        self.full_filename = os.path.join(filepath, filename)
+        self.filename = filename.name
+        self.file_path = filename.path
+        self.full_filename = filename.fullname
         self.header = 0 # byte: it needs to chage to str [self.header.decode()]
         
         #about fluo frames
@@ -194,11 +194,11 @@ class TsmFileIO(IORepositoryInterface):
 
         
 class TbnFileIO(IORepositoryInterface):
-    def __init__(self, filename, filepath, tsm_file_io):
+    def __init__(self, filename, tsm_file_io):
         # about file
-        self.filename = filename
-        self.file_path = filepath
-        self.full_filename = os.path.join(filepath, filename)
+        self.filename = filename.name
+        self.file_path = filename.path
+        self.full_filename = filename.fullname
         
         # from a .tsm file
         self.full_frame_interval = tsm_file_io.full_frame_interval

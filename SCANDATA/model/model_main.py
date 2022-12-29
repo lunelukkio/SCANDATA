@@ -7,6 +7,7 @@ lunelukkio@gmail.com
 """
 
 from abc import ABCMeta, abstractmethod
+import os
 from weakref import WeakValueDictionary
 import pprint
 import copy
@@ -19,14 +20,71 @@ from SCANDATA.model.controller_factory import RoiFactory, FrameWindowFactory
 from SCANDATA.model.data_factory import ValueObjConverter
 
 
+class ExperimentsInterface(metaclass=ABCMeta):
+    @abstractmethod
+    def create_data_set(self, fullname):
+        raise NotImplementedError()
+
 class Experiments:
-    pass
+    def __init__(self):
+        self.__data_set = {}
+        print('Created an empty model.')
+    
+    def create_data_set(self, filename):
+        self.__data_set[filename.name] = DataSet(filename)  # dict of data_file(key filename : object)
+        print(self.data_set)
+        print('Created {} data set.'.format(filename.name))
+        
+    def create_data(self, filename, key, *args):
+        if key == 'CellImage':
+            self.__data_set[filename.name].create_image(self.__data_set[filename.name].data['ChFrames1'])
+        elif key == 'FluoTrace':
+            self.__data_set[filename.name].create_trace(self.__data_set[filename.name].data['FullFrames1'],
+                                                        self.__data_set[filename.name].data['ChFrames1'],
+                                                        self.__data_set[filename.name].data['ChFrames2'])
+            
+    def set_data(self, filename: str, key: str, val: tuple):
+        self.data_set[filename].controller[key].set_data(val[0], 
+                                                         val[1], 
+                                                         val[2], 
+                                                         val[3])
+        
+    def get_data(self, filename: str, key: str):
+        return self.data_set[filename].data[key].get_data()
+    
+    def bind_data(self, controller: str, data: str, filename_ctrl: str, filename_data: str):
+        binding_controller = self.data_set[filename_ctrl].controller[controller]
+        binding_key = self.data_set[filename_data].data[data]
+        binding_controller.add_observer(binding_key)
+        
+    def reset_data(self, filename: str, key: str):
+        self.data_set[filename].controller[key].reset()
+        
+    @property
+    def data_set(self):
+        return self.__data_set
+        
+    def help(self):
+        print('===================================================================================')
+        print('HELP for commands to MODEL')
+        print('create_data_set(fullname: str): for making a new data set')
+        print('            e.g. create_data_set("..\\220408\\20408B002.tsm")')
+        print('create_data(filename: str, key: str): for making a new data in a data_set)')
+        print('            e.g. filename = "20408B002.tsm"  key = "Image", "FluoTrace")')
+        print('set_data(filename: str, key: str, val:tuple')
+        print('            e.g. test.set_data("20408B002.tsm", "Roi1", (40,40,1,1))')
+        print('get_data(filename: str, key: str): to get a data valu object')
+        print('            e.g. test.get_data("20408B002.tsm", "ChTrace1")')
+        print('bind_data(controller, data, filename_ctrl, filename_data): bind controller and data')
+        print('            e.g. test.reset_data("20408B002.tsm", "Roi1")')
+        print('reset_data(filename: str, key: str): reset controller')
+        print('            e.g. test.reset_data("20408B002.tsm", "Roi1")')
+        print('===================================================================================')
 
 
 class DataSet:
-    def __init__(self, filename, filepath):
+    def __init__(self, filename: object):
         self.__filename = filename
-        self.__filepath = filepath
         builder_type = self.file_type_checker(filename)
         
         self.__director = Director()  # Director makes the cartain default set of the experiments. 
@@ -34,7 +92,7 @@ class DataSet:
         self.__director.builder = self.__builder  # Set a builder throuh the setter of Director.
 
         #initial deta set
-        self.__director.build_initial_data_set(filename, filepath)
+        self.__director.build_initial_data_set(filename)
         
         # get dict from the builder
         objects = self.__builder.get_result()
@@ -57,13 +115,13 @@ class DataSet:
 
     @staticmethod
     def file_type_checker(filename):
-        if filename.find('.tsm') > 0:
+        if filename.extension == '.tsm':
             print('Found a .tsm file')
             return TsmFileBuilder()
-        elif filename.find('.abf') > 0:
+        elif filename.extension == '.abf':
             print('Found an .abf file')
             return AbfFileBuilder()
-        elif filename.find('.wcp') > 0:
+        elif filename.extension == '.wcp':
             print('Found a .wcp file')
             return WcpFileBuilder()
         else:
@@ -72,14 +130,15 @@ class DataSet:
             print('--------------------------------------')
             raise Exception("The file is incorrect!!!")
                 
-    def build_image(self ,data, *args):
+    def create_image(self ,data, *args):
         self.__director.build_images_data_set(data, *args)
 
     
-    def build_trace(self, data, *args):
+    def create_trace(self, data, *args):
         self.__director.build_traces_data_set(data, *args)
         
     def print_infor(self):
+        pprint.pprint('Data keys for ' + str(self.__filename.name))
         pprint.pprint('IO Keys = ' + str(self.__file_io.keys()))
         pprint.pprint('Data Keys = ' + str(self.__data.keys()))
         pprint.pprint('Controller Keys = ' + str(self.__controller.keys()))
@@ -87,7 +146,7 @@ class DataSet:
     
 class Builder(metaclass=ABCMeta):
     @abstractmethod
-    def create_file_io(self, factory_type, filename, filepath, *args) -> None:
+    def create_file_io(self, factory_type, filename, *args) -> None:
         raise NotImplementedError()
 
     @abstractmethod
@@ -120,8 +179,8 @@ class TsmFileBuilder(Builder):
         self.__data_counter = {}  # dict
         self.__controller_counter = {}  # dict
         
-    def create_file_io(self, factory_type, filename, filepath, *args) -> object:  # factory_type from director???
-        product = factory_type.create_file_io(filename, filepath, *args)
+    def create_file_io(self, factory_type, filename, *args) -> object:  # factory_type from director???
+        product = factory_type.create_file_io(filename, *args)
         object_name = product.__class__.__name__  # str
         
         last_num = self.__file_io_counter.get(object_name, 0)  # Get counter num of instance. If not exist, num is 0.
@@ -219,10 +278,10 @@ class Director:
     def builder(self, builder: Builder) -> None:
         self.__builder = builder
         
-    def build_initial_data_set(self, filename, filepath) -> None:
+    def build_initial_data_set(self, filename) -> None:
         # make file_io
-        tsm = self.builder.create_file_io(TsmFileIOFactory(), filename, filepath)
-        tbn = self.builder.create_file_io(TbnFileIOFactory(), filename, filepath, tsm)
+        tsm = self.builder.create_file_io(TsmFileIOFactory(), filename)
+        tbn = self.builder.create_file_io(TbnFileIOFactory(), filename, tsm)
         
         # get raw frames data and interval
         tsm_raw_data_tuple = copy.deepcopy(tsm.get_data())  # made indipendent from the file
@@ -261,7 +320,7 @@ class Director:
             # make ElecTrace
             self.builder.create_data(ChElecTraceFactory(), elec_trace_obj, elec_interval)
         
-    def build_images_data_set(self, full_frame, *args) -> None:
+    def build_images_data_set(self, *args) -> None:
         frame_window = self.builder.create_controller(FrameWindowFactory())
         for i in (args):
             image = self.builder.create_data(CellImageFactory(), i.frames_obj)
@@ -274,7 +333,43 @@ class Director:
         for i in (args):
             trace = self.builder.create_data(ChTraceFactory(), i.frames_obj, i.interval)
             roi.add_observer(trace)
+
+" Value object for filenames"
+class Filename:
+    def __init__(self, fullname: str):
+        self.__fullname = fullname
+        self.__filename = os.path.basename(fullname)
+        pre_filepath = os.path.dirname(fullname)
+        self.__filepath = os.path.join(pre_filepath) + os.sep  # replace separater for each OS
+        self.__abspath = os.path.abspath(fullname)# absolute path
+        self.__extension = os.path.splitext(fullname)[1]  # get only extension
+
+    def __del__(self):
+        #print('.')
+        #print('Deleted a ImageData object.' + '  myId= {}'.format(id(self)))
+        pass
         
+    @property
+    def fullname(self) -> str:
+        return self.__fullname
+    
+    @property
+    def name(self) -> str:
+        return self.__filename
+    
+    @property
+    def path(self) -> str:
+        return self.__filepath
+    
+    @property
+    def abspath(self) -> str:
+        return self.__abspath
+    
+    @property
+    def extension(self) -> str:
+        return self.__extension
+
+
     
 if __name__ == '__main__':
     pass

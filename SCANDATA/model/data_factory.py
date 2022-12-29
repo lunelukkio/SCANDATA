@@ -133,8 +133,7 @@ class FluoFrames(Data):  # 3D frames data: full frames, ch image
         return self.__interval
 
     def show_data(self, frame_num=0) -> None:
-        image = self.__frames_obj.data
-        plt.imshow(image[:, :, frame_num], cmap='gray', interpolation='none')
+        self.__frames_obj.show(frame_num)
 
     def print_infor(self):
         pass
@@ -202,6 +201,9 @@ class FramesData:
     @property
     def data_type(self) -> str:
         return self.__data_type
+    
+    def show(self, frame_num):
+        plt.imshow(self.__data[:, :, frame_num], cmap='gray', interpolation='none')
 
 
         
@@ -235,7 +237,7 @@ class FluoImage(Data):  # cell image, dif image
         return self._frame_window
     
     def show_data(self) -> None:
-        plt.imshow(self._image_obj.data, cmap='gray', interpolation='none')
+        self._image_obj.show()
     
     def print_infor(self):
         pass
@@ -341,6 +343,9 @@ class ImageData:
     @property
     def data_type(self) -> str:
         return self.__data_type
+    
+    def show(self):
+        plt.imshow(self.__data, cmap='gray', interpolation='none')
             
 
 "Fluo Trace"
@@ -403,7 +408,7 @@ class FluoTrace(Data):  # Fluo trae, Elec trace
         return time_val
     
     def show_data(self) -> None:
-        plt.plot(self.__trace_obj.time, self.__trace_obj.data) 
+        self.trace_obj.plot()
         
     def print_infor(self):
         pass
@@ -493,7 +498,7 @@ class ElecTrace(Data):  # Fluo trae, Elec trace
         return self._interval
     
     def show_data(self) -> None:
-        plt.plot(self._trace_obj.time, self._trace_obj.data)  
+        self._trace_obj.plot()  
     
     def print_infor(self):
         pass
@@ -578,6 +583,9 @@ class TraceData:
     
     def check_length(self, data: object) -> bool:
         return bool(self.__length == data.length)
+    
+    def plot(self):
+        plt.plot(self.__time, self.__data) 
 
 
 # Class for changing from raw data to a value object 
