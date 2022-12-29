@@ -37,20 +37,18 @@ class Experiments:
         
     def create_data(self, filename, key, *args):
         if key == 'CellImage':
-            self.__data_set[filename.name].create_image(self.__data_set[filename.name].data['ChFrames1'])
+            self.__data_set[filename.name].create_image(self.__data_set[filename.name].data['ChFrames1'],
+                                                        self.__data_set[filename.name].data['ChFrames2'])
         elif key == 'FluoTrace':
             self.__data_set[filename.name].create_trace(self.__data_set[filename.name].data['FullFrames1'],
                                                         self.__data_set[filename.name].data['ChFrames1'],
                                                         self.__data_set[filename.name].data['ChFrames2'])
             
     def set_data(self, filename: str, key: str, val: tuple):
-        self.data_set[filename].controller[key].set_data(val[0], 
-                                                         val[1], 
-                                                         val[2], 
-                                                         val[3])
+        self.data_set[filename].set_data(key, val)
         
     def get_data(self, filename: str, key: str):
-        return self.data_set[filename].data[key].get_data()
+        return self.data_set[filename].get_data(key)
     
     def bind_data(self, controller: str, data: str, filename_ctrl: str, filename_data: str):
         binding_controller = self.data_set[filename_ctrl].controller[controller]
@@ -58,7 +56,7 @@ class Experiments:
         binding_controller.add_observer(binding_key)
         
     def reset_data(self, filename: str, key: str):
-        self.data_set[filename].controller[key].reset()
+        self.data_set[filename].reset_data(key)
         
     @property
     def data_set(self):
@@ -110,8 +108,14 @@ class DataSet:
     def controller(self):
         return self.__controller
 
-    def get_data(self, data_type):
-        return self.__data[data_type].get_data()
+    def get_data(self, key: str):
+        return self.__data[key].get_data()
+
+    def set_data(self, key: str, val: tuple):
+        return self.__controller[key].set_data(val[0], val[1], val[2], val[3])
+    
+    def reset_data(self, key: str):
+        self.__controller[key].reset()
 
     @staticmethod
     def file_type_checker(filename):
@@ -130,12 +134,12 @@ class DataSet:
             print('--------------------------------------')
             raise Exception("The file is incorrect!!!")
                 
-    def create_image(self ,data, *args):
-        self.__director.build_images_data_set(data, *args)
+    def create_image(self, *args):
+        self.__director.build_images_data_set(*args)
 
     
-    def create_trace(self, data, *args):
-        self.__director.build_traces_data_set(data, *args)
+    def create_trace(self, full_frames, *args):  # args = ch_frames
+        self.__director.build_traces_data_set(full_frames, *args)
         
     def print_infor(self):
         pprint.pprint('Data keys for ' + str(self.__filename.name))

@@ -9,6 +9,10 @@ import unittest
 
 def suite():
     test_suite = unittest.TestSuite()
+    
+    # test0*.py   for model
+    # test1*py    for view
+    # test2*.py    for controller
     all_test_suite = unittest.defaultTestLoader.discover(".", pattern="test0*.py")
     print(all_test_suite)
     for ts in all_test_suite:
