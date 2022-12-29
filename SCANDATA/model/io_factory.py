@@ -15,7 +15,7 @@ IO Factory
 class FileIOFactory(metaclass=ABCMeta):
     @abstractmethod
     def create_file_io(self, *args):
-        pass
+        raise NotImplementedError()
 
 
 class TsmFileIOFactory(FileIOFactory):
@@ -34,23 +34,23 @@ Product
 class IORepositoryInterface:
     @abstractmethod
     def read_fileinfor(self) -> None:
-        pass
+        raise NotImplementedError()
     
     @abstractmethod
     def read_data(self) -> None:
-        pass
+        raise NotImplementedError()
     
     @abstractmethod
     def get_data(self) -> tuple:
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def get_infor(self) -> tuple:
-        pass
+        raise NotImplementedError()
     
     @abstractmethod
     def print_fileinfor(self) -> None:
-        pass
+        raise NotImplementedError()
     
 
 class TsmFileIO(IORepositoryInterface):

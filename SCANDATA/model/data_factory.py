@@ -18,7 +18,7 @@ data factory
 class DataFactory(metaclass=ABCMeta):
     @abstractmethod
     def create_data(self, data, *args):
-        pass
+        raise NotImplementedError()
 
 
 "Frames"
@@ -71,23 +71,23 @@ product
 class Data(metaclass=ABCMeta):
     @abstractmethod
     def _read_data(self, data):
-        pass
+        raise NotImplementedError()
     
     @abstractmethod
     def get_data(self):
-        pass
+        raise NotImplementedError()
     
     @abstractmethod
     def get_infor(self):
-        pass
+        raise NotImplementedError()
     
     @abstractmethod
     def update(self, val):
-        pass
+        raise NotImplementedError()
     
     @abstractmethod
     def show_data(self):
-        pass
+        raise NotImplementedError()
     
     @abstractmethod
     def print_infor(self):
@@ -123,6 +123,14 @@ class FluoFrames(Data):  # 3D frames data: full frames, ch image
     
     def get_infor(self) -> tuple:
         return self.__interval, self.__pixel_size, self.__unit
+  
+    @property
+    def frames_obj(self):
+        return self.__frames_obj
+  
+    @property
+    def interval(self):
+        return self.__interval
 
     def show_data(self, frame_num=0) -> None:
         image = self.__frames_obj.data

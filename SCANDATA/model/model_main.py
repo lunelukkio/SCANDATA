@@ -42,9 +42,7 @@ class DataSet:
         self.__data = objects[1]
         self.__controller = objects[2]
         
-        pprint.pprint('IO Keys = ' + str(self.__file_io.keys()))
-        pprint.pprint('Data Keys = ' + str(self.__data.keys()))
-        pprint.pprint('Controller Keys = ' + str(self.__controller.keys()))
+        self.print_infor()
         
     @property
     def data(self):
@@ -73,31 +71,36 @@ class DataSet:
             print('Can not find any builder for this file')
             print('--------------------------------------')
             raise Exception("The file is incorrect!!!")
-            
-        # This is for additional trace or roi etc. eg def add_trace()
-        def make_trace(self):
-            full_frames = self.data['FullFrames1']
-            ch1_frames = self.data['ChFrames1']
-            ch2_frames = self.data['ChFrames2']
-            self.__director.build_traces(self.__filename, self.__filepath, full_frames, ch1_frames, ch2_frames)
+                
+    def build_image(self ,data, *args):
+        self.__director.build_images_data_set(data, *args)
+
+    
+    def build_trace(self, data, *args):
+        self.__director.build_traces_data_set(data, *args)
+        
+    def print_infor(self):
+        pprint.pprint('IO Keys = ' + str(self.__file_io.keys()))
+        pprint.pprint('Data Keys = ' + str(self.__data.keys()))
+        pprint.pprint('Controller Keys = ' + str(self.__controller.keys()))
 
     
 class Builder(metaclass=ABCMeta):
     @abstractmethod
     def create_file_io(self, factory_type, filename, filepath, *args) -> None:
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def create_data(self, factory_type, data, *args) -> None:
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def create_controller(self, factory_type) -> None:
-        pass
+        raise NotImplementedError()
     
     @abstractmethod
     def get_result(self) -> None:
-        pass
+        raise NotImplementedError()
 
 
 class TsmFileBuilder(Builder):
@@ -267,26 +270,20 @@ class Director:
         roi.add_observer(ch2_trace)
         frame_window.add_observer(ch1_image)
         frame_window.add_observer(ch2_image)
-
-    def build_traces(self, filename, filepath, full_frames: object, ch1_frames: object, ch2_frames: object) -> None:
-        full_trace = self.builder.create_data(FullTraceFactory(), full_frames.get_data(), full_frames.get_infor())
-        ch1_trace = self.builder.create_data(FullTraceFactory(), ch1_frames.get_data(), ch2_frames.get_infor())
-        ch2_trace = self.builder.create_data(FullTraceFactory(), ch2_frames.get_data(), ch2_frames.get_infor())
         
-        roi = self.builder.create_controller(RoiFactory())
-        
-        roi.add_observer(full_trace)
-        roi.add_observer(ch1_trace)
-        roi.add_observer(ch2_trace)
-        
-    def build_images(self, filename, filepath, full_frames: object, ch1_frames: object, ch2_frames: object) -> None:
-        ch1_image = self.builder.create_data(CellImageFactory(), ch1_frames.get_data())
-        ch2_image = self.builder.create_data(CellImageFactory(), ch2_frames.get_data())
-        
+    def build_images_data_set(self, full_frame, *args) -> None:
         frame_window = self.builder.create_controller(FrameWindowFactory())
-        
-        frame_window.add_observer(ch1_image)
-        frame_window.add_observer(ch2_image)
+        for i in (args):
+            image = self.builder.create_data(CellImageFactory(), i)
+            frame_window.add_observer(image)
+
+    def build_traces_data_set(self, full_frames, *args) -> None:
+        roi = self.builder.create_controller(RoiFactory())
+        full_trace = self.builder.create_data(FullTraceFactory(), full_frames.frames_obj, full_frames.interval)
+        roi.add_observer(full_trace)
+        for i in (args):
+            trace = self.builder.create_data(ChTraceFactory(), i.frames_obj, i.interval)
+            roi.add_observer(trace)
         
     
 if __name__ == '__main__':

@@ -14,7 +14,7 @@ abstract factory
 class ModelControllerFactory(metaclass=ABCMeta):
     @abstractmethod
     def create_controller(self, val):
-        pass
+        raise NotImplementedError()
 
 
 """
@@ -43,31 +43,31 @@ abstract product
 class ModelController(metaclass=ABCMeta):
     @abstractmethod
     def set_data(self):
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def get_data(self):
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def print_val(self):
-        pass
+        raise NotImplementedError()
     
     @abstractmethod
     def reset(self):
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def add_observer(self, observer):
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def remove_observer(self, observer):
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def notify_observer(self):
-        pass
+        raise NotImplementedError()
 
 
 """
