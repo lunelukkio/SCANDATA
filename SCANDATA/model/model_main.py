@@ -230,6 +230,7 @@ class Director:
 
         # Convert from raw data to a value object
         full_frames = self.converter.frames_converter(tsm_raw_data_tuple[0])
+        #for i in range(0, tsm_raw_data_tuple[1].shape(3)):
         ch1_frames = self.converter.frames_converter(tsm_raw_data_tuple[1][:, :, :, 0])
         ch2_frames = self.converter.frames_converter(tsm_raw_data_tuple[1][:, :, :, 1])
         
@@ -274,7 +275,7 @@ class Director:
     def build_images_data_set(self, full_frame, *args) -> None:
         frame_window = self.builder.create_controller(FrameWindowFactory())
         for i in (args):
-            image = self.builder.create_data(CellImageFactory(), i)
+            image = self.builder.create_data(CellImageFactory(), i.frames_obj)
             frame_window.add_observer(image)
 
     def build_traces_data_set(self, full_frames, *args) -> None:

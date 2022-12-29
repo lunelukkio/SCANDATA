@@ -226,6 +226,14 @@ class FluoImage(Data):  # cell image, dif image
     def get_infor(self) -> float:
         return self._pixel_size
     
+    @property
+    def image_obj(self):
+        return self._image_obj
+  
+    @property
+    def frame_window(self):
+        return self._frame_window
+    
     def show_data(self) -> None:
         plt.imshow(self._image_obj.data, cmap='gray', interpolation='none')
     
@@ -366,6 +374,18 @@ class FluoTrace(Data):  # Fluo trae, Elec trace
     def get_infor(self) -> float:
         return self.__interval
     
+    @property
+    def trace_obj(self):
+        return self.__trace_obj
+  
+    @property
+    def interval(self):
+        return self.__interval
+    
+    @property
+    def roi(self):
+        return self._roi
+    
     @staticmethod
     def __create_fluo_trace(frames_obj, roi) -> np.ndarray:
         x = roi[0]
@@ -462,7 +482,15 @@ class ElecTrace(Data):  # Fluo trae, Elec trace
         return self._trace_obj
     
     def get_infor(self) -> float:
-        return self.__interval
+        return self._interval
+    
+    @property
+    def trace_obj(self):
+        return self._trace_obj
+  
+    @property
+    def interval(self):
+        return self._interval
     
     def show_data(self) -> None:
         plt.plot(self._trace_obj.time, self._trace_obj.data)  

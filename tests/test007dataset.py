@@ -28,11 +28,9 @@ class TestDataSet(unittest.TestCase):
         dataset.data['ChTrace4'].show_data()
         
         imagefig = plt.figure()
-        
-        dataset.build_image(dataset.data['FullFrames1'].get_data(), dataset.data['ChFrames1'].get_data(), dataset.data['ChFrames2'].get_data())
+        dataset.build_image(dataset.data['FullFrames1'], dataset.data['ChFrames1'], dataset.data['ChFrames2'])
         dataset.print_infor()
         dataset.data['CellImage3'].show_data()
-        print('value objではなくentityをファクトリーに送るようにする。intervalはentityからゲット')
         
 if __name__ == '__main__':
     unittest.main()
