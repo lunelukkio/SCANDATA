@@ -112,7 +112,7 @@ class DataSet:
         return self.__data[key].get_data()
 
     def set_data(self, key: str, val: tuple):
-        return self.__controller[key].set_data(val[0], val[1], val[2], val[3])
+        return self.__controller[key].set_data(*val)
     
     def reset_data(self, key: str):
         self.__controller[key].reset()
