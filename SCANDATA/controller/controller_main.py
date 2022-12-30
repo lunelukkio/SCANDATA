@@ -24,15 +24,6 @@ class Controller:
         self.filename = []
         self.filepath = []
         
-    def menu_open_click(self, fullname):
-        filename = os.path.basename(fullname)
-        pre_filepath = os.path.dirname(fullname)
-        filepath = os.path.join(pre_filepath) + os.sep
-        self.filename.append(filename)
-        self.filepath.append(filepath)
-        self.create_model(filename, filepath)
-        #self.model.data_file[filename].print_fileinfor()
-        return filename
 
     def create_model(self, filename, filepath):  
         self.model.create_data_objects(filename, filepath)

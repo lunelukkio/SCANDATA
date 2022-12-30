@@ -13,6 +13,7 @@ import os
 from matplotlib.figure import Figure
 import matplotlib.patches as patches
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from SCANDATA.view.button_function import ButtonFn
 
 
 class View(tk.Frame):
@@ -20,55 +21,81 @@ class View(tk.Frame):
         super().__init__(master)
         self.model = None
         self.controller = None
+        self.button_fn = ButtonFn(self.controller)
         print('imported view')
         
         self.pack()
-        master.geometry('400x200')
+        master.geometry('500x800')
         master.title('SCANDATA')
         
         self.data_window = {}  # data window obj
         
+        
         self.create_menu()
         self.create_button()
-        
+       
+    """
+    Widgit mapping
+    """
     def create_menu(self):
         menu_bar = tk.Menu(self)
  
         file_menu = tk.Menu(menu_bar, tearoff = tk.OFF)
         menu_bar.add_cascade(label='File', menu = file_menu) 
 
-        file_menu.add_command(label = 'Open', command = self.menu_open_click, accelerator = 'Ctrl+O')
+        file_menu.add_command(label = 'Open', command = self.open_file_with_list, accelerator = 'Ctrl+O')
         file_menu.add_separator()
         file_menu.add_command(label = 'Quit', command = self.master.destroy)
+        
         # short cut
-        menu_bar.bind_all('<Control-o>', self.menu_open_click)
+        menu_bar.bind_all('<Control-o>', self.open_file_with_list)
 
-        # set to parent menue
+        # set to parent menu
         self.master.config(menu = menu_bar)
 
-    def menu_open_click(self, event=None):
-        # open file dialog
-        fullname = tk.filedialog.askopenfilename(
-            initialdir = os.getcwd(), # current dir
-            filetypes=(('Tsm files', '*.tsm'),
-                       ('Da files', '*.da'), 
-                       ('Axon files', '*.abf'),
-                       ('WinCP files', '*.wcp'),
-                       ('All files', '*.*'))
-            )
-        
-        filename = self.controller.menu_open_click(fullname)
-        new_window = tk.Toplevel()
-        self.data_window[filename] = DataWindow(new_window, filename, self.controller)
-
-
     def create_button(self):
-        self.button = tk.Button(self.master,text='Open data',command=self.open_file,width=10)
+        self.button = tk.Button(self.master,text='Open data',command=self.open_file_with_list,width=10)
         self.button.place(x=110, y=150)
         self.button.config(fg='black', bg='skyblue')
         
-    def open_file(self): 
-        self.menu_open_click()
+        
+    """
+    send to a button function class
+    """
+    def open_file_with_list(self, event=None):
+        fullname = self.button_fn.get_fullname()
+        file_list = self.button_fn.get_whole_filenames(fullname)
+        print(fullname)
+        print(file_list)
+        print('これをもとにファイルリストを常時、そこからオープン')
+        tree_list = ttk.Treeview(self)
+        
+        # Define cuolumns   #0 is phantom column
+        tree_list['columns'] = ('Main File', 'File List')
+        tree_list.column('#0', width=20, minwidth=20, stretch=False)
+        tree_list.column('Main File', anchor='w', width=120)
+        tree_list.column('File List', anchor='w', width=120)
+        
+        # Headings
+        tree_list.heading('#0', text='', anchor='w')
+        tree_list.heading('Main File', text='File 001', anchor='w')
+        tree_list.heading('File List', text='File List', anchor='w')
+        
+        # Add data
+        tree_list.insert(parent='', index='end', iid=0, text='', values=file_list)
+        
+        # for scrollbar
+        scrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL, command=tree_list.yview)
+        tree_list.configure(yscroll=scrollbar.set)
+        
+        # Pack                 
+        tree_list.pack(pady=0, fill=tk.BOTH, expand=True)  
+        
+    def open_file(self, event=None):
+        fullname = self.button_fn.get_fullname()
+        print(fullname)
+        
+
 
         
 class DataWindow(tk.Frame):
@@ -151,7 +178,7 @@ class DataWindow(tk.Frame):
         toolbar_trace.update()
         self.canvas_trace.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
-        self.initialize()
+        #self.initialize()
 
     def initialize(self):
         self.create_image(self.image_ax, 'CellImage1')

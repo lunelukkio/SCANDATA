@@ -13,9 +13,7 @@ from SCANDATA.model.io_factory import TsmFileIOFactory
 from SCANDATA.model.data_factory import ValueObjConverter
 import numpy as np
 
-filename = Filename('..\\220408\\20408B002.tsm')
-
-
+filename = Filename('..\\220408\\20408B002.tsm')  # this isa  value object
 
 """
 class TestFramesData(unittest.TestCase):

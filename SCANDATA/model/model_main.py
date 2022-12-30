@@ -9,7 +9,6 @@ lunelukkio@gmail.com
 from abc import ABCMeta, abstractmethod
 import os
 from weakref import WeakValueDictionary
-import pprint
 import copy
 from SCANDATA.model.io_factory import TsmFileIOFactory, TbnFileIOFactory
 from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory
@@ -61,6 +60,11 @@ class Experiments:
     @property
     def data_set(self):
         return self.__data_set
+    
+    def print_list(self):
+        for i in self.__data_set:
+            print('\n')
+            self.__data_set[i].print_infor()
         
     def help(self):
         print('===================================================================================')
@@ -98,7 +102,7 @@ class DataSet:
         self.__data = objects[1]
         self.__controller = objects[2]
         
-        self.print_infor()
+        #self.print_infor()
         
     @property
     def data(self):
@@ -142,10 +146,10 @@ class DataSet:
         self.__director.build_traces_data_set(full_frames, *args)
         
     def print_infor(self):
-        pprint.pprint('Data keys for ' + str(self.__filename.name))
-        pprint.pprint('IO Keys = ' + str(self.__file_io.keys()))
-        pprint.pprint('Data Keys = ' + str(self.__data.keys()))
-        pprint.pprint('Controller Keys = ' + str(self.__controller.keys()))
+        print('=================== Data keys of ' + str(self.__filename.name) + ' ====================')
+        print('--- IO Keys = ' + str(list(self.__file_io.keys())))
+        print('--- Data Keys = ' + str(list(self.__data.keys())))
+        print('--- Controller Keys = ' + str(list(self.__controller.keys())))
 
     
 class Builder(metaclass=ABCMeta):
@@ -376,7 +380,12 @@ class Filename:
 
     
 if __name__ == '__main__':
-    pass
+    filename1 = Filename('..\\..\\220408\\20408B002.tsm')
+    filename2 = Filename('..\\..\\220408\\20408A001new.tsm')
+    exp1 = Experiments()
+    exp1.help()
+    exp1.create_data_set(filename1)
+    exp1.create_data_set(filename2)
     
 
 

@@ -15,7 +15,7 @@ import numpy as np
 from SCANDATA.model.model_main import Filename
 
 
-filename = Filename('..\\220408\\20408B002.tsm')
+filename = Filename('..\\220408\\20408B002.tsm')  # this is a value object
 
 """
 class TestImageData(unittest.TestCase):
