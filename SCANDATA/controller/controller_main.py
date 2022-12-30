@@ -6,12 +6,13 @@ lunelukkio@gmail.com
 main for controller
 """
 
-from model_package.model import Model
-from view_package.view import View
+from SCANDATA.model.model_main import ExperimentsInterface
+from SCANDATA.view.view_main import View
 import os
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+import glob
 
 
 class Controller:
@@ -48,3 +49,68 @@ class Controller:
         self.model.get_infor
         self.model.set_data('ROI' + str(roi_num), roi)
         
+"Value object"
+class WholeFilename:  # use it only in a view and controller
+
+    def __init__(self, fullname: str):
+        self.__fullname = fullname
+        self.__filename = os.path.basename(fullname)
+        pre_filepath = os.path.dirname(fullname)
+        self.__filepath = os.path.join(pre_filepath) + os.sep  # replace separater for each OS
+        self.__abspath = os.path.abspath(fullname)# absolute path
+        split_filename = os.path.splitext(self.__filename)
+        self.__file_name_no_ext = split_filename[0]
+        self.__extension =  split_filename[1]  # get only extension
+        
+        self.__filename_list = self.__make_filename_list()
+
+
+    def __make_filename_list(self) -> list:
+        find =  self.__filepath + self.__file_name_no_ext[0:-3] + '*' + str(self.__extension)
+        fullname_list = glob.glob(find)
+        filename_list = []
+        for i in range(len(fullname_list)):
+            filename_list.append(os.path.basename(fullname_list[i]))
+        return  filename_list
+
+    def __del__(self):
+        #print('.')
+        #print('Deleted a ImageData object.' + '  myId= {}'.format(id(self)))
+        pass
+        
+    @property
+    def fullname(self) -> str:
+        return self.__fullname
+    
+    @property
+    def name(self) -> str:
+        return self.__filename
+    
+    @property
+    def path(self) -> str:
+        return self.__filepath
+    
+    @property
+    def abspath(self) -> str:
+        return self.__abspath
+    
+    @property
+    def file_name_no_ext(self) -> str:
+        return self.__file_name_no_ext
+    
+    @property
+    def extension(self) -> str:
+        return self.__extension
+    
+    @property
+    def filename_list(self) -> list:
+        return self.__filename_list
+    
+    def print_infor(self) -> None:
+        print('THe absolute path = ' + self.__abspath)
+        print('The full path = ' + self.__fullname)
+        print('The file name = ' + self.__filename)
+        print('The file path = ' + self.__filepath)
+        print('The file name without extension = ' + self.__file_name_no_ext)
+        print('The file extension = ' + self.__extension)
+        print('The file name list in the same folder = ' + str(self.__filename_list))

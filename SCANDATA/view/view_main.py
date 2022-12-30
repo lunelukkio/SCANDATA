@@ -28,15 +28,41 @@ class View(tk.Frame):
         master.geometry('500x800')
         master.title('SCANDATA')
         
+               
+        """
+        Widgit mapping
+        """
+        
+        "Top frame"
+        frame_top = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=0, bg = 'azure')
+        button_open_data = tk.Button(frame_top,text='Open data',command=self.open_file_with_list,width=10)
+        button_open_data.place(x=110, y=150)
+        button_open_data.config(fg='black', bg='skyblue')
+        button_open_data.pack(side=tk.LEFT)
+        frame_top.pack(side=tk.TOP, fill=tk.X)
+        
+        "Bottom frame"
+        frame_bottom = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=0, bg = 'azure')
+        button_open_data = tk.Button(frame_bottom,text='Open data',command=self.open_file_with_list,width=10)
+        button_open_data.place(x=110, y=150)
+        button_open_data.config(fg='black', bg='skyblue')
+        button_exit = tk.Button(frame_bottom, text='Exit')
+        
+        button_open_data.pack(side=tk.LEFT)
+        button_exit.pack(side=tk.RIGHT, padx=5)
+
+        frame_bottom.pack(side=tk.BOTTOM, fill=tk.X)
+        
+        "Middle frame"
+        frame_middle = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=2, bg = 'azure')
+        frame_middle.pack(side=tk.TOP, fill=tk.BOTH)
+
         self.data_window = {}  # data window obj
         
-        
         self.create_menu()
-        self.create_button()
-       
-    """
-    Widgit mapping
-    """
+        
+
+
     def create_menu(self):
         menu_bar = tk.Menu(self)
  
@@ -52,12 +78,6 @@ class View(tk.Frame):
 
         # set to parent menu
         self.master.config(menu = menu_bar)
-
-    def create_button(self):
-        self.button = tk.Button(self.master,text='Open data',command=self.open_file_with_list,width=10)
-        self.button.place(x=110, y=150)
-        self.button.config(fg='black', bg='skyblue')
-        
         
     """
     send to a button function class
@@ -65,9 +85,7 @@ class View(tk.Frame):
     def open_file_with_list(self, event=None):
         fullname = self.button_fn.get_fullname()
         file_list = self.button_fn.get_whole_filenames(fullname)
-        print(fullname)
-        print(file_list)
-        print('これをもとにファイルリストを常時、そこからオープン')
+
         tree_list = ttk.Treeview(self)
         
         # Define cuolumns   #0 is phantom column
@@ -82,6 +100,7 @@ class View(tk.Frame):
         tree_list.heading('File List', text='File List', anchor='w')
         
         # Add data
+        tree_list.insert(parent='', index='end', iid=0, text='', values=os.path.basename(fullname))
         tree_list.insert(parent='', index='end', iid=0, text='', values=file_list)
         
         # for scrollbar

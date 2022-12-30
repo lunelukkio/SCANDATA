@@ -345,12 +345,12 @@ class Director:
 " Value object for filenames"
 class Filename:
     def __init__(self, fullname: str):
-        self.__fullname = fullname
-        self.__filename = os.path.basename(fullname)
-        pre_filepath = os.path.dirname(fullname)
-        self.__filepath = os.path.join(pre_filepath) + os.sep  # replace separater for each OS
-        self.__abspath = os.path.abspath(fullname)# absolute path
-        self.__extension = os.path.splitext(fullname)[1]  # get only extension
+        self.__fullname = os.path.join(fullname)
+        self.__filename = os.path.basename(self.__fullname)
+        pre_filepath = os.path.dirname(self.__fullname)
+        self.__filepath = pre_filepath + os.sep  # replace separater for each OS
+        self.__abspath = os.path.abspath(self.__fullname)# absolute path
+        self.__extension = os.path.splitext(self.__fullname)[1]  # get only extension
 
     def __del__(self):
         #print('.')
@@ -382,10 +382,17 @@ class Filename:
 if __name__ == '__main__':
     filename1 = Filename('..\\..\\220408\\20408B002.tsm')
     filename2 = Filename('..\\..\\220408\\20408A001new.tsm')
+    
     exp1 = Experiments()
     exp1.help()
+    #make dataset
     exp1.create_data_set(filename1)
     exp1.create_data_set(filename2)
+        
+    # show traces
+
+    exp1.data_set['20408B002.tsm'].data['ChTrace1'].show_data()
+    exp1.data_set['20408A001new.tsm'].data['ChTrace1'].show_data()
     
 
 

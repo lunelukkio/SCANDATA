@@ -10,7 +10,6 @@ lunelukkio@gmail.com
 import tkinter as tk
 import tkinter.filedialog
 import os
-import glob
 
 
 class ButtonFn:
@@ -39,19 +38,7 @@ class ButtonFn:
         return fullname
     
     def get_whole_filenames(self, fullname):
-        filename = os.path.basename(fullname)
-        pre_filename = os.path.splitext(filename)
-        file_name_no_ext = pre_filename[0]
-        extension =  pre_filename[1]
-        pre_filepath = os.path.dirname(fullname)
-        path = os.path.join(pre_filepath) + os.sep  # replace separater for each OS
         
-        find =  path + file_name_no_ext[0:-3] + '*' + str(extension)
-        print(find)
-        whole_fullname_list = glob.glob(find)
-        whole_filename_list = []
-        for i in range(len(whole_fullname_list)):
-            whole_filename_list.append(os.path.basename(whole_fullname_list[i]))
         return  whole_filename_list
 
 
