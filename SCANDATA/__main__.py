@@ -6,9 +6,9 @@ lunelukkio@gmail.com
 """
 
     
-from model import Model
-from view_package.view import View
-from controller_package.controller import Controller
+from SCANDATA.model.model_main import Experiments
+from SCANDATA.view.view_main import View
+from SCANDATA.controller.controller_main import Controller
 import tkinter as tk
 import gc
 
@@ -23,12 +23,11 @@ class Main:
         root.title("SCANDATA")
 
         # Make instance of a model, a view and a controller
-        self.model = Model()
+        self.model = Experiments()
         self.view = View(root)
         self.controller = Controller()
         
-        # The view knows model and controller .
-        self.view.model = self.model
+        # The view knows controller .
         self.view.controller = self.controller
         
         # The controller knows model and view. 

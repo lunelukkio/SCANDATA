@@ -38,8 +38,7 @@ class ButtonFn:
         return fullname
     
     def get_whole_filenames(self, fullname):
-        
-        return  whole_filename_list
+        pass
 
 
 

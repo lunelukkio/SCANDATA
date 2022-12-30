@@ -19,9 +19,13 @@ from SCANDATA.view.button_function import ButtonFn
 class View(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
-        self.model = None
         self.controller = None
         self.button_fn = ButtonFn(self.controller)
+        
+        self.__filename_obj_list = []
+        self.window = []
+        self.data_window = []  # data window obj
+        
         print('imported view')
         
         self.pack()
@@ -57,7 +61,7 @@ class View(tk.Frame):
         frame_middle = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=2, bg = 'azure')
         frame_middle.pack(side=tk.TOP, fill=tk.BOTH)
 
-        self.data_window = {}  # data window obj
+
         
         self.create_menu()
         
@@ -84,8 +88,10 @@ class View(tk.Frame):
     """
     def open_file_with_list(self, event=None):
         fullname = self.button_fn.get_fullname()
-        file_list = self.button_fn.get_whole_filenames(fullname)
-
+        filename_obj = self.controller.create_filename_obj(fullname)
+        self.__filename_obj_list.append(filename_obj)
+        
+        "make a tree_list"
         tree_list = ttk.Treeview(self)
         
         # Define cuolumns   #0 is phantom column
@@ -101,7 +107,7 @@ class View(tk.Frame):
         
         # Add data
         tree_list.insert(parent='', index='end', iid=0, text='', values=os.path.basename(fullname))
-        tree_list.insert(parent='', index='end', iid=0, text='', values=file_list)
+        #tree_list.insert(parent='Main File', index='end', iid=0, text='', values=filename_obj.filename_list)
         
         # for scrollbar
         scrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL, command=tree_list.yview)
@@ -109,6 +115,10 @@ class View(tk.Frame):
         
         # Pack                 
         tree_list.pack(pady=0, fill=tk.BOTH, expand=True)  
+        
+        self.window.append(tk.Toplevel())
+        self.data_window.append(DataWindow(self.window[len(self.window)-1], filename_obj, self.controller))
+
         
     def open_file(self, event=None):
         fullname = self.button_fn.get_fullname()
@@ -118,14 +128,14 @@ class View(tk.Frame):
 
         
 class DataWindow(tk.Frame):
-    def __init__(self, master=None, filename=None, controller=None):
+    def __init__(self, master=None, filename_obj=None, controller=None):
         super().__init__(master)
         self.pack()
-        self.filename = filename
+        self.__filename_obj = filename_obj
         self.controller = controller
         master.geometry('1400x700')
         master.configure(background='azure')
-        master.title(filename)
+        master.title(self.__filename_obj.name)
         
         self.trace_ax1 = None
         self.trace_ax2 = None

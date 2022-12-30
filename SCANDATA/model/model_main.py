@@ -345,10 +345,9 @@ class Director:
 " Value object for filenames"
 class Filename:
     def __init__(self, fullname: str):
-        self.__fullname = os.path.join(fullname)
+        self.__fullname = os.path.join(fullname)   # replace separater for each OS
         self.__filename = os.path.basename(self.__fullname)
-        pre_filepath = os.path.dirname(self.__fullname)
-        self.__filepath = pre_filepath + os.sep  # replace separater for each OS
+        self.__filepath = os.path.dirname(self.__fullname) + os.sep
         self.__abspath = os.path.abspath(self.__fullname)# absolute path
         self.__extension = os.path.splitext(self.__fullname)[1]  # get only extension
 

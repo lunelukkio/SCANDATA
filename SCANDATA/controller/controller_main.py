@@ -25,6 +25,9 @@ class Controller:
         self.filename = []
         self.filepath = []
         
+    def create_filename_obj(self, fullname: str) -> object:
+        filename_obj = WholeFilename(fullname)
+        return filename_obj
 
     def create_model(self, filename, filepath):  
         self.model.create_data_objects(filename, filepath)
@@ -50,13 +53,11 @@ class Controller:
         self.model.set_data('ROI' + str(roi_num), roi)
         
 "Value object"
-class WholeFilename:  # use it only in a view and controller
-
+class WholeFilename:  # Use it only in a view and controller
     def __init__(self, fullname: str):
-        self.__fullname = fullname
-        self.__filename = os.path.basename(fullname)
-        pre_filepath = os.path.dirname(fullname)
-        self.__filepath = os.path.join(pre_filepath) + os.sep  # replace separater for each OS
+        self.__fullname = os.path.join(fullname)  # replace separater for each OS
+        self.__filename = os.path.basename(self.__fullname)
+        self.__filepath = os.path.dirname(self.__fullname) + os.sep
         self.__abspath = os.path.abspath(fullname)# absolute path
         split_filename = os.path.splitext(self.__filename)
         self.__file_name_no_ext = split_filename[0]
@@ -64,7 +65,7 @@ class WholeFilename:  # use it only in a view and controller
         
         self.__filename_list = self.__make_filename_list()
 
-
+    # List need A000-Z999 in the last of filenames
     def __make_filename_list(self) -> list:
         find =  self.__filepath + self.__file_name_no_ext[0:-3] + '*' + str(self.__extension)
         fullname_list = glob.glob(find)
