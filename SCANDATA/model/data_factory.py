@@ -133,7 +133,7 @@ class FluoFrames(Data):  # 3D frames data: full frames, ch image
         return self.__interval
 
     def show_data(self, frame_num=0) -> None:
-        self.__frames_obj.show(frame_num)
+        self.__frames_obj.show_data(frame_num)
 
     def print_infor(self):
         pass
@@ -202,8 +202,8 @@ class FramesData:
     def data_type(self) -> str:
         return self.__data_type
     
-    def show(self, frame_num):
-        plt.imshow(self.__data[:, :, frame_num], cmap='gray', interpolation='none')
+    def show_data(self, frame_num=0, plt=plt) -> object:  # plt shold be an axis in a view class object = AxisImage
+        return plt.imshow(self.__data[:, :, frame_num], cmap='gray', interpolation='none')
 
 
         
@@ -237,7 +237,7 @@ class FluoImage(Data):  # cell image, dif image
         return self._frame_window
     
     def show_data(self) -> None:
-        self._image_obj.show()
+        self._image_obj.show_data()
     
     def print_infor(self):
         pass
@@ -344,8 +344,8 @@ class ImageData:
     def data_type(self) -> str:
         return self.__data_type
     
-    def show(self):
-        plt.imshow(self.__data, cmap='gray', interpolation='none')
+    def show_data(self, plt=plt) -> object:    # plt shold be an axis in a view class object = AxisImage
+        return plt.imshow(self.__data, cmap='gray', interpolation='none')
             
 
 "Fluo Trace"
@@ -408,7 +408,7 @@ class FluoTrace(Data):  # Fluo trae, Elec trace
         return time_val
     
     def show_data(self) -> None:
-        self.trace_obj.plot()
+        self.trace_obj.show_data()
         
     def print_infor(self):
         pass
@@ -498,7 +498,7 @@ class ElecTrace(Data):  # Fluo trae, Elec trace
         return self._interval
     
     def show_data(self) -> None:
-        self._trace_obj.plot()  
+        self._trace_obj.show_data()  
     
     def print_infor(self):
         pass
@@ -584,8 +584,8 @@ class TraceData:
     def check_length(self, data: object) -> bool:
         return bool(self.__length == data.length)
     
-    def plot(self):
-        plt.plot(self.__time, self.__data) 
+    def show_data(self, plt=plt) -> list:  # plt shold be an axis in a view class object = [matplotlib.lines.Line2D]
+        return plt.plot(self.__time, self.__data) 
 
 
 # Class for changing from raw data to a value object 

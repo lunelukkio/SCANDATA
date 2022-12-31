@@ -163,7 +163,7 @@ class FrameWindow(ModelController):
         self.__frame_window_obj = FrameWindowVal(0, 0, 1, 1)
         self.__observers = []
         self.object_num = 0
-        print('Create FrameWindow-{}.'.format(self.object_num))
+        #print('Create FrameWindow-{}.'.format(self.object_num))
 
     def set_data(self, start: int, end: int, start_width=0, end_width=0) -> None:
         self.__frame_window_obj = FrameWindowVal(start, end, start_width, end_width)

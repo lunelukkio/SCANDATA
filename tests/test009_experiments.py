@@ -37,12 +37,12 @@ class TestExperiments(unittest.TestCase):
         d = plt.figure()
         exp1.set_data('20408B002.tsm', 'Roi1', (5,5,50,50))
         trace3 = exp1.get_data('20408B002.tsm', 'ChTrace1')
-        trace3.plot()
+        trace3.show_data()
         
         exp1.bind_data('Roi1', 'ChTrace1', '20408A001new.tsm', '20408B002.tsm')
         exp1.reset_data('20408A001new.tsm', 'Roi1')
         trace3 = exp1.get_data('20408B002.tsm', 'ChTrace1')
-        trace3.plot()
+        trace3.show_data()
         
 
 if __name__ == '__main__':

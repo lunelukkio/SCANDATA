@@ -46,10 +46,13 @@ class Controller:
         roi_y = math.floor(event.ydata)
         roi = [roi_x, roi_y] + roi_length
         self.model.set_data(filename.name, 'Roi' + str(roi_num), roi)
-        return roi
+        return roi   # for ROI Box
     
-    def large_roi(self, roi_num, roi):
-        self.model.set_data(self.__filaname, 'Roi' + str(roi_num), roi)
+    def large_roi(self, filename, roi_num):
+        old_roi = self.model.get_data(filename.name, 'Roi' + str(roi_num))
+        new_roi = old_roi.data + np.array[0, 0, 1, 1]
+        self.model.set_data(filename.name, 'Roi' + str(roi_num), new_roi)
+        return new_roi
         
 "Value object"
 class WholeFilename:  # Use it only in a view and controller

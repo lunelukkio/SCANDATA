@@ -210,30 +210,39 @@ class DataWindow(tk.Frame):
         #self.initialize()
 
     def initialize(self):
-        self.create_image(self.image_ax, 'CellImage1')
-        self.create_trace(self.trace_ax1, 'ChTrace1')
-        self.create_trace(self.trace_ax1, 'ChTrace2')
-        self.create_trace(self.trace_ax2, 'ChElecTrace1')
+        self.show_data(self.image_ax, 'CellImage1')
+        self.show_data(self.trace_ax1, 'ChTrace1')
+        self.show_data(self.trace_ax1, 'ChTrace2')
+        self.show_data(self.trace_ax2, 'ChElecTrace1')
         
         roi_box = RoiBox(self.image_ax)
         self.roi_box.append(roi_box)
         
-    def create_image(self, ax, image_type):
-        value_obj = self.controller.get_data(self.__filename, image_type)
-        ax.imshow(value_obj.data, cmap='gray', interpolation='none')
-        
-    def create_trace(self, ax, trace_type):
-        value_obj = self.controller.get_data(self.__filename, trace_type)
-        line, =ax.plot(value_obj.time, value_obj.data)  # new line object
-        self.trace_y1.append(line)  # Add to the list for trace_y1 trace line objects
+    def show_data(self, ax, data_type):
+        value_obj = self.controller.get_data(self.__filename, data_type)
+        try:
+            line, = value_obj.show_data(ax)  # line, mean the first element of a list (convert from list to objet)
+            self.trace_y1.append(line)  # Add to the list for trace_y1 trace line objects
+            print(self.trace_y1)
+        except:
+            value_obj.show_data(ax)
         
     def set_trace(self, ax, trace_num, trace_type):
         trace = self.controller.get_data(self.__filename, trace_type)
         self.trace_y1[trace_num].set_ydata(trace.data)
         
     def large_roi(self, roi_num):
-        pass
-        #self.controll.large_roi(roi_num)
+        print('Problem is key "Roi1" goes to data[key]. It shoud be controller[key]')
+        roi = self.controller.large_roi(self.__filename, roi_num)
+        
+        self.set_trace(self.trace_ax1, 0, 'ChTrace1')
+        self.set_trace(self.trace_ax1, 1, 'ChTrace2')
+        
+        self.roi_box[0].set_roi(roi)
+        self.trace_ax1.relim()
+        self.trace_ax1.autoscale_view()
+        self.canvas_trace.draw()
+        self.canvas_image.draw()
     
     def small_roi(self):
         pass
@@ -256,6 +265,7 @@ class DataWindow(tk.Frame):
         
     def onclick_image(self, event):
         roi = self.controller.set_roi(self.__filename, event)
+        
         self.set_trace(self.trace_ax1, 0, 'ChTrace1')
         self.set_trace(self.trace_ax1, 1, 'ChTrace2')
         
