@@ -131,11 +131,11 @@ class DataWindow(tk.Frame):
     def __init__(self, master=None, filename_obj=None, controller=None):
         super().__init__(master)
         self.pack()
-        self.__filename_obj = filename_obj
+        self.__filename = filename_obj
         self.controller = controller
         master.geometry('1400x700')
         master.configure(background='azure')
-        master.title(self.__filename_obj.name)
+        master.title(self.__filename.name)
         
         self.trace_ax1 = None
         self.trace_ax2 = None
@@ -213,24 +213,23 @@ class DataWindow(tk.Frame):
         self.create_image(self.image_ax, 'CellImage1')
         self.create_trace(self.trace_ax1, 'ChTrace1')
         self.create_trace(self.trace_ax1, 'ChTrace2')
-        self.create_trace(self.trace_ax2, 'ElecTrace1')
+        self.create_trace(self.trace_ax2, 'ChElecTrace1')
         
         roi_box = RoiBox(self.image_ax)
         self.roi_box.append(roi_box)
         
     def create_image(self, ax, image_type):
-        image = self.controller.get_data(self.filename, image_type)
-        ax.imshow(image.image_data, cmap='gray', interpolation='none')
+        value_obj = self.controller.get_data(self.__filename, image_type)
+        ax.imshow(value_obj.data, cmap='gray', interpolation='none')
         
     def create_trace(self, ax, trace_type):
-        trace = self.controller.get_data(self.filename, trace_type)
-        line, =ax.plot(trace.time_data, trace.trace_data)  # new line object
+        value_obj = self.controller.get_data(self.__filename, trace_type)
+        line, =ax.plot(value_obj.time, value_obj.data)  # new line object
         self.trace_y1.append(line)  # Add to the list for trace_y1 trace line objects
         
     def set_trace(self, ax, trace_num, trace_type):
-        trace = self.controller.get_data(self.filename, trace_type)
-
-        self.trace_y1[trace_num].set_ydata(trace.trace_data)
+        trace = self.controller.get_data(self.__filename, trace_type)
+        self.trace_y1[trace_num].set_ydata(trace.data)
         
     def large_roi(self, roi_num):
         pass
@@ -256,7 +255,7 @@ class DataWindow(tk.Frame):
             print(num_box)
         
     def onclick_image(self, event):
-        roi = self.controller.set_roi(event)
+        roi = self.controller.set_roi(self.__filename, event)
         self.set_trace(self.trace_ax1, 0, 'ChTrace1')
         self.set_trace(self.trace_ax1, 1, 'ChTrace2')
         

@@ -23,25 +23,51 @@ class ExperimentsInterface(metaclass=ABCMeta):
     @abstractmethod
     def create_data_set(self, fullname):
         raise NotImplementedError()
+        
+    @abstractmethod
+    def create_data(self, filename, key, *args):
+        raise NotImplementedError()
+        
+    @abstractmethod
+    def set_data(self, filename: str, key: str, val: tuple):
+        raise NotImplementedError()
+        
+    @abstractmethod
+    def get_data(self, filename: str, key: str):
+        raise NotImplementedError()
+    
+    @abstractmethod
+    def reset_data(self, filename: str, key: str):
+        raise NotImplementedError()
+        
+    @abstractmethod
+    def data_set(self):
+        raise NotImplementedError()
+    
+    @abstractmethod
+    def print_list(self):
+        raise NotImplementedError()
 
-class Experiments:
+class Experiments(ExperimentsInterface):
     def __init__(self):
         self.__data_set = {}
         print('Created an empty model.')
     
-    def create_data_set(self, filename):
+    def create_data_set(self, fullname: str):
+        filename = Filename(fullname)
+        
         self.__data_set[filename.name] = DataSet(filename)  # dict of data_file(key filename : object)
         print(self.data_set)
         print('Created {} data set.'.format(filename.name))
         
     def create_data(self, filename, key, *args):
         if key == 'CellImage':
-            self.__data_set[filename.name].create_image(self.__data_set[filename.name].data['ChFrames1'],
-                                                        self.__data_set[filename.name].data['ChFrames2'])
+            self.__data_set[filename].create_image(self.__data_set[filename].data['ChFrames1'],
+                                                        self.__data_set[filename].data['ChFrames2'])
         elif key == 'FluoTrace':
-            self.__data_set[filename.name].create_trace(self.__data_set[filename.name].data['FullFrames1'],
-                                                        self.__data_set[filename.name].data['ChFrames1'],
-                                                        self.__data_set[filename.name].data['ChFrames2'])
+            self.__data_set[filename].create_trace(self.__data_set[filename].data['FullFrames1'],
+                                                        self.__data_set[filename].data['ChFrames1'],
+                                                        self.__data_set[filename].data['ChFrames2'])
             
     def set_data(self, filename: str, key: str, val: tuple):
         self.data_set[filename].set_data(key, val)
@@ -69,7 +95,7 @@ class Experiments:
     def help(self):
         print('===================================================================================')
         print('HELP for commands to MODEL')
-        print('create_data_set(fullname: str): for making a new data set')
+        print('create_data_set(fullname: str): for making a new data set.     <------------ only this is full file name.')
         print('            e.g. create_data_set("..\\220408\\20408B002.tsm")')
         print('create_data(filename: str, key: str): for making a new data in a data_set)')
         print('            e.g. filename = "20408B002.tsm"  key = "Image", "FluoTrace")')
@@ -379,8 +405,8 @@ class Filename:
 
     
 if __name__ == '__main__':
-    filename1 = Filename('..\\..\\220408\\20408B002.tsm')
-    filename2 = Filename('..\\..\\220408\\20408A001new.tsm')
+    filename1 = '..\\..\\220408\\20408B002.tsm'
+    filename2 = '..\\..\\220408\\20408A001new.tsm'
     
     exp1 = Experiments()
     exp1.help()

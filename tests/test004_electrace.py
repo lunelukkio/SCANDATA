@@ -11,7 +11,7 @@ from SCANDATA.model.data_factory import ChElecTraceFactory
 from SCANDATA.model.io_factory import TsmFileIOFactory, TbnFileIOFactory
 from SCANDATA.model.data_factory import ValueObjConverter
 from SCANDATA.model.model_main import Filename
-
+import matplotlib.pyplot as plt
 
 filename = Filename('..\\220408\\20408B002.tsm')
 
@@ -34,7 +34,7 @@ class TestTrace(unittest.TestCase):
         data_factory = ChElecTraceFactory()
         
         trace = data_factory.create_data(elec_data, interval)
-
+        a = plt.figure()
         trace.show_data()
         trace.print_infor()
 

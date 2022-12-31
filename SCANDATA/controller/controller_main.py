@@ -37,20 +37,19 @@ class Controller:
     def roi_controller(self):
         print('ROI controller')
         
-    def get_data(self, filename, data_type):
-        return self.model.get_data(filename, data_type)
+    def get_data(self, filename, data_type) -> object:  # value object
+        return self.model.get_data(filename.name, data_type)
     
-    def set_roi(self, event, roi_num=1, roi_length=[1, 1]):
+    def set_roi(self, filename, event, roi_num=1, roi_length=[1, 1]):
         print(event.button, event.x, event.y, event.xdata, event.ydata)
         roi_x = math.floor(event.xdata)
         roi_y = math.floor(event.ydata)
         roi = [roi_x, roi_y] + roi_length
-        self.model.set_data('ROI' + str(roi_num), roi)
+        self.model.set_data(filename.name, 'Roi' + str(roi_num), roi)
         return roi
     
-    def large_roi(self, roi_num):
-        self.model.get_infor
-        self.model.set_data('ROI' + str(roi_num), roi)
+    def large_roi(self, roi_num, roi):
+        self.model.set_data(self.__filaname, 'Roi' + str(roi_num), roi)
         
 "Value object"
 class WholeFilename:  # Use it only in a view and controller
