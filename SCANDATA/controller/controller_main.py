@@ -49,11 +49,9 @@ class Controller:
         return roi   # for ROI Box
     
     def large_roi(self, filename, roi_num):
-        old_roi = self.model.get_controller_infor(filename.name, 'Roi' + str(roi_num))
-        print('コントローラにおっくてそっちで足し算')
-        new_roi = old_roi.data + np.array[0, 0, 1, 1]
-        self.model.set_data(filename.name, 'Roi' + str(roi_num), new_roi)
-        return new_roi
+        old_roi = self.model.add_data(filename.name, 'Roi' + str(roi_num), [0, 0, 1, 1])
+
+
         
 "Value object"
 class WholeFilename:  # Use it only in a view and controller

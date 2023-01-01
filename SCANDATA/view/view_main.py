@@ -233,12 +233,13 @@ class DataWindow(tk.Frame):
         
     def large_roi(self, roi_num):
         print('Problem is key "Roi1" goes to data[key]. It shoud be controller[key]')
-        roi = self.controller.large_roi(self.__filename, roi_num)
+        self.controller.large_roi(self.__filename, roi_num)
+        
         
         self.set_trace(self.trace_ax1, 0, 'ChTrace1')
         self.set_trace(self.trace_ax1, 1, 'ChTrace2')
         
-        self.roi_box[0].set_roi(roi)
+        self.roi_box[0].add_roi([0, 0, 1, 1])
         self.trace_ax1.relim()
         self.trace_ax1.autoscale_view()
         self.canvas_trace.draw()
@@ -286,11 +287,15 @@ class RoiBox():
         self.rectangle = patches.Rectangle(xy=(40, 40), width=1, height=1, ec='r', fill=False)
         ax.add_patch(self.rectangle)
         
-    def set_roi(self, roi):
-        self.rectangle.xy = (roi[0], roi[1])
-        self.rectangle.width = roi[2]
-        self.rectangle.height = roi[3]
+    def set_roi(self, val):
+        self.rectangle.xy = (val[0], val[1])
+        self.rectangle.width = val[2]
+        self.rectangle.height = val[3]
 
+    def add_val(self, val):
+        self.rectangle.xy += (val[0], val[1])
+        self.rectangle.width += val[2]
+        self.rectangle.height += val[3]
         
         
 class NavigationToolbarTrace(NavigationToolbar2Tk):

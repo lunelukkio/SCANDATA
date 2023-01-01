@@ -33,11 +33,11 @@ class ExperimentsInterface(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
-    def get_data(self, filename: str, key: str):
+    def add_data(self, filename: str, key: str):
         raise NotImplementedError()
-    
+        
     @abstractmethod
-    def get_controller_infor(self, filename: str, key: str):
+    def get_data(self, filename: str, key: str):
         raise NotImplementedError()
     
     @abstractmethod
@@ -76,11 +76,11 @@ class Experiments(ExperimentsInterface):
     def set_data(self, filename: str, key: str, val: tuple):
         self.data_set[filename].set_data(key, val)
         
+    def add_data(self, filename: str, key: str, val: tuple):
+        self.data_set[filename].add_data(key, val)
+        
     def get_data(self, filename: str, key: str):
         return self.data_set[filename].get_data(key)
-    
-    def get_controller_infor(self, filename: str, key: str):
-        return self.data_set[filename].get_controller_infor(key)
     
     def bind_data(self, controller: str, data: str, filename_ctrl: str, filename_data: str):
         binding_controller = self.data_set[filename_ctrl].controller[controller]
@@ -147,12 +147,12 @@ class DataSet:
 
     def set_data(self, key: str, val: tuple):
         return self.__controller[key].set_data(*val)
+    
+    def add_data(self, key: str, val: tuple):
+        return self.__controller[key].add_data(*val)
 
     def get_data(self, key: str):
         return self.__data[key].get_data()
-    
-    def get_controller_infor(self, key: str):
-        return self.__controller[key].get_data()
     
     def reset_data(self, key: str):
         self.__controller[key].reset()
