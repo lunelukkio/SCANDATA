@@ -6,9 +6,8 @@ lunelukkio@gmail.com
 """
 
 from abc import ABCMeta, abstractmethod
+from SCANDATA.model.value_object import ImageData, TraceData
 import numpy as np
-import matplotlib.pyplot as plt
-import inspect
 
 
 """
@@ -167,44 +166,6 @@ class ChFrames(FluoFrames):
     def print_infor(self) -> None:
         print('This is Chframes' + str(self.object_num))
         super().print_additional_infor()
-        
-
-
-"Value Object for frames"       
-class FramesData:
-    def __init__(self, val: np.ndarray):
-        if val.ndim != 3: 
-            raise Exception("The argument of FrameData should be numpy 3D data(x, y, t)")
-        size = val.shape
-        called_class = inspect.stack()[1].frame.f_locals['self']
-        self.__data = val
-        self.__frames_size = size
-        self.__data_type = called_class.__class__.__name__
-        print(self.__data_type + ' made a FramesData' + '  myId= {}'.format(id(self)))
-        
-    def __del__(self):
-        print('.')
-        #print('Deleted a FramesData object.' + '  myId= {}'.format(id(self)))
-    
-    @property
-    def data(self) -> np.ndarray:
-        return self.__data
-    
-    @data.setter
-    def data(self, val):
-        raise Exception("FrameData is a value object (Immutable).")
-        
-    @property
-    def frame_size(self) -> int:
-        return self.__frame_size
-    
-    @property
-    def data_type(self) -> str:
-        return self.__data_type
-    
-    def show_data(self, frame_num=0, plt=plt) -> object:  # plt shold be an axis in a view class object = AxisImage
-        return plt.imshow(self.__data[:, :, frame_num], cmap='gray', interpolation='none')
-
 
         
 "Fluo Image"
@@ -311,41 +272,6 @@ class DifImage(FluoImage):
         print('This is DifImage-{}'.format(self.object_num))
         super().print_add_infor()
 
-
-"Value Object for images"
-class ImageData:
-    def __init__(self, val: np.ndarray):
-        if val.ndim != 2: 
-            raise Exception("The argument of ImageData should be numpy 2D data(x, y)")
-        size = val.shape
-        called_class = inspect.stack()[1].frame.f_locals['self']
-        self.__data = val
-        self.__image_size = size
-        self.__data_type = called_class.__class__.__name__
-        print(self.__data_type + ' made a ImageData' + '  myId= {}'.format(id(self)))
-        
-    def __del__(self):
-        print('.')
-        #print('Deleted a ImageData object.' + '  myId= {}'.format(id(self)))
-        
-    @property
-    def data(self) -> np.ndarray:
-        return self.__data
-    
-    @data.setter
-    def data(self, val):
-        raise Exception("ImageData is a value object (Immutable).")
-        
-    @property
-    def image_size(self) -> int:
-        return self.__image_size
-    
-    @property
-    def data_type(self) -> str:
-        return self.__data_type
-    
-    def show_data(self, plt=plt) -> object:    # plt shold be an axis in a view class object = AxisImage
-        return plt.imshow(self.__data, cmap='gray', interpolation='none')
             
 
 "Fluo Trace"
@@ -524,79 +450,6 @@ class ChElecTrace(ElecTrace):
         
 class LongElecTrace(ElecTrace):
     pass
-
-
-"Value Object for traces"
-class TraceData:
-    def __init__(self, val: np.ndarray, interval) -> None:
-        if val.ndim != 1: 
-            raise Exception("The argument of TraceData should be numpy 1D data(x)")
-        if  val.shape[0] < 5: 
-            print('----------------------------------------------------------')
-            print('Warning!!! The number of the data points of TraceData is less than 5!!!')
-            print('----------------------------------------------------------')
-            print(val)
-            
-            
-        length = val.shape[0]
-        called_class = inspect.stack()[1].frame.f_locals['self']
-        self.__data = val
-        self.__time = self.__create_time_data(val, interval)
-        self.__interval = interval
-        self.__length = length
-        self.__data_type = called_class.__class__.__name__
-        print(self.__data_type + ' made a TraceData' + '  myId= {}'.format(id(self)))
-
-    def __del__(self):
-        print('.')
-        #print('Deleted a TraceData object.' + '  myId= {}'.format(id(self)))
-        
-    def __create_time_data(self, trace, interval) -> np.ndarray:
-        num_data_point = interval * np.shape(trace)[0]
-        time_val = np.linspace(interval, num_data_point, np.shape(trace)[0])
-        return time_val
-        
-    @property
-    def data(self) -> np.ndarray:
-        return self.__data
-    
-    @data.setter
-    def data(self, val):
-        raise Exception("TraceData is a value object (Immutable).")
-        
-    @property
-    def time(self) -> np.ndarray:
-        return self.__time
-    
-    @time.setter
-    def time(self, val):
-        raise Exception("TimeData is a value object (Immutable).")
-            
-    @property
-    def length(self) -> int:
-        return self.__length
-    
-    @property
-    def data_type(self) -> str:
-        return self.__data_type
-    
-    
-    def check_length(self, data: object) -> bool:
-        return bool(self.__length == data.length)
-    
-    def show_data(self, plt=plt) -> list:  # plt shold be an axis in a view class object = [matplotlib.lines.Line2D]
-        return plt.plot(self.__time, self.__data) 
-
-
-# Class for changing from raw data to a value object 
-class ValueObjConverter:
-    def frames_converter(self, raw_data):
-        frames_value_obj = FramesData(raw_data)
-        return frames_value_obj
-    
-    def elec_trace_converter(self, raw_data, interval):
-        elec_trace_value_obj = TraceData(raw_data, interval)
-        return elec_trace_value_obj
         
 
 if __name__ == '__main__':

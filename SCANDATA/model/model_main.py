@@ -16,7 +16,7 @@ from SCANDATA.model.data_factory import CellImageFactory
 from SCANDATA.model.data_factory import FullTraceFactory, ChTraceFactory
 from SCANDATA.model.data_factory import ChElecTraceFactory
 from SCANDATA.model.controller_factory import RoiFactory, FrameWindowFactory
-from SCANDATA.model.data_factory import ValueObjConverter
+from SCANDATA.model.value_object import ValueObjConverter
 
 
 class ExperimentsInterface(metaclass=ABCMeta):
@@ -416,7 +416,7 @@ class Filename:
     
 if __name__ == '__main__':
     filename1 = '..\\..\\220408\\20408B002.tsm'
-    filename2 = '..\\..\\220408\\20408A001new.tsm'
+    filename2 = '..\\..\\220408\\20408B001new.tsm'
     
     exp1 = Experiments()
     exp1.help()
@@ -427,7 +427,7 @@ if __name__ == '__main__':
     # show traces
 
     exp1.data_set['20408B002.tsm'].data['ChTrace1'].show_data()
-    exp1.data_set['20408A001new.tsm'].data['ChTrace1'].show_data()
+    exp1.data_set['20408B001new.tsm'].data['ChTrace1'].show_data()
     
 
 

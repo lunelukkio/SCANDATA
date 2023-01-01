@@ -7,10 +7,9 @@ lunelukkio@gmail.com
 
 import unittest
 from SCANDATA.model.model_main import Filename
-from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory
-from SCANDATA.model.data_factory import FramesData, FullFrames, ChFrames
+from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory, FullFrames, ChFrames
+from SCANDATA.model.value_object import FramesData, ValueObjConverter
 from SCANDATA.model.io_factory import TsmFileIOFactory
-from SCANDATA.model.data_factory import ValueObjConverter
 import numpy as np
 
 filename = Filename('..\\220408\\20408B002.tsm')  # this isa  value object

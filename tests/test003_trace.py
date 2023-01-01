@@ -9,9 +9,8 @@ Created on Sun Dec 25 13:33:19 2022
 import unittest
 from SCANDATA.model.data_factory import FullTraceFactory, ChTraceFactory
 from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory
-from SCANDATA.model.data_factory import TraceData
+from SCANDATA.model.value_object import TraceData, ValueObjConverter
 from SCANDATA.model.io_factory import TsmFileIOFactory
-from SCANDATA.model.data_factory import ValueObjConverter
 import numpy as np
 from SCANDATA.model.model_main import Filename
 

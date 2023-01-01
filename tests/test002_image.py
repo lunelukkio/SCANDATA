@@ -8,9 +8,9 @@ Created on Sat Dec 24 11:25:49 2022
 
 import unittest
 from SCANDATA.model.data_factory import CellImageFactory, FullFramesFactory
-from SCANDATA.model.data_factory import ImageData
+from SCANDATA.model.value_object import ImageData
 from SCANDATA.model.io_factory import TsmFileIOFactory
-from SCANDATA.model.data_factory import ValueObjConverter
+from SCANDATA.model.value_object import ValueObjConverter
 import numpy as np
 from SCANDATA.model.model_main import Filename
 

@@ -9,7 +9,7 @@ lunelukkio@gmail.com
 import unittest
 from SCANDATA.model.data_factory import ChElecTraceFactory
 from SCANDATA.model.io_factory import TsmFileIOFactory, TbnFileIOFactory
-from SCANDATA.model.data_factory import ValueObjConverter
+from SCANDATA.model.value_object import ValueObjConverter
 from SCANDATA.model.model_main import Filename
 import matplotlib.pyplot as plt
 

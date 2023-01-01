@@ -7,11 +7,10 @@ lunelukkio@gmail.com
 
 import unittest
 from SCANDATA.model.controller_factory import RoiFactory
-from SCANDATA.model.controller_factory import RoiVal
+from SCANDATA.model.value_object import RoiVal, ValueObjConverter
 from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory
 from SCANDATA.model.data_factory import FullTraceFactory, ChTraceFactory
 from SCANDATA.model.io_factory import TsmFileIOFactory
-from SCANDATA.model.data_factory import ValueObjConverter
 import matplotlib.pyplot as plt
 from SCANDATA.model.model_main import Filename
 

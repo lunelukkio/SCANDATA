@@ -11,9 +11,8 @@ import unittest
 from SCANDATA.model.controller_factory import FrameWindowFactory
 from SCANDATA.model.controller_factory import FrameWindow, FrameWindowVal
 from SCANDATA.model.data_factory import CellImageFactory, FullFramesFactory
-from SCANDATA.model.data_factory import ImageData
+from SCANDATA.model.value_object import ImageData, ValueObjConverter
 from SCANDATA.model.io_factory import TsmFileIOFactory
-from SCANDATA.model.data_factory import ValueObjConverter
 import numpy as np
 import matplotlib.pyplot as plt
 from SCANDATA.model.model_main import Filename

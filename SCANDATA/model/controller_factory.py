@@ -5,8 +5,7 @@ concrete classes for model controllers
 lunelukkio@gmail.com
 """
 from abc import ABCMeta, abstractmethod
-import numpy as np
-import inspect
+from SCANDATA.model.value_object import RoiVal, FrameWindowVal
 
 """
 abstract factory
@@ -122,40 +121,6 @@ class Roi(ModelController):
         print('ROI-{} = '.format(self.object_num) + str(self.get_data().data) + 
               ', observer = ' + str(self.__observers))
         
-            
-"Value object for Roi value"
-class RoiVal:
-    def __init__(self, x: int, y: int, x_width: int, y_width: int):         
-
-        if x < 0 or y < 0 or x_width < 0 or y_width < 0:
-            raise Exception("ROI values should be 0 or more")
-        called_class = inspect.stack()[1].frame.f_locals['self']
-        self.__data = np.array([x, y, x_width, y_width])
-        self.__data_type = called_class.__class__.__name__
-        print(self.__data_type + ' made a RoiVal' + '  myId= {}'.format(id(self)))
-        
-    def __del__(self):
-        print('.')
-        #print('Deleted a RoiVal object.' + '  myId={}'.format(id(self)))
-        
-    #override for "+"
-    def __add__(self, other: object) -> object:
-        if self.__data_type != other.data_type:
-            raise Exception("Wrong RoiVal data")
-        self.__data += other.data
-        return self
-        
-    @property
-    def data(self) -> list:
-        return self.__data
-    
-    @data.setter
-    def data(self, x, y, x_width=1, y_width=1):  
-        raise Exception("RoiVal is a value object (Immutable).")
-    
-    @property
-    def data_type(self) -> str:
-        return self.__data_type
     
     
 class FrameWindow(ModelController):
@@ -200,45 +165,6 @@ class FrameWindow(ModelController):
     def print_val(self) -> None:
         print('FrameWindow-{} = '.format(self.object_num) + str(self.get_data()) + 
               ', observer = ' + str(self.__observers))
-
-
-"Value object for FrameWindow value"
-class FrameWindowVal:
-    def __init__(self, start: int, end: int, start_width: int, end_width: int):
-        if start > end: 
-            raise Exception("FrameWindow the end values should be the same or larger than the start value")
-            
-
-        if start_width < 0 or end_width < 0:
-            raise Exception("FrameWindow width values should be 0 or more")
-        called_class = inspect.stack()[1].frame.f_locals['self']
-        self.__data = np.array([start, end, start_width, end_width])  # frame number
-        self.__data_type = called_class.__class__.__name__
-        print(self.__data_type + ' made a FrameWindowVal' + '  myId= {}'.format(id(self)))
-        
-    def __del__(self):
-        print('.')
-        #print('Deleted a FrameWindowVal object.' + '  myId={}'.format(id(self)))
-        
-    #override for "+"
-    def __add__(self, other: object) -> object:
-        if self.__data_type != other.data_type:
-            raise Exception("Wrong FrameWindowVal data")
-        self.__data += other.data
-        return self
-        
-    @property
-    def data(self) -> list:
-        return self.__data
-    
-    @data.setter
-    def frame_window_val(self, start, end, start_width=1, end_width=1):  
-        raise Exception("FrameWindowVal is a value object (Immutable).")
-    
-    @property
-    def data_type(self) -> str:
-        return self.__data_type
-        
 
 
 class FrameShift(ModelController):
