@@ -8,11 +8,9 @@ Created on Sat Dec 24 11:25:49 2022
 
 import unittest
 from SCANDATA.model.data_factory import CellImageFactory, FullFramesFactory
-from SCANDATA.model.value_object import ImageData
+from SCANDATA.model.value_object import Filename, FramesData, ImageData
 from SCANDATA.model.io_factory import TsmFileIOFactory
-from SCANDATA.model.value_object import ValueObjConverter
 import numpy as np
-from SCANDATA.model.model_main import Filename
 
 
 filename = Filename('..\\220408\\20408B002.tsm')  # this is a value object
@@ -26,13 +24,12 @@ class TestImageData(unittest.TestCase):
 
 class Testimage(unittest.TestCase):
     def test_cell_image(self):
-        converter = ValueObjConverter()
         io_factory = TsmFileIOFactory()
         io_data = io_factory.create_file_io(filename)
         rawdata, _ = io_data.get_data()
         interval, _ = io_data.get_infor()
         pixel_size = 0.25
-        data = converter.frames_converter(rawdata)
+        data = FramesData(rawdata)
         
         data_factory = FullFramesFactory()
         fullframes = data_factory.create_data(data, interval, pixel_size)

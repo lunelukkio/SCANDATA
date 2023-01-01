@@ -6,7 +6,6 @@ lunelukkio@gmail.com
 """
 
 import unittest
-from SCANDATA.model.model_main import Filename
 from SCANDATA.model.model_main import Experiments
 import matplotlib.pyplot as plt
 

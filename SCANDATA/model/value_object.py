@@ -5,19 +5,51 @@ Created on Sun Jan  1 10:04:06 2023
 @author: lulul
 """
 
-
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 import inspect
 
 
+class Filename:
+    def __init__(self, fullname: str):
+        self.__fullname = os.path.join(fullname)   # replace separater for each OS
+        self.__filename = os.path.basename(self.__fullname)
+        self.__filepath = os.path.dirname(self.__fullname) + os.sep
+        self.__abspath = os.path.abspath(self.__fullname)# absolute path
+        self.__extension = os.path.splitext(self.__fullname)[1]  # get only extension
+
+    def __del__(self):
+        #print('.')
+        #print('Deleted a ImageData object.' + '  myId= {}'.format(id(self)))
+        pass
+        
+    @property
+    def fullname(self) -> str:
+        return self.__fullname
+    
+    @property
+    def name(self) -> str:
+        return self.__filename
+    
+    @property
+    def path(self) -> str:
+        return self.__filepath
+    
+    @property
+    def abspath(self) -> str:
+        return self.__abspath
+    
+    @property
+    def extension(self) -> str:
+        return self.__extension
 """
 "Value object for Data
 """
 class FramesData:
     def __init__(self, val: np.ndarray):
         if val.ndim != 3: 
-            raise Exception("The argument of FrameData should be numpy 3D data(x, y, t)")
+            raise Exception('The argument of FrameData should be numpy 3D data(x, y, t)')
         size = val.shape
         called_class = inspect.stack()[1].frame.f_locals['self']
         self.__data = val
@@ -29,13 +61,18 @@ class FramesData:
         print('.')
         #print('Deleted a FramesData object.' + '  myId= {}'.format(id(self)))
     
+    # This is for background substruction
+    def __sub__(self):
+        raise NotImplementedError()
+    
+    
     @property
     def data(self) -> np.ndarray:
         return self.__data
     
     @data.setter
     def data(self, val):
-        raise Exception("FrameData is a value object (Immutable).")
+        raise Exception('FrameData is a value object (Immutable).')
         
     @property
     def frame_size(self) -> int:
@@ -52,7 +89,7 @@ class FramesData:
 class ImageData:
     def __init__(self, val: np.ndarray):
         if val.ndim != 2: 
-            raise Exception("The argument of ImageData should be numpy 2D data(x, y)")
+            raise Exception('The argument of ImageData should be numpy 2D data(x, y)')
         size = val.shape
         called_class = inspect.stack()[1].frame.f_locals['self']
         self.__data = val
@@ -70,7 +107,7 @@ class ImageData:
     
     @data.setter
     def data(self, val):
-        raise Exception("ImageData is a value object (Immutable).")
+        raise Exception('ImageData is a value object (Immutable).')
         
     @property
     def image_size(self) -> int:
@@ -87,7 +124,7 @@ class ImageData:
 class TraceData:
     def __init__(self, val: np.ndarray, interval) -> None:
         if val.ndim != 1: 
-            raise Exception("The argument of TraceData should be numpy 1D data(x)")
+            raise Exception('The argument of TraceData should be numpy 1D data(x)')
         if  val.shape[0] < 5: 
             print('----------------------------------------------------------')
             print('Warning!!! The number of the data points of TraceData is less than 5!!!')
@@ -119,7 +156,7 @@ class TraceData:
     
     @data.setter
     def data(self, val):
-        raise Exception("TraceData is a value object (Immutable).")
+        raise Exception('TraceData is a value object (Immutable).')
         
     @property
     def time(self) -> np.ndarray:
@@ -127,7 +164,7 @@ class TraceData:
     
     @time.setter
     def time(self, val):
-        raise Exception("TimeData is a value object (Immutable).")
+        raise Exception('TimeData is a value object (Immutable).')
             
     @property
     def length(self) -> int:
@@ -152,7 +189,7 @@ class RoiVal:
     def __init__(self, x: int, y: int, x_width: int, y_width: int):         
 
         if x < 0 or y < 0 or x_width < 0 or y_width < 0:
-            raise Exception("ROI values should be 0 or more")
+            raise Exception('ROI values should be 0 or more')
         called_class = inspect.stack()[1].frame.f_locals['self']
         self.__data = np.array([x, y, x_width, y_width])
         self.__data_type = called_class.__class__.__name__
@@ -165,7 +202,7 @@ class RoiVal:
     #override for "+"
     def __add__(self, other: object) -> object:
         if self.__data_type != other.data_type:
-            raise Exception("Wrong RoiVal data")
+            raise Exception('Wrong RoiVal data')
         self.__data += other.data
         return self
         
@@ -175,7 +212,7 @@ class RoiVal:
     
     @data.setter
     def data(self, x, y, x_width=1, y_width=1):  
-        raise Exception("RoiVal is a value object (Immutable).")
+        raise Exception('RoiVal is a value object (Immutable).')
     
     @property
     def data_type(self) -> str:
@@ -186,11 +223,11 @@ class RoiVal:
 class FrameWindowVal:
     def __init__(self, start: int, end: int, start_width: int, end_width: int):
         if start > end: 
-            raise Exception("FrameWindow the end values should be the same or larger than the start value")
+            raise Exception('FrameWindow the end values should be the same or larger than the start value')
             
 
         if start_width < 0 or end_width < 0:
-            raise Exception("FrameWindow width values should be 0 or more")
+            raise Exception('FrameWindow width values should be 0 or more')
         called_class = inspect.stack()[1].frame.f_locals['self']
         self.__data = np.array([start, end, start_width, end_width])  # frame number
         self.__data_type = called_class.__class__.__name__
@@ -203,7 +240,7 @@ class FrameWindowVal:
     #override for "+"
     def __add__(self, other: object) -> object:
         if self.__data_type != other.data_type:
-            raise Exception("Wrong FrameWindowVal data")
+            raise Exception('Wrong FrameWindowVal data')
         self.__data += other.data
         return self
         
@@ -213,22 +250,9 @@ class FrameWindowVal:
     
     @data.setter
     def frame_window_val(self, start, end, start_width=1, end_width=1):  
-        raise Exception("FrameWindowVal is a value object (Immutable).")
+        raise Exception('FrameWindowVal is a value object (Immutable).')
     
     @property
     def data_type(self) -> str:
         return self.__data_type
 
-
-"""
-Tools for value objects
-"""
-# Class for changing from raw data to a value object 
-class ValueObjConverter:
-    def frames_converter(self, raw_data):
-        frames_value_obj = FramesData(raw_data)
-        return frames_value_obj
-    
-    def elec_trace_converter(self, raw_data, interval):
-        elec_trace_value_obj = TraceData(raw_data, interval)
-        return elec_trace_value_obj

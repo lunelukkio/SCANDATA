@@ -125,6 +125,7 @@ class TsmFileIO(IORepositoryInterface):
             print('----------------------------------')
             print('Failed to import a TSM file infor.')
             print('----------------------------------')
+            raise Exception('Failed to import a TSM data.')
             
         else:
             print('Imported a TSM file infor class.')
@@ -159,8 +160,9 @@ class TsmFileIO(IORepositoryInterface):
         except IndexError as tsm_error:
             print(tsm_error)
             print('------------------------------------')
-            print('Failed to import a TSM imaging data.')
+            print('Failed to import a TSM data.')
             print('------------------------------------')
+            raise Exception('Failed to import a TSM data.')
             
         else:
             print('Imported a TSM imaging data class.')
@@ -249,8 +251,9 @@ class TbnFileIO(IORepositoryInterface):
         except OSError as e:
             print(e)
             print('----------------------------------')
-            print('Failed to import a TSM (.tbn) file')
+            print('Failed to import a .tbn (Tsm) file')
             print('----------------------------------')
+            raise Exception('Failed to import a .tbn (Tsm) data.')
             
         else:
             print('Imported a .tbn(.tsm) elec data file.')

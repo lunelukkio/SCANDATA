@@ -7,7 +7,7 @@ lunelukkio@gmail.com
 
 import unittest
 from SCANDATA.model.model_main import DataSet
-from SCANDATA.model.model_main import Filename
+from SCANDATA.model.value_object import Filename
 import matplotlib.pyplot as plt
 
 class TestDataSet(unittest.TestCase):

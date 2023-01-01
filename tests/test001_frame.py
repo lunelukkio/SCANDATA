@@ -6,13 +6,12 @@ lunelukkio@gmail.com
 """
 
 import unittest
-from SCANDATA.model.model_main import Filename
 from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory, FullFrames, ChFrames
-from SCANDATA.model.value_object import FramesData, ValueObjConverter
+from SCANDATA.model.value_object import Filename,FramesData
 from SCANDATA.model.io_factory import TsmFileIOFactory
 import numpy as np
 
-filename = Filename('..\\220408\\20408B002.tsm')  # this isa  value object
+filename = Filename('..\\220408\\20408B002.tsm')  # this isa a value object
 
 """
 class TestFramesData(unittest.TestCase):
@@ -23,13 +22,12 @@ class TestFramesData(unittest.TestCase):
 
 class TestFullFrames(unittest.TestCase):
     def test_full_frame(self):
-        converter = ValueObjConverter()
         
         io_factory = TsmFileIOFactory()
         io_data = io_factory.create_file_io(filename)
         rawdata, _ = io_data.get_data()
         interval, _ = io_data.get_infor()
-        data = converter.frames_converter(rawdata)
+        data = FramesData(rawdata)
         pixel_size = 0.25
         
         data_factory = FullFramesFactory()

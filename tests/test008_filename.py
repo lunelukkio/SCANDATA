@@ -6,7 +6,7 @@ lunelukkio@gmail.com
 """
 
 import unittest
-from SCANDATA.model.model_main import Filename
+from SCANDATA.model.value_object import Filename
 
 filename = Filename('..\\220408\\20408B002.tsm')
 

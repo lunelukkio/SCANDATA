@@ -11,11 +11,10 @@ import unittest
 from SCANDATA.model.controller_factory import FrameWindowFactory
 from SCANDATA.model.controller_factory import FrameWindow, FrameWindowVal
 from SCANDATA.model.data_factory import CellImageFactory, FullFramesFactory
-from SCANDATA.model.value_object import ImageData, ValueObjConverter
+from SCANDATA.model.value_object import Filename, ImageData, FramesData
 from SCANDATA.model.io_factory import TsmFileIOFactory
 import numpy as np
 import matplotlib.pyplot as plt
-from SCANDATA.model.model_main import Filename
 
 
 filename = Filename('..\\220408\\20408B002.tsm')
@@ -30,7 +29,6 @@ class TestFrameWindowVal(unittest.TestCase):
 
 class TestFrameWindow(unittest.TestCase):
     def test_FrameWindow(self):
-        converter = ValueObjConverter()
         io_factory = TsmFileIOFactory()
         io_data = io_factory.create_file_io(filename)
         
@@ -38,7 +36,7 @@ class TestFrameWindow(unittest.TestCase):
         rawdata, _ = io_data.get_data()
         interval, _ = io_data.get_infor()
         pixel_size = 0.25
-        data = converter.frames_converter(rawdata)
+        data = FramesData(rawdata)
         
         data_factory = FullFramesFactory()
         fullframes = data_factory.create_data(data, interval, pixel_size)

@@ -7,12 +7,11 @@ lunelukkio@gmail.com
 
 import unittest
 from SCANDATA.model.controller_factory import RoiFactory
-from SCANDATA.model.value_object import RoiVal, ValueObjConverter
+from SCANDATA.model.value_object import Filename, RoiVal, FramesData
 from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory
 from SCANDATA.model.data_factory import FullTraceFactory, ChTraceFactory
 from SCANDATA.model.io_factory import TsmFileIOFactory
 import matplotlib.pyplot as plt
-from SCANDATA.model.model_main import Filename
 
 
 filename = Filename('..\\220408\\20408B002.tsm')
@@ -30,7 +29,6 @@ class TestRoiVal(unittest.TestCase):
 
 class TestRoi(unittest.TestCase):
     def test_Roi(self):
-        converter = ValueObjConverter()
         # make a 3D data
         io_factory = TsmFileIOFactory()
         io_data = io_factory.create_file_io(filename)
@@ -38,7 +36,7 @@ class TestRoi(unittest.TestCase):
         _, interval = io_data.get_infor()
         rawdata = data[:,:,:,0]
         pixel_size = 0.25
-        data = converter.frames_converter(rawdata)
+        data = FramesData(rawdata)
         
         #make a chframes
         data_factory = ChFramesFactory()

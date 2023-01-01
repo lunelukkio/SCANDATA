@@ -9,10 +9,9 @@ Created on Sun Dec 25 13:33:19 2022
 import unittest
 from SCANDATA.model.data_factory import FullTraceFactory, ChTraceFactory
 from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory
-from SCANDATA.model.value_object import TraceData, ValueObjConverter
+from SCANDATA.model.value_object import Filename, TraceData, FramesData
 from SCANDATA.model.io_factory import TsmFileIOFactory
 import numpy as np
-from SCANDATA.model.model_main import Filename
 
 
 filename = Filename('..\\220408\\20408B002.tsm')
@@ -31,7 +30,6 @@ class TestTimeData(unittest.TestCase):
 
 class TestTrace(unittest.TestCase):
     def test_gull_trace(self):
-        converter = ValueObjConverter()
         io_factory = TsmFileIOFactory()
         io_data = io_factory.create_file_io(filename)
         _, data = io_data.get_data()
@@ -39,7 +37,7 @@ class TestTrace(unittest.TestCase):
         _, interval = io_data.get_infor()
         pixel_size = 0.25
 
-        data = converter.frames_converter(rawdata)
+        data = FramesData(rawdata)
         
         #trace
         data_factory = ChFramesFactory()

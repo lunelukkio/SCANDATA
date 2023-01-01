@@ -7,7 +7,6 @@ lunelukkio@gmail.com
 """
 
 from abc import ABCMeta, abstractmethod
-import os
 from weakref import WeakValueDictionary
 import copy
 from SCANDATA.model.io_factory import TsmFileIOFactory, TbnFileIOFactory
@@ -16,7 +15,7 @@ from SCANDATA.model.data_factory import CellImageFactory
 from SCANDATA.model.data_factory import FullTraceFactory, ChTraceFactory
 from SCANDATA.model.data_factory import ChElecTraceFactory
 from SCANDATA.model.controller_factory import RoiFactory, FrameWindowFactory
-from SCANDATA.model.value_object import ValueObjConverter
+from SCANDATA.model.value_object import Filename, FramesData, TraceData
 
 
 class ExperimentsInterface(metaclass=ABCMeta):
@@ -312,7 +311,6 @@ class WcpFileBuilder(Builder):
 class Director:
     def __init__(self) -> None:
         self.__builder = None  # This decide which file_type will it use. (e.g. .tsm)
-        self.converter = ValueObjConverter()
 
     @property
     def builder(self) -> Builder:
@@ -338,14 +336,14 @@ class Director:
         frame_window = self.builder.create_controller(FrameWindowFactory())
 
         # make full data 
-        full_frames = self.converter.frames_converter(tsm_raw_data_tuple[0])
+        full_frames = FramesData(tsm_raw_data_tuple[0])
         self.builder.create_data(FullFramesFactory(), full_frames, full_interval)
         full_trace = self.builder.create_data(FullTraceFactory(), full_frames, full_interval)
         roi.add_observer(full_trace)
         
         #make ch data set
         for i in range(0, tsm_raw_data_tuple[1].shape[3]):
-            ch_frames = self.converter.frames_converter(tsm_raw_data_tuple[1][:, :, :, i])
+            ch_frames = FramesData(tsm_raw_data_tuple[1][:, :, :, i])
             self.builder.create_data(ChFramesFactory(), ch_frames, ch_interval)
             image = self.builder.create_data(CellImageFactory(), ch_frames)
             trace = self.builder.create_data(ChTraceFactory(), ch_frames, ch_interval)
@@ -360,7 +358,7 @@ class Director:
 
         for i in range(0, num_elec_ch):
             # Convert from raw data to a value object
-            elec_trace_obj = self.converter.elec_trace_converter(elec_data[:,i], elec_interval)
+            elec_trace_obj = TraceData(elec_data[:,i], elec_interval)
             # make ElecTrace
             self.builder.create_data(ChElecTraceFactory(), elec_trace_obj, elec_interval)
         
@@ -377,41 +375,6 @@ class Director:
         for i in (args):
             trace = self.builder.create_data(ChTraceFactory(), i.frames_obj, i.interval)
             roi.add_observer(trace)
-
-" Value object for filenames"
-class Filename:
-    def __init__(self, fullname: str):
-        self.__fullname = os.path.join(fullname)   # replace separater for each OS
-        self.__filename = os.path.basename(self.__fullname)
-        self.__filepath = os.path.dirname(self.__fullname) + os.sep
-        self.__abspath = os.path.abspath(self.__fullname)# absolute path
-        self.__extension = os.path.splitext(self.__fullname)[1]  # get only extension
-
-    def __del__(self):
-        #print('.')
-        #print('Deleted a ImageData object.' + '  myId= {}'.format(id(self)))
-        pass
-        
-    @property
-    def fullname(self) -> str:
-        return self.__fullname
-    
-    @property
-    def name(self) -> str:
-        return self.__filename
-    
-    @property
-    def path(self) -> str:
-        return self.__filepath
-    
-    @property
-    def abspath(self) -> str:
-        return self.__abspath
-    
-    @property
-    def extension(self) -> str:
-        return self.__extension
-
 
     
 if __name__ == '__main__':
