@@ -54,7 +54,7 @@ class IORepositoryInterface:
     
 
 class TsmFileIO(IORepositoryInterface):
-    def __init__(self, filename):
+    def __init__(self, filename, num_fluo_ch=2):
         # about file
         self.filename = filename.name
         self.file_path = filename.path
@@ -66,7 +66,7 @@ class TsmFileIO(IORepositoryInterface):
         self.dark_frame = np.array([0,])
         self.ch_frames = np.array([0,])
         
-        self.num_fluo_ch = 2  # Use () for PMT
+        self.num_fluo_ch = num_fluo_ch  # Use () for PMT
         self.full_frame_interval = 0  # (ms)
         self.ch_frame_interval = 0  # (ms)
         self.data_pixel = np.empty([0,0])
@@ -273,12 +273,5 @@ class TbnFileIO(IORepositoryInterface):
         print('num_elec_data = ' + str(self.num_elec_data))
         
 if __name__ == '__main__':
-    filename = '20408B002.tsm'
-    filepath = '..\\..\\220408\\'
-    
-    io_factory = TsmFileIOFactory()
-    tsm = io_factory.create_file_io(filename, filepath)
-    
-    io_factory = TbnFileIOFactory()
-    tsm = io_factory.create_file_io(filename, filepath, tsm)
+    pass
         

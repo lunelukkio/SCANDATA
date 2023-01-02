@@ -91,7 +91,7 @@ class Roi(ModelController):
       
     def add_data(self, x: int, y: int, x_width=0, y_width=0) -> None:
         add_roi_obj = RoiVal(x, y, x_width, y_width)
-        self.__roi_obj = self.__roi_obj + add_roi_obj
+        self.__roi_obj += add_roi_obj
         self.notify_observer()
         print('Add to ROI-{} and notified'.format(self.object_num))
         self.print_val()
@@ -138,7 +138,7 @@ class FrameWindow(ModelController):
         
     def add_data(self, start: int, end: int, start_width=0, end_width=0) -> None:
         add_frame_window_obj = FrameWindowVal(start, end, start_width, end_width)
-        self.__frame_window_obj = self.__frame_window_obj + add_frame_window_obj
+        self.__frame_window_obj += add_frame_window_obj
         self.notify_observer()
         print('Add to FrameWindow-{} and notified'.format(self.object_num))
         self.print_val()

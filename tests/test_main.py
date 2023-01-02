@@ -26,5 +26,13 @@ if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     test_suite = suite()
     runner.run(test_suite)
-  #print(unittest.TestResult(test_suite))
+    #print(unittest.TestResult(test_suite))
+
+    print('large roiをadd_dataで対処したがROIBOXがROI情報を受け取れない')
+    print('data_setのcreate_dataのリファクタリングが必要。state メソッド使用？')
+    print('difference imageの実装')
+    print('TraceData __sub__の実装＞バックグランドを減算する為')
+    print('dF/F などのモッド実装')
+    print('tkinterの見た目をよくする。imageが小さい')
+    print('view_mainのツリー構造実装')
 

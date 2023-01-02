@@ -44,12 +44,9 @@ class ExperimentsInterface(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
-    def data_set(self):
+    def data_set(self):  # get a list of data_set objects
         raise NotImplementedError()
-    
-    @abstractmethod
-    def print_list(self):
-        raise NotImplementedError()
+
 
 class Experiments(ExperimentsInterface):
     def __init__(self):
@@ -63,14 +60,9 @@ class Experiments(ExperimentsInterface):
         print(self.data_set)
         print('Created {} data set.'.format(filename.name))
         
-    def create_data(self, filename, key, *args):
-        if key == 'CellImage':
-            self.__data_set[filename].create_image(self.__data_set[filename].data['ChFrames1'],
-                                                        self.__data_set[filename].data['ChFrames2'])
-        elif key == 'FluoTrace':
-            self.__data_set[filename].create_trace(self.__data_set[filename].data['FullFrames1'],
-                                                        self.__data_set[filename].data['ChFrames1'],
-                                                        self.__data_set[filename].data['ChFrames2'])
+    def create_data(self, filename, key: str, *args):
+        self.__data_set[filename].create_data(key)
+
             
     def set_data(self, filename: str, key: str, val: tuple):
         self.data_set[filename].set_data(key, val)
@@ -92,11 +84,6 @@ class Experiments(ExperimentsInterface):
     @property
     def data_set(self):
         return self.__data_set
-    
-    def print_list(self):
-        for i in self.__data_set:
-            print('\n')
-            self.__data_set[i].print_infor()
         
     def help(self):
         print('===================================================================================')
@@ -119,7 +106,7 @@ class Experiments(ExperimentsInterface):
 class DataSet:
     def __init__(self, filename: object):
         self.__filename = filename
-        builder_type = self.file_type_checker(filename)
+        builder_type = Translator.file_type_checker(filename)  # Using statsitc method in Translator class.
         
         self.__director = Director()  # Director makes the cartain default set of the experiments. 
         self.__builder = builder_type
@@ -155,30 +142,35 @@ class DataSet:
     
     def reset_data(self, key: str):
         self.__controller[key].reset()
-
-    @staticmethod
-    def file_type_checker(filename):
-        if filename.extension == '.tsm':
-            print('Found a .tsm file')
-            return TsmFileBuilder()
-        elif filename.extension == '.abf':
-            print('Found an .abf file')
-            return AbfFileBuilder()
-        elif filename.extension == '.wcp':
-            print('Found a .wcp file')
-            return WcpFileBuilder()
-        else:
-            print('--------------------------------------')
-            print('Can not find any builder for this file')
-            print('--------------------------------------')
-            raise Exception("The file is incorrect!!!")
-                
-    def create_image(self, *args):
-        self.__director.build_images_data_set(*args)
-
     
-    def create_trace(self, full_frames, *args):  # args = ch_frames
-        self.__director.build_traces_data_set(full_frames, *args)
+    """
+    Need refactoring
+    """
+    def create_data(self, key: str) -> None:
+        if 'Filename' in key:
+            pass
+            
+        elif 'CellImage' in key:
+            self.create_image()
+                                                   
+        elif 'Trace' in key:
+            self.create_trace()
+        
+        self.print_infor()
+                
+    def create_image(self):
+        self.__director.build_images_data_set(self.__data['ChFrames1'],
+                                              self.__data['ChFrames2'])
+
+    def create_trace(self):  # args = ch_frames
+        self.__director.build_traces_data_set(self.__data['FullFrames1'],
+                                              self.__data['ChFrames1'],
+                                              self.__data['ChFrames2'])
+            
+
+    """
+    Need refactoring
+    """
         
     def print_infor(self):
         print('=================== Data keys of ' + str(self.__filename.name) + ' ====================')
@@ -376,7 +368,98 @@ class Director:
             trace = self.builder.create_data(ChTraceFactory(), i.frames_obj, i.interval)
             roi.add_observer(trace)
 
+class Translator:
+    @staticmethod
+    def file_type_checker(filename):
+        if filename.extension == '.tsm':
+            print('Found a .tsm file')
+            return TsmFileBuilder()
+        elif filename.extension == '.abf':
+            print('Found an .abf file')
+            return AbfFileBuilder()
+        elif filename.extension == '.wcp':
+            print('Found a .wcp file')
+            return WcpFileBuilder()
+        else:
+            print('--------------------------------------')
+            print('Can not find any builder for this file')
+            print('--------------------------------------')
+            raise Exception("The file is incorrect!!!")
+            
+class Setcontext:
+    def key_checker(key: str):
+        if 'Filename' in key:
+            return Filename()
+            
+        elif 'Frames' in key:
+            pass
+                                                   
+        elif 'CellImage' in key:
+            return ImageState(key)
+
+        elif 'Trace' in key:
+            return TraceState(key)
+
+        elif 'Roi' in key:
+            pass
+
+        elif 'FrameWindow' in key:
+            pass
+            #self.__data_set[filename].create_trace(self.__data_set[filename].data['FullFrames1'])
+                                                   
+        else:
+            print('--------------------------------------')
+            print('Can not find any Key')
+            print('--------------------------------------')
+            raise Exception("The key name is incorrect!!!")
+
+
+class KeyState(metaclass=ABCMeta):
+    @abstractmethod
+    def create_data(self):
+        raise NotImplementedError()
+
+
+class ConcreateKeyState(KeyState):
+    def __init__(self, key_state):
+        self.key_state = key_state
+        
+    def get_key_state(self):
+        return self.key_state
     
+    
+class ImageState(ConcreateKeyState):
+    def __init__(self, key_state):
+        super(ImageState, self).__init__(state)
+        
+    def create_data(self, key_context):
+        self.__director.build_images_data_set(data['ChFrames1'],
+                                               data['ChFrames2'])
+        
+class TraceState(ConcreateKeyState):
+    def __init__(self, key_state):
+        super(TraceState, self).__init__(state)
+        
+    def create_data(self, key_context):
+        self.__director.build_traces_data_set(data['FullFrames1'],
+                                               data['ChFrames1'],
+                                               data['ChFrames2'])
+
+
+class KeyContext(object):
+    def __init__(self, state_obj):
+        self.key_state = state_obj
+        
+    def set_state(self, obj):
+        self.key_state = obj
+        
+    def create_data(self):
+        self.state.create_data(self)
+            
+    def get_state(self):
+        return self.key_state.get_concreate_state()
+    
+
 if __name__ == '__main__':
     filename1 = '..\\..\\220408\\20408B002.tsm'
     filename2 = '..\\..\\220408\\20408B001new.tsm'

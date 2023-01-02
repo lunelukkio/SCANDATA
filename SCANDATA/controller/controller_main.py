@@ -49,7 +49,7 @@ class Controller:
         return roi   # for ROI Box
     
     def large_roi(self, filename, roi_num):
-        old_roi = self.model.add_data(filename.name, 'Roi' + str(roi_num), [0, 0, 1, 1])
+        self.model.add_data(filename.name, 'Roi' + str(roi_num), [0, 0, 1, 1])
 
 
         

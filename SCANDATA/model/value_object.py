@@ -6,11 +6,37 @@ Created on Sun Jan  1 10:04:06 2023
 """
 
 import os
+from abc import ABCMeta, abstractmethod
 import numpy as np
 import matplotlib.pyplot as plt
 import inspect
 
 
+
+"""
+Value object factory
+"""
+"""
+
+class ValueObjectFactory(metaclass=ABCMeta):
+    @abstractmethod
+    def create_value_object(self, val):
+        raise NotImplementedError()
+
+
+class FilenameFactory(ValueObjectFactory):
+    def create_value_object(self, val):
+        return Filename(val)
+        
+class Value_object(metaclass=ABCMeta):
+    @abstractmethod
+    def show_data(self, val):
+        raise NotImplementedError()
+"""
+        
+"""
+Value object
+"""
 class Filename:
     def __init__(self, fullname: str):
         self.__fullname = os.path.join(fullname)   # replace separater for each OS

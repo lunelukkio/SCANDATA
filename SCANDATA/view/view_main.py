@@ -232,7 +232,6 @@ class DataWindow(tk.Frame):
         self.trace_y1[trace_num].set_ydata(trace.data)
         
     def large_roi(self, roi_num):
-        print('Problem is key "Roi1" goes to data[key]. It shoud be controller[key]')
         self.controller.large_roi(self.__filename, roi_num)
         
         
