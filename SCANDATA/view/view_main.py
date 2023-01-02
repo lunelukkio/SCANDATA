@@ -231,9 +231,20 @@ class DataWindow(tk.Frame):
         trace = self.controller.get_data(self.__filename, trace_type)
         self.trace_y1[trace_num].set_ydata(trace.data)
         
+    def onclick_image(self, event):
+        roi = self.controller.set_roi(self.__filename, event)
+        
+        self.set_trace(self.trace_ax1, 0, 'ChTrace1')
+        self.set_trace(self.trace_ax1, 1, 'ChTrace2')
+        
+        self.roi_box[0].set_roi(roi)
+        self.trace_ax1.relim()
+        self.trace_ax1.autoscale_view()
+        self.canvas_trace.draw()
+        self.canvas_image.draw()
+        
     def large_roi(self, roi_num):
         self.controller.large_roi(self.__filename, roi_num)
-        
         
         self.set_trace(self.trace_ax1, 0, 'ChTrace1')
         self.set_trace(self.trace_ax1, 1, 'ChTrace2')
@@ -262,18 +273,6 @@ class DataWindow(tk.Frame):
         else:
             del self.roi_box[num_box-1]
             print(num_box)
-        
-    def onclick_image(self, event):
-        roi = self.controller.set_roi(self.__filename, event)
-        
-        self.set_trace(self.trace_ax1, 0, 'ChTrace1')
-        self.set_trace(self.trace_ax1, 1, 'ChTrace2')
-        
-        self.roi_box[0].set_roi(roi)
-        self.trace_ax1.relim()
-        self.trace_ax1.autoscale_view()
-        self.canvas_trace.draw()
-        self.canvas_image.draw()
         
     def button_reopen(self):
         del self.controller.model.data_file[self.filename]

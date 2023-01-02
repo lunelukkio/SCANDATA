@@ -40,4 +40,6 @@ if __name__ == '__main__':
     print('dF/F などのモッド実装')
     print('tkinterの見た目をよくする。imageが小さい')
     print('view_mainのツリー構造実装')
+    
+    print('Filename and WholeFilename should be sapaated because of isolation.')
 
