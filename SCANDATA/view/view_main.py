@@ -238,7 +238,7 @@ class DataWindow(tk.Frame):
         self.set_trace(self.trace_ax1, 0, 'ChTrace1')
         self.set_trace(self.trace_ax1, 1, 'ChTrace2')
         
-        self.roi_box[0].add_roi([0, 0, 1, 1])
+        #self.roi_box[0].add_roi([0, 0, 1, 1])
         self.trace_ax1.relim()
         self.trace_ax1.autoscale_view()
         self.canvas_trace.draw()

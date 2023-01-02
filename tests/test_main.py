@@ -10,10 +10,13 @@ import unittest
 def suite():
     test_suite = unittest.TestSuite()
     
-    # test0*.py   for model
-    # test1*py    for view
-    # test2*.py    for controller
-    all_test_suite = unittest.defaultTestLoader.discover(".", pattern="test0*.py")
+    #test_classes = "test*.py"   # test*.py    for all tests
+    test_classes = "test0*.py"  #   for model
+    #test_classes = "test1*.py"  # test1*py    for view
+    #test_classes = "test2*.py"  # test2*.py    for controller
+
+    
+    all_test_suite = unittest.defaultTestLoader.discover(".", pattern=test_classes)
     print(all_test_suite)
     for ts in all_test_suite:
         test_suite.addTest(ts)
@@ -28,7 +31,9 @@ if __name__ == '__main__':
     runner.run(test_suite)
     #print(unittest.TestResult(test_suite))
 
+    print('roiのwidth情報がほぞんされない')
     print('large roiをadd_dataで対処したがROIBOXがROI情報を受け取れない')
+    print('-->get dataでROIinforをgetできるようにする。　stateパターン？')
     print('data_setのcreate_dataのリファクタリングが必要。state メソッド使用？')
     print('difference imageの実装')
     print('TraceData __sub__の実装＞バックグランドを減算する為')
