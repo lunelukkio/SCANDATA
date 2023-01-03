@@ -48,8 +48,8 @@ class Controller:
         self.model.set_data(filename.name, 'Roi' + str(roi_num), roi)
         return roi   # for ROI Box
     
-    def large_roi(self, filename, roi_num):
-        self.model.add_data(filename.name, 'Roi' + str(roi_num), [0, 0, 1, 1])
+    def change_roi_size(self, filename, roi_num, val):
+        self.model.add_data(filename.name, 'Roi' + str(roi_num), val)
 
 
         

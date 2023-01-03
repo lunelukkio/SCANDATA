@@ -214,7 +214,7 @@ Value object for controller
 class RoiVal:
     def __init__(self, x: int, y: int, x_width: int, y_width: int):         
 
-        if x < 0 or y < 0 or x_width < 0 or y_width < 0:
+        if x < 0 or y < 0 or x_width < -1 or y_width < -1:  # width -1 is for small ROI subtraction
             raise Exception('ROI values should be 0 or more')
         called_class = inspect.stack()[1].frame.f_locals['self']
         self.__data = np.array([x, y, x_width, y_width])

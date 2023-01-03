@@ -80,14 +80,20 @@ class Roi(ModelController):
         #print('Created ROI-{}.'.format(self.object_num))
         
     def check_val(self) -> None:
-        if self.__x < 0 or self.__y < 0 or self.__x_length < 0 or self.__y_length < 0:
+        if self.__roi_obj.data[0] < 0 or \
+           self.__roi_obj.data[1] < 0 or \
+           self.__roi_obj.data[2] < 1 or \
+           self.__roi_obj.data[3] < 1:
             raise ValueError('ROI value shold be more than 1')
 
-    def set_data(self, x: int, y: int, x_width=1, y_width=1) -> None:
+    def set_data(self, x: int, y: int) -> None:
+        x_width = self.__roi_obj.data[2]
+        y_width = self.__roi_obj.data[3]
         self.__roi_obj = RoiVal(x, y, x_width, y_width)
         self.notify_observer()
         print('Set ROI-{} and notified'.format(self.object_num))
         self.print_val()
+        self.check_val()
       
     def add_data(self, x: int, y: int, x_width=0, y_width=0) -> None:
         add_roi_obj = RoiVal(x, y, x_width, y_width)
@@ -95,6 +101,7 @@ class Roi(ModelController):
         self.notify_observer()
         print('Add to ROI-{} and notified'.format(self.object_num))
         self.print_val()
+        self.check_val()
 
     def get_data(self) -> object:
         return self.__roi_obj
@@ -112,9 +119,8 @@ class Roi(ModelController):
         self.__observers.remove(observer)
     
     def notify_observer(self):
-        val = self.get_data()
         for observer_name in self.__observers:
-            observer_name.update(val)
+            observer_name.update(self.__roi_obj)
     
     
     def print_val(self) -> None:
