@@ -83,7 +83,7 @@ class Roi(ModelController):
         if self.__x < 0 or self.__y < 0 or self.__x_length < 0 or self.__y_length < 0:
             raise ValueError('ROI value shold be more than 1')
 
-    def set_data(self, x: int, y: int, x_width=0, y_width=0) -> None:
+    def set_data(self, x: int, y: int, x_width=1, y_width=1) -> None:
         self.__roi_obj = RoiVal(x, y, x_width, y_width)
         self.notify_observer()
         print('Set ROI-{} and notified'.format(self.object_num))

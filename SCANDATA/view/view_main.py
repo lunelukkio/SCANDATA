@@ -232,7 +232,7 @@ class DataWindow(tk.Frame):
         self.trace_y1[trace_num].set_ydata(trace.data)
         
     def onclick_image(self, event):
-        roi = self.controller.set_roi(self.__filename, event)
+        roi = self.controller.set_roi_position(self.__filename, event)
         
         self.set_trace(self.trace_ax1, 0, 'ChTrace1')
         self.set_trace(self.trace_ax1, 1, 'ChTrace2')
@@ -285,10 +285,13 @@ class RoiBox():
         self.rectangle = patches.Rectangle(xy=(40, 40), width=1, height=1, ec='r', fill=False)
         ax.add_patch(self.rectangle)
         
-    def set_roi(self, val):
+    def set_roi(self, val, *args):
         self.rectangle.xy = (val[0], val[1])
-        self.rectangle.width = val[2]
-        self.rectangle.height = val[3]
+        try:
+            self.rectangle.width = args[0]
+            self.rectangle.height = args[1]
+        except:
+            pass
 
     def add_val(self, val):
         self.rectangle.xy += (val[0], val[1])

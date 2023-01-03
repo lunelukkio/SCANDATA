@@ -40,11 +40,11 @@ class Controller:
     def get_data(self, filename, data_type) -> object:  # value object
         return self.model.get_data(filename.name, data_type)
     
-    def set_roi(self, filename, event, roi_num=1, roi_length=[1, 1]):
+    def set_roi_position(self, filename, event, roi_num=1):
         print(event.button, event.x, event.y, event.xdata, event.ydata)
         roi_x = math.floor(event.xdata)
         roi_y = math.floor(event.ydata)
-        roi = [roi_x, roi_y] + roi_length
+        roi = [roi_x, roi_y]
         self.model.set_data(filename.name, 'Roi' + str(roi_num), roi)
         return roi   # for ROI Box
     

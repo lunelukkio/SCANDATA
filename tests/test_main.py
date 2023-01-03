@@ -33,6 +33,7 @@ if __name__ == '__main__':
 
     print('roiのwidth情報がほぞんされない')
     print('large roiをadd_dataで対処したがROIBOXがROI情報を受け取れない')
+    print('ROIの問題は値ROIオブジェにｘ、ｙだけを渡せないー＞＊argsつかって値オブジェう表現')
     print('-->get dataでROIinforをgetできるようにする。　stateパターン？')
     print('data_setのcreate_dataのリファクタリングが必要。state メソッド使用？')
     print('difference imageの実装')
