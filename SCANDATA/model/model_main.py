@@ -62,7 +62,6 @@ class Experiments(ExperimentsInterface):
         
     def create_data(self, filename, key: str, *args):
         self.__data_set[filename].create_data(key)
-
             
     def set_data(self, filename: str, key: str, val: tuple):
         self.data_set[filename].set_data(key, val)
@@ -121,6 +120,7 @@ class DataSet:
         self.__data = objects[1]
         self.__controller = objects[2]
         
+        self.__object_dict_list = [self.__file_io, self.__data, self.__controller]
         #self.print_infor()
         
     @property
@@ -131,14 +131,16 @@ class DataSet:
     def controller(self):
         return self.__controller
 
-    def set_data(self, key: str, val: tuple):
-        return self.__controller[key].set_data(*val)
+    def set_data(self, key: str, val):
+        strategy_type = Translator.key_checker(key, self.__object_dict_list)
+        strategy_type.set_data(key, val)
     
     def add_data(self, key: str, val: tuple):
         return self.__controller[key].add_data(*val)
 
-    def get_data(self, key: str):
-        return self.__data[key].get_data()
+    def get_data(self, key: str) -> object:
+        strategy_type = Translator.key_checker(key, self.__object_dict_list)
+        return strategy_type.get_data(key)
     
     def reset_data(self, key: str):
         self.__controller[key].reset()
@@ -178,7 +180,58 @@ class DataSet:
         print('--- Data Keys = ' + str(list(self.__data.keys())))
         print('--- Controller Keys = ' + str(list(self.__controller.keys())))
 
+
+"Strategy Method for set and get data"
+class DataSetStrategy(metaclass=ABCMeta):
+    @abstractmethod
+    def set_data(self):
+        raise NotImplementedError()   
+        
+    @abstractmethod
+    def get_data(self):
+        raise NotImplementedError() 
+     
+        
+class FilenameStrategy(DataSetStrategy):        
+    def set_data(self, key, *args):  
+        #self.__file_io[key].set_data(*args)
+        raise NotImplementedError() 
+
+    def get_data(self, key):
+        #return self.__file_io[key].get_data()
+        raise NotImplementedError() 
+
+        
+class DataStrategy(DataSetStrategy):   
+    def __init__(self, object_dict):
+        self.__object_dict = object_dict
+        
+    def set_data(self, key, *val):  
+        self.__object_dict[key].set_data(val)
+
+    def get_data(self, key):
+        return self.__object_dict[key].get_data()
+        
     
+class ControllerStrategy(DataSetStrategy):
+    def __init__(self, object_dict):
+        self.__object_dict = object_dict
+
+    def set_data(self, key, val):
+        self.__object_dict[key].set_data(*val)
+        
+    def get_data(self, key):
+        return self.__object_dict[key].get_data()
+
+
+class ModStrategy(DataSetStrategy):
+    def set_data(self, key):
+        raise NotImplementedError()   
+        
+    def get_data(self, key):
+        raise NotImplementedError() 
+                   
+
 class Builder(metaclass=ABCMeta):
     @abstractmethod
     def create_file_io(self, factory_type, filename, *args) -> None:
@@ -386,27 +439,23 @@ class Translator:
             print('--------------------------------------')
             raise Exception("The file is incorrect!!!")
             
-class Setcontext:
-    def key_checker(key: str):
+    @staticmethod
+    def key_checker(key: str, object_dict_list: list):
         if 'Filename' in key:
-            return Filename()
+            return FilenameStrategy(object_dict_list[0])
             
-        elif 'Frames' in key:
-            pass
+        elif 'Frames' in key or \
+             'Image' in key or \
+             'Trace' in key:
+            return DataStrategy(object_dict_list[1])
                                                    
-        elif 'CellImage' in key:
-            return ImageState(key)
+        elif 'Roi' in key or \
+             'FrameWindow' in key:
+            return ControllerStrategy(object_dict_list[2])
 
-        elif 'Trace' in key:
-            return TraceState(key)
+        elif 'Mod' in key:
+            raise NotImplementedError()
 
-        elif 'Roi' in key:
-            pass
-
-        elif 'FrameWindow' in key:
-            pass
-            #self.__data_set[filename].create_trace(self.__data_set[filename].data['FullFrames1'])
-                                                   
         else:
             print('--------------------------------------')
             print('Can not find any Key')
@@ -414,6 +463,8 @@ class Setcontext:
             raise Exception("The key name is incorrect!!!")
 
 
+
+"""  state method
 class KeyState(metaclass=ABCMeta):
     @abstractmethod
     def create_data(self):
@@ -459,6 +510,8 @@ class KeyContext(object):
     def get_state(self):
         return self.key_state.get_concreate_state()
     
+
+"""
 
 if __name__ == '__main__':
     filename1 = '..\\..\\220408\\20408B002.tsm'

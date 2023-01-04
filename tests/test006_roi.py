@@ -50,7 +50,7 @@ class TestRoi(unittest.TestCase):
 
         roi = controller_factory.create_controller()
         roi.add_observer(trace)
-        roi.set_data(0,0,1,1)
+        roi.set_data(10,1,1,1)
         a = plt.figure()
         trace.show_data()
         

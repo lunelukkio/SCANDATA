@@ -17,7 +17,7 @@ class TestDataSet(unittest.TestCase):
         
         tracefig = plt.figure()
         dataset.data['ChTrace1'].show_data()
-        dataset.controller['Roi1'].set_data(5,5,1,1)
+        dataset.controller['Roi1'].set_data(5,5)
         dataset.data['ChTrace1'].show_data()
         dataset.data['FullTrace1'].show_data()
         

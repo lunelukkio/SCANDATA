@@ -49,7 +49,7 @@ class ModelController(metaclass=ABCMeta):
         raise NotImplementedError()
 
     @abstractmethod
-    def print_val(self):
+    def print_infor(self):
         raise NotImplementedError()
     
     @abstractmethod
@@ -86,13 +86,18 @@ class Roi(ModelController):
            self.__roi_obj.data[3] < 1:
             raise ValueError('ROI value shold be more than 1')
 
-    def set_data(self, x: int, y: int) -> None:
-        x_width = self.__roi_obj.data[2]
-        y_width = self.__roi_obj.data[3]
+    def set_data(self, x: int, y: int, *args) -> None:
+        try:
+            x_width = args[0]
+            y_width = args[1]
+        except:
+            x_width = self.__roi_obj.data[2]
+            y_width = self.__roi_obj.data[3]
+            
         self.__roi_obj = RoiVal(x, y, x_width, y_width)
         self.notify_observer()
         print('Set ROI-{} and notified'.format(self.object_num))
-        self.print_val()
+        self.print_infor()
         self.check_val()
       
     def add_data(self, x: int, y: int, x_width=0, y_width=0) -> None:
@@ -100,7 +105,7 @@ class Roi(ModelController):
         self.__roi_obj += add_roi_obj
         self.notify_observer()
         print('Add to ROI-{} and notified'.format(self.object_num))
-        self.print_val()
+        self.print_infor()
         self.check_val()
 
     def get_data(self) -> object:
@@ -110,7 +115,7 @@ class Roi(ModelController):
         self.__roi_obj = RoiVal(40, 40, 1, 1)
         self.notify_observer()
         print('Reset ROI-{} and notified'.format(self.object_num))
-        self.print_val()
+        self.print_infor()
 
     def add_observer(self, observer):
         self.__observers.append(observer)
@@ -123,7 +128,7 @@ class Roi(ModelController):
             observer_name.update(self.__roi_obj)
     
     
-    def print_val(self) -> None:
+    def print_infor(self) -> None:
         print('ROI-{} = '.format(self.object_num) + str(self.get_data().data) + 
               ', observer = ' + str(self.__observers))
         
@@ -140,14 +145,14 @@ class FrameWindow(ModelController):
         self.__frame_window_obj = FrameWindowVal(start, end, start_width, end_width)
         self.notify_observer()
         print('Set FrameWindow-{} and notified'.format(self.object_num))
-        self.print_val()
+        self.print_infor()
         
     def add_data(self, start: int, end: int, start_width=0, end_width=0) -> None:
         add_frame_window_obj = FrameWindowVal(start, end, start_width, end_width)
         self.__frame_window_obj += add_frame_window_obj
         self.notify_observer()
         print('Add to FrameWindow-{} and notified'.format(self.object_num))
-        self.print_val()
+        self.print_infor()
 
     def get_data(self) -> object:
         return self.__frame_window_obj
@@ -156,7 +161,7 @@ class FrameWindow(ModelController):
         self.__frame_window_obj = FrameWindowVal(0, 0, 0, 0)
         self.notify_observer()
         print('Reset FrameWindow-{} and notified'.format(self.object_num))
-        self.print_val()
+        self.print_infor()
     
     def add_observer(self, observer: object) -> None:
         self.__observers.append(observer)
@@ -168,7 +173,7 @@ class FrameWindow(ModelController):
         for observer_name in self.__observers:
             observer_name.update(self.get_data())
 
-    def print_val(self) -> None:
+    def print_infor(self) -> None:
         print('FrameWindow-{} = '.format(self.object_num) + str(self.get_data()) + 
               ', observer = ' + str(self.__observers))
 
@@ -185,7 +190,7 @@ class FrameShift(ModelController):
     def get_data(self):
         pass
 
-    def print_val(self):
+    def print_infor(self):
         pass
 
     def reset(self):
@@ -213,7 +218,7 @@ class Line(ModelController):
     def get_data(self):
         pass
 
-    def print_val(self):
+    def print_infor(self):
         pass
 
     def reset(self):
