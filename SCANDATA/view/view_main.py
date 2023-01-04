@@ -144,6 +144,7 @@ class DataWindow(tk.Frame):
         self.trace_y2 = []
         
         self.roi_box = []
+        self.roi_num = 1
         
         # set frames
         frame_top = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=2, bg = 'white')
@@ -163,10 +164,11 @@ class DataWindow(tk.Frame):
         button_delete_roi.config(fg="black", bg="pink")
         button_delete_roi.pack(side=tk.LEFT)
         
-        button_large_roi = tk.Button(frame_bottom, text='Large ROI', command=lambda: self.large_roi(1), width=20)  #need lambda for a fuction with aguments
+        #button_large_roi = tk.Button(frame_bottom, text='Large ROI', command=lambda: self.large_roi(1), width=20)  #need lambda for a fuction with aguments
+        button_large_roi = tk.Button(frame_bottom, text='Large ROI', command=self.large_roi, width=20)
         button_large_roi.pack(side=tk.LEFT)
         
-        button_small_roi = tk.Button(frame_bottom, text='Small ROI', command=lambda: self.small_roi(1), width=20)
+        button_small_roi = tk.Button(frame_bottom, text='Small ROI', command=self.small_roi, width=20)
         button_small_roi.pack(side=tk.LEFT)
         
         frame_bottom.pack(side=tk.BOTTOM, fill=tk.BOTH)
@@ -215,7 +217,7 @@ class DataWindow(tk.Frame):
         self.show_data(self.trace_ax1, 'ChTrace2')
         self.show_data(self.trace_ax2, 'ChElecTrace1')
         
-        roi_box = RoiBox(self.image_ax)
+        roi_box = RoiBox(self.__filename, self.controller, self.image_ax)
         self.roi_box.append(roi_box)
         
     def show_data(self, ax, data_type):
@@ -232,31 +234,33 @@ class DataWindow(tk.Frame):
         self.trace_y1[trace_num].set_ydata(trace.data)
         
     def onclick_image(self, event):
-        roi = self.controller.set_roi_position(self.__filename, event)
+        self.controller.set_roi_position(self.__filename, event)
         
+        #display data and ROI
         self.set_trace(self.trace_ax1, 0, 'ChTrace1')
-        self.set_trace(self.trace_ax1, 1, 'ChTrace2')
+        #self.set_trace(self.trace_ax1, 1, 'ChTrace2')
+        self.roi_box[self.roi_num-1].set_roi()
         
-        self.roi_box[0].set_roi(*roi)  #unpack from a list to each values
         self.trace_ax1.relim()
         self.trace_ax1.autoscale_view()
         self.canvas_trace.draw()
         self.canvas_image.draw()
         
-    def large_roi(self, roi_num):
-        self.change_roi_size(roi_num, [0, 0, 1, 1])
+    def large_roi(self):
+        self.change_roi_size([0, 0, 1, 1])
 
-    def small_roi(self, roi_num):
-        self.change_roi_size(roi_num, [0, 0, -1, -1])
+    def small_roi(self):
+        self.change_roi_size([0, 0, -1, -1])
 
     
-    def change_roi_size(self, roi_num, val):
-        self.controller.change_roi_size(self.__filename, roi_num, val)
+    def change_roi_size(self, val):
+        self.controller.change_roi_size(self.__filename, self.roi_num, val)
         
+        #display data and ROI
         self.set_trace(self.trace_ax1, 0, 'ChTrace1')
         self.set_trace(self.trace_ax1, 1, 'ChTrace2')
-        
-        self.roi_box[0].add_roi(val)
+        self.roi_box[self.roi_num-1].set_roi()
+
         self.trace_ax1.relim()
         self.trace_ax1.autoscale_view()
         self.canvas_trace.draw()
@@ -283,25 +287,23 @@ class DataWindow(tk.Frame):
         # reopen window
         
 
-
 class RoiBox():
-    def __init__(self, ax):
+    object_num = 0  # class variable 
+        
+    def __init__(self, filename, controller, ax):
+        self.__filename = filename
+        self.__controller = controller
         self.__rectangle_obj = patches.Rectangle(xy=(40, 40), width=1, height=1, ec='r', fill=False)
         ax.add_patch(self.__rectangle_obj)
-        
-    def set_roi(self, *val: tuple):
-        self.__rectangle_obj.set_xy([val[0], val[1]])
-        try:
-            self.__rectangle_obj.set_width(self.__rectangle_obj.get_width() + val[2])
-            self.__rectangle_obj.set_height(self.__rectangle_obj.get_height() + val[3])
-        except:
-            pass
+        RoiBox.object_num += 1
 
-    def add_roi(self, val):
-        self.__rectangle_obj.set_width(self.__rectangle_obj.get_width() + val[2])
-        self.__rectangle_obj.set_height(self.__rectangle_obj.get_height() + val[3])
-        print(self.__rectangle_obj.get_width())
         
+    def set_roi(self):
+        roi_obj = self.__controller.get_controller(self.__filename.name, 'Roi' + str(RoiBox.object_num))
+        self.__rectangle_obj.set_xy([roi_obj.data[0], roi_obj.data[1]])
+        self.__rectangle_obj.set_width(roi_obj.data[2])
+        self.__rectangle_obj.set_height(roi_obj.data[3])      
+
         
 class NavigationToolbarTrace(NavigationToolbar2Tk):
     def __init__(self, canvas=None, master=None):

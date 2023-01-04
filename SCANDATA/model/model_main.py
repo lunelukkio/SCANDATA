@@ -131,7 +131,7 @@ class DataSet:
     def controller(self):
         return self.__controller
 
-    def set_data(self, key: str, val):
+    def set_data(self, key: str, val: tuple):
         strategy_type = Translator.key_checker(key, self.__object_dict_list)
         strategy_type.set_data(key, val)
     

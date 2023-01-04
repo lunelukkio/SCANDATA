@@ -31,15 +31,15 @@ if __name__ == '__main__':
     runner.run(test_suite)
     #print(unittest.TestResult(test_suite))
 
-    print('roiのwidth情報がほぞんされない')
-    print('large roiをadd_dataで対処したがROIBOXがROI情報を受け取れない')
+
+
     print('ROIの問題は値ROIオブジェにｘ、ｙだけを渡せないー＞＊argsつかって値オブジェう表現')
 
-    print('ROIが０よりちいさくなるとROIBOXがおかしくなる')
+
     
     print('data_setのcreate_dataのリファクタリングが必要。state メソッド使用？')
     
-    
+    print('右クリックでロ位変更実装')
     print('difference imageの実装')
     print('TraceData __sub__の実装＞バックグランドを減算する為')
     print('dF/F などのモッド実装')
