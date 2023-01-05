@@ -16,6 +16,7 @@ from SCANDATA.model.data_factory import FullTraceFactory, ChTraceFactory
 from SCANDATA.model.data_factory import ChElecTraceFactory
 from SCANDATA.model.controller_factory import RoiFactory, FrameWindowFactory
 from SCANDATA.model.value_object import Filename, FramesData, TraceData
+#from SCANDATA.model.mod_factory import ModTrace
 
 
 class ExperimentsInterface(metaclass=ABCMeta):
@@ -140,7 +141,8 @@ class DataSet:
 
     def get_data(self, key: str) -> object:
         strategy_type = Translator.key_checker(key, self.__object_dict_list)
-        return strategy_type.get_data(key)
+        raw_data = strategy_type.get_data(key)
+        return raw_data  # Without moduration.  Rapper modulate raw_data.
     
     def reset_data(self, key: str):
         self.__controller[key].reset()

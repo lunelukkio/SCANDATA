@@ -9,7 +9,8 @@ from abc import ABCMeta, abstractmethod
 from SCANDATA.model.value_object import ImageData, TraceData
 import numpy as np
 
-class Mod():
+"From get_data method in DataSet class"
+class ModTrace():
     pass
     
     
@@ -54,35 +55,35 @@ class ModInterface(metaclass=ABCMeta):
         
 class BackGroundComp(ModInterface):
     def __init__(self):
-        self.__trace = trace
+        pass
         
-    def mod_trace(self):
+    def mod_trace(self, trace):
         pass
     
     
     def __str__(self):
     #return "[{0}]".format(self.__name)
-    pass
+        pass
 
 class DfOverF(ModInterface):
     def __init__(self):
-        self.__trace = trace
+        pass
         
-    def mod_trace(self):
+    def mod_trace(self, trace):
         pass
     
     
     def __str__(self):
-    return "[{0}]".format(self.__name)
+        pass
     
     
 class TraceFilter(ModInterface):
     def __init__(self):
-        self.__trace = trace
+        pass
         
-    def mod_trace(self):
+    def mod_trace(self, trace):
         pass
     
     
     def __str__(self):
-    return "[{0}]".format(self.__name)
+        pass
