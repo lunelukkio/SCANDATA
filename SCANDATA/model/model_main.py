@@ -149,26 +149,8 @@ class DataSet:
     Need refactoring
     """
     def create_data(self, key: str) -> None:
-        if 'Filename' in key:
-            pass
-            
-        elif 'CellImage' in key:
-            self.create_image()
-                                                   
-        elif 'Trace' in key:
-            self.create_trace()
-        
-        self.print_infor()
-                
-    def create_image(self):
-        self.__director.build_images_data_set(self.__data['ChFrames1'],
-                                              self.__data['ChFrames2'])
-
-    def create_trace(self):  # args = ch_frames
-        self.__director.build_traces_data_set(self.__data['FullFrames1'],
-                                              self.__data['ChFrames1'],
-                                              self.__data['ChFrames2'])
-            
+        strategy_type = Translator.key_checker(key, self.__object_dict_list)
+        strategy_type.create_data(self.__director, self.__data)
 
     """
     Need refactoring
@@ -181,7 +163,10 @@ class DataSet:
         print('--- Controller Keys = ' + str(list(self.__controller.keys())))
 
 
-"Strategy Method for set and get data"
+
+"""
+Strategy Method for set and get data
+"""
 class DataSetStrategy(metaclass=ABCMeta):
     @abstractmethod
     def set_data(self):
@@ -189,39 +174,87 @@ class DataSetStrategy(metaclass=ABCMeta):
         
     @abstractmethod
     def get_data(self):
+        raise NotImplementedError()
+        
+    @abstractmethod   
+    def create_data(self):
         raise NotImplementedError() 
      
         
 class FilenameStrategy(DataSetStrategy):        
     def set_data(self, key, *args):  
         #self.__file_io[key].set_data(*args)
-        raise NotImplementedError() 
+        raise Exception('Filename cant be changed')
 
     def get_data(self, key):
-        #return self.__file_io[key].get_data()
-        raise NotImplementedError() 
+        raise NotImplementedError()   # Shold it be filename?
+
+        
+    def create_data(self):
+        raise Exception('Filename shold be only one in a data-set as its name.')
 
         
 class DataStrategy(DataSetStrategy):   
     def __init__(self, object_dict):
-        self.__object_dict = object_dict
+        self._object_dict = object_dict
         
     def set_data(self, key, *val):  
-        self.__object_dict[key].set_data(val)
+        self._object_dict[key].set_data(val)
 
     def get_data(self, key):
-        return self.__object_dict[key].get_data()
-        
+        return self._object_dict[key].get_data()
+    
     
 class ControllerStrategy(DataSetStrategy):
     def __init__(self, object_dict):
-        self.__object_dict = object_dict
+        self._object_dict = object_dict
 
     def set_data(self, key, val):
-        self.__object_dict[key].set_data(*val)
+        self._object_dict[key].set_data(*val)
         
     def get_data(self, key):
-        return self.__object_dict[key].get_data()
+        return self._object_dict[key].get_data()
+
+
+class FramesStrategy(DataStrategy):
+    def __init__(self, object_dict, director):
+        super().__init__(object_dict, director)
+        
+    "Can it replace director methods???"
+    def create_data(self):
+        pass
+
+
+class ImageStrategy(DataStrategy):
+    def __init__(self, object_dict):
+        super().__init__(object_dict)
+        
+    def create_data(self, director, data):
+        director.build_images_data_set(data)
+
+
+class TraceStrategy(DataStrategy):
+    def __init__(self, object_dict):
+        super().__init__(object_dict)
+        
+    def create_data(self, director, data):
+        director.build_traces_data_set(data)
+        
+class RoiStrategy(ControllerStrategy):
+    def __init__(self, object_dict):
+        super().__init__(object_dict)
+        
+    def create_data(self):
+        pass
+        
+        
+class FrameWindowStrategy(ControllerStrategy):
+    def __init__(self, object_dict):
+        super().__init__(object_dict)
+        
+    def create_data(self):
+        pass
+
 
 
 class ModStrategy(DataSetStrategy):
@@ -232,6 +265,10 @@ class ModStrategy(DataSetStrategy):
         raise NotImplementedError() 
                    
 
+
+"""
+Builder
+"""
 class Builder(metaclass=ABCMeta):
     @abstractmethod
     def create_file_io(self, factory_type, filename, *args) -> None:
@@ -407,17 +444,17 @@ class Director:
             # make ElecTrace
             self.builder.create_data(ChElecTraceFactory(), elec_trace_obj, elec_interval)
         
-    def build_images_data_set(self, *args) -> None:
+    def build_images_data_set(self, data_set) -> None:
         frame_window = self.builder.create_controller(FrameWindowFactory())
-        for i in (args):
+        for i in (data_set['ChFrames1'], data_set['ChFrames2']):
             image = self.builder.create_data(CellImageFactory(), i.frames_obj)
             frame_window.add_observer(image)
 
-    def build_traces_data_set(self, full_frames, *args) -> None:
+    def build_traces_data_set(self, data_set) -> None:
         roi = self.builder.create_controller(RoiFactory())
-        full_trace = self.builder.create_data(FullTraceFactory(), full_frames.frames_obj, full_frames.interval)
+        full_trace = self.builder.create_data(FullTraceFactory(), data_set['FullFrames1'].frames_obj, data_set['FullFrames1'].interval)
         roi.add_observer(full_trace)
-        for i in (args):
+        for i in (data_set['ChFrames1'], data_set['ChFrames2']):
             trace = self.builder.create_data(ChTraceFactory(), i.frames_obj, i.interval)
             roi.add_observer(trace)
 
@@ -444,14 +481,20 @@ class Translator:
         if 'Filename' in key:
             return FilenameStrategy(object_dict_list[0])
             
-        elif 'Frames' in key or \
-             'Image' in key or \
-             'Trace' in key:
-            return DataStrategy(object_dict_list[1])
+        elif 'Frames' in key :
+            return FramesStrategy(object_dict_list[1])
+        
+        elif 'Image' in key:
+            return ImageStrategy(object_dict_list[1])
+
+        elif 'Trace' in key:
+            return TraceStrategy(object_dict_list[1])
                                                    
-        elif 'Roi' in key or \
-             'FrameWindow' in key:
-            return ControllerStrategy(object_dict_list[2])
+        elif 'Roi' in key:
+            return RoiStrategy(object_dict_list[2])
+            
+        elif 'FrameWindow' in key:
+            return FrameWindowStrategy(object_dict_list[2])
 
         elif 'Mod' in key:
             raise NotImplementedError()
@@ -463,55 +506,6 @@ class Translator:
             raise Exception("The key name is incorrect!!!")
 
 
-
-"""  state method
-class KeyState(metaclass=ABCMeta):
-    @abstractmethod
-    def create_data(self):
-        raise NotImplementedError()
-
-
-class ConcreateKeyState(KeyState):
-    def __init__(self, key_state):
-        self.key_state = key_state
-        
-    def get_key_state(self):
-        return self.key_state
-    
-    
-class ImageState(ConcreateKeyState):
-    def __init__(self, key_state):
-        super(ImageState, self).__init__(state)
-        
-    def create_data(self, key_context):
-        self.__director.build_images_data_set(data['ChFrames1'],
-                                               data['ChFrames2'])
-        
-class TraceState(ConcreateKeyState):
-    def __init__(self, key_state):
-        super(TraceState, self).__init__(state)
-        
-    def create_data(self, key_context):
-        self.__director.build_traces_data_set(data['FullFrames1'],
-                                               data['ChFrames1'],
-                                               data['ChFrames2'])
-
-
-class KeyContext(object):
-    def __init__(self, state_obj):
-        self.key_state = state_obj
-        
-    def set_state(self, obj):
-        self.key_state = obj
-        
-    def create_data(self):
-        self.state.create_data(self)
-            
-    def get_state(self):
-        return self.key_state.get_concreate_state()
-    
-
-"""
 
 if __name__ == '__main__':
     filename1 = '..\\..\\220408\\20408B002.tsm'
