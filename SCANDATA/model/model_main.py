@@ -141,9 +141,8 @@ class DataSet:
 
     def get_data(self, key: str) -> object:
         strategy_type = Translator.key_checker(key, self.__object_dict_list)
-        raw_data = strategy_type.get_data(key)
-        return raw_data  # Without moduration.  Rapper modulate raw_data.
-    
+        return strategy_type.get_data(key)  # Without moduration.  Rapper modulate raw_data.
+
     def reset_data(self, key: str):
         self.__controller[key].reset()
     
