@@ -11,7 +11,12 @@ import numpy as np
 
 "From get_data method in DataSet class"
 class ModTrace():
-    pass
+    def wrapper(*args,**kwargs):
+
+        raw_data = func(*args,**kwargs)
+        
+        return raw_data
+    return wrapper
     
     
     

@@ -16,7 +16,7 @@ from SCANDATA.model.data_factory import FullTraceFactory, ChTraceFactory
 from SCANDATA.model.data_factory import ChElecTraceFactory
 from SCANDATA.model.controller_factory import RoiFactory, FrameWindowFactory
 from SCANDATA.model.value_object import Filename, FramesData, TraceData
-from SCANDATA.model.mod_factory import ModTrace
+#from SCANDATA.model.mod_factory import ModTrace
 
 
 class ExperimentsInterface(metaclass=ABCMeta):
@@ -234,11 +234,6 @@ class TraceStrategy(DataStrategy):
         
     def create_data(self, director, data):
         director.build_traces_data_set(data)
-        
-    "Override"
-    #@ModTrace
-    def get_data(self, key):
-        return self._object_dict[key].get_data()
         
         
 class RoiStrategy(ControllerStrategy):
