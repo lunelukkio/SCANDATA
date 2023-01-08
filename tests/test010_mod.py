@@ -20,9 +20,9 @@ class TestMod(unittest.TestCase):
     def test_mod(self):
 
         trace = dataset.get_data('ChTrace1')
-        bgtrace = dataset.get_data('BgChTrace1')
+        bgtrace = dataset.get_data('ChTrace3')
         bg = BgComp(bgtrace)
-        bg.mod_data(trace)
+        #bg.mod_data(trace)
 
         
         

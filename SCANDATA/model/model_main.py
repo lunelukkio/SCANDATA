@@ -13,7 +13,6 @@ from SCANDATA.model.io_factory import TsmFileIOFactory, TbnFileIOFactory
 from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory
 from SCANDATA.model.data_factory import CellImageFactory
 from SCANDATA.model.data_factory import FullTraceFactory, ChTraceFactory
-from SCANDATA.model.data_factory import BgFullTraceFactory, BgChTraceFactory
 from SCANDATA.model.data_factory import ChElecTraceFactory
 from SCANDATA.model.controller_factory import RoiFactory, FrameWindowFactory
 from SCANDATA.model.value_object import Filename, FramesData, TraceData
@@ -427,7 +426,7 @@ class Director:
         full_trace = self.builder.create_data(FullTraceFactory(), full_frames, full_interval)
         roi.add_observer(full_trace)
         # create background full trace
-        bg_full_trace = self.builder.create_data(BgFullTraceFactory(), full_frames, full_interval)
+        bg_full_trace = self.builder.create_data(FullTraceFactory(), full_frames, full_interval)
         bg_roi.add_observer(bg_full_trace)
         
         
@@ -443,7 +442,7 @@ class Director:
             roi.add_observer(trace)
             
             # Make ch backgrand traces
-            bg_trace = self.builder.create_data(BgChTraceFactory(), ch_frames, ch_interval)
+            bg_trace = self.builder.create_data(ChTraceFactory(), ch_frames, ch_interval)
             #bind controller to data
             bg_roi.add_observer(bg_trace)
 
