@@ -321,7 +321,6 @@ class TsmFileBuilder(Builder):
         
     def create_data(self, factory_type, data, *args) -> object:
         product = factory_type.create_data(data, *args)
-        product.show_data()
         object_name = product.__class__.__name__  # str
         
         last_num = self.__data_counter.get(object_name, 0)  # Get counter num of instance. If not exist, num is 0.

@@ -127,6 +127,10 @@ class ImageData:
         print('.')
         #print('Deleted a ImageData object.' + '  myId= {}'.format(id(self)))
         
+    # This is for difference image
+    def __sub__(self):
+        raise NotImplementedError()
+        
     @property
     def data(self) -> np.ndarray:
         return self.__data
@@ -170,6 +174,17 @@ class TraceData:
     def __del__(self):
         print('.')
         #print('Deleted a TraceData object.' + '  myId= {}'.format(id(self)))
+        
+    # This is for background substruction
+    def __sub__(self, other: object) -> object:
+        if self.__data_type != other.data_type:
+            raise Exception('Wrong trace data')
+        F = self.__data[0: 5]
+        deltaF = self.__data - F
+        bg_comp_trace = deltaF - other.data
+        return bg_comp_trace
+        
+        
         
     def __create_time_data(self, trace, interval) -> np.ndarray:
         num_data_point = interval * np.shape(trace)[0]

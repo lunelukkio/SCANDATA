@@ -20,9 +20,9 @@ class ModFactory(metaclass=ABCMeta):
         raise NotImplementedError()
 
 
-class BackGroundCompFactory(ModFactory):
+class BgCompFactory(ModFactory):
     def create_mod(self):
-        return BackGroundComp()
+        return BgComp()
     
 
 class DfOverFFactory(ModFactory):
@@ -43,8 +43,8 @@ class FlamesFilterFactory(ModFactory):
 Handler(Interface)
 """
 class ModInterface(metaclass=ABCMeta):
-    def __init__(self):
-        self.__name = self.__class__.__name__
+    def __init__(self, name):
+        self.__name = name
         self.__next = None
 
     def setNext(self, next):
@@ -69,15 +69,15 @@ class ModInterface(metaclass=ABCMeta):
 """
 ConcreteHandler
 """
-class BackGroundComp(ModInterface):
-    def __init__(self, name):
-        super(NoSupport, self).__init__(name)
+class BgComp(ModInterface):
+    def __init__(self, bg_trace_obj):
+        self.name = self.__class__.__name__
+        super().__init__(self.name)
+        self.bg_trace_obj = bg_trace_obj
 
-    def resolve(self, trouble):
-        return False
-        
-    def mod_data(self, trace):
-        pass
+    def mod_data(self, trace_obj):
+        mod_trace = trace_obj - self.bg_trace_obj
+        return mod_trace
     
     
     def __str__(self):
@@ -86,7 +86,7 @@ class BackGroundComp(ModInterface):
 
 class DfOverF(ModInterface):
     def __init__(self):
-        pass
+        super(NoSupport, self).__init__(name)
         
     def mod_data(self, trace):
         pass
