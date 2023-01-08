@@ -51,13 +51,13 @@ class ChTraceFactory(DataFactory):
     def create_data(self, data, *args):  # data = 3D raw data, interval
         return ChTrace(data, *args)
     
-class BGFullTraceFactory(DataFactory):
+class BgFullTraceFactory(DataFactory):
     def create_data(self, data, *args):  # data = 3D raw data, interval
-        return BGFullTrace(data, *args)
+        return BgFullTrace(data, *args)
     
-class BGChTraceFactory(DataFactory):
+class BgChTraceFactory(DataFactory):
     def create_data(self, data, *args):  # data = 3D raw data, interval
-        return BGChTrace(data, *args)
+        return BgChTrace(data, *args)
     
 class ChElecTraceFactory(DataFactory):  # data = 3D raw data, interval
     def create_data(self, data, *args):  # data = 
@@ -377,23 +377,23 @@ class ChTrace(FluoTrace):
         super().print_add_infor()
 
 
-class BGFullTrace(FluoTrace):
+class BgFullTrace(FluoTrace):
     def __init__(self, frames_obj, interval):
         super().__init__(frames_obj, interval)
         self.object_num = 0  # instance number
         
     def print_infor(self) -> None:
-        print('This is BGTrace-{}'.format(self.object_num))
+        print('This is BgTrace-{}'.format(self.object_num))
         super().print_add_infor()
         
         
-class BGChTrace(FluoTrace):
+class BgChTrace(FluoTrace):
     def __init__(self, frames_obj, interval):
         super().__init__(frames_obj, interval)
         self.object_num = 0  # instance number
         
     def print_infor(self) -> None:
-        print('This is BGTrace-{}'.format(self.object_num))
+        print('This is BgTrace-{}'.format(self.object_num))
         super().print_add_infor()
 
 

@@ -13,6 +13,7 @@ from SCANDATA.model.io_factory import TsmFileIOFactory, TbnFileIOFactory
 from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory
 from SCANDATA.model.data_factory import CellImageFactory
 from SCANDATA.model.data_factory import FullTraceFactory, ChTraceFactory
+from SCANDATA.model.data_factory import BgFullTraceFactory, BgChTraceFactory
 from SCANDATA.model.data_factory import ChElecTraceFactory
 from SCANDATA.model.controller_factory import RoiFactory, FrameWindowFactory
 from SCANDATA.model.value_object import Filename, FramesData, TraceData
@@ -122,7 +123,7 @@ class DataSet:
         self.__controller = objects[2]
         
         self.__object_dict_list = [self.__file_io, self.__data, self.__controller]
-        #self.print_infor()
+        self.print_infor()
         
     @property
     def data(self):
@@ -141,7 +142,7 @@ class DataSet:
 
     def get_data(self, key: str) -> object:
         strategy_type = Translator.key_checker(key, self.__object_dict_list)
-        return strategy_type.get_data(key)  # Without moduration.  Rapper modulate raw_data.
+        return strategy_type.get_data(key)
 
     def reset_data(self, key: str):
         self.__controller[key].reset()
@@ -195,7 +196,7 @@ class DataStrategy(DataSetStrategy):
     def set_data(self, key, *val):  
         self._object_dict[key].set_data(val)
 
-    def get_data(self, key):
+    def get_data(self, key):  # overrided by childern classes
         return self._object_dict[key].get_data()
     
     
@@ -233,6 +234,13 @@ class TraceStrategy(DataStrategy):
         
     def create_data(self, director, data):
         director.build_traces_data_set(data)
+        
+    def get_data(self, key):
+        return self._object_dict[key].get_data()
+        #mod_trace = mod_data(raw_trace)
+        "誰かがModdict{}を保持してfor 文でModをchain of responsibilityに入れ回す mod dictにはそれぞれt trace image frames用が必要"
+        "管理はmoddicのオブジェを抜き差しでする"
+        
         
         
 class RoiStrategy(ControllerStrategy):
@@ -313,13 +321,14 @@ class TsmFileBuilder(Builder):
         
     def create_data(self, factory_type, data, *args) -> object:
         product = factory_type.create_data(data, *args)
+        product.show_data()
         object_name = product.__class__.__name__  # str
         
         last_num = self.__data_counter.get(object_name, 0)  # Get counter num of instance. If not exist, num is 0.
         new_num = last_num + 1
         product.object_num = new_num  # Add counter num to instance.
         
-        self.__data_counter[object_name] = new_num  # Add key and object_num to counter dict.
+        self.__data_counter[object_name] = new_num  # Add key and object_num to a counter dict.
         self.__data[object_name + str(product.object_num)] = product
         return product
     
@@ -410,6 +419,7 @@ class Director:
 
         # make model controller
         roi = self.builder.create_controller(RoiFactory())
+        bg_roi = self.builder.create_controller(RoiFactory())
         frame_window = self.builder.create_controller(FrameWindowFactory())
 
         # make full data 
@@ -417,6 +427,11 @@ class Director:
         self.builder.create_data(FullFramesFactory(), full_frames, full_interval)
         full_trace = self.builder.create_data(FullTraceFactory(), full_frames, full_interval)
         roi.add_observer(full_trace)
+        # create background full trace
+        bg_full_trace = self.builder.create_data(BgFullTraceFactory(), full_frames, full_interval)
+        bg_roi.add_observer(bg_full_trace)
+        
+        
         
         #make ch data set
         for i in range(0, tsm_raw_data_tuple[1].shape[3]):
@@ -427,6 +442,11 @@ class Director:
             #bind controller to data
             frame_window.add_observer(image)
             roi.add_observer(trace)
+            
+            # Make ch backgrand traces
+            bg_trace = self.builder.create_data(BgChTraceFactory(), ch_frames, ch_interval)
+            #bind controller to data
+            bg_roi.add_observer(bg_trace)
 
         #make elec traes
         elec_data = copy.deepcopy(tbn.get_data())  # made indipendent from the file
@@ -491,9 +511,9 @@ class Translator:
         elif 'FrameWindow' in key:
             return FrameWindowStrategy(object_dict_list[2])
 
-        elif 'Mod' in key:
+        elif 'Newkey' in key:
             raise NotImplementedError()
-
+            
         else:
             print('--------------------------------------')
             print('Can not find any Key')

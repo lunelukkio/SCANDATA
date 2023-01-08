@@ -9,16 +9,6 @@ from abc import ABCMeta, abstractmethod
 from SCANDATA.model.value_object import ImageData, TraceData
 import numpy as np
 
-"From get_data method in DataSet class"
-class ModTrace():
-    def wrapper(*args,**kwargs):
-
-        raw_data = func(*args,**kwargs)
-        
-        return raw_data
-    return wrapper
-    
-    
     
 
 """
@@ -30,13 +20,12 @@ class ModFactory(metaclass=ABCMeta):
         raise NotImplementedError()
 
 
-class BackGroundComp(ModFactory):
+class BackGroundCompFactory(ModFactory):
     def create_mod(self):
         return BackGroundComp()
     
-    
 
-class BackGroundComp(ModFactory):
+class DfOverFFactory(ModFactory):
     def create_mod(self):
         return BackGroundComp()
     
@@ -44,25 +33,50 @@ class BackGroundComp(ModFactory):
 class TraceFilterFactory(ModFactory):
     def create_mod(self):
         return TraceFilter()
-
+    
+class FlamesFilterFactory(ModFactory):
+    def create_mod(self):
+        return FlamesFilter()
 
     
-
+"""
+Handler(Interface)
+"""
 class ModInterface(metaclass=ABCMeta):
-    @abstractmethod
-    def mod_trace(self):
-        raise NotImplementedError()
-        
-    @abstractmethod
-    def __str__(self):
-        raise NotImplementedError()
-        
-        
-class BackGroundComp(ModInterface):
     def __init__(self):
+        self.__name = self.__class__.__name__
+        self.__next = None
+
+    def setNext(self, next):
+        self.__next = next
+        return next
+
+    def support(self, trouble):
+        if self.resolve(trouble):
+            self.done(trouble)
+        elif self.__next is not None:
+            self.__next.support(trouble)
+        else:
+            self.fail(trouble)
+
+    @abstractmethod
+    def mod_data(self, trouble):
         pass
+
         
-    def mod_trace(self, trace):
+        
+        
+"""
+ConcreteHandler
+"""
+class BackGroundComp(ModInterface):
+    def __init__(self, name):
+        super(NoSupport, self).__init__(name)
+
+    def resolve(self, trouble):
+        return False
+        
+    def mod_data(self, trace):
         pass
     
     
@@ -74,7 +88,7 @@ class DfOverF(ModInterface):
     def __init__(self):
         pass
         
-    def mod_trace(self, trace):
+    def mod_data(self, trace):
         pass
     
     
@@ -86,7 +100,18 @@ class TraceFilter(ModInterface):
     def __init__(self):
         pass
         
-    def mod_trace(self, trace):
+    def mod_data(self, trace):
+        pass
+    
+    
+    def __str__(self):
+        pass
+    
+class FlamesFilter(ModInterface):
+    def __init__(self):
+        pass
+        
+    def mod_data(self, trace):
         pass
     
     

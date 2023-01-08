@@ -226,7 +226,7 @@ class RoiVal:
         #print('Deleted a RoiVal object.' + '  myId={}'.format(id(self)))
         
     #override for "+"
-    def __add__(self, other: object) -> object:
+    def __add__(self, other: object)  -> object:
         if self.__data_type != other.data_type:
             raise Exception('Wrong RoiVal data')
         self.__data += other.data
