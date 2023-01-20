@@ -220,6 +220,12 @@ class DataWindow(tk.Frame):
         roi_box = RoiBox(self.__filename, self.controller, self.image_ax)
         self.roi_box.append(roi_box)
         
+    def draw_data(self):
+        self.trace_ax1.relim()
+        self.trace_ax1.autoscale_view()
+        self.canvas_trace.draw()
+        self.canvas_image.draw()
+        
     def show_data(self, ax, data_type):
         value_obj = self.controller.get_data(self.__filename, data_type)
         try:
@@ -240,10 +246,7 @@ class DataWindow(tk.Frame):
         self.set_trace(self.trace_ax1, 1, 'ChTrace3')
         self.roi_box[self.roi_num-1].set_roi()
         
-        self.trace_ax1.relim()
-        self.trace_ax1.autoscale_view()
-        self.canvas_trace.draw()
-        self.canvas_image.draw()
+        self.draw_data()
         
     def large_roi(self):
         self.change_roi_size([0, 0, 1, 1])
@@ -264,13 +267,14 @@ class DataWindow(tk.Frame):
         self.trace_ax1.autoscale_view()
         self.canvas_trace.draw()
         self.canvas_image.draw()
-        
+
     def add_roi(self):
-        new_roi_box = RoiBox(self.image_ax)
+        new_roi_box = RoiBox(self.__filename, self.controller, self.image_ax)
         self.roi_box.append(new_roi_box)
-        self.create_trace(self.filename, 'ChTrace1')
-        self.create_trace(self.filename, 'ChTrace2')
-        
+        self.controller.create_data(self.__filename, 'Trace')  # make 1xFullTrace, 2xChTrace, 1xRoi and bind
+        new_roi_box.set_roi()
+        self.draw_data()
+        print('Tip Need to fix RoiBox bug')
         
     def delete_roi(self):
         num_box = len(self.roi_box)

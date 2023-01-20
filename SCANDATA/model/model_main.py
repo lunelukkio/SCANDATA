@@ -49,11 +49,10 @@ class Experiments(ExperimentsInterface):
         self.__data_set = {}
         print('Created an empty model.')
     
-    def create_data_set(self, fullname: str):
+    def create_data_set(self, fullname: str):  # create a whole data set(frame, image, trace) 
         filename = Filename(fullname)
         
         self.__data_set[filename.name] = DataSet(filename)  # dict of data_file(key filename : object)
-        print(self.data_set)
         print('Created {} data set.'.format(filename.name))
         
     def create_data(self, filename, key: str, *args):
@@ -283,7 +282,7 @@ class Translator:
             raise Exception("The file is incorrect!!!")
             
     @staticmethod
-    def key_checker(key: str, object_dict_list: list):
+    def key_checker(key: str, object_dict_list: list) -> object:  # [file_io, self.__data, self.__controller]  
         if 'Filename' in key:
             return FilenameStrategy(object_dict_list[0])
             

@@ -34,6 +34,9 @@ class Controller:
         self.filename.append(filename)
         self.filepath.append(filepath)
         
+    def create_data(self, filename, key):
+        self.model.create_data(filename.name, key)
+        
     def roi_controller(self):
         print('ROI controller')
         
