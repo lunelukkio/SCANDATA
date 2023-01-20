@@ -29,22 +29,24 @@ if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     test_suite = suite()
     runner.run(test_suite)
-    #print(unittest.TestResult(test_suite))
 
-
-
-    print('ROIの問題は値ROIオブジェにｘ、ｙだけを渡せないー＞＊argsつかって値オブジェう表現')
-
-
+    print('Controller roiのobseverの名前列記printのリストにアペンド仕方が分からなかった')
+    print('フルオトレースは３つでひとまとめのクラスを作る。イメージも。viewでゲットする必要があるのかチェック')
+    print('Tip Roiの名前の問題 roiのオブザーバーの名前表示がおかしい')
+    print('Tip リファクタリング data の名前をインスタンス変数に固定')
+    print('back ground compの引き算がおかしい。まずノーマライズする必要がある')
+    print('Trace のちゃんねるがおかしい、ROIとも結びついてない')
     
-    print('data_setのcreate_dataのリファクタリングが必要。state メソッド使用？')
+    print('viewで呼び出したオブジェクトはgetしなくても自動的にsetしてあげれば自動的に更新されている？　要チェック！！！！！')
+    print('Tip TraceData __sub__の実装＞バックグランドを減算する為')
+    print('Tip dF/F などのモッド実装')
+    print('Tip Builderのcreate_dataのリファクタリングが必要。state メソッド使用？')
     
-    print('右クリックでロ位変更実装')
-    print('difference imageの実装')
-    print('TraceData __sub__の実装＞バックグランドを減算する為')
-    print('dF/F などのモッド実装')
-    print('tkinterの見た目をよくする。imageが小さい')
-    print('view_mainのツリー構造実装')
+    print('Tip 右クリックでロ位変更実装')
+    print('Tip difference imageの実装.そしてvalue objectのsub実装')
+
+    print('Tip tkinterの見た目をよくする。imageが小さい')
+    print('Tip view_mainのツリー構造実装')
     
-    print('Filename and WholeFilename should be sapaated because of isolation.')
+    print('Tip Filename and WholeFilename should be sapaated because of isolation.')
 

@@ -20,14 +20,19 @@ class TestMod(unittest.TestCase):
     def test_mod(self):
 
         trace = dataset.get_data('ChTrace1')
+        print(dataset.controller['Roi1'].print_infor())
+"""
+        trace.show_data()
+        dataset.set_data('Roi1',[1,1,4,4])
+        trace.show_data()
+
+
         bgtrace = dataset.get_data('ChTrace3')
+
         bg = BgComp(bgtrace)
-        #bg.mod_data(trace)
-
-        
-        
-
-
+        bgcomp = bg.mod_data(trace)
+        #bgcomp.show_data()
+"""
 
         
 if __name__ == '__main__':

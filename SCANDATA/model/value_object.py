@@ -84,13 +84,13 @@ class FramesData:
         print(self.__data_type + ' made a FramesData' + '  myId= {}'.format(id(self)))
         
     def __del__(self):
-        print('.')
+        #print('.')
         #print('Deleted a FramesData object.' + '  myId= {}'.format(id(self)))
+        pass
     
     # This is for background substruction
     def __sub__(self):
         raise NotImplementedError()
-    
     
     @property
     def data(self) -> np.ndarray:
@@ -124,8 +124,9 @@ class ImageData:
         print(self.__data_type + ' made a ImageData' + '  myId= {}'.format(id(self)))
         
     def __del__(self):
-        print('.')
+        #print('.')
         #print('Deleted a ImageData object.' + '  myId= {}'.format(id(self)))
+        pass
         
     # This is for difference image
     def __sub__(self):
@@ -156,12 +157,12 @@ class TraceData:
         if val.ndim != 1: 
             raise Exception('The argument of TraceData should be numpy 1D data(x)')
         if  val.shape[0] < 5: 
-            print('----------------------------------------------------------')
-            print('Warning!!! The number of the data points of TraceData is less than 5!!!')
-            print('----------------------------------------------------------')
-            print(val)
-            
-            
+            print('------------------------------------------------------------------------')
+            print('This data length is ' + str(val))
+            print('Warning!!! The number of the data points of TraceData is less than 5 !!!')
+            print('It makes a bug during dF over calculation !!!')
+            print('------------------------------------------------------------------------')
+
         length = val.shape[0]
         called_class = inspect.stack()[1].frame.f_locals['self']
         self.__data = val
@@ -172,17 +173,20 @@ class TraceData:
         print(self.__data_type + ' made a TraceData' + '  myId= {}'.format(id(self)))
 
     def __del__(self):
-        print('.')
+        #print('.')
         #print('Deleted a TraceData object.' + '  myId= {}'.format(id(self)))
+        pass
         
     # This is for background substruction
     def __sub__(self, other: object) -> object:
         if self.__data_type != other.data_type:
             raise Exception('Wrong trace data')
         F = self.__data[0: 5]
-        deltaF = self.__data - F
-        bg_comp_trace = deltaF - other.data
-        return bg_comp_trace
+        mean_F = np.mean(F, axis = 0)
+        delta_F_trace = self.__data - other.data
+        bg_comp_trace = delta_F_trace + mean_F
+        return TraceData(bg_comp_trace, self.__interval)
+
         
         
         
@@ -237,15 +241,19 @@ class RoiVal:
         print(self.__data_type + ' made a RoiVal' + '  myId= {}'.format(id(self)))
         
     def __del__(self):
-        print('.')
+        #print('.')
         #print('Deleted a RoiVal object.' + '  myId={}'.format(id(self)))
+        pass
         
     #override for "+"
     def __add__(self, other: object)  -> object:
         if self.__data_type != other.data_type:
-            raise Exception('Wrong RoiVal data')
-        self.__data += other.data
-        return self
+            raise Exception('Wrong data! Only RoiVal can be added!')
+        "Tip Need refactroing. This should be new roi value object."
+        new_val = self.__data + other.data
+        new_obj = RoiVal(*new_val)
+        new_obj.data_type = self.__data_type
+        return new_obj
         
     @property
     def data(self) -> list:
@@ -258,6 +266,10 @@ class RoiVal:
     @property
     def data_type(self) -> str:
         return self.__data_type
+    
+    @data_type.setter
+    def data_type(self, data_type) -> None:  
+        self.__data_type = data_type
     
     
 
@@ -275,8 +287,9 @@ class FrameWindowVal:
         print(self.__data_type + ' made a FrameWindowVal' + '  myId= {}'.format(id(self)))
         
     def __del__(self):
-        print('.')
+        #print('.')
         #print('Deleted a FrameWindowVal object.' + '  myId={}'.format(id(self)))
+        pass
         
     #override for "+"
     def __add__(self, other: object) -> object:

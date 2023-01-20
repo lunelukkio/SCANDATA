@@ -94,9 +94,9 @@ class Roi(ModelController):
             x_width = self.__roi_obj.data[2]
             y_width = self.__roi_obj.data[3]
             
-        self.__roi_obj = RoiVal(x, y, x_width, y_width)
+        self.__roi_obj = RoiVal(x, y, x_width, y_width)  # replace the roi
         self.notify_observer()
-        print('Set ROI-{} and notified'.format(self.object_num))
+        #print('Set ROI-{} and notified'.format(self.object_num))
         self.print_infor()
         self.check_val()
       
@@ -104,7 +104,7 @@ class Roi(ModelController):
         add_roi_obj = RoiVal(x, y, x_width, y_width)
         self.__roi_obj += add_roi_obj
         self.notify_observer()
-        print('Add to ROI-{} and notified'.format(self.object_num))
+        #print('Add to ROI-{} and notified'.format(self.object_num))
         self.print_infor()
         self.check_val()
 
@@ -114,7 +114,7 @@ class Roi(ModelController):
     def reset(self) -> None:
         self.__roi_obj = RoiVal(40, 40, 1, 1)
         self.notify_observer()
-        print('Reset ROI-{} and notified'.format(self.object_num))
+        #print('Reset ROI-{} and notified'.format(self.object_num))
         self.print_infor()
 
     def add_observer(self, observer):
@@ -129,8 +129,12 @@ class Roi(ModelController):
     
     
     def print_infor(self) -> None:
+        name_list = []
+        num = len(self.__observers)
+        for i in range(num):
+            name_list.append(self.__observers[i].name)
         print('ROI-{} = '.format(self.object_num) + str(self.get_data().data) + 
-              ', observer = ' + str(self.__observers))
+              ', observer = ' + str(name_list))
         
     
     
@@ -144,14 +148,14 @@ class FrameWindow(ModelController):
     def set_data(self, start: int, end: int, start_width=0, end_width=0) -> None:
         self.__frame_window_obj = FrameWindowVal(start, end, start_width, end_width)
         self.notify_observer()
-        print('Set FrameWindow-{} and notified'.format(self.object_num))
+        #print('Set FrameWindow-{} and notified'.format(self.object_num))
         self.print_infor()
         
     def add_data(self, start: int, end: int, start_width=0, end_width=0) -> None:
         add_frame_window_obj = FrameWindowVal(start, end, start_width, end_width)
         self.__frame_window_obj += add_frame_window_obj
         self.notify_observer()
-        print('Add to FrameWindow-{} and notified'.format(self.object_num))
+        #print('Add to FrameWindow-{} and notified'.format(self.object_num))
         self.print_infor()
 
     def get_data(self) -> object:
@@ -160,7 +164,7 @@ class FrameWindow(ModelController):
     def reset(self) -> None:
         self.__frame_window_obj = FrameWindowVal(0, 0, 0, 0)
         self.notify_observer()
-        print('Reset FrameWindow-{} and notified'.format(self.object_num))
+        #print('Reset FrameWindow-{} and notified'.format(self.object_num))
         self.print_infor()
     
     def add_observer(self, observer: object) -> None:

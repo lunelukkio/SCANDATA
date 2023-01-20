@@ -345,30 +345,42 @@ class FullTrace(FluoTrace):
     def __init__(self, frames_obj, interval):
         super().__init__(frames_obj, interval)
         self.object_num = 0  # instance number
+        self.__name = None
 
     def update(self, roi_obj: object) -> None:  # value object
         self._roi = roi_obj.data
         super()._read_data(self._roi)
+        self.__name = str('FullTrace-' + str(self.object_num))
         print('FullTrace-{} recieved a notify message.'.format(self.object_num))
         
     def print_infor(self) -> None:
-        print('This is FullTrace-{}'.format(self.object_num))
+        print('This is ' + self.__name)
         super().print_add_infor()
+        
+    @property
+    def name(self):
+        return self.__name
         
 
 class ChTrace(FluoTrace):
     def __init__(self, frames_obj, interval):
         super().__init__(frames_obj, interval)
-        self.object_num = 0  # instance number. -1 
+        self.object_num = 0  # instance number
+        self.__name = None
         
     def update(self, roi_obj: list) -> None:  # value object
         self._roi = roi_obj.data
         super()._read_data(self._roi)
+        self.__name = str('ChTrace-' + str(self.object_num))
         print('ChTrace-{} recieved a notify message.'.format(self.object_num))
         
     def print_infor(self) -> None:
         print('This is ChTrace-{}'.format(self.object_num))
         super().print_add_infor()
+        
+    @property
+    def name(self):
+        return self.__name
 
 
 "Elec trace"

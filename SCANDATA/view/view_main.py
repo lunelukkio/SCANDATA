@@ -214,7 +214,7 @@ class DataWindow(tk.Frame):
     def initialize(self):
         self.show_data(self.image_ax, 'CellImage1')
         self.show_data(self.trace_ax1, 'ChTrace1')
-        self.show_data(self.trace_ax1, 'ChTrace2')
+        self.show_data(self.trace_ax1, 'ChTrace3')
         self.show_data(self.trace_ax2, 'ChElecTrace1')
         
         roi_box = RoiBox(self.__filename, self.controller, self.image_ax)
@@ -223,9 +223,8 @@ class DataWindow(tk.Frame):
     def show_data(self, ax, data_type):
         value_obj = self.controller.get_data(self.__filename, data_type)
         try:
-            line, = value_obj.show_data(ax)  # line, mean the first element of a list (convert from list to objet)
-            self.trace_y1.append(line)  # Add to the list for trace_y1 trace line objects
-            print(self.trace_y1)
+            line_2d, = value_obj.show_data(ax)  # line, mean the first element of a list (convert from list to objet)
+            self.trace_y1.append(line_2d)  # Add to the list for trace_y1 trace line objects [Line_2D] of axis abject
         except:
             value_obj.show_data(ax)
         
@@ -238,7 +237,7 @@ class DataWindow(tk.Frame):
         
         #display data and ROI
         self.set_trace(self.trace_ax1, 0, 'ChTrace1')
-        #self.set_trace(self.trace_ax1, 1, 'ChTrace2')
+        self.set_trace(self.trace_ax1, 1, 'ChTrace3')
         self.roi_box[self.roi_num-1].set_roi()
         
         self.trace_ax1.relim()
@@ -258,7 +257,7 @@ class DataWindow(tk.Frame):
         
         #display data and ROI
         self.set_trace(self.trace_ax1, 0, 'ChTrace1')
-        self.set_trace(self.trace_ax1, 1, 'ChTrace2')
+        #self.set_trace(self.trace_ax1, 1, 'ChTrace2')
         self.roi_box[self.roi_num-1].set_roi()
 
         self.trace_ax1.relim()

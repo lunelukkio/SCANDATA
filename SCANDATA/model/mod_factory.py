@@ -73,12 +73,18 @@ class BgComp(ModInterface):
     def __init__(self, bg_trace_obj):
         self.name = self.__class__.__name__
         super().__init__(self.name)
-        self.bg_trace_obj = bg_trace_obj
+        self.bg_trace_obj = self.filter_data(bg_trace_obj)
+
 
     def mod_data(self, trace_obj):
-        mod_trace = trace_obj - self.bg_trace_obj
-        return mod_trace
+        mod_trace_obj = trace_obj - self.bg_trace_obj
+        return mod_trace_obj
     
+    def filter_data(self, data):
+        print('----------------------- !!!!!!!!! --------------------')
+        print('Tip Need Filter class for filtering a background trace')
+        print('----------------------- !!!!!!!!! --------------------')
+        return data
     
     def __str__(self):
     #return "[{0}]".format(self.__name)

@@ -23,9 +23,17 @@ class TestExperiments(unittest.TestCase):
         # show traces
         a = plt.figure()
         exp1.data_set['20408B002.tsm'].data['ChTrace1'].show_data()
+        exp1.data_set['20408B002.tsm'].data['ChTrace2'].show_data()
         b = plt.figure()
+
+        exp1.set_data('20408B002.tsm', 'Roi1', (5,5,7,7))
+        exp1.set_data('20408B002.tsm', 'Roi2', (1,1,70,70))
         exp1.data_set['20408A001new.tsm'].data['ChTrace1'].show_data()
+        exp1.data_set['20408B002.tsm'].data['ChTrace2'].show_data()
+        exp1.data_set['20408B002.tsm'].data['ChTrace1'].show_data()
+
         
+        """
         #add new trace
         exp1.create_data('20408B002.tsm', 'CellImage')
         c = plt.figure()
@@ -42,7 +50,7 @@ class TestExperiments(unittest.TestCase):
         exp1.reset_data('20408A001new.tsm', 'Roi1')
         trace3 = exp1.get_data('20408B002.tsm', 'ChTrace1')
         trace3.show_data()
-        
+        """
 
 if __name__ == '__main__':
     unittest.main()
