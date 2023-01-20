@@ -177,22 +177,22 @@ class Director:
         bg_full_trace = self.builder.create_data(FullTraceFactory(), full_frames, full_interval)
         bg_roi.add_observer(bg_full_trace)
         
-        #make ch data set
+        # make ch data set
         for i in range(0, tsm_raw_data_tuple[1].shape[3]):
             ch_frames = FramesData(tsm_raw_data_tuple[1][:, :, :, i])
             self.builder.create_data(ChFramesFactory(), ch_frames, ch_interval)
             image = self.builder.create_data(CellImageFactory(), ch_frames)
             trace = self.builder.create_data(ChTraceFactory(), ch_frames, ch_interval)
-            #bind controller to data
+            # bind controller to data
             frame_window.add_observer(image)
             roi.add_observer(trace)
             
             # Make ch backgrand traces
             bg_trace = self.builder.create_data(ChTraceFactory(), ch_frames, ch_interval)
-            #bind controller to data
+            # bind controller to data
             bg_roi.add_observer(bg_trace)
 
-        #make elec traes
+        # make elec traes
         elec_data = copy.deepcopy(tbn.get_data())  # made indipendent from the file
         elec_interval = copy.deepcopy(tbn.get_infor())    # made indipendent from the file
         num_elec_ch = elec_data.shape[1]

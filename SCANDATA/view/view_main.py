@@ -257,7 +257,7 @@ class DataWindow(tk.Frame):
         
         #display data and ROI
         self.set_trace(self.trace_ax1, 0, 'ChTrace1')
-        #self.set_trace(self.trace_ax1, 1, 'ChTrace2')
+        self.set_trace(self.trace_ax1, 1, 'ChTrace3')
         self.roi_box[self.roi_num-1].set_roi()
 
         self.trace_ax1.relim()
