@@ -61,11 +61,7 @@ class View(tk.Frame):
         frame_middle = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=2, bg = 'azure')
         frame_middle.pack(side=tk.TOP, fill=tk.BOTH)
 
-
-        
         self.create_menu()
-        
-
 
     def create_menu(self):
         menu_bar = tk.Menu(self)
@@ -125,8 +121,6 @@ class View(tk.Frame):
         print(fullname)
         
 
-
-        
 class DataWindow(tk.Frame):
     def __init__(self, master=None, filename_obj=None, controller=None):
         super().__init__(master)
@@ -173,8 +167,6 @@ class DataWindow(tk.Frame):
         
         frame_bottom.pack(side=tk.BOTTOM, fill=tk.BOTH)
 
-
-
         #frame_bottom = tk.Frame(master, pady=5, padx=5, relief=tk.RAISED, bd=2)
 
         # tkinter image frame
@@ -209,7 +201,7 @@ class DataWindow(tk.Frame):
         toolbar_trace.update()
         self.canvas_trace.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
-        #self.initialize()
+        self.initialize()
 
     def initialize(self):
         self.show_data(self.image_ax, 'CellImage1')
@@ -220,7 +212,7 @@ class DataWindow(tk.Frame):
         roi_box = RoiBox(self.__filename, self.controller, self.image_ax)
         self.roi_box.append(roi_box)
         
-    def draw_data(self):
+    def draw_ax(self):
         self.trace_ax1.relim()
         self.trace_ax1.autoscale_view()
         self.canvas_trace.draw()
@@ -239,14 +231,23 @@ class DataWindow(tk.Frame):
         self.trace_y1[trace_num].set_ydata(trace.data)
         
     def onclick_image(self, event):
-        self.controller.set_roi_position(self.__filename, event)
+        if event.button == 1:  # left click
+            self.controller.set_roi_position(self.__filename, event, self.roi_num)
         
-        #display data and ROI
-        self.set_trace(self.trace_ax1, 0, 'ChTrace1')
-        self.set_trace(self.trace_ax1, 1, 'ChTrace3')
-        self.roi_box[self.roi_num-1].set_roi()
+            #display data and ROI
+            self.set_trace(self.trace_ax1, 0, 'ChTrace1')
+            self.set_trace(self.trace_ax1, 1, 'ChTrace3')
+            self.roi_box[self.roi_num-1].set_roi()
+            print(self.roi_num)
         
-        self.draw_data()
+            self.draw_ax()
+        elif event.button == 2:
+            pass
+        elif event.button == 3:
+            num = len(self.roi_box)
+            self.roi_num += 1
+            if self.roi_num > num:
+                self.roi_num = 1
         
     def large_roi(self):
         self.change_roi_size([0, 0, 1, 1])
@@ -254,7 +255,6 @@ class DataWindow(tk.Frame):
     def small_roi(self):
         self.change_roi_size([0, 0, -1, -1])
 
-    
     def change_roi_size(self, val):
         self.controller.change_roi_size(self.__filename, self.roi_num, val)
         
@@ -273,7 +273,7 @@ class DataWindow(tk.Frame):
         self.roi_box.append(new_roi_box)
         self.controller.create_data(self.__filename, 'Trace')  # make 1xFullTrace, 2xChTrace, 1xRoi and bind
         new_roi_box.set_roi()
-        self.draw_data()
+        self.draw_ax()
         print('Tip Need to fix RoiBox bug')
         
     def delete_roi(self):
@@ -295,14 +295,13 @@ class RoiBox():
         
     def __init__(self, filename, controller, ax):
         self.__filename = filename
-        self.__controller = controller
+        self.__roi_hold = controller
         self.__rectangle_obj = patches.Rectangle(xy=(40, 40), width=1, height=1, ec='r', fill=False)
         ax.add_patch(self.__rectangle_obj)
         RoiBox.object_num += 1
 
-        
     def set_roi(self):
-        roi_obj = self.__controller.get_controller(self.__filename.name, 'Roi' + str(RoiBox.object_num))
+        roi_obj = self.__roi_hold.get_controller(self.__filename.name, 'Roi' + str(RoiBox.object_num))
         self.__rectangle_obj.set_xy([roi_obj.data[0], roi_obj.data[1]])
         self.__rectangle_obj.set_width(roi_obj.data[2])
         self.__rectangle_obj.set_height(roi_obj.data[3])      

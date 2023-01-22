@@ -252,7 +252,6 @@ class FrameWindowStrategy(ControllerStrategy):
         pass
 
 
-
 class ModStrategy(DataSetStrategy):
     def set_data(self, key):
         raise NotImplementedError()   
@@ -260,8 +259,6 @@ class ModStrategy(DataSetStrategy):
     def get_data(self, key):
         raise NotImplementedError() 
                    
-
-
 
 class Translator:
     @staticmethod

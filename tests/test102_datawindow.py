@@ -25,7 +25,6 @@ class TestFullFrames(unittest.TestCase):
         controller.model.create_data_set(fullname)
 
         view = DataWindow(root, filename_obj, controller)
-        view.initialize()
         
         view.mainloop()
 
