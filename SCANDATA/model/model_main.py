@@ -47,7 +47,6 @@ class ExperimentsInterface(metaclass=ABCMeta):
 class Experiments(ExperimentsInterface):
     def __init__(self):
         self.__data_set = {}
-        print('Created an empty model.')
     
     def create_data_set(self, fullname: str):  # create a whole data set(frame, image, trace) 
         filename = Filename(fullname)

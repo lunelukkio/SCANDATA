@@ -17,7 +17,6 @@ import glob
 
 class Controller:
     def __init__(self):
-        print('Imported controller')
         
         self.view = None
         self.model = None

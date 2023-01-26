@@ -26,8 +26,6 @@ class View(tk.Frame):
         self.window = []
         self.data_window = []  # data window obj
         
-        print('imported view')
-        
         self.pack()
         master.geometry('500x800')
         master.title('SCANDATA')
@@ -118,7 +116,7 @@ class View(tk.Frame):
         
     def open_file(self, event=None):
         fullname = self.button_fn.get_fullname()
-        print(fullname)
+        print('Open ' + str(fullname))
         
 
 class DataWindow(tk.Frame):
@@ -138,7 +136,7 @@ class DataWindow(tk.Frame):
         self.trace_y2 = []
         
         self.roi_box = []
-        self.roi_num = 1
+        self.current_roi_num = 1
         
         # set frames
         frame_top = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=2, bg = 'white')
@@ -212,6 +210,9 @@ class DataWindow(tk.Frame):
         roi_box = RoiBox(self.__filename, self.controller, self.image_ax)
         self.roi_box.append(roi_box)
         
+        roi_box_bg = RoiBox(self.__filename, self.controller, self.image_ax)
+        self.roi_box.append(roi_box_bg)
+        
     def draw_ax(self):
         self.trace_ax1.relim()
         self.trace_ax1.autoscale_view()
@@ -232,22 +233,27 @@ class DataWindow(tk.Frame):
         
     def onclick_image(self, event):
         if event.button == 1:  # left click
-            self.controller.set_roi_position(self.__filename, event, self.roi_num)
+            self.controller.set_roi_position(self.__filename, event, self.current_roi_num)
         
             #display data and ROI
-            self.set_trace(self.trace_ax1, 0, 'ChTrace1')
-            self.set_trace(self.trace_ax1, 1, 'ChTrace3')
-            self.roi_box[self.roi_num-1].set_roi()
-            print(self.roi_num)
+            self.set_trace(self.trace_ax1, 0, 'ChTrace' + str(self.current_roi_num))
+            self.set_trace(self.trace_ax1, 1, 'ChTrace' + str(self.current_roi_num + 2))
+            self.roi_box[self.current_roi_num-1].set_roi()
         
             self.draw_ax()
+            
         elif event.button == 2:
             pass
         elif event.button == 3:
             num = len(self.roi_box)
-            self.roi_num += 1
-            if self.roi_num > num:
-                self.roi_num = 1
+            self.current_roi_num += 1
+            if self.current_roi_num > num:
+                self.current_roi_num = 1
+            else:
+                pass
+            self.set_trace(self.trace_ax1, 0, 'ChTrace' + str(self.current_roi_num))
+            self.set_trace(self.trace_ax1, 1, 'ChTrace' + str(self.current_roi_num + 2))
+            self.draw_ax()
         
     def large_roi(self):
         self.change_roi_size([0, 0, 1, 1])
@@ -256,12 +262,12 @@ class DataWindow(tk.Frame):
         self.change_roi_size([0, 0, -1, -1])
 
     def change_roi_size(self, val):
-        self.controller.change_roi_size(self.__filename, self.roi_num, val)
+        self.controller.change_roi_size(self.__filename, self.current_roi_num, val)
         
         #display data and ROI
-        self.set_trace(self.trace_ax1, 0, 'ChTrace1')
-        self.set_trace(self.trace_ax1, 1, 'ChTrace3')
-        self.roi_box[self.roi_num-1].set_roi()
+        self.set_trace(self.trace_ax1, 0, 'ChTrace' + str(self.current_roi_num))
+        self.set_trace(self.trace_ax1, 1, 'ChTrace' + str(self.current_roi_num + 2))
+        self.roi_box[self.current_roi_num-1].set_roi()
 
         self.trace_ax1.relim()
         self.trace_ax1.autoscale_view()
@@ -274,7 +280,7 @@ class DataWindow(tk.Frame):
         self.controller.create_data(self.__filename, 'Trace')  # make 1xFullTrace, 2xChTrace, 1xRoi and bind
         new_roi_box.set_roi()
         self.draw_ax()
-        print('Tip Need to fix RoiBox bug')
+        print('Tip ===============================================Need to fix RoiBox bug')
         
     def delete_roi(self):
         num_box = len(self.roi_box)
@@ -288,20 +294,27 @@ class DataWindow(tk.Frame):
     def button_reopen(self):
         del self.controller.model.data_file[self.filename]
         # reopen window
-        
+
 
 class RoiBox():
     object_num = 0  # class variable 
+    color_selection = ['red', 'white', 'bule']
         
     def __init__(self, filename, controller, ax):
         self.__filename = filename
         self.__roi_hold = controller
-        self.__rectangle_obj = patches.Rectangle(xy=(40, 40), width=1, height=1, ec='r', fill=False)
-        ax.add_patch(self.__rectangle_obj)
         RoiBox.object_num += 1
+        self.__roi_num = RoiBox.object_num
+        self.__rectangle_obj = patches.Rectangle(xy=(40, 40), 
+                                                 width=1, 
+                                                 height=1, 
+                                                 ec=RoiBox.color_selection[self.__roi_num - 1], 
+                                                 fill=False)
+        ax.add_patch(self.__rectangle_obj)
+
 
     def set_roi(self):
-        roi_obj = self.__roi_hold.get_controller(self.__filename.name, 'Roi' + str(RoiBox.object_num))
+        roi_obj = self.__roi_hold.get_controller(self.__filename.name, 'Roi' + str(self.__roi_num))
         self.__rectangle_obj.set_xy([roi_obj.data[0], roi_obj.data[1]])
         self.__rectangle_obj.set_width(roi_obj.data[2])
         self.__rectangle_obj.set_height(roi_obj.data[3])      

@@ -30,6 +30,8 @@ if __name__ == '__main__':
     test_suite = suite()
     runner.run(test_suite)
 
+    print('roival取得とroiboxの番号を一致させておくことでバインドさせる　roibox(i) = get roival(i)')
+
     print('Controller roiのobseverの名前列記printのリストにアペンド仕方が分からなかった')
     print('フルオトレースは３つでひとまとめのクラスを作る。イメージも。viewでゲットする必要があるのかチェック')
     print('Tip Roiの名前の問題 roiのオブザーバーの名前表示がおかしい')
@@ -47,6 +49,8 @@ if __name__ == '__main__':
 
     print('Tip tkinterの見た目をよくする。imageが小さい')
     print('Tip view_mainのツリー構造実装')
+    
+    print('view class　と button functionの作り直し')
     
     print('Tip Filename and WholeFilename should be sapaated because of isolation.')
 
