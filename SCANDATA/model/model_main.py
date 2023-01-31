@@ -98,16 +98,17 @@ class Experiments(ExperimentsInterface):
 class DataSet:
     def __init__(self, filename: object):
         self.__filename = filename
-        builder_type = Translator.file_type_checker(filename)  # Using statsitc method in Translator class.
-        self.__builder = builder_type
+        self.__builder = Translator.file_type_checker(filename)  # Using statsitc method in Translator class.
 
-        # get dict from the builder
-        objects = self.__builder.get_result()
-        self.__file_io = objects[0]
-        self.__data = objects[1]
-        self.__controller = objects[2]
-
+        # Reset a data set.
+        (self.__file_io, self.__data, self.__controller) = self.__builder.reset()
+        
+        # This list is for strategy_types
         self.__object_dict_list = [self.__file_io, self.__data, self.__controller]
+        
+        # Initialized the data set.
+        self.__builder.initialize()
+
         self.print_infor()
 
     @property
@@ -134,7 +135,17 @@ class DataSet:
 
     def create_data(self, key: str) -> None:
         strategy_type = Translator.key_checker(key, self.__object_dict_list)
-        strategy_type.create_data(self.__director, self.__data)
+        strategy_type.create_data(self.__builder, self.__data)
+        self.print_infor()
+        
+    def delete_entity(self, key: str) -> None:
+        if key in self.__data:
+            del self.__data[key]
+        elif key in self.__controller:
+            del self.__controller[key]
+        print('Tip 00000000000000000000000000000000000000000000')
+        print('Tip if inで辞書キーの検索ができるか？辞書キーを使ってオブジェクトの消し方')
+            lkj;kj;lk
         self.print_infor()
 
     def print_infor(self):
@@ -197,10 +208,9 @@ class ControllerStrategy(DataSetStrategy):
 
 
 class FramesStrategy(DataStrategy):
-    def __init__(self, object_dict, director):
-        super().__init__(object_dict, director)
+    def __init__(self, object_dict, builder):
+        super().__init__(object_dict, builder)
         
-    "Can it replace director methods???"
     def create_data(self):
         pass
 
@@ -209,23 +219,20 @@ class ImageStrategy(DataStrategy):
     def __init__(self, object_dict):
         super().__init__(object_dict)
         
-    def create_data(self, director, data):
-        director.build_images_data_set(data)
+    def create_data(self, builder, data):
+        builder.build_images_data_set(data)
 
 
 class TraceStrategy(DataStrategy):
     def __init__(self, object_dict):
         super().__init__(object_dict)
         
-    def create_data(self, director, data):
-        director.build_traces_set(data)
+    def create_data(self, builder, data):
+        builder.build_trace_set(data)
         
     def get_data(self, key):
         return self._object_dict[key].get_data()
         #mod_trace = mod_data(raw_trace)
-        "Tip 誰かがModdict{}を保持してfor 文でModをchain of responsibilityに入れ回す mod dictにはそれぞれt trace image frames用が必要"
-        "Tip 管理はmoddicのオブジェを抜き差しでする"
-        
         
         
 class RoiStrategy(ControllerStrategy):

@@ -204,15 +204,12 @@ class DataWindow(tk.Frame):
     def initialize(self):
         self.show_data(self.image_ax, 'CellImage1')
         self.show_data(self.trace_ax1, 'ChTrace1')
-        self.show_data(self.trace_ax1, 'ChTrace3')
+        self.show_data(self.trace_ax1, 'ChTrace2')
         self.show_data(self.trace_ax2, 'ChElecTrace1')
         
         # roi_box number is roi number -1.
         roi_box = RoiBox(self.__filename, self.controller, self.image_ax)  # ROI1 for tarces
         self.roi_box.append(roi_box)
-        
-        roi_box_bg = RoiBox(self.__filename, self.controller, self.image_ax)  # ROI2 for background
-        self.roi_box.append(roi_box_bg)
         
     def draw_ax(self):
         self.trace_ax1.relim()
@@ -239,7 +236,7 @@ class DataWindow(tk.Frame):
             #display data and ROI
             self.set_trace(self.trace_ax1, 0, 'FullTrace' + str(self.current_roi_num))
             self.set_trace(self.trace_ax1, 0, 'ChTrace' + str(self.current_roi_num))
-            self.set_trace(self.trace_ax1, 1, 'ChTrace' + str(self.current_roi_num + 2))
+            self.set_trace(self.trace_ax1, 1, 'ChTrace' + str(self.current_roi_num + 1))
             self.roi_box[self.current_roi_num-1].set_roi()
         
             self.draw_ax()
@@ -254,7 +251,7 @@ class DataWindow(tk.Frame):
             else:
                 pass
             self.set_trace(self.trace_ax1, 0, 'ChTrace' + str(self.current_roi_num))
-            self.set_trace(self.trace_ax1, 1, 'ChTrace' + str(self.current_roi_num + 2))
+            self.set_trace(self.trace_ax1, 1, 'ChTrace' + str(self.current_roi_num + 1))
             
             self.draw_ax()
         
@@ -269,7 +266,7 @@ class DataWindow(tk.Frame):
         
         #display data and ROI
         self.set_trace(self.trace_ax1, 0, 'ChTrace' + str(self.current_roi_num))
-        self.set_trace(self.trace_ax1, 1, 'ChTrace' + str(self.current_roi_num + 2))
+        self.set_trace(self.trace_ax1, 1, 'ChTrace' + str(self.current_roi_num + 1))
         self.roi_box[self.current_roi_num-1].set_roi()
 
         self.draw_ax()
@@ -280,7 +277,6 @@ class DataWindow(tk.Frame):
         self.controller.create_data(self.__filename, 'Trace')  # make 1xFullTrace, 2xChTrace, 1xRoi and bind
         new_roi_box.set_roi()
         self.draw_ax()
-        print('Tip ===============================================Need to fix RoiBox bug')
         
     def delete_roi(self):
         num_box = len(self.roi_box)
@@ -289,7 +285,8 @@ class DataWindow(tk.Frame):
             return
         else:
             del self.roi_box[num_box-1]
-            print(num_box)
+            self.current_roi_num -= 1
+            self.draw_ax()
         
     def button_reopen(self):
         del self.controller.model.data_file[self.filename]
@@ -298,7 +295,7 @@ class DataWindow(tk.Frame):
 
 class RoiBox():
     object_num = 0  # class variable 
-    color_selection = ['red', 'white', 'blue', 'orange', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
+    color_selection = ['white', 'red', 'blue', 'orange', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
         
     def __init__(self, filename, controller, ax):
         self.__filename = filename

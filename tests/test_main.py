@@ -30,27 +30,22 @@ if __name__ == '__main__':
     test_suite = suite()
     runner.run(test_suite)
 
+    print('delete_entityの辞書delの使い方')
     print('roival取得とroiboxの番号を一致させておくことでバインドさせる　roibox(i) = get roival(i)')
 
     print('Controller roiのobseverの名前列記printのリストにアペンド仕方が分からなかった')
-    print('フルオトレースは３つでひとまとめのクラスを作る。イメージも。viewでゲットする必要があるのかチェック')
-    print('Tip Roiの名前の問題 roiのオブザーバーの名前表示がおかしい')
+
+
     print('Tip リファクタリング data の名前をインスタンス変数に固定')
     print('back ground compの引き算がおかしい。まずノーマライズする必要がある')
-    print('Trace のちゃんねるがおかしい、ROIとも結びついてない')
     
     print('viewで呼び出したオブジェクトはgetしなくても自動的にsetしてあげれば自動的に更新されている？　要チェック！！！！！')
-    print('Tip TraceData __sub__の実装＞バックグランドを減算する為')
     print('Tip dF/F などのモッド実装')
-    print('Tip Builderのcreate_dataのリファクタリングが必要。state メソッド使用？')
-    
-    print('Tip 右クリックでロ位変更実装')
-    print('Tip difference imageの実装.そしてvalue objectのsub実装')
 
     print('Tip tkinterの見た目をよくする。imageが小さい')
     print('Tip view_mainのツリー構造実装')
     
     print('view class　と button functionの作り直し')
     
-    print('Tip Filename and WholeFilename should be sapaated because of isolation.')
+    print('Tip Filename and WholeFilename should be saparated because of isolation.')
 
