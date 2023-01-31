@@ -145,7 +145,7 @@ class DataSet:
             del self.__controller[key]
         print('Tip 00000000000000000000000000000000000000000000')
         print('Tip if inで辞書キーの検索ができるか？辞書キーを使ってオブジェクトの消し方')
-            lkj;kj;lk
+        #    lkj;kj;lk
         self.print_infor()
 
     def print_infor(self):

@@ -235,8 +235,8 @@ class DataWindow(tk.Frame):
         
             #display data and ROI
             self.set_trace(self.trace_ax1, 0, 'FullTrace' + str(self.current_roi_num))
-            self.set_trace(self.trace_ax1, 0, 'ChTrace' + str(self.current_roi_num))
-            self.set_trace(self.trace_ax1, 1, 'ChTrace' + str(self.current_roi_num + 1))
+            self.set_trace(self.trace_ax1, 0, 'ChTrace' + str(2*self.current_roi_num-1))
+            self.set_trace(self.trace_ax1, 1, 'ChTrace' + str(2*self.current_roi_num))
             self.roi_box[self.current_roi_num-1].set_roi()
         
             self.draw_ax()
@@ -250,8 +250,8 @@ class DataWindow(tk.Frame):
                 self.current_roi_num = 1
             else:
                 pass
-            self.set_trace(self.trace_ax1, 0, 'ChTrace' + str(self.current_roi_num))
-            self.set_trace(self.trace_ax1, 1, 'ChTrace' + str(self.current_roi_num + 1))
+            self.set_trace(self.trace_ax1, 0, 'ChTrace' + str(2*self.current_roi_num-1))
+            self.set_trace(self.trace_ax1, 1, 'ChTrace' + str(2*self.current_roi_num))
             
             self.draw_ax()
         
@@ -265,8 +265,8 @@ class DataWindow(tk.Frame):
         self.controller.change_roi_size(self.__filename, self.current_roi_num, val)
         
         #display data and ROI
-        self.set_trace(self.trace_ax1, 0, 'ChTrace' + str(self.current_roi_num))
-        self.set_trace(self.trace_ax1, 1, 'ChTrace' + str(self.current_roi_num + 1))
+        self.set_trace(self.trace_ax1, 0, 'ChTrace' + str(2*self.current_roi_num-1))
+        self.set_trace(self.trace_ax1, 1, 'ChTrace' + str(2*self.current_roi_num))
         self.roi_box[self.current_roi_num-1].set_roi()
 
         self.draw_ax()
@@ -286,6 +286,7 @@ class DataWindow(tk.Frame):
         else:
             del self.roi_box[num_box-1]
             self.current_roi_num -= 1
+            #k;lkj;lkj;lkj
             self.draw_ax()
         
     def button_reopen(self):
