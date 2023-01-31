@@ -208,6 +208,9 @@ class DataWindow(tk.Frame):
         self.show_data(self.trace_ax2, 'ChElecTrace1')
         
         # roi_box number is roi number -1.
+        bg_roi_box = RoiBox(self.__filename, self.controller, self.image_ax)  # ROI1 for tarces
+        self.roi_box.append(bg_roi_box)
+        
         roi_box = RoiBox(self.__filename, self.controller, self.image_ax)  # ROI1 for tarces
         self.roi_box.append(roi_box)
         
@@ -300,7 +303,7 @@ class RoiBox():
         
     def __init__(self, filename, controller, ax):
         self.__filename = filename
-        self.__roi_hold = controller
+        self.__roi_holder = controller
         RoiBox.object_num += 1
         self.__roi_num = RoiBox.object_num
         self.__rectangle_obj = patches.Rectangle(xy=(40, 40), 
@@ -311,7 +314,7 @@ class RoiBox():
         ax.add_patch(self.__rectangle_obj)
 
     def set_roi(self):
-        roi_obj = self.__roi_hold.get_controller(self.__filename.name, 'Roi' + str(self.__roi_num))
+        roi_obj = self.__roi_holder.get_controller(self.__filename.name, 'Roi' + str(self.__roi_num))
         self.__rectangle_obj.set_xy([roi_obj.data[0], roi_obj.data[1]])
         self.__rectangle_obj.set_width(roi_obj.data[2])
         self.__rectangle_obj.set_height(roi_obj.data[3])      

@@ -33,19 +33,22 @@ if __name__ == '__main__':
     print('delete_entityの辞書delの使い方')
     print('roival取得とroiboxの番号を一致させておくことでバインドさせる　roibox(i) = get roival(i)')
 
+    print('ファサード使ってbuilderのシンプル化')
+    
+
     print('Controller roiのobseverの名前列記printのリストにアペンド仕方が分からなかった')
 
 
-    print('Tip リファクタリング data の名前をインスタンス変数に固定')
+    print(' リファクタリング data の名前をインスタンス変数に固定')
     print('back ground compの引き算がおかしい。まずノーマライズする必要がある')
     
     print('viewで呼び出したオブジェクトはgetしなくても自動的にsetしてあげれば自動的に更新されている？　要チェック！！！！！')
-    print('Tip dF/F などのモッド実装')
+    print(' dF/F などのモッド実装')
 
-    print('Tip tkinterの見た目をよくする。imageが小さい')
-    print('Tip view_mainのツリー構造実装')
+    print(' tkinterの見た目をよくする。imageが小さい')
+    print('view_mainのツリー構造実装')
     
     print('view class　と button functionの作り直し')
     
-    print('Tip Filename and WholeFilename should be saparated because of isolation.')
+    print(' Filename and WholeFilename should be saparated because of isolation.')
 
