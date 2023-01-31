@@ -122,8 +122,14 @@ class TsmFileBuilder(Builder):
                                       data_set['FullFrames1'].frames_obj, 
                                       data_set['FullFrames1'].interval)
         roi.add_observer(full_trace)
+        print('ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo')
         print('Tip count ChFrames')
-        for i in (data_set['ChFrames1'], data_set['ChFrames2']):
+        num = 2  # This should be got from cunting ChFrames.
+        ch_frames_list = []
+        for i in num:
+            ch_frames_list.append(data_set['ChFrames' + str(num+1)])
+        ch_frames_list = [data_set['ChFrames1'], data_set['ChFrames2']]
+        for i in ch_frames_list:
             trace = self.create_data(ChTraceFactory(), i.frames_obj, i.interval)
             roi.add_observer(trace)
 
