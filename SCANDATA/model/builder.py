@@ -110,11 +110,20 @@ class TsmFileBuilder(Builder):
         self.__controller[object_name + str(product.object_num)] = product
         return product
     
+    def build_images_set(self, data_set) -> None:
+        frame_window = self.builder.create_controller(FrameWindowFactory())
+        for i in (data_set['ChFrames1'], data_set['ChFrames2']):
+            image = self.builder.create_data(CellImageFactory(), i.frames_obj)
+            frame_window.add_observer(image)
+    
     def build_traces_set(self, data_set) -> None:
         roi = self.create_controller(RoiFactory())
-        full_trace = self.create_data(FullTraceFactory(), data_set['FullFrames1'].frames_obj, data_set['FullFrames1'].interval)
+        full_trace = self.create_data(FullTraceFactory(), 
+                                      data_set['FullFrames1'].frames_obj, 
+                                      data_set['FullFrames1'].interval)
         roi.add_observer(full_trace)
-        !!!!!for i in (data_set['ChFrames1'], data_set['ChFrames2']):
+        print('Tip count ChFrames')
+        for i in (data_set['ChFrames1'], data_set['ChFrames2']):
             trace = self.create_data(ChTraceFactory(), i.frames_obj, i.interval)
             roi.add_observer(trace)
 
@@ -223,7 +232,7 @@ class Director:
         
     def build_images_data_set(self, data_set) -> None:
         frame_window = self.builder.create_controller(FrameWindowFactory())
-        for i in (data_set['ChFrames1'], data_set['ChFrames2']):
+        for i in (data_set['ChFrames'], data_set['ChFrames']):
             image = self.builder.create_data(CellImageFactory(), i.frames_obj)
             frame_window.add_observer(image)
 
