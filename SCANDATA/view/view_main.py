@@ -207,10 +207,11 @@ class DataWindow(tk.Frame):
         self.show_data(self.trace_ax1, 'ChTrace3')
         self.show_data(self.trace_ax2, 'ChElecTrace1')
         
-        roi_box = RoiBox(self.__filename, self.controller, self.image_ax)
+        # roi_box number is roi number -1.
+        roi_box = RoiBox(self.__filename, self.controller, self.image_ax)  # ROI1 for tarces
         self.roi_box.append(roi_box)
         
-        roi_box_bg = RoiBox(self.__filename, self.controller, self.image_ax)
+        roi_box_bg = RoiBox(self.__filename, self.controller, self.image_ax)  # ROI2 for background
         self.roi_box.append(roi_box_bg)
         
     def draw_ax(self):
@@ -236,6 +237,7 @@ class DataWindow(tk.Frame):
             self.controller.set_roi_position(self.__filename, event, self.current_roi_num)
         
             #display data and ROI
+            self.set_trace(self.trace_ax1, 0, 'FullTrace' + str(self.current_roi_num))
             self.set_trace(self.trace_ax1, 0, 'ChTrace' + str(self.current_roi_num))
             self.set_trace(self.trace_ax1, 1, 'ChTrace' + str(self.current_roi_num + 2))
             self.roi_box[self.current_roi_num-1].set_roi()
@@ -253,6 +255,7 @@ class DataWindow(tk.Frame):
                 pass
             self.set_trace(self.trace_ax1, 0, 'ChTrace' + str(self.current_roi_num))
             self.set_trace(self.trace_ax1, 1, 'ChTrace' + str(self.current_roi_num + 2))
+            
             self.draw_ax()
         
     def large_roi(self):
@@ -269,10 +272,7 @@ class DataWindow(tk.Frame):
         self.set_trace(self.trace_ax1, 1, 'ChTrace' + str(self.current_roi_num + 2))
         self.roi_box[self.current_roi_num-1].set_roi()
 
-        self.trace_ax1.relim()
-        self.trace_ax1.autoscale_view()
-        self.canvas_trace.draw()
-        self.canvas_image.draw()
+        self.draw_ax()
 
     def add_roi(self):
         new_roi_box = RoiBox(self.__filename, self.controller, self.image_ax)
@@ -298,7 +298,7 @@ class DataWindow(tk.Frame):
 
 class RoiBox():
     object_num = 0  # class variable 
-    color_selection = ['red', 'white', 'bule']
+    color_selection = ['red', 'white', 'blue', 'orange', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
         
     def __init__(self, filename, controller, ax):
         self.__filename = filename
@@ -311,7 +311,6 @@ class RoiBox():
                                                  ec=RoiBox.color_selection[self.__roi_num - 1], 
                                                  fill=False)
         ax.add_patch(self.__rectangle_obj)
-
 
     def set_roi(self):
         roi_obj = self.__roi_hold.get_controller(self.__filename.name, 'Roi' + str(self.__roi_num))
