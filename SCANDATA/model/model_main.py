@@ -10,7 +10,6 @@ from abc import ABCMeta, abstractmethod
 from weakref import WeakValueDictionary
 from SCANDATA.model.value_object import Filename
 from SCANDATA.model.builder import TsmFileBuilder, AbfFileBuilder, WcpFileBuilder
-from SCANDATA.model.builder import Director
 #from SCANDATA.model.mod_factory import ModTrace
 
 
@@ -100,13 +99,7 @@ class DataSet:
     def __init__(self, filename: object):
         self.__filename = filename
         builder_type = Translator.file_type_checker(filename)  # Using statsitc method in Translator class.
-
-        self.__director = Director()  # Director makes the cartain default set of the experiments. 
         self.__builder = builder_type
-        self.__director.builder = self.__builder  # Set a builder throuh the setter of Director.
-
-        #initial deta set
-        self.__director.build_initial_data_set(filename)
 
         # get dict from the builder
         objects = self.__builder.get_result()
@@ -225,7 +218,7 @@ class TraceStrategy(DataStrategy):
         super().__init__(object_dict)
         
     def create_data(self, director, data):
-        director.build_traces_data_set(data)
+        director.build_traces_set(data)
         
     def get_data(self, key):
         return self._object_dict[key].get_data()
@@ -264,13 +257,13 @@ class Translator:
     def file_type_checker(filename):
         if filename.extension == '.tsm':
             print('Found a .tsm file')
-            return TsmFileBuilder()
+            return TsmFileBuilder(filename)
         elif filename.extension == '.abf':
             print('Found an .abf file')
-            return AbfFileBuilder()
+            return AbfFileBuilder(filename)
         elif filename.extension == '.wcp':
             print('Found a .wcp file')
-            return WcpFileBuilder()
+            return WcpFileBuilder(filename)
         else:
             print('--------------------------------------')
             print('Can not find any builder for this file')

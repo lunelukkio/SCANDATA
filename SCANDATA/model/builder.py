@@ -38,8 +38,10 @@ class Builder(metaclass=ABCMeta):
 
 
 class TsmFileBuilder(Builder):
-    def __init__(self):
+    def __init__(self, filename):
+        self.__filename = filename
         self.reset()
+        self.initialize()
         
     def reset(self) -> None:
         #self.__file_io = WeakValueDictionary()  # weak referece dictionary
@@ -53,6 +55,24 @@ class TsmFileBuilder(Builder):
         self.__file_io_counter = {}  # dict
         self.__data_counter = {}  # dict
         self.__controller_counter = {}  # dict
+        
+    def initialize(self):
+        # make file_io
+        tsm = self.create_file_io(TsmFileIOFactory(), self.__filename)
+        tbn = self.create_file_io(TbnFileIOFactory(), self.__filename, tsm)
+        
+        # get raw frames data and interval
+        tsm_raw_data_tuple = copy.deepcopy(tsm.get_data())  # made indipendent from the file
+        interval = copy.deepcopy(tsm.get_infor())  # made indipendent from the file
+        full_interval = interval[0]
+        ch_interval = interval[1]
+        
+        # make full frames and ch frames from full frames
+        full_frames = FramesData(tsm_raw_data_tuple[0])  # Value object from raw data.
+        self.create_data(FullFramesFactory(), full_frames, full_interval)
+        
+        # make trace data
+        self.build_traces_set(data_set)
         
     def create_file_io(self, factory_type, filename, *args) -> object:  # factory_type from director???
         product = factory_type.create_file_io(filename, *args)
@@ -90,6 +110,14 @@ class TsmFileBuilder(Builder):
         self.__controller[object_name + str(product.object_num)] = product
         return product
     
+    def build_traces_set(self, data_set) -> None:
+        roi = self.create_controller(RoiFactory())
+        full_trace = self.create_data(FullTraceFactory(), data_set['FullFrames1'].frames_obj, data_set['FullFrames1'].interval)
+        roi.add_observer(full_trace)
+        !!!!!for i in (data_set['ChFrames1'], data_set['ChFrames2']):
+            trace = self.create_data(ChTraceFactory(), i.frames_obj, i.interval)
+            roi.add_observer(trace)
+
     @property
     def file_io(self) -> dict:
         return self.__file_io
@@ -114,11 +142,9 @@ class AbfFileBuilder(Builder):
     def create_data(self, factory_type) -> None:
         raise NotImplementedError()
 
-
     def create_controller(self, factory_type) -> None:
         raise NotImplementedError()
     
-
     def get_result(self) -> None:
         raise NotImplementedError()
         
@@ -131,51 +157,43 @@ class WcpFileBuilder(Builder):
     def create_data(self, factory_type) -> None:
         raise NotImplementedError()
 
-
     def create_controller(self, factory_type) -> None:
         raise NotImplementedError()
     
-
     def get_result(self) -> None:
         raise NotImplementedError()
     
 
 class Director:
-    def __init__(self) -> None:
-        self.__builder = None  # This decide which file_type will it use. (e.g. .tsm)
+    #def __init__(self) -> None:
+    #    self.__builder = None  # This decide which file_type will it use. (e.g. .tsm)
 
-    @property
-    def builder(self) -> Builder:
-        return self.__builder
+    #@property
+    #def builder(self) -> Builder:
+    #    return self.__builder
 
-    @builder.setter
-    def builder(self, builder: Builder) -> None:
-        self.__builder = builder
+    #@builder.setter
+    #def builder(self, builder: Builder) -> None:
+    #    self.__builder = builder
         
     def build_initial_data_set(self, filename) -> None:
         # make file_io
-        tsm = self.builder.create_file_io(TsmFileIOFactory(), filename)
-        tbn = self.builder.create_file_io(TbnFileIOFactory(), filename, tsm)
+        #tsm = self.builder.create_file_io(TsmFileIOFactory(), filename)
+        #tbn = self.builder.create_file_io(TbnFileIOFactory(), filename, tsm)
         
         # get raw frames data and interval
-        tsm_raw_data_tuple = copy.deepcopy(tsm.get_data())  # made indipendent from the file
-        interval = copy.deepcopy(tsm.get_infor())  # made indipendent from the file
-        full_interval = interval[0]
-        ch_interval = interval[1]
+        #tsm_raw_data_tuple = copy.deepcopy(tsm.get_data())  # made indipendent from the file
+        #interval = copy.deepcopy(tsm.get_infor())  # made indipendent from the file
+        #full_interval = interval[0]
+        #ch_interval = interval[1]
 
-        # make model controller
-        roi = self.builder.create_controller(RoiFactory())
-        bg_roi = self.builder.create_controller(RoiFactory())
-        frame_window = self.builder.create_controller(FrameWindowFactory())
+        # make frames
+        #full_frames = FramesData(tsm_raw_data_tuple[0])
+        #self.builder.create_data(FullFramesFactory(), full_frames, full_interval)
+        
+        # make trace data
+        #self.build_traces_data_set(data_set)
 
-        # make full data 
-        full_frames = FramesData(tsm_raw_data_tuple[0])
-        self.builder.create_data(FullFramesFactory(), full_frames, full_interval)
-        full_trace = self.builder.create_data(FullTraceFactory(), full_frames, full_interval)
-        roi.add_observer(full_trace)
-        # create background full trace
-        bg_full_trace = self.builder.create_data(FullTraceFactory(), full_frames, full_interval)
-        bg_roi.add_observer(bg_full_trace)
         
         # make ch data set
         for i in range(0, tsm_raw_data_tuple[1].shape[3]):
@@ -209,10 +227,10 @@ class Director:
             image = self.builder.create_data(CellImageFactory(), i.frames_obj)
             frame_window.add_observer(image)
 
-    def build_traces_data_set(self, data_set) -> None:
-        roi = self.builder.create_controller(RoiFactory())
-        full_trace = self.builder.create_data(FullTraceFactory(), data_set['FullFrames1'].frames_obj, data_set['FullFrames1'].interval)
-        roi.add_observer(full_trace)
-        for i in (data_set['ChFrames1'], data_set['ChFrames2']):
-            trace = self.builder.create_data(ChTraceFactory(), i.frames_obj, i.interval)
-            roi.add_observer(trace)
+    #def build_traces_data_set(self, data_set) -> None:
+    #    roi = self.builder.create_controller(RoiFactory())
+    #    full_trace = self.builder.create_data(FullTraceFactory(), data_set['FullFrames1'].frames_obj, data_set['FullFrames1'].interval)
+    #    roi.add_observer(full_trace)
+    #    for i in (data_set['ChFrames1'], data_set['ChFrames2']):
+    #        trace = self.builder.create_data(ChTraceFactory(), i.frames_obj, i.interval)
+    #        roi.add_observer(trace)
