@@ -317,7 +317,27 @@ class RoiBox():
         roi_obj = self.__roi_holder.get_controller(self.__filename.name, 'Roi' + str(self.__roi_num))
         self.__rectangle_obj.set_xy([roi_obj.data[0], roi_obj.data[1]])
         self.__rectangle_obj.set_width(roi_obj.data[2])
-        self.__rectangle_obj.set_height(roi_obj.data[3])      
+        self.__rectangle_obj.set_height(roi_obj.data[3])    
+        
+class RoiTree:
+    roi_num = 0
+    def __init__(self):
+        self.__roi_num = 0
+        self.__roi = []
+        self.__roi_val = 0
+        self.__roi_box = []
+        self.__trace_obj = []
+        
+    def get_roi_val(self):
+        pass
+    
+    def get_roi_box(self):
+        pass
+    
+    def get_trace_val(self):
+        pass
+    
+    
 
         
 class NavigationToolbarTrace(NavigationToolbar2Tk):

@@ -141,12 +141,14 @@ class DataSet:
     def delete_entity(self, key: str) -> None:
         if key in self.__data:
             del self.__data[key]
+            print('Deleted ' + key + 'from data')
         elif key in self.__controller:
             del self.__controller[key]
-        print('Tip 00000000000000000000000000000000000000000000')
-        print('Tip if inで辞書キーの検索ができるか？辞書キーを使ってオブジェクトの消し方')
-        #    lkj;kj;lk
-        self.print_infor()
+            print('Deleted ' + key + ' from controller')
+        else:
+            print('====================================')
+            print('No key. Can not delet ' + key)
+            print('====================================')
 
     def print_infor(self):
         print('=================== Data keys of ' + str(self.__filename.name) + ' ====================')

@@ -141,7 +141,7 @@ class TsmFileBuilder(Builder):
         roi.add_observer(full_trace)
         print('ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo')
         print('Tip count ChFrames')
-        num = 2  # This should be got from cunting ChFrames.
+        num = 2  # This should be got from counting ChFrames.
         ch_frames_list = []
         for i in range(0, num):
             ch_frames_list.append(data_set['ChFrames' + str(i+1)])
