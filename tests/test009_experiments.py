@@ -34,6 +34,7 @@ class TestExperiments(unittest.TestCase):
         exp1.delete_entity('20408B002.tsm', 'Roi1')
         print(exp1.data_set['20408B002.tsm']._DataSet__builder.controller)
 
+
         
         """
         #add new trace
