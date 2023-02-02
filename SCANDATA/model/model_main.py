@@ -37,6 +37,10 @@ class ExperimentsInterface(metaclass=ABCMeta):
     @abstractmethod
     def reset_data(self, filename: str, key: str):
         raise NotImplementedError()
+     
+    @abstractmethod
+    def delete_entity(self, filename: str, key: str):
+        raise NotImplementedError()
         
     @abstractmethod
     def data_set(self):  # get a list of data_set objects
@@ -72,6 +76,9 @@ class Experiments(ExperimentsInterface):
 
     def reset_data(self, filename: str, key: str):
         self.data_set[filename].reset_data(key)
+        
+    def delete_entity(self, filename, key):
+        self.data_set[filename].delete_entity(key)
 
     @property
     def data_set(self):

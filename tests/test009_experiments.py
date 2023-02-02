@@ -31,7 +31,7 @@ class TestExperiments(unittest.TestCase):
         exp1.data_set['20408A001new.tsm'].data['ChTrace1'].show_data()
         exp1.data_set['20408B002.tsm'].data['ChTrace2'].show_data()
         exp1.data_set['20408B002.tsm'].data['ChTrace1'].show_data()
-        exp1.data_set['20408B002.tsm'].delete_entity('Roi1')
+        exp1.delete_entity('20408B002.tsm', 'Roi1')
         print(exp1.data_set['20408B002.tsm']._DataSet__builder.controller)
 
         
