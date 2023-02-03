@@ -200,30 +200,9 @@ class DataWindow(tk.Frame):
         toolbar_trace.update()
         self.canvas_trace.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
-        self.initialize()
+        self.controller.initialize(self.__filename)
 
-    def initialize(self):
-        bg_roi_tree = RoiTree(self.__filename, self.controller)
-        bg_roi_tree.add_roi('Roi1')
-        bg_roi_tree.add_trace('FullTrace1')
-        num = self.controller.count_data(self.__filename, 'ChFrames')
-        for i in range(num):
-            bg_roi_tree.add_trace('ChTrace' + str(i+1))
-        print(bg_roi_tree.)
-        self.roi_tree.append(bg_roi_tree)
-        
-        
-        self.show_data(self.image_ax, 'CellImage1')
-        self.show_data(self.trace_ax1, 'ChTrace1')
-        self.show_data(self.trace_ax1, 'ChTrace2')
-        self.show_data(self.trace_ax2, 'ChElecTrace1')
-        
-        # roi_box number is roi number -1.
-        bg_roi_box = RoiBox(self.__filename, self.controller, self.image_ax)  # ROI1 for tarces
-        self.roi_box.append(bg_roi_box)
-        
-        roi_box = RoiBox(self.__filename, self.controller, self.image_ax)  # ROI1 for tarces
-        self.roi_box.append(roi_box)
+
         
     def draw_ax(self):
         self.trace_ax1.relim()
@@ -308,76 +287,6 @@ class DataWindow(tk.Frame):
         # reopen window
 
 
-class RoiBox():
-    object_num = 0  # class variable 
-    color_selection = ['white', 'red', 'blue', 'orange', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
-        
-    def __init__(self, filename, controller, ax):
-        self.__filename = filename
-        self.__roi_holder = controller
-        RoiBox.object_num += 1
-        self.__roi_num = copy.deepcopy(RoiBox.object_num)
-        self.__rectangle_obj = patches.Rectangle(xy=(40, 40), 
-                                                 width=1, 
-                                                 height=1, 
-                                                 ec=RoiBox.color_selection[self.__roi_num - 1], 
-                                                 fill=False)
-        ax.add_patch(self.__rectangle_obj)
-
-    def set_roi(self):
-        roi_obj = self.__roi_holder.get_controller(self.__filename.name, 'Roi' + str(self.__roi_num))
-        self.__rectangle_obj.set_xy([roi_obj.data[0], roi_obj.data[1]])
-        self.__rectangle_obj.set_width(roi_obj.data[2])
-        self.__rectangle_obj.set_height(roi_obj.data[3])    
-        
-class RoiTree:
-    roi_num = 0
-    def __init__(self, filename, controller):
-        RoiTree.roi_num += 1
-        self.__filename = filename
-        self.__controller = controller
-
-        self.__roi_num = copy.deepcopy(RoiTree.roi_num)
-        self.__ax = []
-        self.__roi = []
-        self.__roi_val = 0
-        self.__roi_box = []
-        self.__trace = []
-        
-    def add_ax(self, ax: object):
-        self.__ax.append(ax)
-        
-    def delete_ax(self, ax: object):
-        self.__ax.remove(ax)
-        
-    def add_roi(self, key: str):
-        self.__roi.append(key)
-        
-    def delete_roi(self, key: str):
-        self.__roi.remove(key)
-
-    def get_roi_val(self):
-        pass
-    
-    def add_roi_box(self, roi_box: str):
-        self.__roi_box.append(roi_box)
-        
-    def delete_roi_box(self, roi_box: str):
-        self.__roi_box.remove(roi_box)
-    
-    def add_trace(self, key: str):
-        self.__trace.append(key)
-        
-    def delete_trace(self, key: str):
-        self.__trace.remove(key)
-        
-    def show_data(self, ax, data_type):
-        value_obj = self.controller.get_data(self.__filename, data_type)
-        try:
-            line_2d, = value_obj.show_data(ax)  # line, mean the first element of a list (convert from list to objet)
-            self.trace_y1.append(line_2d)  # Add to the list for trace_y1 trace line objects [Line_2D] of axis abject
-        except:
-            value_obj.show_data(ax)
     
 
 class NavigationToolbarTrace(NavigationToolbar2Tk):

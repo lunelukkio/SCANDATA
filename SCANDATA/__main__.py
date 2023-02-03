@@ -23,19 +23,19 @@ class Main:
         root.title("SCANDATA")
 
         # Make instance of a model, a view and a controller
-        self.model = Experiments()
-        self.view = View(root)
-        self.controller = Controller()
+        controller = Controller()
+        model = Experiments()
+        view = View(root)
         
         # The view knows controller .
-        self.view.controller = self.controller
+        view.controller = controller
         
         # The controller knows model and view. 
-        self.controller.model = self.model
-        self.controller.view = self.view
+        controller.model = model
+        controller.view = view
         
 
-        self.view.mainloop()
+        view.mainloop()
 
 if __name__ == '__main__':
     scandata = Main()

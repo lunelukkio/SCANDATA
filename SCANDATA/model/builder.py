@@ -15,6 +15,7 @@ from SCANDATA.model.data_factory import FullTraceFactory, ChTraceFactory
 from SCANDATA.model.data_factory import ChElecTraceFactory
 from SCANDATA.model.controller_factory import RoiFactory, FrameWindowFactory
 from SCANDATA.model.value_object import FramesData, TraceData
+from SCANDATA.model.model_main import KeyCounter
 
 """
 Builder
@@ -142,6 +143,7 @@ class TsmFileBuilder(Builder):
         print('ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo')
         print('Tip count ChFrames')
         num = 2  # This should be got from counting ChFrames.
+        #num = KeyCounter.count_key(data_set, 'ChFrames')
         ch_frames_list = []
         for i in range(0, num):
             ch_frames_list.append(data_set['ChFrames' + str(i+1)])
