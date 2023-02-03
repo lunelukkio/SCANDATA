@@ -43,9 +43,12 @@ class ExperimentsInterface(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
-    def data_set(self):  # get a list of data_set objects
+    def data_set(self):  # get a list of data_set objects (dict of filenames)
         raise NotImplementedError()
-
+        
+    @abstractmethod
+    def count_data(self, filename: str, key: str):
+        raise NotImplementedError()
 
 class Experiments(ExperimentsInterface):
     def __init__(self):
@@ -61,29 +64,34 @@ class Experiments(ExperimentsInterface):
         self.__data_set[filename].create_data(key)
             
     def set_data(self, filename: str, key: str, val: tuple):
-        self.data_set[filename].set_data(key, val)
+        self.__data_set[filename].set_data(key, val)
         
     def add_data(self, filename: str, key: str, val: tuple):
-        self.data_set[filename].add_data(key, val)
+        self.__data_set[filename].add_data(key, val)
         
     def get_data(self, filename: str, key: str):
-        return self.data_set[filename].get_data(key)
+        return self.__data_set[filename].get_data(key)
     
     def bind_data(self, controller: str, data: str, filename_ctrl: str, filename_data: str):
-        binding_controller = self.data_set[filename_ctrl].controller[controller]
-        binding_key = self.data_set[filename_data].data[data]
+        binding_controller = self.__data_set[filename_ctrl].controller[controller]
+        binding_key = self.__data_set[filename_data].data[data]
         binding_controller.add_observer(binding_key)
 
     def reset_data(self, filename: str, key: str):
-        self.data_set[filename].reset_data(key)
+        self.__data_set[filename].reset_data(key)
         
     def delete_entity(self, filename, key):
-        self.data_set[filename].delete_entity(key)
+        self.__data_set[filename].delete_entity(key)
 
     @property
     def data_set(self):
         return self.__data_set
-
+    
+    def count_data(self, filename: str, key: str):
+        num = self.__data_set[filename].count_data(key)
+        return num
+        
+        
     def help(self):
         print('===================================================================================')
         print('HELP for commands to MODEL')
@@ -156,6 +164,10 @@ class DataSet:
             print('====================================')
             print('No key. Can not delet ' + key)
             print('====================================')
+            
+    def count_data(self, key):
+        num = KeyCounter.count_key(self.data, key)
+        return num
 
     def print_infor(self):
         print('=================== Data keys of ' + str(self.__filename.name) + ' ====================')
@@ -315,6 +327,17 @@ class Translator:
             print('--------------------------------------')
             raise Exception("The key name is incorrect!!!")
 
+
+class KeyCounter:
+    @staticmethod
+    def count_key(key_dict, key):
+        num = 0
+        key_list = key_dict.keys()
+        print(key_list)
+        for i in key_list:
+            if key in i:
+                num += 1
+        return num
 
 
 if __name__ == '__main__':

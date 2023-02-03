@@ -204,7 +204,12 @@ class DataWindow(tk.Frame):
 
     def initialize(self):
         bg_roi_tree = RoiTree(self.__filename, self.controller)
-        bg_roi_tree.add_controller('Roi1')
+        bg_roi_tree.add_roi('Roi1')
+        bg_roi_tree.add_trace('FullTrace1')
+        num = self.controller.count_data(self.__filename, 'ChFrames')
+        for i in range(num):
+            bg_roi_tree.add_trace('ChTrace' + str(i+1))
+        print(bg_roi_tree.)
         self.roi_tree.append(bg_roi_tree)
         
         
@@ -329,8 +334,9 @@ class RoiTree:
     roi_num = 0
     def __init__(self, filename, controller):
         RoiTree.roi_num += 1
-        self.__controller = controller
         self.__filename = filename
+        self.__controller = controller
+
         self.__roi_num = copy.deepcopy(RoiTree.roi_num)
         self.__ax = []
         self.__roi = []
@@ -373,7 +379,6 @@ class RoiTree:
         except:
             value_obj.show_data(ax)
     
-    
 
 class NavigationToolbarTrace(NavigationToolbar2Tk):
     def __init__(self, canvas=None, master=None):
@@ -388,16 +393,7 @@ class NavigationToolbarTrace(NavigationToolbar2Tk):
     def get_val(self):
         pass
     
-class KeyCounter:
-    @staticmethod
-    def count_key(key_dict, key):
-        num = 0
-        key_list = key_dict.keys()
-        print(key_list)
-        for i in key_list:
-            if key in i:
-                num += 1
-        return num
+
 
 
 if __name__ == '__main__':

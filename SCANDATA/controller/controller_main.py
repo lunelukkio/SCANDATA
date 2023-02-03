@@ -54,6 +54,9 @@ class Controller:
         
     def get_controller(self, filename: str, key:str) -> object:
         return self.model.get_data(filename, key)
+    
+    def count_data(self, filename, key):
+        return self.model.count_data(filename, key)
         
 
 
