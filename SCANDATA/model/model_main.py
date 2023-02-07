@@ -9,7 +9,7 @@ lunelukkio@gmail.com
 from abc import ABCMeta, abstractmethod
 from weakref import WeakValueDictionary
 from SCANDATA.model.value_object import Filename
-from SCANDATA.model.builder import TsmFileBuilder, AbfFileBuilder, WcpFileBuilder
+from SCANDATA.model.builder import TsmFileBuilder, AbfFileBuilder, WcpFileBuilder, KeyCounter
 #from SCANDATA.model.mod_factory import ModTrace
 
 
@@ -241,7 +241,7 @@ class ImageStrategy(DataStrategy):
         super().__init__(object_dict)
         
     def create_data(self, builder, data):
-        builder.build_images_data_set(data)
+        builder.build_images_set(data)
 
 
 class TraceStrategy(DataStrategy):
@@ -328,16 +328,6 @@ class Translator:
             raise Exception("The key name is incorrect!!!")
 
 
-class KeyCounter:
-    @staticmethod
-    def count_key(key_dict, key):
-        num = 0
-        key_list = key_dict.keys()
-        print(key_list)
-        for i in key_list:
-            if key in i:
-                num += 1
-        return num
 
 
 if __name__ == '__main__':

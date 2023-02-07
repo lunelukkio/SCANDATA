@@ -13,6 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import glob
+import copy
 
 
 class Controller:
@@ -21,17 +22,18 @@ class Controller:
         self.view = None
         self.model = None
         
-        self.__filename_obj_list = []
+        self.__filename_list = []
+        self.roi_view_list = []
         
-    def initialize(self, filename):
-        bg_roi_tree = RoiTree(filename)
-        bg_roi_tree.add_roi('Roi1')
-        bg_roi_tree.add_trace('FullTrace1')
-        num = self.controller.count_data(self.__filename, 'ChFrames')
+    def initialize_data_window(self, filename):
+        bg_roi_view = RoiView(filename)
+        bg_roi_view.add_roi('Roi1')
+        bg_roi_view.add_trace('FullTrace1')
+        num = self.count_data(filename.name, 'ChFrames')
         for i in range(num):
-            bg_roi_tree.add_trace('ChTrace' + str(i+1))
-        print(bg_roi_tree.)
-        self.roi_tree.append(bg_roi_tree)
+            bg_roi_view.add_trace('ChTrace' + str(i+1))
+
+        self.roi_view_list.append(bg_roi_view)
         
         
         self.show_data(self.image_ax, 'CellImage1')
@@ -148,14 +150,13 @@ class WholeFilename:  # Use it only in a view and controller
         print('The file name list in the same folder = ' + str(self.__filename_list))
         
         
-class RoiTree:
+class RoiView:
     roi_num = 0
-    def __init__(self, filename, controller):
-        RoiTree.roi_num += 1
+    def __init__(self, filename):
+        RoiView.roi_num += 1
         self.__filename = filename
-        self.__controller = controller
 
-        self.__roi_num = copy.deepcopy(RoiTree.roi_num)
+        self.__roi_num = copy.deepcopy(RoiView.roi_num)
         self.__ax = []
         self.__roi = []
         self.__roi_val = 0

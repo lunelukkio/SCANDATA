@@ -136,7 +136,7 @@ class DataWindow(tk.Frame):
         self.trace_y1 = []
         self.trace_y2 = []
         
-        self.roi_tree = []
+
         self.current_roi_num = 1
         
         # set frames
@@ -200,7 +200,7 @@ class DataWindow(tk.Frame):
         toolbar_trace.update()
         self.canvas_trace.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
-        self.controller.initialize(self.__filename)
+        self.controller.initialize_data_window(self.__filename)
 
 
         

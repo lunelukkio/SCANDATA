@@ -35,6 +35,8 @@ if __name__ == '__main__':
 
     print('ファサード使ってbuilderのシンプル化')
     
+    print('modではvalue objectを変換してinterfaceへおくる')
+    
 
     print('Controller roiのobseverの名前列記printのリストにアペンド仕方が分からなかった')
 

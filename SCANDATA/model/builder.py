@@ -15,7 +15,7 @@ from SCANDATA.model.data_factory import FullTraceFactory, ChTraceFactory
 from SCANDATA.model.data_factory import ChElecTraceFactory
 from SCANDATA.model.controller_factory import RoiFactory, FrameWindowFactory
 from SCANDATA.model.value_object import FramesData, TraceData
-from SCANDATA.model.model_main import KeyCounter
+
 
 """
 Builder
@@ -140,14 +140,11 @@ class TsmFileBuilder(Builder):
                                       data_set['FullFrames1'].frames_obj, 
                                       data_set['FullFrames1'].interval)
         roi.add_observer(full_trace)
-        print('ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo')
-        print('Tip count ChFrames')
-        num = 2  # This should be got from counting ChFrames.
-        #num = KeyCounter.count_key(data_set, 'ChFrames')
+
+        num_ch_frames = KeyCounter.count_key(data_set, 'ChFrames')
         ch_frames_list = []
-        for i in range(0, num):
+        for i in range(0, num_ch_frames):
             ch_frames_list.append(data_set['ChFrames' + str(i+1)])
-        #ch_frames_list = [data_set['ChFrames1'], data_set['ChFrames2']]
         for i in ch_frames_list:
             trace = self.create_data(ChTraceFactory(), i.frames_obj, i.interval)
             roi.add_observer(trace)
@@ -215,4 +212,15 @@ class WcpFileBuilder(Builder):
     
     def get_result(self) -> None:
         raise NotImplementedError()
-    
+        
+
+class KeyCounter:
+    @staticmethod
+    def count_key(key_dict, key):
+        num = 0
+        key_list = key_dict.keys()
+        print(key_list)
+        for i in key_list:
+            if key in i:
+                num += 1
+        return num    
