@@ -241,7 +241,7 @@ class ImageStrategy(DataStrategy):
         super().__init__(object_dict)
         
     def create_data(self, builder, data):
-        builder.build_images_set(data)
+        builder.build_image_set(data)
 
 
 class TraceStrategy(DataStrategy):
