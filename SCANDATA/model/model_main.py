@@ -143,7 +143,9 @@ class DataSet:
 
     def get_data(self, key: str) -> object:
         strategy_type = Translator.key_checker(key, self.__object_dict_list)
-        return strategy_type.get_data(key)
+        data = strategy_type.get_data(key)
+        #mod_trace = mod_data(raw_trace)
+        return data
 
     def reset_data(self, key: str):
         self.__controller[key].reset()
@@ -253,8 +255,7 @@ class TraceStrategy(DataStrategy):
         
     def get_data(self, key):
         return self._object_dict[key].get_data()
-        #mod_trace = mod_data(raw_trace)
-        
+    
         
 class RoiStrategy(ControllerStrategy):
     def __init__(self, object_dict):
