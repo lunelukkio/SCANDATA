@@ -11,5 +11,6 @@ import os
 working_folder = os.getcwd()
 
 sys.path.append(working_folder)
+sys.path.append("c:/programdata/anaconda3/lib/site-packages")
 
 sys.path    # type in the console
