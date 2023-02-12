@@ -33,6 +33,9 @@ class ExperimentsInterface(metaclass=ABCMeta):
     @abstractmethod
     def get_data(self, filename: str, key: str):
         raise NotImplementedError()
+        
+    def bind_data(self, controller: str, data: str, filename_ctrl: str, filename_data: str):
+        raise NotImplementedError()
     
     @abstractmethod
     def reset_data(self, filename: str, key: str):
@@ -101,7 +104,7 @@ class Experiments(ExperimentsInterface):
         print('            e.g. filename = "20408B002.tsm"  key = "Image", "FluoTrace")')
         print('set_data(filename: str, key: str, val:tuple')
         print('            e.g. test.set_data("20408B002.tsm", "Roi1", (40,40,1,1))')
-        print('get_data(filename: str, key: str): to get a data valu object')
+        print('get_data(filename: str, key: str): to get a data entity')
         print('            e.g. test.get_data("20408B002.tsm", "ChTrace1")')
         print('bind_data(controller, data, filename_ctrl, filename_data): bind controller and data')
         print('            e.g. test.reset_data("20408B002.tsm", "Roi1")')
@@ -144,6 +147,7 @@ class DataSet:
     def get_data(self, key: str) -> object:
         strategy_type = Translator.key_checker(key, self.__object_dict_list)
         data = strategy_type.get_data(key)
+        # decorator.(write in strategy, because decoration is not the same in each data and controller)
         #mod_trace = mod_data(raw_trace)
         return data
 

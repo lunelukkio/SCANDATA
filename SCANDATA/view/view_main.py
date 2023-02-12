@@ -17,7 +17,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from SCANDATA.view.button_function import ButtonFn
 
 
-class View(tk.Frame):
+class MainView(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.controller = None
@@ -130,15 +130,10 @@ class DataWindow(tk.Frame):
         master.configure(background='azure')
         master.title(self.__filename.name)
         
-        self.trace_ax1 = None
-        self.trace_ax2 = None
-        
-        self.trace_y1 = []
-        self.trace_y2 = []
-        
+        self.trace_ax1 = None  # for fluoresence trace
+        self.trace_ax2 = None  # for elec trace
+        self.image_ax = None  # for cell image
 
-        self.current_roi_num = 1
-        
         # set frames
         frame_top = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=2, bg = 'white')
         button_open = tk.Button(frame_top, text='Open',command=self.button_reopen)
@@ -200,8 +195,16 @@ class DataWindow(tk.Frame):
         toolbar_trace.update()
         self.canvas_trace.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
-        self.controller.initialize_data_window(self.__filename)
+        self.trace_y1 = []
+        self.trace_y2 = []
+        
+        self.roi_list = []
+        self.image_list = []
 
+        self.current_roi_num = None
+        
+        
+        self.controller.initialize_data_window(self.__filename)
 
         
     def draw_ax(self):

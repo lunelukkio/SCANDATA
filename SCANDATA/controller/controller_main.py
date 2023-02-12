@@ -6,6 +6,7 @@ lunelukkio@gmail.com
 main for controller
 """
 
+from abc import ABCMeta, abstractmethod
 from SCANDATA.model.model_main import ExperimentsInterface
 from SCANDATA.view.view_main import View
 import os
@@ -15,14 +16,20 @@ import math
 import glob
 import copy
 
-
-class Controller:
+class MainController:
     def __init__(self):
+        self.controller_list = []
         
+    def create_imaging_controller(self,filename):
+        self.controller_list.append(ImagingController(filename))
+
+class ImagingController:
+    def __init__(self):
+        self.__filename
         self.view = None
         self.model = None
         
-        self.__filename_list = []
+
         self.roi_view_list = []
         
     def initialize_data_window(self, filename):
@@ -199,25 +206,5 @@ class RoiView:
             value_obj.show_data(ax)
 
 
-class RoiBox():
-    object_num = 0  # class variable 
-    color_selection = ['white', 'red', 'blue', 'orange', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
-        
-    def __init__(self, filename, controller, ax):
-        self.__filename = filename
-        self.__roi_holder = controller
-        RoiBox.object_num += 1
-        self.__roi_num = copy.deepcopy(RoiBox.object_num)
-        self.__rectangle_obj = patches.Rectangle(xy=(40, 40), 
-                                                 width=1, 
-                                                 height=1, 
-                                                 ec=RoiBox.color_selection[self.__roi_num - 1], 
-                                                 fill=False)
-        ax.add_patch(self.__rectangle_obj)
 
-    def set_roi(self):
-        roi_obj = self.__roi_holder.get_controller(self.__filename.name, 'Roi' + str(self.__roi_num))
-        self.__rectangle_obj.set_xy([roi_obj.data[0], roi_obj.data[1]])
-        self.__rectangle_obj.set_width(roi_obj.data[2])
-        self.__rectangle_obj.set_height(roi_obj.data[3])    
         

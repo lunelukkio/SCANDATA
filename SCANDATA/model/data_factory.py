@@ -111,8 +111,8 @@ class FluoFrames(Data):  # 3D frames data: full frames, ch image
     def update(self):
         pass
     
-    def get_data(self) -> object:  # -> Value object
-        return self.__frames_obj
+    def get_data(self) -> object:  # -> vaqlue object
+        return self.frames_obj
     
     def get_infor(self) -> tuple:
         return self.__interval, self.__pixel_size, self.__unit
@@ -170,6 +170,8 @@ class FluoImage(Data):  # cell image, dif image
         self._frame_window = [0,0]  # default [start, end] 
         self._pixel_size = pixel_size  # (um)
         self._unit = unit  # No unit because of raw camera data.
+        
+        self.__observer = DataObserver()  # obserbers for View
 
     def _read_data(self, data) -> None:
         pass
@@ -177,7 +179,7 @@ class FluoImage(Data):  # cell image, dif image
     def update(self):
         pass
     
-    def get_data(self) -> object:  # -> Value object
+    def get_data(self) -> object:  # -> value object
         return self._image_obj
     
     def get_infor(self) -> float:
@@ -277,6 +279,8 @@ class FluoTrace(Data):  # Fluo trae, Elec trace
         self._roi = [40,40,1,1]  #default
         
         self._read_data(self._roi)
+        
+        self.__observer = DataObserver()  # obserbers for View
 
     def _read_data(self, roi: list) -> None:  # roi[x, y, x_length, y_length]
         x_size = self.__frames_obj.data.shape[0]
@@ -293,7 +297,7 @@ class FluoTrace(Data):  # Fluo trae, Elec trace
     def update(self, roi_obj) -> None:
         pass
     
-    def get_data(self) -> object:  # -> Value object
+    def get_data(self) -> object:  # -> value object
         return self.__trace_obj
     
     def get_infor(self) -> float:
@@ -389,13 +393,15 @@ class ElecTrace(Data):  # Fluo trae, Elec trace
         #self._trace_obj  # create in _read_data of sub classes
         self._interval = interval
         
+        self.__observer = DataObserver()  # obserbers for View
+        
     def _read_data(self):
         pass
     
     def update(self, roi_obj) -> None:
         pass
     
-    def get_data(self) -> object:  # -> Value object
+    def get_data(self) -> object:  # -> value object
         return self._trace_obj
     
     def get_infor(self) -> float:
@@ -437,6 +443,20 @@ class ChElecTrace(ElecTrace):
 class LongElecTrace(ElecTrace):
     pass
         
+
+class DataObserver:
+    def __init__(self):
+        self.__observers = []  # for view
+        
+    def add_observer(self, observer):
+        self.__observers.append(observer)
+        
+    def remove_observer(self, observer):
+        self.__observers.remove(observer)
+    
+    def notify_observer(self):
+        for observer_name in self.__observers:
+            observer_name.update()
 
 if __name__ == '__main__':
     pass
