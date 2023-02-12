@@ -30,6 +30,7 @@ if __name__ == '__main__':
     test_suite = suite()
     runner.run(test_suite)
 
+    print('Model は データフィルごとに新たに作る。それをコントローラーが保持する')
     print('delete_entityの辞書delの使い方')
     print('roival取得とroiboxの番号を一致させておくことでバインドさせる　roibox(i) = get roival(i)')
 

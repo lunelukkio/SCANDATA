@@ -55,9 +55,10 @@ concrete product
 """
 
 class RoiRepository(DataRepository):
-    def __init__(self, data_entity: object):
-        self.__data_entity = data_entity
-        self.__roi_box = RoiBox()
+    def __init__(self, trace_data: object):
+        self.__roi_val = contoller.create_
+        self.__trace_data = []
+        self.__roi_box = RoiBox(filename, controller, ax)
         self.__window = []
         self.__ax
         
