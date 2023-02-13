@@ -14,14 +14,13 @@ import copy
 from matplotlib.figure import Figure
 import matplotlib.patches as patches
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-from SCANDATA.view.button_function import ButtonFn
+from SCANDATA.controller.controller_main import ImagingController
 
 
 class MainView(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.controller = None
-        self.button_fn = ButtonFn(self.controller)
         
         self.__filename_obj_list = []
         self.window = []
@@ -114,18 +113,17 @@ class MainView(tk.Frame):
         self.window.append(tk.Toplevel())
         self.data_window.append(DataWindow(self.window[len(self.window)-1], filename_obj, self.controller))
 
-        
     def open_file(self, event=None):
         fullname = self.button_fn.get_fullname()
         print('Open ' + str(fullname))
         
 
 class DataWindow(tk.Frame):
-    def __init__(self, master=None, filename_obj=None, controller=None):
+    def __init__(self, master=None, filename_obj=None):
         super().__init__(master)
         self.pack()
         self.__filename = filename_obj
-        self.controller = controller
+        
         master.geometry('1400x700')
         master.configure(background='azure')
         master.title(self.__filename.name)
@@ -136,7 +134,7 @@ class DataWindow(tk.Frame):
 
         # set frames
         frame_top = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=2, bg = 'white')
-        button_open = tk.Button(frame_top, text='Open',command=self.button_reopen)
+        button_open = tk.Button(frame_top, text='Open',command=self.file_open)
         button_close = tk.Button(frame_top, text='Close')
         button_open.pack(side=tk.LEFT)
         button_close.pack(side=tk.LEFT, padx=5)
@@ -198,14 +196,23 @@ class DataWindow(tk.Frame):
         self.trace_y1 = []
         self.trace_y2 = []
         
-        self.roi_list = []
-        self.image_list = []
+        self.roi_view_list = []
+        self.image_View_list = []
+        self.elec_view_list = []
 
         self.current_roi_num = None
-        
-        
-        self.controller.initialize_data_window(self.__filename)
 
+        # make a contoller and model.
+        self.controller = ImagingController(self, self.__filename)
+        self.model = self.controller.model
+        
+        # This is the main stream from the main controller.
+        if self.__filename != None:
+            self.controller.create_model(self.__filename)
+            
+    def file_open(self):
+        fullname = FileService.get_fullname()
+        self.controller.file_open(fullname)
         
     def draw_ax(self):
         self.trace_ax1.relim()
@@ -284,13 +291,7 @@ class DataWindow(tk.Frame):
             self.current_roi_num -= 1
             #k;lkj;lkj;lkj
             self.draw_ax()
-        
-    def button_reopen(self):
-        del self.controller.model.data_file[self.filename]
-        # reopen window
 
-
-    
 
 class NavigationToolbarTrace(NavigationToolbar2Tk):
     def __init__(self, canvas=None, master=None):
@@ -306,6 +307,19 @@ class NavigationToolbarTrace(NavigationToolbar2Tk):
         pass
     
 
+class FileService:
+    @staticmethod
+    def get_fullname(event=None):
+        # open file dialog
+        fullname = tk.filedialog.askopenfilename(
+            initialdir = os.getcwd(), # current dir
+            filetypes=(('Tsm files', '*.tsm'),
+                       ('Da files', '*.da'), 
+                       ('Axon files', '*.abf'),
+                       ('WinCP files', '*.wcp'),
+                       ('All files', '*.*'))
+                      )
+        return fullname
 
 
 if __name__ == '__main__':

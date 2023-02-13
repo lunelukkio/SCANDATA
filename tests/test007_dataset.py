@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 class TestDataSet(unittest.TestCase):
     def test_data_set(self):
-        filename = Filename('..\\220408\\20408B002.tsm')
+        filename = ('..\\220408\\20408B002.tsm')
         dataset = DataSet(filename)
         
         tracefig = plt.figure()
@@ -22,8 +22,8 @@ class TestDataSet(unittest.TestCase):
         dataset.data['FullTrace1'].show_data()
         
         dataset.create_data('Trace')
-        dataset.print_infor()
-        dataset.controller['Roi2'].set_data(50,50,10,10)
+        dataset.print_infor()    
+        dataset.set_data('Roi1', (5,5,5,5))
         dataset.data['ChTrace3'].show_data()
         dataset.data['ChTrace4'].show_data()
         

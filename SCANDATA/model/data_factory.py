@@ -97,6 +97,8 @@ class FluoFrames(Data):  # 3D frames data: full frames, ch image
         self.__unit = unit  # No unit because of raw camera data.
 
         self._read_data(frames_obj)
+        
+        self.observer = DataObserver()  # obserbers for View
 
     def _read_data(self, frames_obj) -> None:
         if len(frames_obj.data) <= 1:  # getter of FramesData
@@ -171,7 +173,7 @@ class FluoImage(Data):  # cell image, dif image
         self._pixel_size = pixel_size  # (um)
         self._unit = unit  # No unit because of raw camera data.
         
-        self.__observer = DataObserver()  # obserbers for View
+        self.observer = DataObserver()  # obserbers for View
 
     def _read_data(self, data) -> None:
         pass
@@ -280,7 +282,7 @@ class FluoTrace(Data):  # Fluo trae, Elec trace
         
         self._read_data(self._roi)
         
-        self.__observer = DataObserver()  # obserbers for View
+        self.observer = DataObserver()  # obserbers for View
 
     def _read_data(self, roi: list) -> None:  # roi[x, y, x_length, y_length]
         x_size = self.__frames_obj.data.shape[0]
@@ -393,7 +395,7 @@ class ElecTrace(Data):  # Fluo trae, Elec trace
         #self._trace_obj  # create in _read_data of sub classes
         self._interval = interval
         
-        self.__observer = DataObserver()  # obserbers for View
+        self.observer = DataObserver()  # obserbers for View
         
     def _read_data(self):
         pass

@@ -12,7 +12,7 @@ from SCANDATA.model.mod_factory import BgComp
 import matplotlib.pyplot as plt
 
 
-filename = Filename('..\\220408\\20408B002.tsm')
+filename = ('..\\220408\\20408B002.tsm')
 dataset = DataSet(filename)
 
 

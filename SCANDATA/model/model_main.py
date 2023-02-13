@@ -13,110 +13,46 @@ from SCANDATA.model.builder import TsmFileBuilder, AbfFileBuilder, WcpFileBuilde
 #from SCANDATA.model.mod_factory import ModTrace
 
 
-class ExperimentsInterface(metaclass=ABCMeta):
+class DataSetInterface(metaclass=ABCMeta):
     @abstractmethod
-    def create_data_set(self, fullname):
+    def create_data(self, key, *args):
         raise NotImplementedError()
         
     @abstractmethod
-    def create_data(self, filename, key, *args):
+    def set_data(self, key: str, val: tuple):
         raise NotImplementedError()
         
     @abstractmethod
-    def set_data(self, filename: str, key: str, val: tuple):
+    def add_data(self, key: str):
         raise NotImplementedError()
         
     @abstractmethod
-    def add_data(self, filename: str, key: str):
+    def get_data(self, key: str):
         raise NotImplementedError()
         
-    @abstractmethod
-    def get_data(self, filename: str, key: str):
+    def bind_data(self, controller_key: str, data_key: str):
         raise NotImplementedError()
         
-    def bind_data(self, controller: str, data: str, filename_ctrl: str, filename_data: str):
+    def bind_view(self, data_key: str, view_obj: object):
         raise NotImplementedError()
     
     @abstractmethod
-    def reset_data(self, filename: str, key: str):
+    def reset_data(self, key: str):
         raise NotImplementedError()
      
     @abstractmethod
-    def delete_entity(self, filename: str, key: str):
+    def delete_entity(self, key: str):
         raise NotImplementedError()
-        
-    @abstractmethod
-    def data_set(self):  # get a list of data_set objects (dict of filenames)
-        raise NotImplementedError()
-        
+
     @abstractmethod
     def count_data(self, filename: str, key: str):
         raise NotImplementedError()
+        
 
-class Experiments(ExperimentsInterface):
-    def __init__(self):
-        self.__data_set = {}
-    
-    def create_data_set(self, fullname: str):  # create a whole data set(frame, image, trace) 
-        filename = Filename(fullname)
-        
-        self.__data_set[filename.name] = DataSet(filename)  # dict of data_file(key filename : object)
-        print('Created {} data set.'.format(filename.name))
-        
-    def create_data(self, filename, key: str, *args):
-        self.__data_set[filename].create_data(key)
-            
-    def set_data(self, filename: str, key: str, val: tuple):
-        self.__data_set[filename].set_data(key, val)
-        
-    def add_data(self, filename: str, key: str, val: tuple):
-        self.__data_set[filename].add_data(key, val)
-        
-    def get_data(self, filename: str, key: str):
-        return self.__data_set[filename].get_data(key)
-    
-    def bind_data(self, controller: str, data: str, filename_ctrl: str, filename_data: str):
-        binding_controller = self.__data_set[filename_ctrl].controller[controller]
-        binding_key = self.__data_set[filename_data].data[data]
-        binding_controller.add_observer(binding_key)
-
-    def reset_data(self, filename: str, key: str):
-        self.__data_set[filename].reset_data(key)
-        
-    def delete_entity(self, filename, key):
-        self.__data_set[filename].delete_entity(key)
-
-    @property
-    def data_set(self):
-        return self.__data_set
-    
-    def count_data(self, filename: str, key: str):
-        num = self.__data_set[filename].count_data(key)
-        return num
-        
-        
-    def help(self):
-        print('===================================================================================')
-        print('HELP for commands to MODEL')
-        print('create_data_set(fullname: str): for making a new data set.     <------------ only this is full file name.')
-        print('            e.g. create_data_set("..\\220408\\20408B002.tsm")')
-        print('create_data(filename: str, key: str): for making a new data in a data_set)')
-        print('            e.g. filename = "20408B002.tsm"  key = "Image", "FluoTrace")')
-        print('set_data(filename: str, key: str, val:tuple')
-        print('            e.g. test.set_data("20408B002.tsm", "Roi1", (40,40,1,1))')
-        print('get_data(filename: str, key: str): to get a data entity')
-        print('            e.g. test.get_data("20408B002.tsm", "ChTrace1")')
-        print('bind_data(controller, data, filename_ctrl, filename_data): bind controller and data')
-        print('            e.g. test.reset_data("20408B002.tsm", "Roi1")')
-        print('reset_data(filename: str, key: str): reset controller')
-        print('            e.g. test.reset_data("20408B002.tsm", "Roi1")')
-        print('===================================================================================')
-
-
-class DataSet:
-    def __init__(self, filename: object):
-        self.__filename = filename
-        self.__builder = Translator.file_type_checker(filename)  # Using statsitc method in Translator class.
+class DataSet(DataSetInterface):
+    def __init__(self, full_filename: str):
+        self.__filename = Filename(full_filename)
+        self.__builder = Translator.file_type_checker(self.__filename)  # Using statsitc method in Translator class.
 
         # Reset a data set.
         (self.__file_io, self.__data, self.__controller) = self.__builder.reset()
@@ -126,16 +62,12 @@ class DataSet:
         
         # Initialized the data set.
         self.__builder.initialize()
-
         self.print_infor()
 
-    @property
-    def data(self):
-        return self.__data
-
-    @property
-    def controller(self):
-        return self.__controller
+    def create_data(self, key: str) -> None:
+        strategy_type = Translator.key_checker(key, self.__object_dict_list)
+        strategy_type.create_data(self.__builder, self.__data)
+        self.print_infor()
 
     def set_data(self, key: str, val: tuple):
         strategy_type = Translator.key_checker(key, self.__object_dict_list)
@@ -143,7 +75,7 @@ class DataSet:
 
     def add_data(self, key: str, val: tuple):
         return self.__controller[key].add_data(*val)
-
+    
     def get_data(self, key: str) -> object:
         strategy_type = Translator.key_checker(key, self.__object_dict_list)
         data = strategy_type.get_data(key)
@@ -151,14 +83,15 @@ class DataSet:
         #mod_trace = mod_data(raw_trace)
         return data
 
+    def bind_data(self, controller_key: str, data_key: str) -> None:
+        self.__controller[controller_key].add_observer(self.__data[data_key])
+
+    def bind_view(self, data_key: str, view_obj: object):
+        self.__data[data_key].observer.add_observer(view_obj)
+
     def reset_data(self, key: str):
         self.__controller[key].reset()
 
-    def create_data(self, key: str) -> None:
-        strategy_type = Translator.key_checker(key, self.__object_dict_list)
-        strategy_type.create_data(self.__builder, self.__data)
-        self.print_infor()
-        
     def delete_entity(self, key: str) -> None:
         if key in self.__data:
             del self.__data[key]
@@ -168,12 +101,20 @@ class DataSet:
             print('Deleted ' + key + ' from controller')
         else:
             print('====================================')
-            print('No key. Can not delet ' + key)
+            print('No key. Can not delete ' + key)
             print('====================================')
-            
+
     def count_data(self, key):
         num = KeyCounter.count_key(self.data, key)
         return num
+
+    @property
+    def data(self):
+        return self.__data
+
+    @property
+    def controller(self):
+        return self.__controller
 
     def print_infor(self):
         print('=================== Data keys of ' + str(self.__filename.name) + ' ====================')
@@ -181,12 +122,27 @@ class DataSet:
         print('--- Data Keys = ' + str(list(self.__data.keys())))
         print('--- Controller Keys = ' + str(list(self.__controller.keys())))
 
-
+    def help(self):
+        print('===================================================================================')
+        print('HELP for commands to MODEL')
+        print('DataSet(filename)     <------------ only this is full file name.')
+        print('            e.g. new_data_set = DataSet("..\\220408\\20408B002.tsm")')
+        print('create_data(key: str): for making a new data in a data_set)')
+        print('            e.g. key = "Image" or "FullTrace")')
+        print('set_data(key: str, val:tuple')
+        print('            e.g. test.set_data("Roi1", (40,40,1,1))')
+        print('get_data(key: str): to get a data entity')
+        print('            e.g. test.get_data("ChTrace1")')
+        print('bind_data(controller_key, data_key): bind controller and data')
+        print('            e.g. test.bind_data("Roi1", "ChTrace1")')
+        print('reset_data(key: str): reset controller')
+        print('            e.g. test.reset_data("Roi1")')
+        print('===================================================================================')
 
 """
 Strategy Method for set and get data
 """
-class DataSetStrategy(metaclass=ABCMeta):
+class DataSetStrategyInterface(metaclass=ABCMeta):
     @abstractmethod
     def set_data(self):
         raise NotImplementedError()   
@@ -200,7 +156,7 @@ class DataSetStrategy(metaclass=ABCMeta):
         raise NotImplementedError() 
      
         
-class FilenameStrategy(DataSetStrategy):        
+class FilenameStrategy(DataSetStrategyInterface):        
     def set_data(self, key, *args):  
         #self.__file_io[key].set_data(*args)
         raise Exception('Filename cant be changed')
@@ -212,8 +168,8 @@ class FilenameStrategy(DataSetStrategy):
         raise Exception('Filename shold be only one in a data-set as its name.')
 
         
-class DataStrategy(DataSetStrategy):   
-    def __init__(self, object_dict):
+class DataStrategy(DataSetStrategyInterface):   
+    def __init__(self, object_dict):  # object_dict = dataset._data defined by Translator class
         self._object_dict = object_dict
         
     def set_data(self, key, *val):  
@@ -223,8 +179,8 @@ class DataStrategy(DataSetStrategy):
         return self._object_dict[key].get_data()
     
     
-class ControllerStrategy(DataSetStrategy):
-    def __init__(self, object_dict):
+class ControllerStrategy(DataSetStrategyInterface):
+    def __init__(self, object_dict):  # object_dict = dataset._controller defined by Translator class
         self._object_dict = object_dict
 
     def set_data(self, key, val):
@@ -232,7 +188,7 @@ class ControllerStrategy(DataSetStrategy):
         
     def get_data(self, key):
         return self._object_dict[key].get_data()
-
+    
 
 class FramesStrategy(DataStrategy):
     def __init__(self, object_dict, builder):
@@ -243,7 +199,7 @@ class FramesStrategy(DataStrategy):
 
 
 class ImageStrategy(DataStrategy):
-    def __init__(self, object_dict):
+    def __init__(self, object_dict):  # object_dict = dataset._data defined by Translator class
         super().__init__(object_dict)
         
     def create_data(self, builder, data):
@@ -251,7 +207,7 @@ class ImageStrategy(DataStrategy):
 
 
 class TraceStrategy(DataStrategy):
-    def __init__(self, object_dict):
+    def __init__(self, object_dict):  # object_dict = dataset._data defined by Translator class
         super().__init__(object_dict)
         
     def create_data(self, builder, data):
@@ -262,7 +218,7 @@ class TraceStrategy(DataStrategy):
     
         
 class RoiStrategy(ControllerStrategy):
-    def __init__(self, object_dict):
+    def __init__(self, object_dict):  # object_dict = dataset._controller defined by Translator class
         super().__init__(object_dict)
         
     def create_data(self):
@@ -270,14 +226,14 @@ class RoiStrategy(ControllerStrategy):
         
         
 class FrameWindowStrategy(ControllerStrategy):
-    def __init__(self, object_dict):
+    def __init__(self, object_dict):  # object_dict = dataset._controller defined by Translator class
         super().__init__(object_dict)
         
     def create_data(self):
         pass
 
 
-class ModStrategy(DataSetStrategy):
+class ModStrategy(DataSetStrategyInterface):
     def set_data(self, key):
         raise NotImplementedError()   
         
@@ -336,19 +292,18 @@ class Translator:
 
 
 if __name__ == '__main__':
-    filename1 = '..\\..\\220408\\20408B002.tsm'
-    filename2 = '..\\..\\220408\\20408B001new.tsm'
-    
-    exp1 = Experiments()
-    exp1.help()
+
+    filename1 = Filename('..\\220408\\20408B001.tsm')
+    filename2 = Filename('..\\220408\\20408B002.tsm')
     #make dataset
-    exp1.create_data_set(filename1)
-    exp1.create_data_set(filename2)
+    exp1 = DataSet(filename1)
+    exp2 = DataSet(filename2)
+    exp1.help()
         
     # show traces
 
-    exp1.data_set['20408B002.tsm'].data['ChTrace1'].show_data()
-    exp1.data_set['20408B001new.tsm'].data['ChTrace1'].show_data()
+    exp1.data['ChTrace1'].show_data()
+    exp1.data['ChTrace1'].show_data()
     
 
 

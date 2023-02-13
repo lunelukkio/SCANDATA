@@ -126,7 +126,10 @@ class Roi(ModelController):
     def notify_observer(self):
         for observer_name in self.__observers:
             observer_name.update(self.__roi_obj)
-    
+            
+    @property
+    def observers(self) -> list:
+        return self.__observers
     
     def print_infor(self) -> None:
         name_list = []
@@ -135,9 +138,8 @@ class Roi(ModelController):
             name_list.append(self.__observers[i].name)
         print('ROI-{} = '.format(self.object_num) + str(self.get_data().data) + 
               ', observer = ' + str(name_list))
-        
-    
-    
+
+
 class FrameWindow(ModelController):
     def __init__(self):
         self.__frame_window_obj = FrameWindowVal(0, 0, 1, 1)
@@ -176,6 +178,10 @@ class FrameWindow(ModelController):
     def notify_observer(self) -> None:
         for observer_name in self.__observers:
             observer_name.update(self.get_data())
+            
+    @property
+    def observers(self) -> list:
+        return self.__observers
 
     def print_infor(self) -> None:
         print('FrameWindow-{} = '.format(self.object_num) + str(self.get_data()) + 
@@ -187,6 +193,7 @@ class FrameShift(ModelController):
     
     def __init__(self):
         FrameShift.num_instance += 1
+        self.__observers = []
     
     def set_data(self, val):
         pass
@@ -208,6 +215,10 @@ class FrameShift(ModelController):
 
     def notify_observer(self):
         pass
+    
+    @property
+    def observers(self) -> list:
+        return self.__observers
 
 
 class Line(ModelController):
@@ -215,6 +226,7 @@ class Line(ModelController):
     
     def __init__(self):
         Line.num_instance += 1
+        self.__observers = []
     
     def set_data(self, val):
         pass
@@ -236,3 +248,7 @@ class Line(ModelController):
 
     def notify_observer(self):
         pass
+    
+    @property
+    def observers(self) -> list:
+        return self.__observers

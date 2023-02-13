@@ -6,9 +6,9 @@ lunelukkio@gmail.com
 """
 
 import unittest
-from  SCANDATA.view.view_main import View, DataWindow
-from SCANDATA.controller.controller_main import Controller, WholeFilename
-from SCANDATA.model.model_main import Experiments
+from  SCANDATA.view.view_main import DataWindow
+from SCANDATA.controller.controller_main import WholeFilename
+
 import tkinter as tk
 
 fullname = '..\\220408\\20408B002.tsm'
@@ -20,11 +20,8 @@ class TestFullFrames(unittest.TestCase):
         root = tk.Tk()
         root.title("SCANDATA")
         
-        controller = Controller()
-        controller.model = Experiments()
-        controller.model.create_data_set(fullname)
 
-        view = DataWindow(root, filename_obj, controller)
+        view = DataWindow(root, filename_obj)
         
         view.mainloop()
 
