@@ -45,10 +45,10 @@ class ImagingController:
         self.create_model(filename_obj)
 
     def initialize_data_window(self):
-        self.view_data_repository.create_view_data(RoiViewFactory(), 'Roi1')
+        self.view_data_repository.create_view_data(RoiViewFactory())  # This is Roi1 for background
+        self.view_data_repository.create_view_data(RoiViewFactory())  # This is Roi2 for primary traces
         
-        bg_roi_view = RoiView(filename)
-        bg_roi_view.add_roi('Roi1')
+
         bg_roi_view.add_trace('FullTrace1')
         num = self.count_data(filename.name, 'ChFrames')
         for i in range(num):

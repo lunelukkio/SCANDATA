@@ -6,7 +6,8 @@ lunelukkio@gmail.com
 """
 
 from abc import ABCMeta, abstractmethod
-
+from matplotlib.figure import Figure
+import matplotlib.patches as patches
 
 
 class ViewDataRepository:
@@ -14,8 +15,10 @@ class ViewDataRepository:
         self.model = None
         self.view_data = []
         
-    def create_view_data(self, factory_type, key: str):
-        self.view_data.append(factory_type.create_view_data(self.model, key))
+    def create_view_data(self, factory_type):
+        new_roi_view = factory_type.create_view_data(self.model)
+        self.view_data.append(new_roi_view)
+
 
 
 """
@@ -32,16 +35,16 @@ class ViewDataFactory(metaclass=ABCMeta):
 contrete factory
 """
 class RoiViewFactory(ViewDataFactory):
-    def create_view_data(self, model, key: str):
-        return RoiView(model, key)
+    def create_view_data(self, model):
+        return RoiView(model)
         
 class ImageViewFactory(ViewDataFactory):
-    def create_view_data(self, model, key: str):
-        return ImageView(model, key)
+    def create_view_data(self, model):
+        return ImageView(model)
 
 class ElecViewFactory(ViewDataFactory):
-    def create_view_data(self, model, key:str):
-        return ElecView(model, key)
+    def create_view_data(self, model):
+        return ElecView(model)
     
     
 """
@@ -67,14 +70,18 @@ concrete product
 
 #subscriber of data entities
 class RoiView(ViewData):
-    def __init__(self, model, key: str):
-        self.__key = key
+    roi_view_num = 0
+    def __init__(self, model):
+        RoiView.roi_view_num += 1
+        self.__key = 'Roi' + str(RoiView.roi_view_num)
         self.__model = model
+        self.__model.create_data('Roi')
         self.__roi_val = self.__model.get_data(self.__key)
-        self.__roi_box = RoiBox(ax)
+        print(self.__key)
+        self.__roi_box = RoiBox()
         
         self.__window_observers = []
-        self.__ax
+        self.__ax = []
         self.__trace_data = []  # a list of value object 
         
     def print_infor(self):
@@ -116,21 +123,26 @@ class ElecView(ViewData):
         
         
 class RoiBox():
+    roi_num = 0
     color_selection = ['white', 'red', 'blue', 'orange', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
         
-    def __init__(self, ax):
+    def __init__(self):
+        RoiBox.roi_num += 1
+        self.__roi_num = RoiBox.roi_num
         self.__rectangle_obj = patches.Rectangle(xy=(40, 40), 
                                                  width=1, 
                                                  height=1, 
                                                  ec=RoiBox.color_selection[self.__roi_num - 1], 
                                                  fill=False)
-        ax.add_patch(self.__rectangle_obj)
 
     def set_roi(self):
         roi_obj = self.__roi_holder.get_controller(self.__filename.name, 'Roi' + str(self.__roi_num))
         self.__rectangle_obj.set_xy([roi_obj.data[0], roi_obj.data[1]])
         self.__rectangle_obj.set_width(roi_obj.data[2])
         self.__rectangle_obj.set_height(roi_obj.data[3])    
+        
+    def show_data(self, ax):
+        ax.add_patch(self.__rectangle_obj)
         
         
         

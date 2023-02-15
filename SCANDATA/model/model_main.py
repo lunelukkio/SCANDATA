@@ -221,9 +221,8 @@ class RoiStrategy(ControllerStrategy):
     def __init__(self, object_dict):  # object_dict = dataset._controller defined by Translator class
         super().__init__(object_dict)
         
-    def create_data(self):
-        pass
-        
+    def create_data(self, builder):
+        return builder.create_controller    
         
 class FrameWindowStrategy(ControllerStrategy):
     def __init__(self, object_dict):  # object_dict = dataset._controller defined by Translator class

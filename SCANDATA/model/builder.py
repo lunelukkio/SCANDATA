@@ -78,6 +78,7 @@ class TsmFileBuilder(Builder):
             ch_frames = FramesData(tsm_raw_data_tuple[1][:, :, :, i])
             self.create_data(ChFramesFactory(), ch_frames, ch_interval)
         
+        """
         # Make images
         self.build_image_set(self.__data)
         
@@ -89,6 +90,7 @@ class TsmFileBuilder(Builder):
         
         # make elec trace data
         self.build_elec_trace_set(tbn)
+        """
         
     def create_file_io(self, factory_type, filename, *args) -> object:  # factory_type
         product = factory_type.create_file_io(filename, *args)
