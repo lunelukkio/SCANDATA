@@ -97,8 +97,6 @@ class FluoFrames(Data):  # 3D frames data: full frames, ch image
         self.__unit = unit  # No unit because of raw camera data.
 
         self._read_data(frames_obj)
-        
-        self.observer = DataObserver()  # obserbers for View
 
     def _read_data(self, frames_obj) -> None:
         if len(frames_obj.data) <= 1:  # getter of FramesData
@@ -172,8 +170,6 @@ class FluoImage(Data):  # cell image, dif image
         self._frame_window = [0,0]  # default [start, end] 
         self._pixel_size = pixel_size  # (um)
         self._unit = unit  # No unit because of raw camera data.
-        
-        self.observer = DataObserver()  # obserbers for View
 
     def _read_data(self, data) -> None:
         pass
@@ -216,6 +212,7 @@ class CellImage(FluoImage):
     def __init__(self, frames_obj, *args):
         super().__init__(frames_obj, *args)
         self.object_num = 0  # instance number
+        self.__name = None
         
         self._read_data(self._frame_window)
 
@@ -241,24 +238,30 @@ class CellImage(FluoImage):
     def update(self, frame_window_obj) -> None:  # value object
         self._frame_window = frame_window_obj.data  # frame_window = [start, end, start_width, end_width]
         self._read_data(self._frame_window)
-        print('CellImage-{} recieved a notify message.'.format(self.object_num) + str(self._frame_window))
+        self.__name = str('CellImage' + str(self.object_num))
+        print('CellImage{} recieved a notify message.'.format(self.object_num) + str(self._frame_window))
             
         
     def print_infor(self) -> None:
-        print('This is CellImage-{}'.format(self.object_num))
+        print('This is CellImage{}'.format(self.object_num))
         super().print_add_infor()
+        
+    @property
+    def name(self):
+        return self.__name
         
         
 class DifImage(FluoImage):
     def __init__(self, frames_obj):
         super().__init__(frames_obj)
         self.object_num = 0  # instance number
+        self.__name = None
 
     def _read_data(self):
         pass
         
     def update(self):
-        pass
+        self.__name = str('DiImage' + str(self.object_num))
 
     def get_data(self):
         pass
@@ -267,10 +270,13 @@ class DifImage(FluoImage):
         pass
     
     def print_infor(self):
-        print('This is DifImage-{}'.format(self.object_num))
+        print('This is DifImage{}'.format(self.object_num))
         super().print_add_infor()
 
-            
+    @property
+    def name(self):
+        return self.__name
+
 
 "Fluo Trace"
 class FluoTrace(Data):  # Fluo trae, Elec trace
@@ -281,8 +287,6 @@ class FluoTrace(Data):  # Fluo trae, Elec trace
         self._roi = [40,40,1,1]  #default
         
         self._read_data(self._roi)
-        
-        self.observer = DataObserver()  # obserbers for View
 
     def _read_data(self, roi: list) -> None:  # roi[x, y, x_length, y_length]
         x_size = self.__frames_obj.data.shape[0]
@@ -325,8 +329,8 @@ class FluoTrace(Data):  # Fluo trae, Elec trace
         y_length = roi[3]
         mean_data = np.mean(frames_obj.data[x:x+x_length, y:y+y_length, :], axis = 0)
         mean_data = np.mean(mean_data, axis = 0)
-        return mean_data
         print('Updated ROI = ' + str(roi))
+        return mean_data
         
     def __create_time_data(self, trace, interval) -> np.ndarray:
         num_data_point = interval * np.shape(trace)[0]
@@ -356,8 +360,9 @@ class FullTrace(FluoTrace):
     def update(self, roi_obj: object) -> None:  # value object
         self._roi = roi_obj.data
         super()._read_data(self._roi)
-        self.__name = str('FullTrace-' + str(self.object_num))
-        print('FullTrace-{} recieved a notify message.'.format(self.object_num))
+        self.__name = str('FullTrace' + str(self.object_num))
+        print('Tip It should be in different place.')
+        print('FullTrace{} recieved a notify message.'.format(self.object_num))
         
     def print_infor(self) -> None:
         print('This is ' + self.__name)
@@ -377,11 +382,11 @@ class ChTrace(FluoTrace):
     def update(self, roi_obj: list) -> None:  # value object
         self._roi = roi_obj.data
         super()._read_data(self._roi)
-        self.__name = str('ChTrace-' + str(self.object_num))
-        print('ChTrace-{} recieved a notify message.'.format(self.object_num))
+        self.__name = str('ChTrace' + str(self.object_num))
+        print('ChTrace{} recieved a notify message.'.format(self.object_num))
         
     def print_infor(self) -> None:
-        print('This is ChTrace-{}'.format(self.object_num))
+        print('This is ChTrace{}'.format(self.object_num))
         super().print_add_infor()
         
     @property
@@ -394,8 +399,6 @@ class ElecTrace(Data):  # Fluo trae, Elec trace
     def __init__(self, interval):
         #self._trace_obj  # create in _read_data of sub classes
         self._interval = interval
-        
-        self.observer = DataObserver()  # obserbers for View
         
     def _read_data(self):
         pass
@@ -445,20 +448,6 @@ class ChElecTrace(ElecTrace):
 class LongElecTrace(ElecTrace):
     pass
         
-
-class DataObserver:
-    def __init__(self):
-        self.__observers = []  # for view
-        
-    def add_observer(self, observer):
-        self.__observers.append(observer)
-        
-    def remove_observer(self, observer):
-        self.__observers.remove(observer)
-    
-    def notify_observer(self):
-        for observer_name in self.__observers:
-            observer_name.update()
 
 if __name__ == '__main__':
     pass

@@ -14,6 +14,9 @@ class TestDataSet(unittest.TestCase):
     def test_data_set(self):
         filename = ('..\\220408\\20408B002.tsm')
         dataset = DataSet(filename)
+        dataset.create_data('Trace')
+        dataset.create_data('CellImage')
+
         
         tracefig = plt.figure()
         dataset.data['ChTrace1'].show_data()

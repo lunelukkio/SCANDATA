@@ -48,13 +48,7 @@ class ImagingController:
         self.view_data_repository.create_view_data(RoiViewFactory())  # This is Roi1 for background
         self.view_data_repository.create_view_data(RoiViewFactory())  # This is Roi2 for primary traces
         
-
-        bg_roi_view.add_trace('FullTrace1')
-        num = self.count_data(filename.name, 'ChFrames')
-        for i in range(num):
-            bg_roi_view.add_trace('ChTrace' + str(i+1))
-
-        self.roi_view_list.append(bg_roi_view)
+        self.view_data_repository.create_view_data(ImageViewFactory())
         
         self.show_data(self.image_ax, 'CellImage1')
         self.show_data(self.trace_ax1, 'ChTrace1')

@@ -58,6 +58,7 @@ class TsmFileBuilder(Builder):
         
         return self.__file_io, self.__data, self.__controller
         
+    # make a full frames and channel frames from data files.
     def initialize(self):
         # make file_io
         tsm = self.create_file_io(TsmFileIOFactory(), self.__filename)
@@ -77,20 +78,6 @@ class TsmFileBuilder(Builder):
         for i in range(0, tsm_raw_data_tuple[1].shape[3]):
             ch_frames = FramesData(tsm_raw_data_tuple[1][:, :, :, i])
             self.create_data(ChFramesFactory(), ch_frames, ch_interval)
-        
-        """
-        # Make images
-        self.build_image_set(self.__data)
-        
-        # Make bg_traces
-        self.build_trace_set(self.__data)
-        
-        # Make traces
-        self.build_trace_set(self.__data)     
-        
-        # make elec trace data
-        self.build_elec_trace_set(tbn)
-        """
         
     def create_file_io(self, factory_type, filename, *args) -> object:  # factory_type
         product = factory_type.create_file_io(filename, *args)

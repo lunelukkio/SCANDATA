@@ -18,7 +18,7 @@ dataset = DataSet(filename)
 
 class TestMod(unittest.TestCase):
     def test_mod(self):
-
+        dataset.create_data('Trace')
         trace = dataset.get_data('ChTrace1')
         print(dataset.controller['Roi1'].print_infor())
 """

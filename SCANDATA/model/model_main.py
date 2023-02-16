@@ -45,10 +45,14 @@ class DataSetInterface(metaclass=ABCMeta):
         raise NotImplementedError()
 
     @abstractmethod
-    def count_data(self, filename: str, key: str):
+    def count_data(self, key: str):
         raise NotImplementedError()
         
-
+    @abstractmethod
+    def get_infor(self,  key: str):
+        raise NotImplementedError()
+        
+        
 class DataSet(DataSetInterface):
     def __init__(self, full_filename: str):
         self.__filename = Filename(full_filename)
@@ -108,6 +112,11 @@ class DataSet(DataSetInterface):
         num = KeyCounter.count_key(self.data, key)
         return num
 
+    def get_infor(self, key):
+        strategy_type = Translator.key_checker(key, self.__object_dict_list)
+        infor = strategy_type.get_infor(key)
+        return infor
+
     @property
     def data(self):
         return self.__data
@@ -154,6 +163,10 @@ class DataSetStrategyInterface(metaclass=ABCMeta):
     @abstractmethod   
     def create_data(self):
         raise NotImplementedError() 
+        
+    @abstractmethod  
+    def get_infor(self):
+        raise NotImplementedError() 
      
         
 class FilenameStrategy(DataSetStrategyInterface):        
@@ -166,6 +179,9 @@ class FilenameStrategy(DataSetStrategyInterface):
 
     def create_data(self):
         raise Exception('Filename shold be only one in a data-set as its name.')
+        
+    def get_infor(self):
+        pass
 
         
 class DataStrategy(DataSetStrategyInterface):   
@@ -178,6 +194,9 @@ class DataStrategy(DataSetStrategyInterface):
     def get_data(self, key):  # overrided by childern classes
         return self._object_dict[key].get_data()
     
+    def get_infor(self, key):
+        return self._ogject_dict[key].get_infor()
+    
     
 class ControllerStrategy(DataSetStrategyInterface):
     def __init__(self, object_dict):  # object_dict = dataset._controller defined by Translator class
@@ -188,6 +207,9 @@ class ControllerStrategy(DataSetStrategyInterface):
         
     def get_data(self, key):
         return self._object_dict[key].get_data()
+    
+    def get_infor(self, key):
+        return self._object_dict[key].get_infor()
     
 
 class FramesStrategy(DataStrategy):
@@ -221,8 +243,8 @@ class RoiStrategy(ControllerStrategy):
     def __init__(self, object_dict):  # object_dict = dataset._controller defined by Translator class
         super().__init__(object_dict)
         
-    def create_data(self, builder):
-        return builder.create_controller    
+    def create_data(self, builder, data_set):
+        pass
         
 class FrameWindowStrategy(ControllerStrategy):
     def __init__(self, object_dict):  # object_dict = dataset._controller defined by Translator class
@@ -237,6 +259,9 @@ class ModStrategy(DataSetStrategyInterface):
         raise NotImplementedError()   
         
     def get_data(self, key):
+        raise NotImplementedError() 
+        
+    def get_infor(self, key):
         raise NotImplementedError() 
                    
 

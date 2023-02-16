@@ -47,6 +47,10 @@ class ModelController(metaclass=ABCMeta):
     @abstractmethod
     def get_data(self):
         raise NotImplementedError()
+        
+    @abstractmethod
+    def get_infor(self):
+        raise NotImplementedError()
 
     @abstractmethod
     def print_infor(self):
@@ -119,6 +123,8 @@ class Roi(ModelController):
 
     def add_observer(self, observer):
         self.__observers.append(observer)
+        #observer.update(self.__roi_obj)
+        print('Tip This is problem.................................................................')
         
     def remove_observer(self, observer):
         self.__observers.remove(observer)
@@ -126,10 +132,17 @@ class Roi(ModelController):
     def notify_observer(self):
         for observer_name in self.__observers:
             observer_name.update(self.__roi_obj)
+
             
     @property
     def observers(self) -> list:
         return self.__observers
+    
+    def get_infor(self):
+        name_list = []
+        for i in range(len(self.__observers)):
+            name_list.append(self.__observers[i].name)
+        return name_list
     
     def print_infor(self) -> None:
         name_list = []
@@ -171,6 +184,7 @@ class FrameWindow(ModelController):
     
     def add_observer(self, observer: object) -> None:
         self.__observers.append(observer)
+        observer.update(self.__frame_window_obj)
         
     def remove_observer(self, observer: object) -> None:
         self.__observers.remove(observer)
@@ -182,6 +196,12 @@ class FrameWindow(ModelController):
     @property
     def observers(self) -> list:
         return self.__observers
+    
+    def get_infor(self):
+        name_list = []
+        for i in range(len(self.__observers)):
+            name_list.append(self.__observers[i].name)
+        return name_list
 
     def print_infor(self) -> None:
         print('FrameWindow-{} = '.format(self.object_num) + str(self.get_data()) + 
@@ -219,6 +239,12 @@ class FrameShift(ModelController):
     @property
     def observers(self) -> list:
         return self.__observers
+    
+    def get_infor(self):
+        name_list = []
+        for i in range(len(self.__observers)):
+            name_list.append(self.__observers[i].name)
+        return name_list
 
 
 class Line(ModelController):
@@ -252,3 +278,9 @@ class Line(ModelController):
     @property
     def observers(self) -> list:
         return self.__observers
+    
+    def get_infor(self):
+        name_list = []
+        for i in range(len(self.__observers)):
+            name_list.append(self.__observers[i].name)
+        return name_list

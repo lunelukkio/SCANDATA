@@ -63,6 +63,10 @@ class ViewData(metaclass=ABCMeta):
     def update(self):
         raise NotImplementedError()
         
+    @abstractmethod
+    def delete(self):
+        raise NotImplementedError()
+        
         
 """
 concrete product
@@ -75,14 +79,16 @@ class RoiView(ViewData):
         RoiView.roi_view_num += 1
         self.__key = 'Roi' + str(RoiView.roi_view_num)
         self.__model = model
-        self.__model.create_data('Roi')
+        self.__model.create_data('Trace')
         self.__roi_val = self.__model.get_data(self.__key)
-        print(self.__key)
         self.__roi_box = RoiBox()
+        self.__trace_name_list = self.__model.get_infor(self.__key)
+        self.__trace_data = []  # a list of value object 
+        self.update()
         
         self.__window_observers = []
         self.__ax = []
-        self.__trace_data = []  # a list of value object 
+        print('Created ' + self.__key + ' view instance including Roi controller and traces.')
         
     def print_infor(self):
         raise NotImplementedError()
@@ -93,10 +99,28 @@ class RoiView(ViewData):
 
 
     def update(self):
-        raise NotImplementedError()
+        for trace_name in self.__trace_name_list:
+            self.__trace_data.append(self.__model.get_data(trace_name))
+            
+    def delete(self):
+        pass
 
 
 class ImageView(ViewData):
+    image_view_num = 0
+    def __init__(self, model):
+        ImageView.image_view_num += 1
+        self.__key = 'FrameWindow' + str(ImageView.image_view_num)
+        self.__model = model
+        self.__model.create_data('Image')
+        self.__frame_windoww_val = self.__model.get_data(self.__key)
+        self.__image_name_list = self.__model.get_infor(self.__key)
+        self.__image_data = []  # a list of value object 
+        self.update()
+        
+        self.__window_observers = []
+        self.__ax = []
+        
     def print_infor(self):
         raise NotImplementedError()
     
@@ -106,6 +130,10 @@ class ImageView(ViewData):
 
 
     def update(self):
+        for image_name in self.__image_name_list:
+            self.__image_data.append(self.__model.get_data(image_name))
+        
+    def delete(self):
         raise NotImplementedError()
 
 class ElecView(ViewData):
@@ -120,6 +148,9 @@ class ElecView(ViewData):
     def update(self):
         raise NotImplementedError()
         
+    def delete(self):
+        raise NotImplementedError()
+
         
         
 class RoiBox():
