@@ -12,13 +12,32 @@ import matplotlib.patches as patches
 
 class ViewDataRepository:
     def __init__(self):
-        self.model = None
-        self.view_data = []
-        
+        self.model = None     
+        self.__view_data_counter = {}  # dict
+        self.__view_data = {}  # dict
+    """    
     def create_view_data(self, factory_type):
         new_roi_view = factory_type.create_view_data(self.model)
         self.view_data.append(new_roi_view)
+        return new_roi_view
+    """
+    
+    def create_view_data(self,  factory_type):
+        product = factory_type.create_view_data(self.model)
+        object_name = product.__class__.__name__  # str
+        
+        last_num = self.__view_data_counter.get(object_name, 0)  # Get counter num of instance. If not exist, num is 0.
+        new_num = last_num + 1
+        product.name = object_name + str(new_num)
+        product.create_data(new_num)
+        
+        #store in this class
+        self.__view_data_counter[object_name] = new_num  # Add key and object_num to a counter dict. ex{RoiView: 1}
+        self.__view_data[object_name + str(new_num)] = product
+        return product
 
+    def show_data(self):
+        print('View Data = ' + str(list(self.__view_data)))
 
 
 """
@@ -52,10 +71,6 @@ abstract product
 """
 class ViewData(metaclass=ABCMeta):
     @abstractmethod
-    def print_infor(self):
-        raise NotImplementedError()
-    
-    @abstractmethod
     def reset(self):
         raise NotImplementedError()
 
@@ -64,9 +79,28 @@ class ViewData(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
-    def delete(self):
+    def get_data(self):
         raise NotImplementedError()
         
+    @abstractmethod
+    def delete(self):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def add_observer(self, ax: object):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def remove_observer(self, ax: object):
+        raise NotImplementedError()
+        
+    @abstractmethod
+    def notify_observer(self, ax: object):
+        raise NotImplementedError()
+        
+    @abstractmethod
+    def print_infor(self):
+        raise NotImplementedError()
         
 """
 concrete product
@@ -74,83 +108,161 @@ concrete product
 
 #subscriber of data entities
 class RoiView(ViewData):
-    roi_view_num = 0
     def __init__(self, model):
-        RoiView.roi_view_num += 1
-        self.__key = 'Roi' + str(RoiView.roi_view_num)
+        self.__name = None
         self.__model = model
+        self.__ax_observer = Observer(self)
+        
+    def create_data(self, object_num):
+        self.__key = 'Roi' + str(object_num)
         self.__model.create_data('Trace')
         self.__roi_val = self.__model.get_data(self.__key)
         self.__roi_box = RoiBox()
-        self.__trace_name_list = self.__model.get_infor(self.__key)
-        self.__trace_data = []  # a list of value object 
+        self.__data_name_list = self.__model.get_infor(self.__key)
+        self.__data_list = []  # a list of value object 
         self.update()
         
-        self.__window_observers = []
-        self.__ax = []
         print('Created ' + self.__key + ' view instance including Roi controller and traces.')
-        
-    def print_infor(self):
-        raise NotImplementedError()
-    
 
     def reset(self):
         raise NotImplementedError()
 
-
     def update(self):
-        for trace_name in self.__trace_name_list:
-            self.__trace_data.append(self.__model.get_data(trace_name))
+        new_data = []
+        for data_name in self.__data_name_list:
+            new_data.append(self.__model.get_data(data_name))
+        self.__data_list = new_data
+        self.__ax_observer.notify_observer()
+        
+    def get_data(self) -> list:
+        return self.__data_list
             
     def delete(self):
         pass
+    
+    def add_observer(self, ax: object):
+        self.__ax_observer.add_observer(ax)
+        
+    def remove_observer(self, ax: object):
+        self.__ax_observer.remove_observer(ax)
+        
+    def notify_observer(self):
+        self.__ax_observer.notify_observer()
+        
+    def print_infor(self):
+        raise NotImplementedError()
+        
+    @property
+    def name(self):
+        return self.__name
+    
+    @name.setter
+    def name(self, name: str):
+        self.__name = name
 
 
 class ImageView(ViewData):
-    image_view_num = 0
     def __init__(self, model):
-        ImageView.image_view_num += 1
-        self.__key = 'FrameWindow' + str(ImageView.image_view_num)
+        self.__name = None
         self.__model = model
+        self.__ax_observer = Observer(self)
+        
+    def create_data(self, object_num):
+        self.__key = 'FrameWindow' + str(object_num)
         self.__model.create_data('Image')
         self.__frame_windoww_val = self.__model.get_data(self.__key)
-        self.__image_name_list = self.__model.get_infor(self.__key)
-        self.__image_data = []  # a list of value object 
+        self.__data_name_list = self.__model.get_infor(self.__key)
+        self.__data_list = []  # a list of value object 
         self.update()
-        
-        self.__window_observers = []
-        self.__ax = []
-        
-    def print_infor(self):
-        raise NotImplementedError()
-    
 
     def reset(self):
         raise NotImplementedError()
 
-
     def update(self):
-        for image_name in self.__image_name_list:
-            self.__image_data.append(self.__model.get_data(image_name))
+        new_data = []
+        for data_name in self.__data_name_list:
+            new_data.append(self.__model.get_data(data_name))
+        self.__data_list = new_data
+        print('View Data updated')
+        self.__ax_observer.notify_observer()
+        
+    def get_data(self) -> list:
+        return self.__data_list
         
     def delete(self):
         raise NotImplementedError()
+    
+    def add_observer(self, ax: object):
+        self.__ax_observer.add_observer(ax)
+        
+    def remove_observer(self, ax: object):
+        self.__ax_observer.remove_observer(ax)
+        
+    def notify_observer(self):
+        self.__ax_observer.notify_observer()
+        
+    def print_infor(self):
+        raise NotImplementedError()
+        
+    @property
+    def name(self):
+        return self.__name
+    
+    @name.setter
+    def name(self, name: str):
+        self.__name = name
+        
 
 class ElecView(ViewData):
-    def print_infor(self):
-        raise NotImplementedError()
+    def __init__(self, model):
+        self.__name = None
+        self.__model = model
+        self.__ax_observer = Observer(self)
+        
+    def create_data(self, object_num):
+        self.__key = 'ElecController' + str(object_num)
+        self.__model.create_data('Elec')
+        self.__time_windoww_val = self.__model.get_data(self.__key)
+        self.__data_name_list = self.__model.get_infor(self.__key)
+        self.__data_list = []  # a list of value object 
+        self.update()
     
-
     def reset(self):
         raise NotImplementedError()
 
-
     def update(self):
-        raise NotImplementedError()
+        new_data = []
+        for data_name in self.__data_name_list:
+            new_data.append(self.__model.get_data(data_name))
+        self.__data_list = new_data
+        self.__ax_observer.notify_observer()
+        
+    def get_data(self) -> list:
+        return self.__data_list
         
     def delete(self):
         raise NotImplementedError()
-
+    
+    def add_observer(self, ax: object):
+        self.__ax_observer.add_observer(ax)
+        
+    def remove_observer(self, ax: object):
+        self.__ax_observer.remove_observer(ax)
+        
+    def notify_observer(self):
+        self.__ax_observer.notify_observer()
+    
+    def print_infor(self):
+        raise NotImplementedError()
+        
+    @property
+    def name(self):
+        return self.__name
+    
+    @name.setter
+    def name(self, name: str):
+        self.__name = name
+        
         
         
 class RoiBox():
@@ -177,52 +289,23 @@ class RoiBox():
         
         
         
+class Observer:
+    def __init__(self, view_data):
+        self.view_data = view_data
+        self.__observers = []
         
-""" no use """
-class RoiVienoUse:
-    roi_num = 0
-    def __init__(self, filename):
-        RoiView.roi_num += 1
-        self.__filename = filename
+    def add_observer(self, observer):
+        self.__observers.append(observer)
 
-        self.__roi_num = copy.deepcopy(RoiView.roi_num)
-        self.__ax = []
-        self.__roi = []
-        self.__roi_val = 0
-        self.__roi_box = []
-        self.__trace = []
-        
-    def add_ax(self, ax: object):
-        self.__ax.append(ax)
-        
-    def delete_ax(self, ax: object):
-        self.__ax.remove(ax)
-        
-    def add_roi(self, key: str):
-        self.__roi.append(key)
-        
-    def delete_roi(self, key: str):
-        self.__roi.remove(key)
-
-    def get_roi_val(self):
-        pass
+    def remove_observer(self, observer):
+        self.__observers.remove(observer)
     
-    def add_roi_box(self, roi_box: str):
-        self.__roi_box.append(roi_box)
+    def notify_observer(self):
+        for observer_name in self.__observers:
+            observer_name.update(self.view_data)
+        print('Notified to ax.')
         
-    def delete_roi_box(self, roi_box: str):
-        self.__roi_box.remove(roi_box)
-    
-    def add_trace(self, key: str):
-        self.__trace.append(key)
         
-    def delete_trace(self, key: str):
-        self.__trace.remove(key)
-        
-    def show_data(self, ax, data_type):
-        value_obj = self.controller.get_data(self.__filename, data_type)
-        try:
-            line_2d, = value_obj.show_data(ax)  # line, mean the first element of a list (convert from list to objet)
-            self.trace_y1.append(line_2d)  # Add to the list for trace_y1 trace line objects [Line_2D] of axis abject
-        except:
-            value_obj.show_data(ax)
+    @property
+    def observers(self):
+        return self.__observers

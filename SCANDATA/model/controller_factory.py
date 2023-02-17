@@ -5,7 +5,7 @@ concrete classes for model controllers
 lunelukkio@gmail.com
 """
 from abc import ABCMeta, abstractmethod
-from SCANDATA.model.value_object import RoiVal, FrameWindowVal
+from SCANDATA.model.value_object import RoiVal, FrameWindowVal, TimeWindowVal
 
 """
 abstract factory
@@ -34,6 +34,11 @@ class FrameShiftFactory(ModelControllerFactory):
 class LineFactory(ModelControllerFactory):
     def create_controller(self):
         return Line()
+        
+class ElecControllerFactory(ModelControllerFactory):
+    def create_controller(self):
+        return ElecController() 
+    
 
 
 """
@@ -100,7 +105,7 @@ class Roi(ModelController):
             
         self.__roi_obj = RoiVal(x, y, x_width, y_width)  # replace the roi
         self.notify_observer()
-        #print('Set ROI-{} and notified'.format(self.object_num))
+        #print('Set ROI{} and notified'.format(self.object_num))
         self.print_infor()
         self.check_val()
       
@@ -108,7 +113,7 @@ class Roi(ModelController):
         add_roi_obj = RoiVal(x, y, x_width, y_width)
         self.__roi_obj += add_roi_obj
         self.notify_observer()
-        #print('Add to ROI-{} and notified'.format(self.object_num))
+        #print('Add to ROI{} and notified'.format(self.object_num))
         self.print_infor()
         self.check_val()
 
@@ -118,7 +123,7 @@ class Roi(ModelController):
     def reset(self) -> None:
         self.__roi_obj = RoiVal(40, 40, 1, 1)
         self.notify_observer()
-        #print('Reset ROI-{} and notified'.format(self.object_num))
+        #print('Reset ROI{} and notified'.format(self.object_num))
         self.print_infor()
 
     def add_observer(self, observer):
@@ -135,7 +140,7 @@ class Roi(ModelController):
     def observers(self) -> list:
         return self.__observers
     
-    def get_infor(self):
+    def get_infor(self):  # get names from observers
         name_list = []
         for i in range(len(self.__observers)):
             name_list.append(self.__observers[i].name)
@@ -146,7 +151,7 @@ class Roi(ModelController):
         num = len(self.__observers)
         for i in range(num):
             name_list.append(self.__observers[i].name)
-        print('ROI-{} = '.format(self.object_num) + str(self.get_data().data) + 
+        print('ROI{} = '.format(self.object_num) + str(self.get_data().data) + 
               ', observer = ' + str(name_list))
 
 
@@ -155,7 +160,7 @@ class FrameWindow(ModelController):
         self.__frame_window_obj = FrameWindowVal(0, 0, 1, 1)
         self.__observers = []
         self.object_num = 0
-        #print('Create FrameWindow-{}.'.format(self.object_num))
+        #print('Create FrameWindow{}.'.format(self.object_num))
 
     def set_data(self, start: int, end: int, start_width=0, end_width=0) -> None:
         self.__frame_window_obj = FrameWindowVal(start, end, start_width, end_width)
@@ -167,7 +172,7 @@ class FrameWindow(ModelController):
         add_frame_window_obj = FrameWindowVal(start, end, start_width, end_width)
         self.__frame_window_obj += add_frame_window_obj
         self.notify_observer()
-        #print('Add to FrameWindow-{} and notified'.format(self.object_num))
+        #print('Add to FrameWindow{} and notified'.format(self.object_num))
         self.print_infor()
 
     def get_data(self) -> object:
@@ -176,7 +181,7 @@ class FrameWindow(ModelController):
     def reset(self) -> None:
         self.__frame_window_obj = FrameWindowVal(0, 0, 0, 0)
         self.notify_observer()
-        #print('Reset FrameWindow-{} and notified'.format(self.object_num))
+        #print('Reset FrameWindow{} and notified'.format(self.object_num))
         self.print_infor()
     
     def add_observer(self, observer: object) -> None:
@@ -193,22 +198,19 @@ class FrameWindow(ModelController):
     def observers(self) -> list:
         return self.__observers
     
-    def get_infor(self):
+    def get_infor(self):  # get names from observers
         name_list = []
         for i in range(len(self.__observers)):
             name_list.append(self.__observers[i].name)
         return name_list
 
     def print_infor(self) -> None:
-        print('FrameWindow-{} = '.format(self.object_num) + str(self.get_data()) + 
+        print('FrameWindow{} = '.format(self.object_num) + str(self.get_data()) + 
               ', observer = ' + str(self.__observers))
 
 
-class FrameShift(ModelController):
-    num_instance = 0  # Class member to count the number of instance
-    
+class FrameShift(ModelController): 
     def __init__(self):
-        FrameShift.num_instance += 1
         self.__observers = []
     
     def set_data(self, val):
@@ -243,11 +245,8 @@ class FrameShift(ModelController):
         return name_list
 
 
-class Line(ModelController):
-    num_instance = 0  # Class member to count the number of instance
-    
+class Line(ModelController): 
     def __init__(self):
-        Line.num_instance += 1
         self.__observers = []
     
     def set_data(self, val):
@@ -280,3 +279,57 @@ class Line(ModelController):
         for i in range(len(self.__observers)):
             name_list.append(self.__observers[i].name)
         return name_list
+    
+    
+class ElecController(ModelController):
+    def __init__(self):
+        self.__time_window_obj = TimeWindowVal(0, 100)
+        self.__observers = []
+        self.object_num = 0
+        #print('Create TimeController{}.'.format(self.object_num))
+
+    def set_data(self, start: int, end: int) -> None:
+        self.__time_window_obj = TimeWindowVal(start, end)
+        self.notify_observer()
+        #print('Set TimeWindow{} and notified'.format(self.object_num))
+        self.print_infor()
+        
+    def add_data(self, start: int, end: int) -> None:
+        add_time_window_obj = TimeWindowVal(start, end)
+        self.__time_window_obj += add_time_window_obj
+        self.notify_observer()
+        #print('Add to TimeWindow{} and notified'.format(self.object_num))
+        self.print_infor()
+
+    def get_data(self) -> object:
+        return self.__time_window_obj
+    
+    def reset(self) -> None:
+        self.__time_window_obj = FrameWindowVal(0, 100)
+        self.notify_observer()
+        #print('Reset FrameWindow{} and notified'.format(self.object_num))
+        self.print_infor()
+    
+    def add_observer(self, observer: object) -> None:
+        self.__observers.append(observer)
+        
+    def remove_observer(self, observer: object) -> None:
+        self.__observers.remove(observer)
+    
+    def notify_observer(self) -> None:
+        for observer_name in self.__observers:
+            observer_name.update(self.get_data())
+            
+    @property
+    def observers(self) -> list:
+        return self.__observers
+    
+    def get_infor(self):  # get names from observers
+        name_list = []
+        for i in range(len(self.__observers)):
+            name_list.append(self.__observers[i].name)
+        return name_list
+
+    def print_infor(self) -> None:
+        print('TimeWindow{} = '.format(self.object_num) + str(self.get_data()) + 
+              ', observer = ' + str(self.__observers))

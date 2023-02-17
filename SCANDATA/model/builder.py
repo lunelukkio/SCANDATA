@@ -13,7 +13,7 @@ from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory
 from SCANDATA.model.data_factory import CellImageFactory
 from SCANDATA.model.data_factory import FullTraceFactory, ChTraceFactory
 from SCANDATA.model.data_factory import ChElecTraceFactory
-from SCANDATA.model.controller_factory import RoiFactory, FrameWindowFactory
+from SCANDATA.model.controller_factory import RoiFactory, FrameWindowFactory, ElecControllerFactory
 from SCANDATA.model.value_object import FramesData, TraceData
 
 
@@ -127,7 +127,9 @@ class TsmFileBuilder(Builder):
     
     # for making trace data set
     def build_trace_set(self, data_set) -> None:
+        # Make a controller
         roi = self.create_controller(RoiFactory())
+        # Make traces
         full_trace = self.create_data(FullTraceFactory(), 
                                       data_set['FullFrames1'].frames_obj, 
                                       data_set['FullFrames1'].interval)
@@ -142,16 +144,19 @@ class TsmFileBuilder(Builder):
             roi.add_observer(trace)
             
     def build_elec_trace_set(self, raw_data):
-        # make elec traes
-        elec_data = copy.deepcopy(raw_data.get_data())  # made indipendent from the file
-        elec_interval = copy.deepcopy(raw_data.get_infor())    # made indipendent from the file
-        num_elec_ch = elec_data.shape[1]
+        # Make a controller
+        elec_controller = self.create_controller(ElecControllerFactory())
+        # Make elec traces
+        raw_elec_data = copy.deepcopy(raw_data['TbnFileIO1'].get_data())  # made indipendent from the file
+        elec_interval = copy.deepcopy(raw_data['TbnFileIO1'].get_infor())    # made indipendent from the file
+        num_elec_ch = raw_elec_data.shape[1]
 
         for i in range(0, num_elec_ch):
             # Convert from raw data to a value object
-            elec_trace_obj = TraceData(elec_data[:,i], elec_interval)
+            elec_trace_obj = TraceData(raw_elec_data[:,i], elec_interval)
             # make ElecTrace
-            self.create_data(ChElecTraceFactory(), elec_trace_obj, elec_interval)
+            trace = self.create_data(ChElecTraceFactory(), elec_trace_obj, elec_interval)
+            elec_controller.add_observer(trace)
 
     def count_data(self):
         #num = 2  # This should be got from cunting ChFrames.

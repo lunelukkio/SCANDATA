@@ -123,14 +123,15 @@ class DataWindow(tk.Frame):
         super().__init__(master)
         self.pack()
         self.__filename = filename_obj
+        self.model = None
+        self.controller = None
         
         master.geometry('1400x700')
         master.configure(background='azure')
         master.title(self.__filename.name)
         
-        self.trace_ax1 = None  # for fluoresence trace
-        self.trace_ax2 = None  # for elec trace
-        self.image_ax = None  # for cell image
+        self.trace_ax_list = []  # [0] = fluoresent trace ax, [1] = elec trace ax
+        self.image_ax_list = []  # [0] = main cell image ax
 
         # set frames
         frame_top = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=2, bg = 'white')
@@ -167,9 +168,11 @@ class DataWindow(tk.Frame):
         # matplotlib image figure
         image_fig = Figure(figsize=(5, 5), dpi=100, facecolor='azure')  #Figure
         # matplotlib image axes
-        self.image_ax = image_fig.add_subplot(1, 1, 1)           #Axes
-        self.image_ax.set_xticks([])
-        self.image_ax.set_yticks([])
+        image_ax = image_fig.add_subplot(1, 1, 1)           #Axes
+        self.image_ax_list.append(ImageAx(image_ax))
+        
+        self.image_ax_list[0].image_ax.set_xticks([])
+        self.image_ax_list[0].image_ax.set_yticks([])
         self.canvas_image = FigureCanvasTkAgg(image_fig, frame_left)
         #canvas_image.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
         self.canvas_image.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
@@ -183,8 +186,11 @@ class DataWindow(tk.Frame):
         trace_fig = Figure(figsize=(5, 5), dpi=100, facecolor='azure')  #Figure
         gridspec_trace_fig = trace_fig.add_gridspec(20, 1)
         # matplotlib trace axes
-        self.trace_ax1 = trace_fig.add_subplot(gridspec_trace_fig[0:15])
-        self.trace_ax2 = trace_fig.add_subplot(gridspec_trace_fig[16:20], sharex=self.trace_ax1)
+        trace_ax1 = trace_fig.add_subplot(gridspec_trace_fig[0:15])
+        self.trace_ax_list.append(TraceAx(trace_ax1))
+        
+        trace_ax2 = trace_fig.add_subplot(gridspec_trace_fig[16:20], sharex=self.trace_ax_list[0].trace_ax)
+        self.trace_ax_list.append(TraceAx(trace_ax2))
 
         self.canvas_trace = FigureCanvasTkAgg(trace_fig, frame_right)
         #canvas_trace.get_tk_widget().pack()
@@ -192,14 +198,8 @@ class DataWindow(tk.Frame):
         toolbar_trace = NavigationToolbarTrace(self.canvas_trace, frame_right)
         toolbar_trace.update()
         self.canvas_trace.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-        
-        self.trace_y1 = []
-        self.trace_y2 = []
-        
-        self.roi_view_list = []
-        self.image_View_list = []
-        self.elec_view_list = []
 
+        
         self.current_roi_num = None
 
         # make a contoller and model.
@@ -208,11 +208,17 @@ class DataWindow(tk.Frame):
         
         # This is the main stream from the main controller.
         if self.__filename != None:
-            self.controller.create_model(self.__filename)
+            self.model = self.controller.create_model(self.__filename)
+            for i in range(2):
+                self.trace_ax_list[i].model = self.model
+            self.image_ax_list[0].model = self.model
             
     def file_open(self):
         fullname = FileService.get_fullname()
-        self.controller.file_open(fullname)
+        self.model = self.controller.file_open(fullname)
+        
+        
+        
         
     def draw_ax(self):
         self.trace_ax1.relim()
@@ -289,8 +295,45 @@ class DataWindow(tk.Frame):
         else:
             del self.roi_box[num_box-1]
             self.current_roi_num -= 1
-            #k;lkj;lkj;lkj
             self.draw_ax()
+            
+class TraceAx:
+    def __init__(self, ax):
+        self.__model = None
+        self.trace_ax = ax
+        self.trace_y = []
+        
+    def update(self, view_data):
+        data_list = view_data.get_data()
+        self.show_data(data_list)
+        
+    def show_data(self, data_list):
+        try:
+            for data in data_list:
+                line_2d, = data.show_data(self.trace_ax)  # line, mean the first element of a list (convert from list to objet)
+                self.trace_y.append(line_2d)  # Add to the list for trace_y1 trace line objects [Line_2D] of axis abject
+        except:
+            value_obj.show_data(self.trace_ax)
+        
+
+class ImageAx:
+    def __init__(self, ax):
+        self.__model = None
+        self.image_ax = ax
+        self.image = []
+        
+    def update(self, view_data):
+        data_list = view_data.get_data()
+        self.show_data(data_list)
+        
+    def show_data(self, data_list):
+        value_obj = data_list[0]
+        try:
+            for data in value_obj:
+                line_2d, = data.show_data(self.image_ax)  # line, mean the first element of a list (convert from list to objet)
+                self.image.append(line_2d)  # Add to the list for trace_y1 trace line objects [Line_2D] of axis abject
+        except:
+            value_obj.show_data(self.image_ax)
 
 
 class NavigationToolbarTrace(NavigationToolbar2Tk):

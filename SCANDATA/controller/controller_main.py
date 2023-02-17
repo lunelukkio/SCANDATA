@@ -39,36 +39,42 @@ class ImagingController:
         self.model = DataSet(filename_obj.fullname)
         self.view_data_repository.model = self.model
         self.initialize_data_window()
+        return self.model
 
     def file_open(self, filename: str):
         filename_obj = WholeFilename(filename)
-        self.create_model(filename_obj)
+        model = self.create_model(filename_obj)
+        return model
 
     def initialize_data_window(self):
-        self.create_view_data(RoiViewFactory())  # This is Roi1 for background
-        self.create_view_data(RoiViewFactory())  # This is Roi2 for primary traces
+        # default data
+        roi_bg = self.create_view_data(RoiViewFactory())  # This is Roi1 for background
+        roi_bg.add_observer(self.view.trace_ax_list[0])
+        roi_bg.update()
+
+        roi_1 = self.create_view_data(RoiViewFactory())  # This is Roi2 for primary traces
+        roi_1.add_observer(self.view.trace_ax_list[0])
+        roi_1.update()
+
+        image = self.create_view_data(ImageViewFactory())
+        image.add_observer(self.view.image_ax_list[0])
+        image.update()
         
-        self.create_view_data(ImageViewFactory())
+        elec = self.create_view_data(ElecViewFactory())
+        elec.add_observer(self.view.trace_ax_list[1])
+        elec.update()
         
-        self.create_view_data(ElecViewFactory)
-        
-        self.show_data(self.image_ax, 'CellImage1')
-        self.show_data(self.trace_ax1, 'ChTrace1')
-        self.show_data(self.trace_ax1, 'ChTrace2')
-        self.show_data(self.trace_ax2, 'ChElecTrace1')
-        
-        # roi_box number is roi number -1.
-        bg_roi_box = RoiBox(self.__filename, self.controller, self.image_ax)  # ROI1 for tarces
-        self.roi_box.append(bg_roi_box)
-        
-        roi_box = RoiBox(self.__filename, self.controller, self.image_ax)  # ROI1 for tarces
-        self.roi_box.append(roi_box)
+        self.show_data_repository()
         
     def create_view_data(self, factory_type):
-        self.view_data_repository.create_view_data(factory_type)
+        return self.view_data_repository.create_view_data(factory_type)
         
+    def show_data_repository(self):
+        self.view_data_repository.show_data()
         
-        
+
+
+
         
         
     def roi_controller(self):
@@ -93,7 +99,16 @@ class ImagingController:
     def count_data(self, filename, key):
         return self.model.count_data(filename, key)
         
-
+    
+    
+    
+    def show_data(self, ax, data_type):
+        value_obj = self.controller.get_data(self.__filename, data_type)
+        try:
+            line_2d, = value_obj.show_data(ax)  # line, mean the first element of a list (convert from list to objet)
+            self.trace_y1.append(line_2d)  # Add to the list for trace_y1 trace line objects [Line_2D] of axis abject
+        except:
+            value_obj.show_data(ax)
 
         
 "Value object"

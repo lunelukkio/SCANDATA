@@ -277,12 +277,11 @@ class FrameWindowVal:
     def __init__(self, start: int, end: int, start_width: int, end_width: int):
         if start > end: 
             raise Exception('FrameWindow the end values should be the same or larger than the start value')
-            
 
         if start_width < 0 or end_width < 0:
             raise Exception('FrameWindow width values should be 0 or more')
         called_class = inspect.stack()[1].frame.f_locals['self']
-        self.__data = np.array([start, end, start_width, end_width])  # frame number
+        self.__data = np.array([start, end, start_width, end_width])  # frame number ex.[10, 50, 5, 5]
         self.__data_type = called_class.__class__.__name__
         print(self.__data_type + ' made a FrameWindowVal' + '  myId= {}'.format(id(self)))
         
@@ -303,10 +302,44 @@ class FrameWindowVal:
         return self.__data
     
     @data.setter
-    def frame_window_val(self, start, end, start_width=1, end_width=1):  
+    def data(self, start, end, start_width=1, end_width=1):  
         raise Exception('FrameWindowVal is a value object (Immutable).')
     
     @property
     def data_type(self) -> str:
         return self.__data_type
 
+
+class TimeWindowVal:
+    def __init__(self, start: float = 0, end: float = 100):
+        if start > end: 
+            raise Exception('TimeWindow the end values should be the same or larger than the start value')
+
+        called_class = inspect.stack()[1].frame.f_locals['self']
+        self.__data = np.array([start, end])  # time (ms)  ex.[0, 100]
+        self.__data_type = called_class.__class__.__name__
+        print(self.__data_type + ' made a TimeWindowVal' + '  myId= {}'.format(id(self)))
+        
+    def __del__(self):
+        #print('.')
+        #print('Deleted a FrameWindowVal object.' + '  myId={}'.format(id(self)))
+        pass
+        
+    #override for "+"
+    def __add__(self, other: object) -> object:
+        if self.__data_type != other.data_type:
+            raise Exception('Wrong TimeWindowVal data')
+        self.__data += other.data
+        return self
+        
+    @property
+    def data(self) -> list:
+        return self.__data
+    
+    @data.setter
+    def data(self, start, end, start_width=1, end_width=1):  
+        raise Exception('TimeWindowVal is a value object (Immutable).')
+    
+    @property
+    def data_type(self) -> str:
+        return self.__data_type

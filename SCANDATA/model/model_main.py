@@ -238,6 +238,17 @@ class TraceStrategy(DataStrategy):
     def get_data(self, key):
         return self._object_dict[key].get_data()
     
+    
+class ElecTraceStrategy(DataStrategy):
+    def __init__(self, object_dict):  # object_dict = dataset._data defined by Translator class
+        super().__init__(object_dict)
+        
+    def create_data(self, builder, data):
+        builder.build_elec_trace_set(self._object_dict)
+        
+    def get_data(self, key):
+        return self._object_dict[key].get_data()
+    
         
 class RoiStrategy(ControllerStrategy):
     def __init__(self, object_dict):  # object_dict = dataset._controller defined by Translator class
@@ -287,6 +298,15 @@ class Translator:
     def key_checker(key: str, object_dict_list: list) -> object:  # [file_io, self.__data, self.__controller]  
         if 'Filename' in key:
             return FilenameStrategy(object_dict_list[0])
+        
+        elif 'Roi' in key:
+            return RoiStrategy(object_dict_list[2])
+            
+        elif 'FrameWindow' in key:
+            return FrameWindowStrategy(object_dict_list[2])
+        
+        elif 'ElecController' in key:
+            return FrameWindowStrategy(object_dict_list[2])
             
         elif 'Frames' in key :
             return FramesStrategy(object_dict_list[1])
@@ -296,19 +316,16 @@ class Translator:
 
         elif 'Trace' in key:
             return TraceStrategy(object_dict_list[1])
-                                                   
-        elif 'Roi' in key:
-            return RoiStrategy(object_dict_list[2])
-            
-        elif 'FrameWindow' in key:
-            return FrameWindowStrategy(object_dict_list[2])
+
+        elif 'Elec' in key:
+            return ElecTraceStrategy(object_dict_list[0])
 
         elif 'Newkey' in key:
             raise NotImplementedError()
             
         else:
             print('--------------------------------------')
-            print('Can not find any Key')
+            print('Can not find any Key: ' + key)
             print('--------------------------------------')
             raise Exception("The key name is incorrect!!!")
 
