@@ -45,10 +45,12 @@ class ImagingController:
         self.create_model(filename_obj)
 
     def initialize_data_window(self):
-        self.view_data_repository.create_view_data(RoiViewFactory())  # This is Roi1 for background
-        self.view_data_repository.create_view_data(RoiViewFactory())  # This is Roi2 for primary traces
+        self.create_view_data(RoiViewFactory())  # This is Roi1 for background
+        self.create_view_data(RoiViewFactory())  # This is Roi2 for primary traces
         
-        self.view_data_repository.create_view_data(ImageViewFactory())
+        self.create_view_data(ImageViewFactory())
+        
+        self.create_view_data(ElecViewFactory)
         
         self.show_data(self.image_ax, 'CellImage1')
         self.show_data(self.trace_ax1, 'ChTrace1')
@@ -62,9 +64,12 @@ class ImagingController:
         roi_box = RoiBox(self.__filename, self.controller, self.image_ax)  # ROI1 for tarces
         self.roi_box.append(roi_box)
         
+    def create_view_data(self, factory_type):
+        self.view_data_repository.create_view_data(factory_type)
         
-    def create_data(self, filename, key):
-        self.model.create_data(filename.name, key)
+        
+        
+        
         
     def roi_controller(self):
         print('ROI controller')

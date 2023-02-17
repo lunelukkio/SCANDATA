@@ -123,9 +123,7 @@ class Roi(ModelController):
 
     def add_observer(self, observer):
         self.__observers.append(observer)
-        #observer.update(self.__roi_obj)
-        print('Tip This is problem.................................................................')
-        
+ 
     def remove_observer(self, observer):
         self.__observers.remove(observer)
     
@@ -133,7 +131,6 @@ class Roi(ModelController):
         for observer_name in self.__observers:
             observer_name.update(self.__roi_obj)
 
-            
     @property
     def observers(self) -> list:
         return self.__observers
@@ -184,7 +181,6 @@ class FrameWindow(ModelController):
     
     def add_observer(self, observer: object) -> None:
         self.__observers.append(observer)
-        observer.update(self.__frame_window_obj)
         
     def remove_observer(self, observer: object) -> None:
         self.__observers.remove(observer)

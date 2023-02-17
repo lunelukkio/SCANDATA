@@ -90,7 +90,8 @@ class TsmFileBuilder(Builder):
         self.__file_io_counter[object_name] = new_num  # Add key and object_num to counter dict.
         self.__file_io[object_name + str(product.object_num)] = product
         return product
-        
+    
+    # for making a single trace    
     def create_data(self, factory_type, data, *args) -> object:
         product = factory_type.create_data(data, *args)
         object_name = product.__class__.__name__  # str
@@ -98,6 +99,7 @@ class TsmFileBuilder(Builder):
         last_num = self.__data_counter.get(object_name, 0)  # Get counter num of instance. If not exist, num is 0.
         new_num = last_num + 1
         product.object_num = new_num  # Add counter num to instance.
+        product.name = object_name + str(new_num)
         
         self.__data_counter[object_name] = new_num  # Add key and object_num to a counter dict.
         self.__data[object_name + str(product.object_num)] = product
@@ -123,6 +125,7 @@ class TsmFileBuilder(Builder):
             image = self.create_data(CellImageFactory(), i.frames_obj)
             frame_window.add_observer(image)
     
+    # for making trace data set
     def build_trace_set(self, data_set) -> None:
         roi = self.create_controller(RoiFactory())
         full_trace = self.create_data(FullTraceFactory(), 

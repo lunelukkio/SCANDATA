@@ -145,7 +145,16 @@ class FullFrames(FluoFrames):
     def __init__(self, frames_obj, *args):
         super().__init__(frames_obj, *args)
         self.object_num = 0  # instance number, It shold be increased by data_set
+        self.__name = None
         
+        @property
+        def name(self):
+            return self.__name
+        
+        @name.setter
+        def name(self, object_name):
+            self.__name = object_name
+    
     def print_infor(self) -> None:
         print('This is Fullframes' + str(self.object_num))
         super().print_additional_infor()
@@ -156,6 +165,15 @@ class ChFrames(FluoFrames):
     def __init__(self, frames_obj, *args):
         super().__init__(frames_obj, *args)
         self.object_num = 0  # instance number
+        self.__name = None
+        
+    @property
+    def name(self):
+        return self.__name
+    
+    @name.setter
+    def name(self, object_name):
+        self.__name = object_name
         
     def print_infor(self) -> None:
         print('This is Chframes' + str(self.object_num))
@@ -229,7 +247,6 @@ class CellImage(FluoImage):
         elif end - start > 0: 
             val = np.mean(self._frames_obj.data[:, :, start:end], axis = 2)
             self._image_obj = ImageData(val)
-            print(self._image_obj.data)
             #print('Read an avarage cell image')
         else:
             self._data = np.zeros((2, 2))
@@ -238,7 +255,6 @@ class CellImage(FluoImage):
     def update(self, frame_window_obj) -> None:  # value object
         self._frame_window = frame_window_obj.data  # frame_window = [start, end, start_width, end_width]
         self._read_data(self._frame_window)
-        self.__name = str('CellImage' + str(self.object_num))
         print('CellImage{} recieved a notify message.'.format(self.object_num) + str(self._frame_window))
             
         
@@ -249,6 +265,10 @@ class CellImage(FluoImage):
     @property
     def name(self):
         return self.__name
+    
+    @name.setter
+    def name(self, object_name):
+        self.__name = object_name
         
         
 class DifImage(FluoImage):
@@ -261,7 +281,7 @@ class DifImage(FluoImage):
         pass
         
     def update(self):
-        self.__name = str('DiImage' + str(self.object_num))
+        pass
 
     def get_data(self):
         pass
@@ -276,6 +296,10 @@ class DifImage(FluoImage):
     @property
     def name(self):
         return self.__name
+    
+    @name.setter
+    def name(self, object_name):
+        self.__name = object_name
 
 
 "Fluo Trace"
@@ -360,8 +384,6 @@ class FullTrace(FluoTrace):
     def update(self, roi_obj: object) -> None:  # value object
         self._roi = roi_obj.data
         super()._read_data(self._roi)
-        self.__name = str('FullTrace' + str(self.object_num))
-        print('Tip It should be in different place.')
         print('FullTrace{} recieved a notify message.'.format(self.object_num))
         
     def print_infor(self) -> None:
@@ -371,6 +393,10 @@ class FullTrace(FluoTrace):
     @property
     def name(self):
         return self.__name
+    
+    @name.setter
+    def name(self, object_name):
+        self.__name = object_name
         
 
 class ChTrace(FluoTrace):
@@ -382,7 +408,6 @@ class ChTrace(FluoTrace):
     def update(self, roi_obj: list) -> None:  # value object
         self._roi = roi_obj.data
         super()._read_data(self._roi)
-        self.__name = str('ChTrace' + str(self.object_num))
         print('ChTrace{} recieved a notify message.'.format(self.object_num))
         
     def print_infor(self) -> None:
@@ -392,6 +417,10 @@ class ChTrace(FluoTrace):
     @property
     def name(self):
         return self.__name
+    
+    @name.setter
+    def name(self, object_name):
+        self.__name = object_name
 
 
 "Elec trace"
@@ -431,6 +460,7 @@ class ChElecTrace(ElecTrace):
         super().__init__(interval)
         self.object_num = 0  # instance number
         self._read_data(trace_data_obj)
+        self.__name = None
 
     def _read_data(self, trace_data_obj: np.ndarray) -> None:
         self._trace_obj = trace_data_obj
@@ -440,6 +470,14 @@ class ChElecTrace(ElecTrace):
             print('Can not make Elec data')
             print('---------------------')
             return None
+        
+    @property
+    def name(self):
+        return self.__name
+    
+    @name.setter
+    def name(self, object_name):
+        self.__name = object_name
     
     def print_infor(self):
         print('This is ElecTrace' + str(self.object_num))
