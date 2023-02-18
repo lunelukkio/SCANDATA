@@ -49,19 +49,21 @@ class ImagingController:
     def initialize_data_window(self):
         # default data
         roi_bg = self.create_view_data(RoiViewFactory())  # This is Roi1 for background
-        roi_bg.add_observer(self.view.trace_ax_list[0])
+        roi_bg.add_observer(self.view.trace_ax_list[0])  # for trace
+        roi_bg.add_observer(self.view.image_ax_list[0])  # for roi
         roi_bg.update()
 
         roi_1 = self.create_view_data(RoiViewFactory())  # This is Roi2 for primary traces
-        roi_1.add_observer(self.view.trace_ax_list[0])
+        roi_1.add_observer(self.view.trace_ax_list[0])  # for trace
+        roi_bg.add_observer(self.view.image_ax_list[0])  # for roi
         roi_1.update()
 
         image = self.create_view_data(ImageViewFactory())
-        image.add_observer(self.view.image_ax_list[0])
+        image.add_observer(self.view.image_ax_list[0])  # for cell image
         image.update()
         
         elec = self.create_view_data(ElecViewFactory())
-        elec.add_observer(self.view.trace_ax_list[1])
+        elec.add_observer(self.view.trace_ax_list[1])  # fof elec trace
         elec.update()
         
         self.show_data_repository()
@@ -101,14 +103,7 @@ class ImagingController:
         
     
     
-    
-    def show_data(self, ax, data_type):
-        value_obj = self.controller.get_data(self.__filename, data_type)
-        try:
-            line_2d, = value_obj.show_data(ax)  # line, mean the first element of a list (convert from list to objet)
-            self.trace_y1.append(line_2d)  # Add to the list for trace_y1 trace line objects [Line_2D] of axis abject
-        except:
-            value_obj.show_data(ax)
+
 
         
 "Value object"

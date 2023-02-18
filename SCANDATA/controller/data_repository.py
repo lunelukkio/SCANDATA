@@ -117,7 +117,7 @@ class RoiView(ViewData):
         self.__key = 'Roi' + str(object_num)
         self.__model.create_data('Trace')
         self.__roi_val = self.__model.get_data(self.__key)
-        self.__roi_box = RoiBox()
+        self.__roi_box = RoiBox(self.__model, self.__key)
         self.__data_name_list = self.__model.get_infor(self.__key)
         self.__data_list = []  # a list of value object 
         self.update()
@@ -159,6 +159,10 @@ class RoiView(ViewData):
     @name.setter
     def name(self, name: str):
         self.__name = name
+        
+    @property
+    def roi_box(self):
+        return self.__roi_box
 
 
 class ImageView(ViewData):
@@ -269,24 +273,24 @@ class RoiBox():
     roi_num = 0
     color_selection = ['white', 'red', 'blue', 'orange', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
         
-    def __init__(self):
-        RoiBox.roi_num += 1
-        self.__roi_num = RoiBox.roi_num
+    def __init__(self, model, key):
+        self.__model = model
+        self.__key = key
         self.__rectangle_obj = patches.Rectangle(xy=(40, 40), 
                                                  width=1, 
                                                  height=1, 
-                                                 ec=RoiBox.color_selection[self.__roi_num - 1], 
+                                                 ec=RoiBox.color_selection[RoiBox.roi_num], 
                                                  fill=False)
+        RoiBox.roi_num += 1
 
     def set_roi(self):
-        roi_obj = self.__roi_holder.get_controller(self.__filename.name, 'Roi' + str(self.__roi_num))
+        roi_obj = self.__model.get_data(self.__key)
         self.__rectangle_obj.set_xy([roi_obj.data[0], roi_obj.data[1]])
         self.__rectangle_obj.set_width(roi_obj.data[2])
-        self.__rectangle_obj.set_height(roi_obj.data[3])    
-        
-    def show_data(self, ax):
-        ax.add_patch(self.__rectangle_obj)
-        
+        self.__rectangle_obj.set_height(roi_obj.data[3])  
+    @property
+    def rectangle_obj(self):
+        return self.__rectangle_obj
         
         
 class Observer:
@@ -304,8 +308,7 @@ class Observer:
         for observer_name in self.__observers:
             observer_name.update(self.view_data)
         print('Notified to ax.')
-        
-        
+
     @property
     def observers(self):
         return self.__observers

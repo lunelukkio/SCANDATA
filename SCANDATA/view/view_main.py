@@ -323,10 +323,14 @@ class ImageAx:
         self.image = []
         
     def update(self, view_data):
-        data_list = view_data.get_data()
-        self.show_data(data_list)
+        if 'Image' in view_data.name:
+            data_list = view_data.get_data()
+            self.show_data(data_list)
+        elif 'Roi' in view_data.name:
+            roi_box = view_data.roi_box
+            self.show_roi(roi_box)
         
-    def show_data(self, data_list):
+    def show_data(self, data_list):  # data_list = value obj list
         value_obj = data_list[0]
         try:
             for data in value_obj:
@@ -334,6 +338,10 @@ class ImageAx:
                 self.image.append(line_2d)  # Add to the list for trace_y1 trace line objects [Line_2D] of axis abject
         except:
             value_obj.show_data(self.image_ax)
+            
+    def show_roi(self, roi_box: object):
+        self.image_ax.add_patch(roi_box.rectangle_obj)
+        
 
 
 class NavigationToolbarTrace(NavigationToolbar2Tk):
