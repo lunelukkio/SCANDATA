@@ -38,7 +38,9 @@ class ViewDataRepository:
 
     def show_data(self):
         print('View Data = ' + str(list(self.__view_data)))
-
+        
+    def set_data(self, key: str, val: list):
+        self.__view_data[key].set_data(val)
 
 """
 abstract factory
@@ -80,6 +82,10 @@ class ViewData(metaclass=ABCMeta):
         
     @abstractmethod
     def get_data(self):
+        raise NotImplementedError()
+        
+    @abstractmethod
+    def set_data(self):
         raise NotImplementedError()
         
     @abstractmethod
@@ -136,6 +142,10 @@ class RoiView(ViewData):
         
     def get_data(self) -> list:
         return self.__data_list
+    
+    def set_data(self, val):
+        self.__model.set_data(self.__key, val)
+        self.update()
             
     def delete(self):
         pass
@@ -192,6 +202,9 @@ class ImageView(ViewData):
         
     def get_data(self) -> list:
         return self.__data_list
+    
+    def set_data(self):
+        pass
         
     def delete(self):
         raise NotImplementedError()
@@ -243,6 +256,9 @@ class ElecView(ViewData):
         
     def get_data(self) -> list:
         return self.__data_list
+    
+    def set_data(self):
+        pass
         
     def delete(self):
         raise NotImplementedError()

@@ -225,7 +225,7 @@ class TraceData:
     
     def show_data(self, plt=plt) -> list:  # plt shold be an axis in a view class object = [matplotlib.lines.Line2D]
         return plt.plot(self.__time, self.__data) 
-    
+
     
 """
 Value object for controller

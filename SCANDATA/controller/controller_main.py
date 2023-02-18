@@ -73,24 +73,18 @@ class ImagingController:
         
     def show_data_repository(self):
         self.view_data_repository.show_data()
-        
 
-
-
-        
-        
-    def roi_controller(self):
-        print('ROI controller')
-        
-    def get_data(self, filename, data_type) -> object:  # value object
-        return self.model.get_data(filename.name, data_type)
-    
-    def set_roi_position(self, filename, event, roi_num=1):
+    def set_roi_position(self, event, roi_num=1):
+        key = 'RoiView' + str(roi_num)
+        print(key + ':')
         print(event.button, event.x, event.y, event.xdata, event.ydata)
         roi_x = math.floor(event.xdata)
         roi_y = math.floor(event.ydata)
         roi = [roi_x, roi_y]
-        self.model.set_data(filename.name, 'Roi' + str(roi_num), roi)
+        self.view_data_repository.set_data(key, roi)
+    
+    
+    
     
     def change_roi_size(self, filename, roi_num, val):
         self.model.add_data(filename.name, 'Roi' + str(roi_num), val)

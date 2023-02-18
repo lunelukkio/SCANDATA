@@ -10,9 +10,8 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.filedialog
 import os
-import copy
 from matplotlib.figure import Figure
-import matplotlib.patches as patches
+from cycler import cycler
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from SCANDATA.controller.controller_main import ImagingController
 
@@ -169,12 +168,15 @@ class DataWindow(tk.Frame):
         image_fig = Figure(figsize=(5, 5), dpi=100, facecolor='azure')  #Figure
         # matplotlib image axes
         image_ax = image_fig.add_subplot(1, 1, 1)           #Axes
-        self.image_ax_list.append(ImageAx(image_ax))
+        
+        self.canvas_image = FigureCanvasTkAgg(image_fig, frame_left)
+        #canvas_image.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
+        
+        self.image_ax_list.append(ImageAx(self.canvas_image, image_ax))
         
         self.image_ax_list[0].image_ax.set_xticks([])
         self.image_ax_list[0].image_ax.set_yticks([])
-        self.canvas_image = FigureCanvasTkAgg(image_fig, frame_left)
-        #canvas_image.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
+
         self.canvas_image.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
         self.canvas_image.mpl_connect('button_press_event', self.onclick_image)
@@ -185,22 +187,22 @@ class DataWindow(tk.Frame):
         # matplotlib trace figure
         trace_fig = Figure(figsize=(5, 5), dpi=100, facecolor='azure')  #Figure
         gridspec_trace_fig = trace_fig.add_gridspec(20, 1)
-        # matplotlib trace axes
-        trace_ax1 = trace_fig.add_subplot(gridspec_trace_fig[0:15])
-        self.trace_ax_list.append(TraceAx(trace_ax1))
         
-        trace_ax2 = trace_fig.add_subplot(gridspec_trace_fig[16:20], sharex=self.trace_ax_list[0].trace_ax)
-        self.trace_ax_list.append(TraceAx(trace_ax2))
-
         self.canvas_trace = FigureCanvasTkAgg(trace_fig, frame_right)
         #canvas_trace.get_tk_widget().pack()
+        
+        # matplotlib trace axes
+        trace_ax1 = trace_fig.add_subplot(gridspec_trace_fig[0:15])
+        self.trace_ax_list.append(TraceAx(self.canvas_trace, trace_ax1))
+        
+        trace_ax2 = trace_fig.add_subplot(gridspec_trace_fig[16:20], sharex=self.trace_ax_list[0].trace_ax)
+        self.trace_ax_list.append(TraceAx(self.canvas_trace, trace_ax2))
         
         toolbar_trace = NavigationToolbarTrace(self.canvas_trace, frame_right)
         toolbar_trace.update()
         self.canvas_trace.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        
-        self.current_roi_num = None
+        self.current_roi_num = 1
 
         # make a contoller and model.
         self.controller = ImagingController(self, self.__filename)
@@ -216,39 +218,10 @@ class DataWindow(tk.Frame):
     def file_open(self):
         fullname = FileService.get_fullname()
         self.model = self.controller.file_open(fullname)
-        
-        
-        
-        
-    def draw_ax(self):
-        self.trace_ax1.relim()
-        self.trace_ax1.autoscale_view()
-        self.canvas_trace.draw()
-        self.canvas_image.draw()
-        
-    def show_data(self, ax, data_type):
-        value_obj = self.controller.get_data(self.__filename, data_type)
-        try:
-            line_2d, = value_obj.show_data(ax)  # line, mean the first element of a list (convert from list to objet)
-            self.trace_y1.append(line_2d)  # Add to the list for trace_y1 trace line objects [Line_2D] of axis abject
-        except:
-            value_obj.show_data(ax)
-        
-    def set_trace(self, ax, trace_num, trace_type):
-        trace = self.controller.get_data(self.__filename, trace_type)
-        self.trace_y1[trace_num].set_ydata(trace.data)
-        
+
     def onclick_image(self, event):
         if event.button == 1:  # left click
-            self.controller.set_roi_position(self.__filename, event, self.current_roi_num)
-        
-            #display data and ROI
-            self.set_trace(self.trace_ax1, 0, 'FullTrace' + str(self.current_roi_num))
-            self.set_trace(self.trace_ax1, 0, 'ChTrace' + str(2*self.current_roi_num-1))
-            self.set_trace(self.trace_ax1, 1, 'ChTrace' + str(2*self.current_roi_num))
-            self.roi_box[self.current_roi_num-1].set_roi()
-        
-            self.draw_ax()
+            self.controller.set_roi_position(event, self.current_roi_num)
             
         elif event.button == 2:
             pass
@@ -263,6 +236,11 @@ class DataWindow(tk.Frame):
             self.set_trace(self.trace_ax1, 1, 'ChTrace' + str(2*self.current_roi_num))
             
             self.draw_ax()
+        
+        
+        
+        
+        
         
     def large_roi(self):
         self.change_roi_size([0, 0, 1, 1])
@@ -298,8 +276,9 @@ class DataWindow(tk.Frame):
             self.draw_ax()
             
 class TraceAx:
-    def __init__(self, ax):
+    def __init__(self, canvas, ax):
         self.__model = None
+        self.canvas_trace = canvas
         self.trace_ax = ax
         self.trace_y = []
         
@@ -307,40 +286,51 @@ class TraceAx:
         data_list = view_data.get_data()
         self.show_data(data_list)
         
-    def show_data(self, data_list):
-        try:
-            for data in data_list:
-                line_2d, = data.show_data(self.trace_ax)  # line, mean the first element of a list (convert from list to objet)
-                self.trace_y.append(line_2d)  # Add to the list for trace_y1 trace line objects [Line_2D] of axis abject
-        except:
-            value_obj.show_data(self.trace_ax)
-        
+    def show_data(self, data_list: list):
+        line_num = len(self.trace_y)
+        if line_num >0:
+            for i in range(line_num):
+                self.trace_y[0].set_data([],[])
+                del self.trace_y[0]
+        self.trace_ax.set_prop_cycle(cycler('color', ['b', 'g', 'r', 'c', 'm', 'y', 'k']))
+        for data in data_list:
+            line_2d, = data.show_data(self.trace_ax)  # line"," means the first element of a list (convert from list to objet). Don't remove it.
+            self.trace_y.append(line_2d)  # Add to the list for trace_y1 trace line objects [Line_2D] of axis object
+        self.draw_ax()
+            
+    def draw_ax(self):
+        self.trace_ax.relim()
+        self.trace_ax.autoscale_view()
+        self.canvas_trace.draw()
+
 
 class ImageAx:
-    def __init__(self, ax):
+    def __init__(self, canvas, ax):
         self.__model = None
+        self.canvas_image = canvas
         self.image_ax = ax
         self.image = []
         
     def update(self, view_data):
-        if 'Image' in view_data.name:
+        if 'Image' in view_data.name:  # for cell images
             data_list = view_data.get_data()
             self.show_data(data_list)
-        elif 'Roi' in view_data.name:
+        elif 'Roi' in view_data.name:  # for RoiBoxs
             roi_box = view_data.roi_box
             self.show_roi(roi_box)
+        self.draw_ax()
         
-    def show_data(self, data_list):  # data_list = value obj list
-        value_obj = data_list[0]
-        try:
-            for data in value_obj:
-                line_2d, = data.show_data(self.image_ax)  # line, mean the first element of a list (convert from list to objet)
-                self.image.append(line_2d)  # Add to the list for trace_y1 trace line objects [Line_2D] of axis abject
-        except:
-            value_obj.show_data(self.image_ax)
+    def show_data(self, data_list: list):  # data_list = value obj list
+        self.image = []
+        for data in data_list:
+            image = data.show_data(self.image_ax)  # line, mean the first element of a list (convert from list to objet)
+            self.image.append(image)  # Add to the list for trace_y1 trace line objects [Line_2D] of axis abject
             
     def show_roi(self, roi_box: object):
         self.image_ax.add_patch(roi_box.rectangle_obj)
+
+    def draw_ax(self):
+        self.canvas_image.draw()
         
 
 
