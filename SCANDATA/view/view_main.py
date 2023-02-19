@@ -280,22 +280,22 @@ class TraceAx:
         self.__model = None
         self.canvas_trace = canvas
         self.trace_ax = ax
-        self.trace_y = []
+        self.trace = []
         
     def update(self, view_data):
         data_list = view_data.get_data()
         self.show_data(data_list)
         
     def show_data(self, data_list: list):
-        line_num = len(self.trace_y)
+        line_num = len(self.trace)
         if line_num >0:
             for i in range(line_num):
-                self.trace_y[0].set_data([],[])
-                del self.trace_y[0]
+                self.trace[0].set_data([],[])
+                del self.trace[0]
         self.trace_ax.set_prop_cycle(cycler('color', ['b', 'g', 'r', 'c', 'm', 'y', 'k']))
         for data in data_list:
             line_2d, = data.show_data(self.trace_ax)  # line"," means the first element of a list (convert from list to objet). Don't remove it.
-            self.trace_y.append(line_2d)  # Add to the list for trace_y1 trace line objects [Line_2D] of axis object
+            self.trace.append(line_2d)  # Add to the list for trace1 trace line objects [Line_2D] of axis object
         self.draw_ax()
             
     def draw_ax(self):
@@ -310,6 +310,7 @@ class ImageAx:
         self.canvas_image = canvas
         self.image_ax = ax
         self.image = []
+        self.Roi = []
         
     def update(self, view_data):
         if 'Image' in view_data.name:  # for cell images
@@ -321,12 +322,20 @@ class ImageAx:
         self.draw_ax()
         
     def show_data(self, data_list: list):  # data_list = value obj list
-        self.image = []
+        image_num = len(self.image)
+        if image_num >0:
+            for i in range(image_num):
+                self.image[0].set_data([])
+                del self.image[0]
+        
         for data in data_list:
             image = data.show_data(self.image_ax)  # line, mean the first element of a list (convert from list to objet)
-            self.image.append(image)  # Add to the list for trace_y1 trace line objects [Line_2D] of axis abject
-            
-    def show_roi(self, roi_box: object):
+            self.image.append(image)  # Add to the list for trace line objects [Line_2D] of axis object
+        self.draw_ax()
+
+    def show_roi(self, roi_box: object):  # RoiBox always has only one data
+        self.image[0].set_data([])
+        
         self.image_ax.add_patch(roi_box.rectangle_obj)
 
     def draw_ax(self):

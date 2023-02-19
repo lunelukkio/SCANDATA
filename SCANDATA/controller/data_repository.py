@@ -15,12 +15,6 @@ class ViewDataRepository:
         self.model = None     
         self.__view_data_counter = {}  # dict
         self.__view_data = {}  # dict
-    """    
-    def create_view_data(self, factory_type):
-        new_roi_view = factory_type.create_view_data(self.model)
-        self.view_data.append(new_roi_view)
-        return new_roi_view
-    """
     
     def create_view_data(self,  factory_type):
         product = factory_type.create_view_data(self.model)
