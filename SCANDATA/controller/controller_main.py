@@ -22,10 +22,12 @@ class MainController:
         self.controller_list = []
         
     def create_filename_obj(self, fullname: str) -> object:
+        pass
         filename_obj = WholeFilename(fullname)
         return filename_obj
         
     def create_imaging_controller(self,filename):
+        pass
         self.controller_list.append(ImagingController(filename))
 
 class ImagingController:
@@ -33,11 +35,10 @@ class ImagingController:
         self.__filename = filename_obj
         self.view = view
         self.model = None
-        self.view_data_repository = ViewDataRepository()
+        self.view_data_repository = 
         
     def create_model(self, filename_obj: object):  
         self.model = DataSet(filename_obj.fullname)
-        self.view_data_repository.model = self.model
         self.initialize_data_window()
         return self.model
 
@@ -69,7 +70,7 @@ class ImagingController:
         self.show_data_repository()
         
     def create_view_data(self, factory_type):
-        return self.view_data_repository.create_view_data(factory_type)
+        return self.view.view_data_repository.create_view_data(factory_type)
         
     def show_data_repository(self):
         self.view_data_repository.show_data()

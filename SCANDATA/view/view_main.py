@@ -124,6 +124,7 @@ class DataWindow(tk.Frame):
         self.__filename = filename_obj
         self.model = None
         self.controller = None
+        self.view_data_repository = ViewDataRepository()
         
         master.geometry('1400x700')
         master.configure(background='azure')
@@ -280,6 +281,11 @@ class TraceAx:
         self.__model = None
         self.canvas_trace = canvas
         self.trace_ax = ax
+        self.roi_view_list = []
+        self.current_roi_ch = 1
+        self.current_roi_num = 1
+        
+        "del"
         self.trace = []
         
     def update(self, view_data):
@@ -302,6 +308,12 @@ class TraceAx:
         self.trace_ax.relim()
         self.trace_ax.autoscale_view()
         self.canvas_trace.draw()
+        
+    def add_roi_view(self, roi_view):
+        self.roi_view_list.append(roi_view)
+    
+    def delete_roi_view(self, roi_view):
+        self.roi_view_list.remove(roi_view)
 
 
 class ImageAx:
@@ -309,8 +321,13 @@ class ImageAx:
         self.__model = None
         self.canvas_image = canvas
         self.image_ax = ax
-        self.image = []
+        self.roi_view_list = []
+        self.image = None  # should be only one object
+        self.current_ch = 1
+        
+        "del"
         self.Roi = []
+        
         
     def update(self, view_data):
         if 'Image' in view_data.name:  # for cell images
