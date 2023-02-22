@@ -8,8 +8,7 @@ main for controller
 
 from abc import ABCMeta, abstractmethod
 from SCANDATA.model.model_main import DataSet
-from SCANDATA.controller.data_repository import ViewDataRepository
-from SCANDATA.controller.data_repository import RoiViewFactory, ImageViewFactory, ElecViewFactory
+from SCANDATA.view.data_repository import RoiViewFactory, ImageViewFactory, ElecViewFactory
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -35,10 +34,15 @@ class ImagingController:
         self.__filename = filename_obj
         self.view = view
         self.model = None
-        self.view_data_repository = 
+        self.view_data_repository = self.view.view_data_repository
         
     def create_model(self, filename_obj: object):  
         self.model = DataSet(filename_obj.fullname)
+        if self.model == None:
+            raise Exception('Failed to create a model.')
+        else:
+            print('Suceeded to make a model.')
+        self.view_data_repository.model = self.model
         self.initialize_data_window()
         return self.model
 
@@ -70,7 +74,7 @@ class ImagingController:
         self.show_data_repository()
         
     def create_view_data(self, factory_type):
-        return self.view.view_data_repository.create_view_data(factory_type)
+        return self.view_data_repository.create_view_data(factory_type)
         
     def show_data_repository(self):
         self.view_data_repository.show_data()

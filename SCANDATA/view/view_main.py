@@ -14,6 +14,7 @@ from matplotlib.figure import Figure
 from cycler import cycler
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from SCANDATA.controller.controller_main import ImagingController
+from SCANDATA.view.data_repository import ViewDataRepository
 
 
 class MainView(tk.Frame):
