@@ -239,11 +239,6 @@ class DataWindow(tk.Frame):
             
             self.draw_ax()
         
-        
-        
-        
-        
-        
     def large_roi(self):
         self.change_roi_size([0, 0, 1, 1])
 
@@ -251,14 +246,7 @@ class DataWindow(tk.Frame):
         self.change_roi_size([0, 0, -1, -1])
 
     def change_roi_size(self, val):
-        self.controller.change_roi_size(self.__filename, self.current_roi_num, val)
-        
-        #display data and ROI
-        self.set_trace(self.trace_ax1, 0, 'ChTrace' + str(2*self.current_roi_num-1))
-        self.set_trace(self.trace_ax1, 1, 'ChTrace' + str(2*self.current_roi_num))
-        self.roi_box[self.current_roi_num-1].set_roi()
-
-        self.draw_ax()
+        self.controller.change_roi_size(self.current_roi_num, val)
 
     def add_roi(self):
         new_roi_box = RoiBox(self.__filename, self.controller, self.image_ax)
@@ -284,8 +272,6 @@ class TraceAx:
         self.roi_view_list = []
         self.current_roi_ch = 1
         self.current_roi_num = 1
-        
-        "del"
         self.trace = []
         
     def update(self, view_data):
@@ -294,7 +280,7 @@ class TraceAx:
         
     def show_data(self, data_list: list):
         line_num = len(self.trace)
-        if line_num >0:
+        if line_num > 0:
             for i in range(line_num):
                 self.trace[0].set_data([],[])
                 del self.trace[0]
@@ -324,10 +310,7 @@ class ImageAx:
         self.roi_view_list = []
         self.image = []
         self.current_ch = 1
-        
-        "del"
-        self.Roi = []
-        
+        self.roi_box = []
         
     def update(self, view_data):
         if 'Image' in view_data.name:  # for cell images
@@ -351,15 +334,13 @@ class ImageAx:
         self.draw_ax()
 
     def show_roi(self, roi_box: object):  # RoiBox always has only one data in RoiView class
-        #self.image[0].set_data([])
-        print('Tip Probably need to write deleting prosses for RoiBox.')
         self.image_ax.add_patch(roi_box.rectangle_obj)
+        print(roi_box.rectangle_obj)
         self.draw_ax()
 
     def draw_ax(self):
         self.canvas_image.draw()
         
-
 
 class NavigationToolbarTrace(NavigationToolbar2Tk):
     def __init__(self, canvas=None, master=None):

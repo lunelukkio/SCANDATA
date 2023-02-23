@@ -65,11 +65,11 @@ class ImagingController:
         roi = [roi_x, roi_y]
         self.model.set_data(key, roi)
     
-    
-    
-    
-    def change_roi_size(self, filename, roi_num, val):
-        self.model.add_data(filename.name, 'Roi' + str(roi_num), val)
+    def change_roi_size(self, roi_num, val):
+        self.model.add_data('Roi' + str(roi_num), val)
+        
+        
+        
         
     def get_controller(self, filename: str, key:str) -> object:
         return self.model.get_data(filename, key)

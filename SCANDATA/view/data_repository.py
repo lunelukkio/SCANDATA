@@ -106,10 +106,6 @@ class ViewData(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
-    def set_data(self):
-        raise NotImplementedError()
-        
-    @abstractmethod
     def delete(self):
         raise NotImplementedError()
 
@@ -143,7 +139,6 @@ class RoiView(ViewData):
     def create_data(self, object_num):
         self.__key = 'Roi' + str(object_num)
         self.__model.create_data('Trace')
-        self.__roi_val = self.__model.get_data(self.__key)
         self.__roi_box = RoiBox(self.__model, self.__key)
         self.__data_name_list = self.__model.get_infor(self.__key)
         self.__data_list = []  # a list of value object 
@@ -154,18 +149,18 @@ class RoiView(ViewData):
         raise NotImplementedError()
 
     def update(self, *no_use):  # no_use is a RoiVal object. it need for FluoTrace observers.
+        # for traces
         new_data = []
         for data_name in self.__data_name_list:
             new_data.append(self.__model.get_data(data_name))
         self.__data_list = new_data
-        self.__ax_observer.notify_observer()
+        #for roibox
+        self.__roi_box.set_roi()
+        
+        self.notify_observer()
         
     def get_data(self) -> list:
         return self.__data_list
-    
-    def set_data(self, val):
-        self.__model.set_data(self.__key, val)
-        self.update()
             
     def delete(self):
         pass
@@ -221,13 +216,10 @@ class ImageView(ViewData):
         self.__data_list = new_data
         
         print('View Data updated: ' + str(new_data_name))
-        self.__ax_observer.notify_observer()
+        self.notify_observer()
         
     def get_data(self) -> list:
         return self.__data_list
-    
-    def set_data(self):
-        pass
         
     def delete(self):
         raise NotImplementedError()
@@ -274,13 +266,10 @@ class ElecView(ViewData):
         for data_name in self.__data_name_list:
             new_data.append(self.__model.get_data(data_name))
         self.__data_list = new_data
-        self.__ax_observer.notify_observer()
+        self.notify_observer()
         
     def get_data(self) -> list:
         return self.__data_list
-    
-    def set_data(self):
-        pass
         
     def delete(self):
         raise NotImplementedError()
@@ -326,6 +315,7 @@ class RoiBox():
         self.__rectangle_obj.set_xy([roi_obj.data[0], roi_obj.data[1]])
         self.__rectangle_obj.set_width(roi_obj.data[2])
         self.__rectangle_obj.set_height(roi_obj.data[3])  
+        
     @property
     def rectangle_obj(self):
         return self.__rectangle_obj
@@ -345,7 +335,10 @@ class Observer:
     def notify_observer(self):
         for observer_name in self.__observers:
             observer_name.update(self.view_data)
-        print('Notified to ax.')
+        name_list = []
+        for name in self.__observers:
+            name_list.append(name.__class__.__name__)
+        print('Notified to ax: ' + str(name_list))
 
     @property
     def observers(self):
