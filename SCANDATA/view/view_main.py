@@ -126,6 +126,7 @@ class DataWindow(tk.Frame):
         self.model = None
         self.controller = None
         self.view_data_repository = ViewDataRepository()
+        self.current_roi_num = 1
         
         master.geometry('1400x700')
         master.configure(background='azure')
@@ -204,8 +205,6 @@ class DataWindow(tk.Frame):
         toolbar_trace.update()
         self.canvas_trace.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        self.current_roi_num = 1
-
         # make a contoller.
         self.controller = ImagingController(self, self.__filename)
         
@@ -224,21 +223,17 @@ class DataWindow(tk.Frame):
     def onclick_image(self, event):
         if event.button == 1:  # left click
             self.controller.set_roi_position(event, self.current_roi_num)
-            
         elif event.button == 2:
             pass
         elif event.button == 3:
-            num = len(self.roi_box)
+            num = self.view_data_repository.count_data('RoiView')
             self.current_roi_num += 1
-            if self.current_roi_num > num:
+            if self.current_roi_num > num:  #if the number of roi is larger than current roi num
                 self.current_roi_num = 1
             else:
                 pass
-            self.set_trace(self.trace_ax1, 0, 'ChTrace' + str(2*self.current_roi_num-1))
-            self.set_trace(self.trace_ax1, 1, 'ChTrace' + str(2*self.current_roi_num))
-            
-            self.draw_ax()
-        
+            self.view_data_repository.update('RoiView' + str(self.current_roi_num))
+                
     def large_roi(self):
         self.change_roi_size([0, 0, 1, 1])
 
@@ -249,36 +244,25 @@ class DataWindow(tk.Frame):
         self.controller.change_roi_size(self.current_roi_num, val)
 
     def add_roi(self):
-        new_roi_box = RoiBox(self.__filename, self.controller, self.image_ax)
-        self.roi_box.append(new_roi_box)
-        self.controller.create_data(self.__filename, 'Trace')  # make 1xFullTrace, 2xChTrace, 1xRoi and bind
-        new_roi_box.set_roi()
-        self.draw_ax()
+        self.view_data_repository.create_roi(self.ax_list)
         
     def delete_roi(self):
-        num_box = len(self.roi_box)
-        if num_box == 1:
-            print('This is the last ROI')
-            return
-        else:
-            del self.roi_box[num_box-1]
-            self.current_roi_num -= 1
-            self.draw_ax()
+        self.view_data_repository.delete_roi(self.ax_list)
+        self.current_roi_num -= 1
             
 class TraceAx:
     def __init__(self, canvas, ax):
         self.canvas_trace = canvas
         self.trace_ax = ax
-        self.roi_view_list = []
         self.current_roi_ch = 1
-        self.current_roi_num = 1
+
         self.trace = []
         
     def update(self, view_data):
         data_list = view_data.get_data()
         self.show_data(data_list)
         
-    def show_data(self, data_list: list):
+    def show_data(self, data_list: list):  # delete old traces and make new traces
         line_num = len(self.trace)
         if line_num > 0:
             for i in range(line_num):
@@ -294,12 +278,6 @@ class TraceAx:
         self.trace_ax.relim()
         self.trace_ax.autoscale_view()
         self.canvas_trace.draw()
-        
-    def add_roi_view(self, roi_view):
-        self.roi_view_list.append(roi_view)
-    
-    def delete_roi_view(self, roi_view):
-        self.roi_view_list.remove(roi_view)
 
 
 class ImageAx:
@@ -307,10 +285,10 @@ class ImageAx:
         self.__model = None
         self.canvas_image = canvas
         self.image_ax = ax
-        self.roi_view_list = []
         self.image = []
         self.current_ch = 1
         self.roi_box = []
+        self.image_show_flag = [False, True, False]   # 0 = full trace, 1 = ch1 trace, 2 = ch2 trace
         
     def update(self, view_data):
         if 'Image' in view_data.name:  # for cell images
@@ -321,7 +299,7 @@ class ImageAx:
             self.show_roi(roi_box)
         self.draw_ax()
         
-    def show_data(self, data_list: list):  # data_list = value obj list
+    def show_data(self, data_list: list):  # data_list = value obj list  Delete old images, and make new images
         image_num = len(self.image)
         if image_num >0:
             for i in range(image_num):
@@ -333,7 +311,7 @@ class ImageAx:
             self.image.append(image)  # Add to the list for trace line objects [Line_2D] of axes object
         self.draw_ax()
 
-    def show_roi(self, roi_box: object):  # RoiBox always has only one data in RoiView class
+    def show_roi(self, roi_box: object):  # not delete but update rectangle. RoiBox always has only one data in RoiView class
         self.image_ax.add_patch(roi_box.rectangle_obj)
         print(roi_box.rectangle_obj)
         self.draw_ax()

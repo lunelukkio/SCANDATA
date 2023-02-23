@@ -7,6 +7,7 @@ lunelukkio@gmail.com
 
 from abc import ABCMeta, abstractmethod
 import matplotlib.patches as patches
+import gc
 
 
 class ViewDataRepository:
@@ -17,27 +18,10 @@ class ViewDataRepository:
         
     def initialize_view_data_repository(self, ax_list):
         # default data
-        image = self.create_view_data(ImageViewFactory())
-        image.add_observer(ax_list[0])  # for cell image
-        self.model.bind_view('FrameWindow1', image)
-        image.update()
-        
-        roi_bg = self.create_view_data(RoiViewFactory())  # This is Roi1 for background
-        roi_bg.add_observer(ax_list[0])  # for roi
-        roi_bg.add_observer(ax_list[1])  # for trace
-        self.model.bind_view('Roi1', roi_bg)
-        roi_bg.update()
-
-        roi_1 = self.create_view_data(RoiViewFactory())  # This is Roi2 for primary traces
-        roi_1.add_observer(ax_list[0])  # for roi
-        roi_1.add_observer(ax_list[1])  # for trace
-        self.model.bind_view('Roi2', roi_1)
-        roi_1.update()
-
-        elec = self.create_view_data(ElecViewFactory())
-        elec.add_observer(ax_list[2])  # fof elec trace
-        self.model.bind_view('ElecController1', roi_1)
-        elec.update()
+        self.create_image(ax_list)
+        self.create_roi(ax_list)  # for backgound compensation
+        self.create_roi(ax_list)  # for trace analysing
+        self.create_elec(ax_list)
         
         self.show_data()
     
@@ -54,6 +38,38 @@ class ViewDataRepository:
         self.__view_data_counter[object_name] = new_num  # Add key and object_num to a counter dict. ex{RoiView: 1}
         self.__view_data[object_name + str(new_num)] = product
         return product
+        
+    def create_image(self, ax_list):
+        image = self.create_view_data(ImageViewFactory())
+        image.add_observer(ax_list[0])  # for cell image
+        frame_window_name = 'FrameWindow' + str(self.count_data('ImageView'))
+        self.model.bind_view(frame_window_name, image)
+        image.update()
+    
+    def create_roi(self, ax_list):
+        roi_view = self.create_view_data(RoiViewFactory())  # This is Roi1 for background
+        roi_view.add_observer(ax_list[0])  # Add axes to RoiView observer for roi
+        roi_view.add_observer(ax_list[1])  # Add axes to RoiView observer for trace
+        roi_name = 'Roi' + str(self.count_data('RoiView'))
+        self.model.bind_view(roi_name, roi_view)  # Add RoiView to Roi class
+        roi_view.update()
+        
+    def create_elec(self, ax_list):
+        elec = self.create_view_data(ElecViewFactory())
+        elec.add_observer(ax_list[2])  # fof elec trace
+        elec_name = 'ElecController' + str(self.count_data('ElecView'))
+        self.model.bind_view(elec_name, elec)
+        elec.update()
+        
+    def delete_roi(self, ax_list):
+        roi_num = self.__view_data_counter['RoiView']
+        del_obj = self.__view_data['RoiView' + str(roi_num)]
+        DeleteObj.del_object(del_obj)
+        self.__view_data_counter['RoiView'] -= 1
+        print('Tip Need to fix bugs!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        
+    def update(self, key):
+        self.__view_data[key].notify_observer()
 
     def show_data(self):
         print('View Data = ' + str(list(self.__view_data)))
@@ -62,6 +78,10 @@ class ViewDataRepository:
         
     def set_data(self, key: str, val: list):
         self.__view_data[key].set_data(val)
+        
+    def count_data(self, key):
+       return self.__view_data_counter[key]
+
 
 """
 abstract factory
@@ -305,7 +325,8 @@ class RoiBox():
         self.__key = key
         self.__rectangle_obj = patches.Rectangle(xy=(40, 40), 
                                                  width=1, 
-                                                 height=1, 
+                                                 height=1,
+                                                 linewidth=0.7,
                                                  ec=RoiBox.color_selection[RoiBox.roi_num], 
                                                  fill=False)
         RoiBox.roi_num += 1
@@ -343,3 +364,37 @@ class Observer:
     @property
     def observers(self):
         return self.__observers
+    
+class DeleteObj:  # from ChatGPT
+    @staticmethod
+    def del_object(obj):
+        """
+        Delete an object and all other objects that refer to it
+        """
+        # Find all objects that refer to the given object
+        referrers = gc.get_referrers(obj)
+
+        # Add the object itself to the list of objects to delete
+        to_del = [obj]
+
+        # Add all objects that refer to the given object to the list of objects to delete
+        for referrer in referrers:
+            if hasattr(referrer, '__dict__'):
+                for key, value in referrer.__dict__.items():
+                    if value is obj:
+                        to_del.append(referrer.__dict__[key])
+            elif isinstance(referrer, list):
+                for i in range(len(referrer)):
+                    if referrer[i] is obj:
+                        to_del.append(referrer[i])
+            elif isinstance(referrer, dict):
+                for key, value in referrer.items():
+                    if value is obj:
+                        to_del.append(referrer[key])
+
+        # Delete all objects in the list of objects to delete
+        for obj in to_del:
+            del obj
+    
+        # Run garbage collection to clean up any remaining references
+        gc.collect()

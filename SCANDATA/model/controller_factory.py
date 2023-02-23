@@ -88,6 +88,11 @@ class Roi(ModelController):
         self.__observers = []
         #print('Created ROI-{}.'.format(self.object_num))
         
+    def __del__(self):
+        #print('.')
+        print('Deleted a Roi object.' + '  myId={}'.format(id(self)))
+        #pass
+        
     def check_val(self) -> None:
         if self.__roi_obj.data[0] < 0 or \
            self.__roi_obj.data[1] < 0 or \

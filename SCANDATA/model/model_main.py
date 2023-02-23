@@ -7,10 +7,9 @@ lunelukkio@gmail.com
 """
 
 from abc import ABCMeta, abstractmethod
-from weakref import WeakValueDictionary
 from SCANDATA.model.value_object import Filename
 from SCANDATA.model.builder import TsmFileBuilder, AbfFileBuilder, WcpFileBuilder, KeyCounter
-#from SCANDATA.model.mod_factory import ModTrace
+#from weakref import WeakValueDictionary
 
 
 class DataSetInterface(metaclass=ABCMeta):

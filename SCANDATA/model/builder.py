@@ -6,7 +6,6 @@ Created on Sun Jan  8 17:33:00 2023
 """
 
 from abc import ABCMeta, abstractmethod
-from weakref import WeakValueDictionary
 import copy
 from SCANDATA.model.io_factory import TsmFileIOFactory, TbnFileIOFactory
 from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory
