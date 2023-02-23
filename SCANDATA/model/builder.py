@@ -119,9 +119,11 @@ class TsmFileBuilder(Builder):
     
     def build_image_set(self, data_set) -> None:
         frame_window = self.create_controller(FrameWindowFactory())
-        print('ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo')
-        print('Tip Need refactoring')
-        for i in (data_set['ChFrames1'], data_set['ChFrames2']):
+        num_ch_frames = KeyCounter.count_key(data_set, 'ChFrames')
+        ch_frames_list = []
+        for i in range(0, num_ch_frames):
+            ch_frames_list.append(data_set['ChFrames' + str(i+1)])
+        for i in ch_frames_list:
             image = self.create_data(CellImageFactory(), i.frames_obj)
             frame_window.add_observer(image)
     

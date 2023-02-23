@@ -131,8 +131,7 @@ class DataWindow(tk.Frame):
         master.configure(background='azure')
         master.title(self.__filename.name)
         
-        self.trace_ax_list = []  # [0] = fluoresent trace ax, [1] = elec trace ax
-        self.image_ax_list = []  # [0] = main cell image ax
+        self.ax_list = []  # [0] = main cell image ax (ImageAxsis class), [1] = fluoresent trace ax (TraceAx class), [2] = elec trace ax
 
         # set frames
         frame_top = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=2, bg = 'white')
@@ -174,10 +173,10 @@ class DataWindow(tk.Frame):
         self.canvas_image = FigureCanvasTkAgg(image_fig, frame_left)
         #canvas_image.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
         
-        self.image_ax_list.append(ImageAx(self.canvas_image, image_ax))
+        self.ax_list.append(ImageAx(self.canvas_image, image_ax))  # ax_list[0]
         
-        self.image_ax_list[0].image_ax.set_xticks([])
-        self.image_ax_list[0].image_ax.set_yticks([])
+        self.ax_list[0].image_ax.set_xticks([])
+        self.ax_list[0].image_ax.set_yticks([])
 
         self.canvas_image.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
@@ -195,10 +194,11 @@ class DataWindow(tk.Frame):
         
         # matplotlib trace axes
         trace_ax1 = trace_fig.add_subplot(gridspec_trace_fig[0:15])
-        self.trace_ax_list.append(TraceAx(self.canvas_trace, trace_ax1))
+        self.ax_list.append(TraceAx(self.canvas_trace, trace_ax1))  # ax_list[1]
         
-        trace_ax2 = trace_fig.add_subplot(gridspec_trace_fig[16:20], sharex=self.trace_ax_list[0].trace_ax)
-        self.trace_ax_list.append(TraceAx(self.canvas_trace, trace_ax2))
+        # elec trace axes
+        trace_ax2 = trace_fig.add_subplot(gridspec_trace_fig[16:20], sharex=self.ax_list[1].trace_ax)
+        self.ax_list.append(TraceAx(self.canvas_trace, trace_ax2))  # ax_list[2]
         
         toolbar_trace = NavigationToolbarTrace(self.canvas_trace, frame_right)
         toolbar_trace.update()
@@ -206,20 +206,20 @@ class DataWindow(tk.Frame):
 
         self.current_roi_num = 1
 
-        # make a contoller and model.
+        # make a contoller.
         self.controller = ImagingController(self, self.__filename)
-        self.model = self.controller.model
         
         # This is the main stream from the main controller.
         if self.__filename != None:
             self.model = self.controller.create_model(self.__filename)
-            for i in range(2):
-                self.trace_ax_list[i].model = self.model
-            self.image_ax_list[0].model = self.model
+            self.view_data_repository.model = self.model
+        
+        self.view_data_repository.initialize_view_data_repository(self.ax_list)
             
     def file_open(self):
         fullname = FileService.get_fullname()
         self.model = self.controller.file_open(fullname)
+        self.view_data_repository.model = self.model
 
     def onclick_image(self, event):
         if event.button == 1:  # left click
@@ -279,7 +279,6 @@ class DataWindow(tk.Frame):
             
 class TraceAx:
     def __init__(self, canvas, ax):
-        self.__model = None
         self.canvas_trace = canvas
         self.trace_ax = ax
         self.roi_view_list = []
@@ -302,7 +301,7 @@ class TraceAx:
         self.trace_ax.set_prop_cycle(cycler('color', ['b', 'g', 'r', 'c', 'm', 'y', 'k']))
         for data in data_list:
             line_2d, = data.show_data(self.trace_ax)  # line"," means the first element of a list (convert from list to objet). Don't remove it.
-            self.trace.append(line_2d)  # Add to the list for trace1 trace line objects [Line_2D] of axis object
+            self.trace.append(line_2d)  # Add to the list for trace1 trace line objects [Line_2D] of axes object
         self.draw_ax()
             
     def draw_ax(self):
@@ -323,7 +322,7 @@ class ImageAx:
         self.canvas_image = canvas
         self.image_ax = ax
         self.roi_view_list = []
-        self.image = None  # should be only one object
+        self.image = []
         self.current_ch = 1
         
         "del"
@@ -332,7 +331,7 @@ class ImageAx:
         
     def update(self, view_data):
         if 'Image' in view_data.name:  # for cell images
-            data_list = view_data.get_data()
+            data_list = view_data.get_data()  # get data from view data
             self.show_data(data_list)
         elif 'Roi' in view_data.name:  # for RoiBoxs
             roi_box = view_data.roi_box
@@ -343,18 +342,19 @@ class ImageAx:
         image_num = len(self.image)
         if image_num >0:
             for i in range(image_num):
-                self.image[0].set_data([])
-                del self.image[0]
+                self.image[i].set_data([])  # for delete privious images
+                del self.image[i]
         
         for data in data_list:
             image = data.show_data(self.image_ax)  # line, mean the first element of a list (convert from list to objet)
-            self.image.append(image)  # Add to the list for trace line objects [Line_2D] of axis object
+            self.image.append(image)  # Add to the list for trace line objects [Line_2D] of axes object
         self.draw_ax()
 
-    def show_roi(self, roi_box: object):  # RoiBox always has only one data
-        self.image[0].set_data([])
-        
+    def show_roi(self, roi_box: object):  # RoiBox always has only one data in RoiView class
+        #self.image[0].set_data([])
+        print('Tip Probably need to write deleting prosses for RoiBox.')
         self.image_ax.add_patch(roi_box.rectangle_obj)
+        self.draw_ax()
 
     def draw_ax(self):
         self.canvas_image.draw()

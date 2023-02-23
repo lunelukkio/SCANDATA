@@ -6,15 +6,11 @@ lunelukkio@gmail.com
 main for controller
 """
 
-from abc import ABCMeta, abstractmethod
 from SCANDATA.model.model_main import DataSet
-from SCANDATA.view.data_repository import RoiViewFactory, ImageViewFactory, ElecViewFactory
 import os
-import numpy as np
-import matplotlib.pyplot as plt
 import math
 import glob
-import copy
+
 
 class MainController:
     def __init__(self):
@@ -34,59 +30,40 @@ class ImagingController:
         self.__filename = filename_obj
         self.view = view
         self.model = None
-        self.view_data_repository = self.view.view_data_repository
         
     def create_model(self, filename_obj: object):  
-        self.model = DataSet(filename_obj.fullname)
+        self.model = DataSet(filename_obj.fullname)  # send filename str
         if self.model == None:
             raise Exception('Failed to create a model.')
         else:
             print('Suceeded to make a model.')
-        self.view_data_repository.model = self.model
-        self.initialize_data_window()
         return self.model
 
     def file_open(self, filename: str):
-        filename_obj = WholeFilename(filename)
+        filename_obj = WholeFilename(filename)  # this is not a value object.
+        self.__filename = filename_obj
         model = self.create_model(filename_obj)
         return model
 
     def initialize_data_window(self):
-        # default data
-        roi_bg = self.create_view_data(RoiViewFactory())  # This is Roi1 for background
-        roi_bg.add_observer(self.view.trace_ax_list[0])  # for trace
-        roi_bg.add_observer(self.view.image_ax_list[0])  # for roi
-        roi_bg.update()
 
-        roi_1 = self.create_view_data(RoiViewFactory())  # This is Roi2 for primary traces
-        roi_1.add_observer(self.view.trace_ax_list[0])  # for trace
-        roi_bg.add_observer(self.view.image_ax_list[0])  # for roi
-        roi_1.update()
-
-        image = self.create_view_data(ImageViewFactory())
-        image.add_observer(self.view.image_ax_list[0])  # for cell image
-        image.update()
-        
-        elec = self.create_view_data(ElecViewFactory())
-        elec.add_observer(self.view.trace_ax_list[1])  # fof elec trace
-        elec.update()
         
         self.show_data_repository()
         
     def create_view_data(self, factory_type):
-        return self.view_data_repository.create_view_data(factory_type)
+        return self.view_data_repository          .create_view_data(factory_type)
         
     def show_data_repository(self):
-        self.view_data_repository.show_data()
+        self.view_data_repository            .show_data()
 
     def set_roi_position(self, event, roi_num=1):
-        key = 'RoiView' + str(roi_num)
+        key = 'Roi' + str(roi_num)
         print(key + ':')
         print(event.button, event.x, event.y, event.xdata, event.ydata)
         roi_x = math.floor(event.xdata)
         roi_y = math.floor(event.ydata)
         roi = [roi_x, roi_y]
-        self.view_data_repository.set_data(key, roi)
+        self.model.set_data(key, roi)
     
     
     

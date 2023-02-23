@@ -81,7 +81,7 @@ class FramesData:
         self.__data = val
         self.__frames_size = size
         self.__data_type = called_class.__class__.__name__
-        print(self.__data_type + ' made a FramesData' + '  myId= {}'.format(id(self)))
+        #print(self.__data_type + ' made a FramesData' + '  myId= {}'.format(id(self)))
         
     def __del__(self):
         #print('.')
@@ -121,7 +121,7 @@ class ImageData:
         self.__data = val
         self.__image_size = size
         self.__data_type = called_class.__class__.__name__
-        print(self.__data_type + ' made a ImageData' + '  myId= {}'.format(id(self)))
+        #print(self.__data_type + ' made a ImageData' + '  myId= {}'.format(id(self)))
         
     def __del__(self):
         #print('.')
@@ -170,7 +170,7 @@ class TraceData:
         self.__interval = interval
         self.__length = length
         self.__data_type = called_class.__class__.__name__
-        print(self.__data_type + ' made a TraceData' + '  myId= {}'.format(id(self)))
+        #print(self.__data_type + ' made a TraceData' + '  myId= {}'.format(id(self)))
 
     def __del__(self):
         #print('.')
@@ -238,7 +238,7 @@ class RoiVal:
         called_class = inspect.stack()[1].frame.f_locals['self']
         self.__data = np.array([x, y, x_width, y_width])
         self.__data_type = called_class.__class__.__name__
-        print(self.__data_type + ' made a RoiVal' + '  myId= {}'.format(id(self)))
+        #print(self.__data_type + ' made a RoiVal' + '  myId= {}'.format(id(self)))
         
     def __del__(self):
         #print('.')
@@ -283,7 +283,7 @@ class FrameWindowVal:
         called_class = inspect.stack()[1].frame.f_locals['self']
         self.__data = np.array([start, end, start_width, end_width])  # frame number ex.[10, 50, 5, 5]
         self.__data_type = called_class.__class__.__name__
-        print(self.__data_type + ' made a FrameWindowVal' + '  myId= {}'.format(id(self)))
+        #print(self.__data_type + ' made a FrameWindowVal' + '  myId= {}'.format(id(self)))
         
     def __del__(self):
         #print('.')
@@ -318,7 +318,7 @@ class TimeWindowVal:
         called_class = inspect.stack()[1].frame.f_locals['self']
         self.__data = np.array([start, end])  # time (ms)  ex.[0, 100]
         self.__data_type = called_class.__class__.__name__
-        print(self.__data_type + ' made a TimeWindowVal' + '  myId= {}'.format(id(self)))
+        #print(self.__data_type + ' made a TimeWindowVal' + '  myId= {}'.format(id(self)))
         
     def __del__(self):
         #print('.')

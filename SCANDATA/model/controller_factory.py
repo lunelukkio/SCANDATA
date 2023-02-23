@@ -105,9 +105,8 @@ class Roi(ModelController):
             
         self.__roi_obj = RoiVal(x, y, x_width, y_width)  # replace the roi
         self.notify_observer()
-        #print('Set ROI{} and notified'.format(self.object_num))
-        self.print_infor()
         self.check_val()
+        self.print_infor()
       
     def add_data(self, x: int, y: int, x_width=0, y_width=0) -> None:
         add_roi_obj = RoiVal(x, y, x_width, y_width)
@@ -134,7 +133,7 @@ class Roi(ModelController):
     
     def notify_observer(self):
         for observer_name in self.__observers:
-            observer_name.update(self.__roi_obj)
+            observer_name.update(self.get_data())
 
     @property
     def observers(self) -> list:

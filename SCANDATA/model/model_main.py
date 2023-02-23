@@ -90,8 +90,8 @@ class DataSet(DataSetInterface):
     def bind_data(self, controller_key: str, data_key: str) -> None:
         self.__controller[controller_key].add_observer(self.__data[data_key])
 
-    def bind_view(self, data_key: str, view_obj: object):
-        self.__data[data_key].observer.add_observer(view_obj)
+    def bind_view(self, controller_key: str, view_obj: object):
+        self.__controller[controller_key].add_observer(view_obj)
 
     def reset_data(self, key: str):
         self.__controller[key].reset()
@@ -126,7 +126,7 @@ class DataSet(DataSetInterface):
         return self.__controller
 
     def print_infor(self):
-        print('=================== Data keys of ' + str(self.__filename.name) + ' ====================')
+        print('=================== Data keys of ' + str(self.__filename.name) + ' ==================== (called by a DataSet class.create_data())')
         print('--- IO Keys = ' + str(list(self.__file_io.keys())))
         print('--- Data Keys = ' + str(list(self.__data.keys())))
         print('--- Controller Keys = ' + str(list(self.__controller.keys())))

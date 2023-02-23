@@ -6,7 +6,6 @@ lunelukkio@gmail.com
 """
 
 from abc import ABCMeta, abstractmethod
-from matplotlib.figure import Figure
 import matplotlib.patches as patches
 
 
@@ -15,6 +14,32 @@ class ViewDataRepository:
         self.model = None     
         self.__view_data_counter = {}  # dict
         self.__view_data = {}  # dict
+        
+    def initialize_view_data_repository(self, ax_list):
+        # default data
+        image = self.create_view_data(ImageViewFactory())
+        image.add_observer(ax_list[0])  # for cell image
+        self.model.bind_view('FrameWindow1', image)
+        image.update()
+        
+        roi_bg = self.create_view_data(RoiViewFactory())  # This is Roi1 for background
+        roi_bg.add_observer(ax_list[0])  # for roi
+        roi_bg.add_observer(ax_list[1])  # for trace
+        self.model.bind_view('Roi1', roi_bg)
+        roi_bg.update()
+
+        roi_1 = self.create_view_data(RoiViewFactory())  # This is Roi2 for primary traces
+        roi_1.add_observer(ax_list[0])  # for roi
+        roi_1.add_observer(ax_list[1])  # for trace
+        self.model.bind_view('Roi2', roi_1)
+        roi_1.update()
+
+        elec = self.create_view_data(ElecViewFactory())
+        elec.add_observer(ax_list[2])  # fof elec trace
+        self.model.bind_view('ElecController1', roi_1)
+        elec.update()
+        
+        self.show_data()
     
     def create_view_data(self,  factory_type):
         product = factory_type.create_view_data(self.model)
@@ -32,6 +57,8 @@ class ViewDataRepository:
 
     def show_data(self):
         print('View Data = ' + str(list(self.__view_data)))
+        print('Initialized the Data Window.')
+        print('')
         
     def set_data(self, key: str, val: list):
         self.__view_data[key].set_data(val)
@@ -120,14 +147,13 @@ class RoiView(ViewData):
         self.__roi_box = RoiBox(self.__model, self.__key)
         self.__data_name_list = self.__model.get_infor(self.__key)
         self.__data_list = []  # a list of value object 
-        self.update()
         
         print('Created ' + self.__key + ' view instance including Roi controller and traces.')
 
     def reset(self):
         raise NotImplementedError()
 
-    def update(self):
+    def update(self, *no_use):  # no_use is a RoiVal object. it need for FluoTrace observers.
         new_data = []
         for data_name in self.__data_name_list:
             new_data.append(self.__model.get_data(data_name))
@@ -181,17 +207,20 @@ class ImageView(ViewData):
         self.__frame_windoww_val = self.__model.get_data(self.__key)
         self.__data_name_list = self.__model.get_infor(self.__key)
         self.__data_list = []  # a list of value object 
-        self.update()
 
     def reset(self):
         raise NotImplementedError()
 
-    def update(self):
+    def update(self, *no_use):
         new_data = []
+        new_data_name = []
         for data_name in self.__data_name_list:
-            new_data.append(self.__model.get_data(data_name))
+            value_data_obj = self.__model.get_data(data_name)
+            new_data.append(value_data_obj)
+            new_data_name.append(value_data_obj.data_type)
         self.__data_list = new_data
-        print('View Data updated')
+        
+        print('View Data updated: ' + str(new_data_name))
         self.__ax_observer.notify_observer()
         
     def get_data(self) -> list:
@@ -236,12 +265,11 @@ class ElecView(ViewData):
         self.__time_windoww_val = self.__model.get_data(self.__key)
         self.__data_name_list = self.__model.get_infor(self.__key)
         self.__data_list = []  # a list of value object 
-        self.update()
     
     def reset(self):
         raise NotImplementedError()
 
-    def update(self):
+    def update(self, *no_use):
         new_data = []
         for data_name in self.__data_name_list:
             new_data.append(self.__model.get_data(data_name))
