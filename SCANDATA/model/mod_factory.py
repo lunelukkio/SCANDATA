@@ -42,14 +42,17 @@ class FlamesFilterFactory(ModFactory):
 """
 Handler(Interface)
 """
-class ModInterface(metaclass=ABCMeta):
+class ModHandler(metaclass=ABCMeta):
     def __init__(self, name):
         self.__name = name
-        self.__next = None
+        self.__next_handler = None
 
-    def setNext(self, next):
-        self.__next = next
-        return next
+    def set_next_handler(self, handler):
+        self.__next_handler = handler
+        return self.__next_handler
+    
+    def hanle_request(self, request):
+        pass
 
     def support(self, trouble):
         if self.resolve(trouble):
@@ -69,7 +72,7 @@ class ModInterface(metaclass=ABCMeta):
 """
 ConcreteHandler
 """
-class BgComp(ModInterface):
+class BgCompHandler(ModHandler):
     def __init__(self, bg_trace_obj):
         self.name = self.__class__.__name__
         super().__init__(self.name)
@@ -89,8 +92,14 @@ class BgComp(ModInterface):
     def __str__(self):
     #return "[{0}]".format(self.__name)
         pass
+    
+    def handle_request(self, request):
+        if request < 10:
+            print("Request {} is handled by ConcreteHandlerA".format(request))
+        elif self.next_handler is not None:
+            self.next_handler.handle_request(request)
 
-class DfOverF(ModInterface):
+class DfOverFHandler(ModHandler):
     def __init__(self):
         super(NoSupport, self).__init__(name)
         
@@ -102,7 +111,7 @@ class DfOverF(ModInterface):
         pass
     
     
-class TraceFilter(ModInterface):
+class TraceFilterHandler(ModHandler):
     def __init__(self):
         pass
         
@@ -113,7 +122,7 @@ class TraceFilter(ModInterface):
     def __str__(self):
         pass
     
-class FlamesFilter(ModInterface):
+class FlamesFilterHandler(ModHandler):
     def __init__(self):
         pass
         

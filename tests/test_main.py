@@ -35,6 +35,8 @@ if __name__ == '__main__':
 
     print('ファサード使ってbuilderのシンプル化')
     
+    print('現状ではaxesが一つのroiviewのtraceの数しか持てないので、複数のRoiViewのtraceを全部持てるようにする')
+    
     print('modではvalue objectを変換してinterfaceへおくる')
     
 

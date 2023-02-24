@@ -217,20 +217,37 @@ class DataWindow(tk.Frame):
         toolbar_trace.update()
         self.canvas_trace.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        # make a contoller.
-        self.controller = ImagingController(self, self.__filename)
+        
         
         # This is the main stream from the main controller.
         if self.__filename != None:
+            self.controller = ImagingController(self, self.__filename)
             self.model = self.controller.create_model(self.__filename)
             self.view_data_repository.model = self.model
+            self.view_data_repository.initialize_view_data_repository(self.ax_list)
         
-        self.view_data_repository.initialize_view_data_repository(self.ax_list)
             
     def file_open(self):
-        fullname = FileService.get_fullname()
-        self.model = self.controller.file_open(fullname)
+        if self.__filename = None:
+            fullname = FileService.get_fullname()  # This is str filename
+            
+        self.__filename = None
+        self.model = None
+        self.controller = None
+        self.view_data_repository = ViewDataRepository()
+        self.current_roi_num = 1
+        self.ax_list = []
+        
+        self.controller = ImagingController(self, self.__filename)
+        self.model, self.filename = self.controller.file_open(fullname)
         self.view_data_repository.model = self.model
+        self.view_data_repository.initialize_view_data_repository(self.ax_list)
+        
+    
+    def create_filenamej_obj(self, filename: str):
+        filename_obj = WholeFilename(filename)  # Convert from str to value object.
+        self.__filename = filename_obj
+        return filename_obj
 
     def onclick_image(self, event):
         if event.button == 1:  # left click
@@ -270,7 +287,9 @@ class TraceAx:
 
         self.trace = []
         # Need refactoring for valiable number of traces
-        self.trace_show_flag = [] 
+        self.trace_show_flag = []
+        
+        self.color_selection = ['black', 'red', 'blue', 'orange', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
  
     def update(self, view_data):
         data_list = view_data.get_data()
@@ -294,6 +313,7 @@ class TraceAx:
             for trace_value_obj in data_list:
                 line_2d, = trace_value_obj.show_data(self.trace_ax)  # line"," means the first element of a list (convert from list to objet). Don't remove it.
                 self.trace.append(line_2d)  # Add to the list for trace1 trace line objects [Line_2D] of axes object
+                line_2d.set_color(self.color_selection[i])
                 if self.trace_show_flag[i] == False:
                     line_2d.set_data(None,None)
                 i += 1 

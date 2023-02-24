@@ -39,15 +39,7 @@ class ImagingController:
             print('Suceeded to make a model.')
         return self.model
 
-    def file_open(self, filename: str):
-        filename_obj = WholeFilename(filename)  # this is not a value object.
-        self.__filename = filename_obj
-        model = self.create_model(filename_obj)
-        return model
-
     def initialize_data_window(self):
-
-        
         self.show_data_repository()
         
     def create_view_data(self, factory_type):
