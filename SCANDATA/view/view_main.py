@@ -176,8 +176,9 @@ class DataWindow(tk.Frame):
         
         self.ax_list.append(ImageAx(self.canvas_image, image_ax))  # ax_list[0]
         
-        self.ax_list[0].image_ax.set_xticks([])
-        self.ax_list[0].image_ax.set_yticks([])
+        self.ax_list[0].image_ax.set_xticks([])  # To remove ticks of image window.
+        self.ax_list[0].image_ax.set_yticks([])  # To remove ticks of image window.
+        self.ax_list[0].trace_show_flag = [True, False]  # ch1, ch2
 
         self.canvas_image.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
@@ -196,10 +197,21 @@ class DataWindow(tk.Frame):
         # matplotlib trace axes
         trace_ax1 = trace_fig.add_subplot(gridspec_trace_fig[0:15])
         self.ax_list.append(TraceAx(self.canvas_trace, trace_ax1))  # ax_list[1]
+        self.ax_list[1].trace_show_flag = [False,  # full trace
+                                           True,  # ch1 trace
+                                           False]  # ch2 trace
         
         # elec trace axes
         trace_ax2 = trace_fig.add_subplot(gridspec_trace_fig[16:20], sharex=self.ax_list[1].trace_ax)
         self.ax_list.append(TraceAx(self.canvas_trace, trace_ax2))  # ax_list[2]
+        self.ax_list[2].trace_show_flag = [True,  # ch1
+                                           False,  # ch2
+                                           False,  # ch3
+                                           False,  # ch4
+                                           False,  # ch5
+                                           False,  # ch6
+                                           False,  # ch7
+                                           False]  # ch8
         
         toolbar_trace = NavigationToolbarTrace(self.canvas_trace, frame_right)
         toolbar_trace.update()
@@ -254,26 +266,39 @@ class TraceAx:
     def __init__(self, canvas, ax):
         self.canvas_trace = canvas
         self.trace_ax = ax
-        self.current_roi_ch = 1
+        self.current_ch = 1
 
         self.trace = []
-        
+        # Need refactoring for valiable number of traces
+        self.trace_show_flag = [] 
+ 
     def update(self, view_data):
         data_list = view_data.get_data()
         self.show_data(data_list)
         
-    def show_data(self, data_list: list):  # delete old traces and make new traces
+    def show_data(self, data_list: list):
         line_num = len(self.trace)
         if line_num > 0:
-            for i in range(line_num):
-                self.trace[0].set_data([],[])
-                del self.trace[0]
-        self.trace_ax.set_prop_cycle(cycler('color', ['b', 'g', 'r', 'c', 'm', 'y', 'k']))
-        for data in data_list:
-            line_2d, = data.show_data(self.trace_ax)  # line"," means the first element of a list (convert from list to objet). Don't remove it.
-            self.trace.append(line_2d)  # Add to the list for trace1 trace line objects [Line_2D] of axes object
+            i = 0
+            for trace_value_obj in data_list:
+                if self.trace_show_flag[i] is True:
+                    time = trace_value_obj.time
+                    data = trace_value_obj.data
+                elif self.trace_show_flag[i] is False:
+                    time = None
+                    data = None
+                self.trace[i].set_data(time,data)
+                i += 1
+        elif line_num == 0:
+            i = 0
+            for trace_value_obj in data_list:
+                line_2d, = trace_value_obj.show_data(self.trace_ax)  # line"," means the first element of a list (convert from list to objet). Don't remove it.
+                self.trace.append(line_2d)  # Add to the list for trace1 trace line objects [Line_2D] of axes object
+                if self.trace_show_flag[i] == False:
+                    line_2d.set_data(None,None)
+                i += 1 
         self.draw_ax()
-            
+        
     def draw_ax(self):
         self.trace_ax.relim()
         self.trace_ax.autoscale_view()
@@ -288,7 +313,8 @@ class ImageAx:
         self.image = []
         self.current_ch = 1
         self.roi_box = []
-        self.image_show_flag = [False, True, False]   # 0 = full trace, 1 = ch1 trace, 2 = ch2 trace
+        # Need refactoring for valiable number for images.
+        self.image_show_flag = [True, False]   # 0 = full trace, 1 = ch1 trace, 2 = ch2 trace
         
     def update(self, view_data):
         if 'Image' in view_data.name:  # for cell images
@@ -302,21 +328,32 @@ class ImageAx:
     def show_data(self, data_list: list):  # data_list = value obj list  Delete old images, and make new images
         image_num = len(self.image)
         if image_num >0:
-            for i in range(image_num):
-                self.image[i].set_data([])  # for delete privious images
-                del self.image[i]
-        
-        for data in data_list:
-            image = data.show_data(self.image_ax)  # line, mean the first element of a list (convert from list to objet)
-            self.image.append(image)  # Add to the list for trace line objects [Line_2D] of axes object
+            i = 0
+            for image_value_obj in data_list:
+                if self.image_show_flag[i] is True:
+                    data = image_value_obj.data
+                elif self.image_show_flag[i] is False:
+                    data = [[],[]]
+                self.image[i].set_data(data)  # for delete privious images
+                i += 1
+
+        elif image_num == 0:
+            i = 0
+            for image_value_obj in data_list:
+                image = image_value_obj.show_data(self.image_ax)  # line, mean the first element of a list (convert from list to objet)
+                self.image.append(image)  # Add to the list for trace line objects [Line_2D] of axes object
+                if self.image_show_flag[i] is False:
+                    image.set_data([[],[]])
+                i += 1
         self.draw_ax()
 
     def show_roi(self, roi_box: object):  # not delete but update rectangle. RoiBox always has only one data in RoiView class
         self.image_ax.add_patch(roi_box.rectangle_obj)
-        print(roi_box.rectangle_obj)
         self.draw_ax()
 
     def draw_ax(self):
+        self.image_ax.relim()
+        self.image_ax.autoscale_view()
         self.canvas_image.draw()
         
 
