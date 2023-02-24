@@ -38,6 +38,11 @@ class ImagingController:
         else:
             print('Suceeded to make a model.')
         return self.model
+    
+    def create_filename_obj(self, filename: str):
+        filename_obj = WholeFilename(filename)  # Convert from str to value object.
+        self.__filename = filename_obj
+        return filename_obj
 
     def initialize_data_window(self):
         self.show_data_repository()

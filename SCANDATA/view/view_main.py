@@ -12,9 +12,12 @@ import tkinter.filedialog
 import os
 from matplotlib.figure import Figure
 from cycler import cycler
+import gc
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from SCANDATA.controller.controller_main import ImagingController
-from SCANDATA.view.data_repository import ViewDataRepository
+from SCANDATA.view.data_repository import ViewDataRepository, RoiBox
+from SCANDATA.controller.controller_main import WholeFilename
+
 
 
 class MainView(tk.Frame):
@@ -217,34 +220,35 @@ class DataWindow(tk.Frame):
         toolbar_trace.update()
         self.canvas_trace.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        
-        
-        # This is the main stream from the main controller.
-        if self.__filename != None:
-            self.controller = ImagingController(self, self.__filename)
-            self.model = self.controller.create_model(self.__filename)
-            self.view_data_repository.model = self.model
-            self.view_data_repository.initialize_view_data_repository(self.ax_list)
-        
+        self.file_open(self.__filename)
             
-    def file_open(self):
-        if self.__filename = None:
+    def file_open(self, *filename):
+        if filename == ():
             fullname = FileService.get_fullname()  # This is str filename
-            
-        self.__filename = None
-        self.model = None
-        self.controller = None
+            if fullname == None:
+                return
+            self.__filename = self.create_filename_obj(fullname)
+
+        RoiBox.roi_num = 0
+        del self.model
+        del self.controller
+        del self.view_data_repository
+        for i in range(3):
+            self.ax_list[i].reset()
+        gc.collect()
+        
         self.view_data_repository = ViewDataRepository()
         self.current_roi_num = 1
-        self.ax_list = []
         
         self.controller = ImagingController(self, self.__filename)
-        self.model, self.filename = self.controller.file_open(fullname)
+        self.create_model()
+        
+    def create_model(self):
+        self.model = self.controller.create_model(self.__filename)
         self.view_data_repository.model = self.model
         self.view_data_repository.initialize_view_data_repository(self.ax_list)
         
-    
-    def create_filenamej_obj(self, filename: str):
+    def create_filename_obj(self, filename: str):
         filename_obj = WholeFilename(filename)  # Convert from str to value object.
         self.__filename = filename_obj
         return filename_obj
@@ -323,7 +327,13 @@ class TraceAx:
         self.trace_ax.relim()
         self.trace_ax.autoscale_view()
         self.canvas_trace.draw()
-
+        
+    def reset(self):
+        self.current_ch = 1
+        num = len(self.trace)
+        for i in range(num):
+            del self.trace[0]
+        
 
 class ImageAx:
     def __init__(self, canvas, ax):
@@ -375,6 +385,17 @@ class ImageAx:
         self.image_ax.relim()
         self.image_ax.autoscale_view()
         self.canvas_image.draw()
+        
+    def reset(self):
+        num = len(self.image)
+        for i in range(num):
+            del self.image[0]
+
+        num = len(self.roi_box)
+        for i in range(num):
+            del self.roi_box[0]
+        self.current_ch = 1
+        self.draw_ax()
         
 
 class NavigationToolbarTrace(NavigationToolbar2Tk):
