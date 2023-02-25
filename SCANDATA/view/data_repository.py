@@ -64,8 +64,7 @@ class ViewDataRepository:
     def delete_roi(self, ax_list):
         roi_num = self.__view_data_counter['RoiView']
         del_obj = self.__view_data['RoiView' + str(roi_num)]
-        del del_obj
-        #DeleteObj.del_object(del_obj)
+        DeleteObj.del_object(del_obj)
         self.__view_data_counter['RoiView'] -= 1
         print('Tip Need to fix bugs!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
         

@@ -179,8 +179,8 @@ class DataWindow(tk.Frame):
         
         self.ax_list.append(ImageAx(self.canvas_image, image_ax))  # ax_list[0]
         
-        self.ax_list[0].image_ax.set_xticks([])  # To remove ticks of image window.
-        self.ax_list[0].image_ax.set_yticks([])  # To remove ticks of image window.
+        self.ax_list[0].ax_obj.set_xticks([])  # To remove ticks of image window.
+        self.ax_list[0].ax_obj.set_yticks([])  # To remove ticks of image window.
         self.ax_list[0].trace_show_flag = [True, False]  # ch1, ch2
 
         self.canvas_image.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
@@ -205,7 +205,7 @@ class DataWindow(tk.Frame):
                                            False]  # ch2 trace
         
         # elec trace axes
-        trace_ax2 = trace_fig.add_subplot(gridspec_trace_fig[16:20], sharex=self.ax_list[1].trace_ax)
+        trace_ax2 = trace_fig.add_subplot(gridspec_trace_fig[16:20], sharex=self.ax_list[1].ax_obj)
         self.ax_list.append(TraceAx(self.canvas_trace, trace_ax2))  # ax_list[2]
         self.ax_list[2].trace_show_flag = [True,  # ch1
                                            False,  # ch2
@@ -272,7 +272,7 @@ class DataWindow(tk.Frame):
     def delete_roi(self):
         self.view_data_repository.delete_roi(self.ax_list)
         for i in range(len(self.ax_list)):
-            self.ax_list[i]..clear()
+            self.ax_list[i].draw_ax()
         self.current_roi_num -= 1
         
     def reset(self):
@@ -294,11 +294,11 @@ class DataWindow(tk.Frame):
 class TraceAx:
     def __init__(self, canvas, ax):
         self.canvas_trace = canvas
-        self.trace_ax = ax
+        self.ax_obj = ax
         self.current_ch = 1
 
         self.trace = []
-        # Need refactoring for valiable number of traces
+        # Need refactoring for valiable number of traces. Now num of flags is only 3.
         self.trace_show_flag = []
         
         self.color_selection = ['black', 'red', 'blue', 'orange', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
@@ -306,8 +306,8 @@ class TraceAx:
     def update(self, view_data):
         data_list = view_data.get_data()
         self.show_data(data_list)
+        self.draw_ax()
 
-        
     def show_data(self, data_list: list):
         line_num = len(self.trace)
         if line_num > 0:
@@ -322,36 +322,29 @@ class TraceAx:
                 self.trace[i].set_data(time,data)
                 i += 1
         elif line_num == 0:
-            self.trace_ax.clear()
             i = 0
             for trace_value_obj in data_list:
-                line_2d, = trace_value_obj.show_data(self.trace_ax)  # line"," means the first element of a list (convert from list to objet). Don't remove it.
+                line_2d, = trace_value_obj.show_data(self.ax_obj)  # line"," means the first element of a list (convert from list to objet). Don't remove it.
                 self.trace.append(line_2d)  # Add to the list for trace1 trace line objects [Line_2D] of axes object
                 line_2d.set_color(self.color_selection[i])
                 if self.trace_show_flag[i] == False:
                     line_2d.set_data(None,None)
                 i += 1 
-        self.draw_ax()
         
     def draw_ax(self):
-        self.trace_ax.relim()
-        self.trace_ax.autoscale_view()
+        self.ax_obj.relim()
+        self.ax_obj.autoscale_view()
         self.canvas_trace.draw()
         
     def reset(self):
         self.current_ch = 1
         self.trace = []
-        """
-        num = len(self.trace)
-        for i in range(num):
-            del self.trace[0]
-        """
+        self.ax_obj.clear()
 
 class ImageAx:
     def __init__(self, canvas, ax):
-        self.__model = None
         self.canvas_image = canvas
-        self.image_ax = ax
+        self.ax_obj = ax
         self.image = []
         self.current_ch = 1
         # Need refactoring for valiable number for images.
@@ -379,36 +372,26 @@ class ImageAx:
                 i += 1
 
         elif image_num == 0:
-            self.image_ax.clear()
             i = 0
             for image_value_obj in data_list:
-                image = image_value_obj.show_data(self.image_ax)  # line, mean the first element of a list (convert from list to objet)
+                image = image_value_obj.show_data(self.ax_obj)  # line, mean the first element of a list (convert from list to objet)
                 self.image.append(image)  # Add to the list for trace line objects [Line_2D] of axes object
                 if self.image_show_flag[i] is False:
                     image.set_data([[],[]])
                 i += 1
 
     def show_roi(self, roi_box: object):  # not delete but update rectangle. RoiBox always has only one data in RoiView class
-        self.image_ax.add_patch(roi_box.rectangle_obj)
+        self.ax_obj.add_patch(roi_box.rectangle_obj)
 
     def draw_ax(self):
-        self.image_ax.relim()
-        self.image_ax.autoscale_view()
+        self.ax_obj.relim()
+        self.ax_obj.autoscale_view()
         self.canvas_image.draw()
         
     def reset(self):
         self.current_ch = 1
         self.image = []
-        self.image_ax.clear()
-        """
-        num = len(self.image)
-        for i in range(num):
-            del self.image[0]
-
-
-        """
-
-        self.draw_ax()
+        self.ax_obj.clear()
         
 
 class NavigationToolbarTrace(NavigationToolbar2Tk):
