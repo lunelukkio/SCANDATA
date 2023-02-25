@@ -64,7 +64,8 @@ class ViewDataRepository:
     def delete_roi(self, ax_list):
         roi_num = self.__view_data_counter['RoiView']
         del_obj = self.__view_data['RoiView' + str(roi_num)]
-        DeleteObj.del_object(del_obj)
+        del del_obj
+        #DeleteObj.del_object(del_obj)
         self.__view_data_counter['RoiView'] -= 1
         print('Tip Need to fix bugs!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
         
@@ -81,6 +82,10 @@ class ViewDataRepository:
         
     def count_data(self, key):
        return self.__view_data_counter[key]
+   
+    def delete(self):
+        for view_data in self.__view_data.values():  # get values from dict
+            view_data.delete()
 
 
 """
@@ -183,7 +188,7 @@ class RoiView(ViewData):
         return self.__data_list
             
     def delete(self):
-        pass
+        raise NotImplementedError()
     
     def add_observer(self, ax: object):
         self.__ax_observer.add_observer(ax)
@@ -335,8 +340,11 @@ class RoiBox():
         roi_obj = self.__model.get_data(self.__key)
         self.__rectangle_obj.set_xy([roi_obj.data[0], roi_obj.data[1]])
         self.__rectangle_obj.set_width(roi_obj.data[2])
-        self.__rectangle_obj.set_height(roi_obj.data[3])  
+        self.__rectangle_obj.set_height(roi_obj.data[3])
         
+    def delete(self):
+        raise NotImplementedError()
+
     @property
     def rectangle_obj(self):
         return self.__rectangle_obj

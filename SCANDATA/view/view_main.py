@@ -229,19 +229,9 @@ class DataWindow(tk.Frame):
                 return
             self.__filename = self.create_filename_obj(fullname)
 
-        RoiBox.roi_num = 0
-        del self.model
-        del self.controller
-        del self.view_data_repository
-        for i in range(3):
-            self.ax_list[i].reset()
-        gc.collect()
+        self.reset()        
         
-        self.view_data_repository = ViewDataRepository()
-        self.current_roi_num = 1
-        
-        self.controller = ImagingController(self, self.__filename)
-        self.create_model()
+
         
     def create_model(self):
         self.model = self.controller.create_model(self.__filename)
@@ -281,7 +271,25 @@ class DataWindow(tk.Frame):
         
     def delete_roi(self):
         self.view_data_repository.delete_roi(self.ax_list)
+        for i in range(len(self.ax_list)):
+            self.ax_list[i]..clear()
         self.current_roi_num -= 1
+        
+    def reset(self):
+        self.current_roi_num = 1
+        RoiBox.roi_num = 0
+        #self.view_data_repository.delete()
+        
+        self.model = None
+        self.controller = None
+        self.view_data_repository = None
+        for i in range(3):
+            self.ax_list[i].reset()
+        gc.collect()
+
+        self.view_data_repository = ViewDataRepository()
+        self.controller = ImagingController(self, self.__filename)
+        self.create_model()
             
 class TraceAx:
     def __init__(self, canvas, ax):
@@ -298,6 +306,7 @@ class TraceAx:
     def update(self, view_data):
         data_list = view_data.get_data()
         self.show_data(data_list)
+
         
     def show_data(self, data_list: list):
         line_num = len(self.trace)
@@ -313,6 +322,7 @@ class TraceAx:
                 self.trace[i].set_data(time,data)
                 i += 1
         elif line_num == 0:
+            self.trace_ax.clear()
             i = 0
             for trace_value_obj in data_list:
                 line_2d, = trace_value_obj.show_data(self.trace_ax)  # line"," means the first element of a list (convert from list to objet). Don't remove it.
@@ -330,10 +340,12 @@ class TraceAx:
         
     def reset(self):
         self.current_ch = 1
+        self.trace = []
+        """
         num = len(self.trace)
         for i in range(num):
             del self.trace[0]
-        
+        """
 
 class ImageAx:
     def __init__(self, canvas, ax):
@@ -342,7 +354,6 @@ class ImageAx:
         self.image_ax = ax
         self.image = []
         self.current_ch = 1
-        self.roi_box = []
         # Need refactoring for valiable number for images.
         self.image_show_flag = [True, False]   # 0 = full trace, 1 = ch1 trace, 2 = ch2 trace
         
@@ -368,6 +379,7 @@ class ImageAx:
                 i += 1
 
         elif image_num == 0:
+            self.image_ax.clear()
             i = 0
             for image_value_obj in data_list:
                 image = image_value_obj.show_data(self.image_ax)  # line, mean the first element of a list (convert from list to objet)
@@ -375,11 +387,9 @@ class ImageAx:
                 if self.image_show_flag[i] is False:
                     image.set_data([[],[]])
                 i += 1
-        self.draw_ax()
 
     def show_roi(self, roi_box: object):  # not delete but update rectangle. RoiBox always has only one data in RoiView class
         self.image_ax.add_patch(roi_box.rectangle_obj)
-        self.draw_ax()
 
     def draw_ax(self):
         self.image_ax.relim()
@@ -387,14 +397,17 @@ class ImageAx:
         self.canvas_image.draw()
         
     def reset(self):
+        self.current_ch = 1
+        self.image = []
+        self.image_ax.clear()
+        """
         num = len(self.image)
         for i in range(num):
             del self.image[0]
 
-        num = len(self.roi_box)
-        for i in range(num):
-            del self.roi_box[0]
-        self.current_ch = 1
+
+        """
+
         self.draw_ax()
         
 
