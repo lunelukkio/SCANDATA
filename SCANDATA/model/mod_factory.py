@@ -22,21 +22,21 @@ class ModFactory(metaclass=ABCMeta):
 
 class BgCompFactory(ModFactory):
     def create_mod(self):
-        return BgComp()
+        return BgCompHandler()
     
 
 class DfOverFFactory(ModFactory):
     def create_mod(self):
-        return BackGroundComp()
+        return DfOverFHandler()
     
 
 class TraceFilterFactory(ModFactory):
     def create_mod(self):
-        return TraceFilter()
+        return TraceFilterHandler()
     
 class FlamesFilterFactory(ModFactory):
     def create_mod(self):
-        return FlamesFilter()
+        return FlamesFilterHandler()
 
     
 """
