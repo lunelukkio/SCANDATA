@@ -9,6 +9,7 @@ lunelukkio@gmail.com
 from abc import ABCMeta, abstractmethod
 from SCANDATA.model.value_object import Filename
 from SCANDATA.model.builder import TsmFileBuilder, AbfFileBuilder, WcpFileBuilder, KeyCounter
+from SCANDATA.model.mod_factory import ModClient
 #from weakref import WeakValueDictionary
 
 
@@ -63,6 +64,9 @@ class DataSet(DataSetInterface):
         # This list is for strategy_types
         self.__object_dict_list = [self.__file_io, self.__data, self.__controller]
         
+        # instance for mod.
+        self.__mod_client = ModClient(self.__data)
+        
         # Initialized the data set.
         self.__builder.initialize()
         self.print_infor()
@@ -81,10 +85,9 @@ class DataSet(DataSetInterface):
     
     def get_data(self, key: str) -> object:
         strategy_type = Translator.key_checker(key, self.__object_dict_list)
-        data = strategy_type.get_data(key)
-        # decorator.(write in strategy, because decoration is not the same in each data and controller)
-        #mod_trace = mod_data(raw_trace)
-        return data
+        original_data, mod_switch = strategy_type.get_data(key)
+        mod_data = self.__mod_client.aplly_mod(mod_switch)
+        return mod_data
 
     def bind_data(self, controller_key: str, data_key: str) -> None:
         self.__controller[controller_key].add_observer(self.__data[data_key])
@@ -191,7 +194,7 @@ class DataStrategy(DataSetStrategyInterface):
         self._object_dict[key].set_data(val)
 
     def get_data(self, key):  # overrided by childern classes
-        return self._object_dict[key].get_data()
+        return self._object_dict[key].get_data(), None
     
     def get_infor(self, key):
         return self._ogject_dict[key].get_infor()
@@ -205,7 +208,7 @@ class ControllerStrategy(DataSetStrategyInterface):
         self._object_dict[key].set_data(*val)
         
     def get_data(self, key):
-        return self._object_dict[key].get_data()
+        return self._object_dict[key].get_data(), None
     
     def get_infor(self, key):
         return self._object_dict[key].get_infor()
@@ -227,26 +230,28 @@ class ImageStrategy(DataStrategy):
         builder.build_image_set(data)
 
 
-class TraceStrategy(DataStrategy):
+class TraceStrategy(DataStrategy):  # FluoTrace
     def __init__(self, object_dict):  # object_dict = dataset._data defined by Translator class
         super().__init__(object_dict)
-        
+        self.mod_switch = []  # mod keys: str
+
     def create_data(self, builder, data):
         builder.build_trace_set(data)
         
     def get_data(self, key):
-        return self._object_dict[key].get_data()
+        return self._object_dict[key].get_data(), self.mod_switch
     
     
 class ElecTraceStrategy(DataStrategy):
     def __init__(self, object_dict):  # object_dict = dataset._data defined by Translator class
         super().__init__(object_dict)
+        self.mod_switch = []  # mod keys: str
         
     def create_data(self, builder, data):
         builder.build_elec_trace_set(self._object_dict)
         
     def get_data(self, key):
-        return self._object_dict[key].get_data()
+        return self._object_dict[key].get_data(), self.mod_switch
     
         
 class RoiStrategy(ControllerStrategy):
@@ -295,6 +300,7 @@ class Translator:
             
     @staticmethod
     def key_checker(key: str, object_dict_list: list) -> object:  # [file_io, self.__data, self.__controller]  
+        print('Key Checker received a key: ' + str(key))
         if 'Filename' in key:
             return FilenameStrategy(object_dict_list[0])
         
@@ -313,10 +319,10 @@ class Translator:
         elif 'Image' in key:
             return ImageStrategy(object_dict_list[1])
 
-        elif 'Trace' in key:
+        elif 'Trace' in key:  # Trace should be fluo trace
             return TraceStrategy(object_dict_list[1])
 
-        elif 'Elec' in key:
+        elif 'Elec' in key:  # Elec should be elec trace
             return ElecTraceStrategy(object_dict_list[0])
 
         elif 'Newkey' in key:

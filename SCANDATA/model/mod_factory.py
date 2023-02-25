@@ -9,11 +9,36 @@ from abc import ABCMeta, abstractmethod
 from SCANDATA.model.value_object import ImageData, TraceData
 import numpy as np
 
-    
+"""
+Chain of responsibility client
+"""
 
+class ModClient:  # Put every mods. Don't need to sepalate mods for each data.
+    def __init__(self):
+        bg_comp = BgCompHandler()
+        df_over_f = DfOverFHandler()
+        self.mod_list = []
+        
+        
+        bg_comp.set_next(df_over_f)
+        
+    # Not use
+    def create_mod(self, mod_factory):
+        product = mod_factory.create_mod()
+        return product
+    
+    def apply_mod(self, mod_switch):
+        i = 0
+        for mod in self.mod_list:
+            if mod_switch[i] is True:
+                pass
+                
+        
+
+# NOT USE
 """
 Mod Factory
-"""
+
 class ModFactory(metaclass=ABCMeta):
     @abstractmethod
     def create_mod(self):
@@ -37,48 +62,54 @@ class TraceFilterFactory(ModFactory):
 class FlamesFilterFactory(ModFactory):
     def create_mod(self):
         return FlamesFilterHandler()
-
+"""
     
 """
-Handler(Interface)
+Handler
 """
-class ModHandler(metaclass=ABCMeta):
-    def __init__(self, name):
-        self.__name = name
+class Handler(metaclass=ABCMeta):  # Handler interface
+    
+    @abstractmethod
+    def set_next(self, handler):
+        pass
+    
+    @abstractmethod
+    def handle_request(self, request):
+        pass
+        
+
+class ModHandler(Handler):  # BaseHandler
+    def __init__(self):
         self.__next_handler = None
 
-    def set_next_handler(self, handler):
-        self.__next_handler = handler
-        return self.__next_handler
+    def set_next(self, next_handler):
+        self.__next_handler = next_handler
+        return next_handler
     
-    def hanle_request(self, request):
-        pass
+    def handle_request(self, request):
+        if self._next_handler:
+            return self._next_handler.handle(request)
 
-    def support(self, trouble):
-        if self.resolve(trouble):
-            self.done(trouble)
-        elif self.__next is not None:
-            self.__next.support(trouble)
-        else:
-            self.fail(trouble)
-
-    @abstractmethod
-    def mod_data(self, trouble):
-        pass
-
-        
+        return None
         
         
 """
 ConcreteHandler
 """
 class BgCompHandler(ModHandler):
-    def __init__(self, bg_trace_obj):
+    def __init__(self):
         self.name = self.__class__.__name__
-        super().__init__(self.name)
-        self.bg_trace_obj = self.filter_data(bg_trace_obj)
+        super().__init__(self)
+        self.__bg_trace = None
+        
+    @property
+    def bg_trace(self):
+        return self.__bg_trace
 
-
+    @bg_trace.setter
+    def bg_trace(self, bg_trace):
+        self.__bg_trace = bg_trace
+        
     def mod_data(self, trace_obj):
         mod_trace_obj = trace_obj - self.bg_trace_obj
         return mod_trace_obj
