@@ -6,6 +6,8 @@ Created on Wed Jan  4 22:57:01 2023
 """
 
 from abc import ABCMeta, abstractmethod
+import numpy as np
+from SCANDATA.model.value_object import ImageData, TraceData
 
 """
 Chain of responsibility client
@@ -17,11 +19,13 @@ class ModClient:  # Put every mods. Don't need to sepalate mods for each data ty
         self.no_mod = NoModHandler()
         self.bg_comp = BgCompMod()
         self.df_over_f = DFOverFMod()
+        self.error_mod = ErrorMod()
 
         # Chain of resonsibility
         self.chain_of_responsibility = self.no_mod. \
                                        set_next(self.bg_comp). \
-                                       set_next(self.df_over_f)
+                                       set_next(self.df_over_f). \
+                                       set_next(self.error_mod)
         
     def set_mod(self, original_data, mod_keys):
         if mod_keys == []:
@@ -30,7 +34,6 @@ class ModClient:  # Put every mods. Don't need to sepalate mods for each data ty
         else:
             for key in mod_keys:
                 mod_trace = self.no_mod.apply_mod(original_data, key)
-
         return mod_trace
     
     # Not use
@@ -91,8 +94,8 @@ class ModHandler(Handler):  # BaseHandler
         return next_handler
     
     def handle_request(self, original_data, key):
-        if self._next_handler:
-            return self._next_handler.apply_mod(original_data, key)
+        if self.__next_handler:
+            return self.__next_handler.apply_mod(original_data, key)
         
         
 """
@@ -146,16 +149,19 @@ class BgCompMod(ModHandler):
 class DFOverFMod(ModHandler):
     def __init__(self):
         super().__init__()
+        self.trace_calc = TraceCalculation()
         
     def apply_mod(self, original_data, key):
         if key == 'DFoverF':
-            print('----------------------- !!!!!!!!! --------------------')
-            print('Tip Need DF over F calculation')
-            print('----------------------- !!!!!!!!! --------------------')
-            mod_trace_obj = None
+            df_over_f = self.trace_calc.create_df_over_f(original_data)
+            mod_trace_obj = df_over_f
             return mod_trace_obj
         else:
             return super().handle_request(original_data, key)
+        
+    # This should be in View class?
+class Invert(ModHandler):
+    pass
     
     
 class TraceMovingAveMod(ModHandler):
@@ -185,3 +191,39 @@ class FlamesImFilterMod(ModHandler):
             return mod_trace_obj
         else:
             return super().handle_request(original_data, key)
+
+    
+class ErrorMod(ModHandler):
+    def __init__(self):
+        super().__init__()
+        
+    def apply_mod(self, original_data, key):
+        print('----------------------- !!!!!!!!! --------------------')
+        print('There is no such　Mod: ' + str(key))
+        print('----------------------- !!!!!!!!! --------------------')
+        raise Exception('The end frame should be the same as the frames length or less.')
+        
+        
+"""
+Trace modify class
+"""
+class TraceCalculation:
+    def __init__(self, average_start: int = 1, average_length: int = 4): # frames
+        self.__average_start = average_start
+        self.__average_length = average_length
+        
+    def create_df_over_f(self, trace_obj):
+        f = self.f_value(trace_obj)
+        df_over_f_val = (trace_obj.data/f -1) * 100
+        new_obj = self.create_new_value_obj(df_over_f_val, trace_obj.interval)
+        return new_obj
+        
+    def f_value(self, trace_obj) -> float: # trace is value object.
+        part_trace = trace_obj.data[self.__average_start : self.__average_start + self.__average_length]
+        average = np.average(part_trace)
+        return average
+
+    def create_new_value_obj(self, val, interval):
+        new_obj = TraceData(val, interval)
+        return new_obj
+    

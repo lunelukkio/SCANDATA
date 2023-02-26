@@ -218,6 +218,9 @@ class TraceData:
     def data_type(self) -> str:
         return self.__data_type
     
+    @property
+    def interval(self) -> float:
+        return self.__interval
     
     def check_length(self, data: object) -> bool:
         return bool(self.__length == data.length)

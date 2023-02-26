@@ -236,7 +236,12 @@ class DataWindow(tk.Frame):
     def create_model(self):
         self.model = self.controller.create_model(self.__filename)
         self.view_data_repository.model = self.model
+        
+        self.controller.add_mod('Trace', 'DFoverF')
+        
         self.view_data_repository.initialize_view_data_repository(self.ax_list)
+        
+
         
     def create_filename_obj(self, filename: str):
         filename_obj = WholeFilename(filename)  # Convert from str to value object.

@@ -65,11 +65,14 @@ class ImagingController:
     def change_roi_size(self, roi_num, val):
         self.model.add_data('Roi' + str(roi_num), val)
         
-        
-        
-        
     def get_controller(self, filename: str, key:str) -> object:
         return self.model.get_data(filename, key)
+    
+    def add_mod(self, data_key: str, mod_key: str):
+        self.model.add_mod(data_key, mod_key)
+        
+    def remove_mod(self, data_key: str, mod_key: str):
+        self.model.remove_mod(data_key, mod_key)
     
     def count_data(self, filename, key):
         return self.model.count_data(filename, key)

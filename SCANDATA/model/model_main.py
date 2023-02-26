@@ -49,6 +49,16 @@ class DataSetInterface(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
+    def add_mod(self, key: str, mod_key: str):
+        raise NotImplementedError()
+        
+    @abstractmethod
+    def remove_mod(self, key: str, mod_key: str):
+        raise NotImplementedError()
+        
+        
+        
+    @abstractmethod
     def get_infor(self,  key: str):
         raise NotImplementedError()
         
@@ -64,7 +74,8 @@ class DataSet(DataSetInterface):
         # This list is for strategy_types
         self.__data_dict_list = [self.__file_io, self.__data, self.__controller]
         
-        self.__data_strategy = TSMDataStrategyContext(self.__data_dict_list)
+        # Need refactoring for sepalate tsm information
+        self.__tsm_data_context = TSMDataStrategyContext(self.__data_dict_list)
         
         # instance for mod.
         self.__mod_client = ModClient()
@@ -75,24 +86,24 @@ class DataSet(DataSetInterface):
         
     def create_data(self, key: str) -> None:
         strategy_key = Translator.key_checker(key)
-        self.__data_strategy.set_strategy(strategy_key)
-        self.__data_strategy.create_data(self.__builder, self.__data)
+        self.__tsm_data_context.set_strategy(strategy_key)
+        self.__tsm_data_context.create_data(self.__builder, self.__data)
         self.print_infor()
 
     def set_data(self, key: str, val: tuple):
         strategy_key = Translator.key_checker(key)
-        self.__data_strategy.set_strategy(strategy_key)
-        self.__data_strategy.set_data(key, val)
+        self.__tsm_data_context.set_strategy(strategy_key)
+        self.__tsm_data_context.set_data(key, val)
 
     def add_data(self, key: str, val: tuple):
         return self.__controller[key].add_data(*val)
     
     def get_data(self, key: str) -> object:
         strategy_key = Translator.key_checker(key)
-        self.__data_strategy.set_strategy(strategy_key)
-        data = self.__data_strategy.get_data(key)
-        if strategy_key == ['TraceStrategy' or 'ImageStrategy' or 'ElecTraceStrategy']:
-            mod_key_list = self.__data_strategy.get_mod_key()
+        self.__tsm_data_context.set_strategy(strategy_key)
+        data = self.__tsm_data_context.get_data(key)
+        if strategy_key in {'TraceStrategy', 'ImageStrategy', 'ElecStrategy'}:
+            mod_key_list = self.__tsm_data_context.get_mod_key()
             data = self.__mod_client.set_mod(data, mod_key_list)
         return data
 
@@ -123,18 +134,18 @@ class DataSet(DataSetInterface):
     
     def add_mod(self, key: str, mod_key: str):  # add a mod to strategy class.
         strategy_key = Translator.key_checker(key)
-        self.__data_strategy.set_strategy(strategy_key)
-        self.__data_strategy.add_mod(mod_key)
+        self.__tsm_data_context.set_strategy(strategy_key)
+        self.__tsm_data_context.add_mod(mod_key)
         
     def remove_mod(self, key: str, mod_key: str):  # remove a mod from strategy class.
         strategy_key = Translator.key_checker(key)
-        self.__data_strategy.set_strategy(strategy_key)
-        self.__data_strategy.remove_mod(mod_key)
+        self.__tsm_data_context.set_strategy(strategy_key)
+        self.__tsm_data_context.remove_mod(mod_key)
 
     def get_infor(self, key):
         strategy_key = Translator.key_checker(key)
-        self.__data_strategy.set_strategy(strategy_key)
-        infor = self.__data_strategy.get_infor(key)
+        self.__tsm_data_context.set_strategy(strategy_key)
+        infor = self.__tsm_data_context.get_infor(key)
         return infor
 
     @property
@@ -177,7 +188,7 @@ class TSMDataStrategyContext:  # TMS data specific.
         self.data_set_strategy_dict['FramesStrategy'] = FramesStrategy(data_dict_list[1])
         self.data_set_strategy_dict['ImageStrategy'] = ImageStrategy(data_dict_list[1])
         self.data_set_strategy_dict['TraceStrategy'] = TraceStrategy(data_dict_list[1])
-        self.data_set_strategy_dict['ElecTraceStrategy'] = ElecTraceStrategy(data_dict_list[0])
+        self.data_set_strategy_dict['ElecStrategy'] = ElecStrategy(data_dict_list[0])
         self.data_set_strategy_dict['RoiStrategy'] = RoiStrategy(data_dict_list[2])
         self.data_set_strategy_dict['FrameWindowStrategy'] = FrameWindowStrategy(data_dict_list[2])
         self.data_set_strategy_dict['ElecControllerStrategy'] = ElecControllerStrategy(data_dict_list[2])
@@ -229,7 +240,6 @@ class DataSetStrategyInterface(metaclass=ABCMeta):
 class DataStrategy(DataSetStrategyInterface):   
     def __init__(self, object_dict):  # object_dict = dataset._data defined by Translator class
         self._object_dict = object_dict
-        self.__mod_key_list = []  # mod keys: str
         
     def set_data(self, key, *val):  
         self._object_dict[key].set_data(val)
@@ -239,16 +249,6 @@ class DataStrategy(DataSetStrategyInterface):
     
     def get_infor(self, key):
         return self._ogject_dict[key].get_infor()
-    
-    def get_mod_key(self):
-        return self.__mod_key_list
-    
-    def add_mod(self, key: str):
-        self.__mod_key_list.append(key)
-        self.__mod_key_list = sorted(self.__mod_key_list)
-    
-    def remove_mod(self, key: str):
-        self.__mod_key_list.remove(key)
     
     
 class ControllerStrategy(DataSetStrategyInterface):
@@ -276,34 +276,73 @@ class FramesStrategy(DataStrategy):
 class ImageStrategy(DataStrategy):
     def __init__(self, object_dict):  # object_dict = dataset._data defined by Translator class
         super().__init__(object_dict)
+        self.__mod_key_list = []  # mod keys: str
         
     def create_data(self, builder, data):
         builder.build_image_set(data)
         
     def get_data(self, key):
         return self._object_dict[key].get_data()
+    
+    def get_mod_key(self):
+        return self.__mod_key_list
+    
+    def add_mod(self, key: str):
+        self.__mod_key_list.append(key)
+        self.__mod_key_list = sorted(self.__mod_key_list)
+        print('Current mod list = ' + str(self.__mod_key_list))
+    
+    def remove_mod(self, key: str):
+        self.__mod_key_list.remove(key)
+        print('Current mod list = ' + str(self.__mod_key_list))
 
 
 class TraceStrategy(DataStrategy):  # FluoTrace
     def __init__(self, object_dict):  # object_dict = dataset._data defined by Translator class
         super().__init__(object_dict)
+        self.__mod_key_list = []  # mod keys: str
 
     def create_data(self, builder, data):
         builder.build_trace_set(data)
         
     def get_data(self, key):
         return self._object_dict[key].get_data()
+    
+    def get_mod_key(self):
+        return self.__mod_key_list
+    
+    def add_mod(self, key: str):
+        self.__mod_key_list.append(key)
+        self.__mod_key_list = sorted(self.__mod_key_list)
+        print('Current mod list = ' + str(self.__mod_key_list))
+    
+    def remove_mod(self, key: str):
+        self.__mod_key_list.remove(key)
+        print('Current mod list = ' + str(self.__mod_key_list))
 
     
-class ElecTraceStrategy(DataStrategy):
+class ElecStrategy(DataStrategy):
     def __init__(self, object_dict):  # object_dict = dataset._data defined by Translator class
         super().__init__(object_dict)
+        self.__mod_key_list = []  # mod keys: str
         
     def create_data(self, builder, data):
         builder.build_elec_trace_set(self._object_dict)
         
     def get_data(self, key):
         return self._object_dict[key].get_data()
+    
+    def get_mod_key(self):
+        return self.__mod_key_list
+    
+    def add_mod(self, key: str):
+        self.__mod_key_list.append(key)
+        self.__mod_key_list = sorted(self.__mod_key_list)
+        print('Current mod list = ' + str(self.__mod_key_list))
+    
+    def remove_mod(self, key: str):
+        self.__mod_key_list.remove(key)
+        print('Current mod list = ' + str(self.__mod_key_list))
     
         
 class RoiStrategy(ControllerStrategy):
@@ -386,7 +425,7 @@ class Translator:
             return 'TraceStrategy'
 
         elif 'Elec' in key:  # Elec should be elec trace
-            return 'ElecTraceStrategy'
+            return 'ElecStrategy'
 
         elif 'Mod' in key:
             return 'ModStrategy'

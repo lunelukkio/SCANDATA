@@ -23,7 +23,9 @@ class ViewDataRepository:
         self.create_roi(ax_list)  # for trace analysing
         self.create_elec(ax_list)
         
-        self.show_data()
+        print('View Data = ' + str(list(self.__view_data)))
+        print('Initialized the Data Window.')
+        print('')
     
     def create_view_data(self,  factory_type):
         product = factory_type.create_view_data(self.model)
@@ -70,11 +72,6 @@ class ViewDataRepository:
         
     def update(self, key):
         self.__view_data[key].notify_observer()
-
-    def show_data(self):
-        print('View Data = ' + str(list(self.__view_data)))
-        print('Initialized the Data Window.')
-        print('')
         
     def set_data(self, key: str, val: list):
         self.__view_data[key].set_data(val)
