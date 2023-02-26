@@ -15,8 +15,8 @@ class ModClient:  # Put every mods. Don't need to sepalate mods for each data ty
     def __init__(self):  # data_dict_list = [{data_io}, {data}, {controller}]
         self.mod_list = []
         self.no_mod = NoModHandler()
-        self.bg_comp = BgCompHandler()
-        self.df_over_f = DFOverFHandler()
+        self.bg_comp = BgCompMod()
+        self.df_over_f = DFOverFMod()
 
         # Chain of resonsibility
         self.chain_of_responsibility = self.no_mod. \
@@ -52,21 +52,21 @@ class ModFactory(metaclass=ABCMeta):
 
 class BgCompFactory(ModFactory):
     def create_mod(self):
-        return BgCompHandler()
+        return BgCompMod()
     
 
 class DfOverFFactory(ModFactory):
     def create_mod(self):
-        return DFOverFHandler()
+        return DFOverFMod()
     
 
 class TraceFilterFactory(ModFactory):
     def create_mod(self):
-        return TraceFilterHandler()
+        return TraceFilterMod()
     
 class FlamesFilterFactory(ModFactory):
     def create_mod(self):
-        return FlamesFilterHandler()
+        return FlamesFilterMod()
 """
     
 """
@@ -109,7 +109,7 @@ class NoModHandler(ModHandler):
             return super().handle_request(original_data, key)
                 
 
-class BgCompHandler(ModHandler):
+class BgCompMod(ModHandler):
     def __init__(self):
         super().__init__()
         self.__bg_trace_entiry = None
@@ -143,7 +143,7 @@ class BgCompHandler(ModHandler):
             self.next_handler.handle_request(request)
 
 
-class DFOverFHandler(ModHandler):
+class DFOverFMod(ModHandler):
     def __init__(self):
         super().__init__()
         
@@ -158,7 +158,7 @@ class DFOverFHandler(ModHandler):
             return super().handle_request(original_data, key)
     
     
-class TraceMovingAveHandler(ModHandler):
+class TraceMovingAveMod(ModHandler):
     def __init__(self):
         super().__init__()
         
@@ -172,7 +172,7 @@ class TraceMovingAveHandler(ModHandler):
         else:
             return super().handle_request(original_data, key)
     
-class FlamesImFilterHandler(ModHandler):
+class FlamesImFilterMod(ModHandler):
     def __init__(self):
         super().__init__()
         

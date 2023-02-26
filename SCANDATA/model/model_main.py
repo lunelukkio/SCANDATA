@@ -57,14 +57,14 @@ class DataSet(DataSetInterface):
     def __init__(self, full_filename: str):
         self.__filename = Filename(full_filename)
         self.__builder = Translator.file_type_checker(self.__filename)  # Using statsitc method in Translator class.
-        self.__data_set_strategy_dict = {}
-        self.__create_data_set_strategy()
         
         # Reset a data set.
         (self.__file_io, self.__data, self.__controller) = self.__builder.reset()
         
         # This list is for strategy_types
         self.__data_dict_list = [self.__file_io, self.__data, self.__controller]
+        
+        self.__data_strategy = TSMDataStrategyContext(self.__data_dict_list)
         
         # instance for mod.
         self.__mod_client = ModClient()
@@ -73,26 +73,22 @@ class DataSet(DataSetInterface):
         self.__builder.initialize()
         self.print_infor()
         
-    def __create_data_set_strategy(self):
-        self.data_set_strategy_dict['FramesStrategy'] = FramesStrategy(self.__controller,
-                                                                       self.__builder)
-        self.data_set_strategy_dict[]
-
     def create_data(self, key: str) -> None:
-        strategy_type = Translator.key_checker(key, self.__data_dict_list)
-        strategy_type.create_data(self.__builder, self.__data)
+        self.data_strategy.strategy_type = Translator.key_checker(key)
+        self.data_strategy.create_data(self.__builder, self.__data)
         self.print_infor()
 
     def set_data(self, key: str, val: tuple):
-        strategy_type = Translator.key_checker(key, self.__data_dict_list)
-        strategy_type.set_data(key, val)
+        self.data_strategy.strategy_type = Translator.key_checker(key)
+        self.data_strategy.set_data(key, val)
 
     def add_data(self, key: str, val: tuple):
         return self.__controller[key].add_data(*val)
     
     def get_data(self, key: str) -> object:
-        strategy_type = Translator.key_checker(key, self.__data_dict_list)
-        original_data, mod_key_list = strategy_type.get_data(key)
+        self.data_strategy.strategy_type = Translator.key_checker(key)
+        original_data, mod_key_list = self.data_strategy.get_data(key)
+        
         mod_data = self.__mod_client.set_mod(original_data, mod_key_list)
         return mod_data
 
@@ -121,10 +117,14 @@ class DataSet(DataSetInterface):
         num = KeyCounter.count_key(self.data, key)
         return num
     
-    def add_mod(self, data_key: str, mod_key: str):
-        strategy_type = Translator.key_checker(key, self.__data_dict_list)
-        original_data, mod_key_list = strategy_type.get_data(key)
-        mod_data = self.__mod_client.set_mod(original_data, mod_key_list)
+    def add_mod(self, data_key: str, mod_key: str):  # add a mod to strategy class.
+        self.data_strategy.strategy_type = Translator.key_checker(data_key)
+        self.data_strategy.add_mod(mod_key)
+        
+    def remove_mod(self, data_key: str, mod_key: str):  # remove a mod from strategy class.
+        self.data_strategy.strategy_type = Translator.key_checker(data_key)
+        self.data_strategy.remove_mod(mod_key)
+
 
     def get_infor(self, key):
         strategy_type = Translator.key_checker(key, self.__data_dict_list)
@@ -165,6 +165,35 @@ class DataSet(DataSetInterface):
 """
 Strategy Method for set and get data
 """
+class TSMDataStrategyContext:  # TMS data specific.
+    def __init__(self, data_dict_list):  # data_dict_list: 1=data_io, 2=data, 3=controller
+        self.data_set_strategy_dict = {}
+        self.data_set_strategy_dict['FramesStrategy'] = FramesStrategy(data_dict_list[1])
+        self.data_set_strategy_dict['ImageStrategy'] = ImageStrategy(data_dict_list[1])
+        self.data_set_strategy_dict['TraceStrategy'] = TraceStrategy(data_dict_list[1])
+        self.data_set_strategy_dict['ElecTraceStrategy'] = ElecTraceStrategy(data_dict_list[0])
+        self.data_set_strategy_dict['RoiStrategy'] = RoiStrategy(data_dict_list[2])
+        self.data_set_strategy_dict['FrameWindowStrategy'] = FrameWindowStrategy(data_dict_list[2])
+        self.data_set_strategy_dict['ElecControllerStrategy'] = ElecControllerStrategy(data_dict_list[2])
+        self.data_set_strategy_dict['ModStrategy'] = ModStrategy(data_dict_list[1])
+        
+        self.__strategy = self.data_set_strategy_dict['FramesStrategy']
+        
+    def set_strategy(self, strategy_key: str):
+        self.__strategy = self.data_set_strategy_dict[strategy_key]
+        
+    def set_data(self, key, *val):
+        self.__strategy.set_data(key, *val)
+        
+    def get_data(self, key):
+        self.__strategy.get_data(key)
+        
+    def create_data(self, builder, data):
+        self.__strategy.create_data(builder, data)
+        
+    def get_infor(self):
+        self.__strategy.get_infor()
+
 class DataSetStrategyInterface(metaclass=ABCMeta):
     @abstractmethod
     def set_data(self):
@@ -181,22 +210,6 @@ class DataSetStrategyInterface(metaclass=ABCMeta):
     @abstractmethod  
     def get_infor(self):
         raise NotImplementedError() 
-     
-        
-class FilenameStrategy(DataSetStrategyInterface):        
-    def set_data(self, key, *args):  
-        #self.__file_io[key].set_data(*args)
-        raise Exception('Filename cant be changed')
-
-    def get_data(self, key):
-        raise NotImplementedError()   # Shold it be filename?
-
-    def create_data(self):
-        raise Exception('Filename shold be only one in a data-set as its name.')
-        
-    def get_infor(self):
-        pass
-
         
 class DataStrategy(DataSetStrategyInterface):   
     def __init__(self, object_dict):  # object_dict = dataset._data defined by Translator class
@@ -230,7 +243,7 @@ class ControllerStrategy(DataSetStrategyInterface):
 
 class FramesStrategy(DataStrategy):
     def __init__(self, object_dict, builder):
-        super().__init__(object_dict, builder)
+        super().__init__(object_dict)
         
     def create_data(self):
         pass
@@ -289,13 +302,26 @@ class FrameWindowStrategy(ControllerStrategy):
         
     def create_data(self):
         pass
+    
+class ElecControllerStrategy(ControllerStrategy):
+    def __init__(self, object_dict):  # object_dict = dataset._controller defined by Translator class
+        super().__init__(object_dict)
+        
+    def create_data(self):
+        pass
 
 
 class ModStrategy(DataSetStrategyInterface):
+    def __init__(self, data):
+        self.data = data
+        
     def set_data(self, key):
         raise NotImplementedError()   
         
     def get_data(self, key):
+        raise NotImplementedError() 
+        
+    def create_data(self):
         raise NotImplementedError() 
         
     def get_infor(self, key):
@@ -323,30 +349,31 @@ class Translator:
     @staticmethod
     def key_checker(key: str, object_dict_list: list) -> object:  # [file_io, self.__data, self.__controller]  
         print('Key Checker received a key: ' + str(key))
-        if 'Filename' in key:
-            return FilenameStrategy(object_dict_list[0])
         
-        elif 'Roi' in key:
-            return RoiStrategy(object_dict_list[2])
+        if 'Roi' in key:
+            return 'RoiStrategy'
             
         elif 'FrameWindow' in key:
-            return FrameWindowStrategy(object_dict_list[2])
+            return 'FrameWindowStrategy'
         
         elif 'ElecController' in key:
-            return FrameWindowStrategy(object_dict_list[2])
+            return 'ElecControllerStrategy'
             
         elif 'Frames' in key :
-            return FramesStrategy(object_dict_list[1])
+            return 'FramesStrategy'
         
         elif 'Image' in key:
-            return ImageStrategy(object_dict_list[1])
+            return 'ImageStrategy'
 
         elif 'Trace' in key:  # Trace should be fluo trace
-            return TraceStrategy(object_dict_list[1])
+            return 'TraceStrategy'
 
         elif 'Elec' in key:  # Elec should be elec trace
-            return ElecTraceStrategy(object_dict_list[0])
+            return 'ElecTraceStrategy'
 
+        elif 'Mod' in key:
+            return 'ModStrategy'
+            
         elif 'Newkey' in key:
             raise NotImplementedError()
             
