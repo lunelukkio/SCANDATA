@@ -14,25 +14,29 @@ Chain of responsibility client
 """
 
 class ModClient:  # Put every mods. Don't need to sepalate mods for each data.
-    def __init__(self):
+    def __init__(self, data_list: list):
+        self.__data_list = data_list
+        self.mod_list = []
+        no_mod = NoModHandler()
         bg_comp = BgCompHandler()
         df_over_f = DfOverFHandler()
-        self.mod_list = []
+
         
+        # Chain of resonsibility
+        self.chain_of_responsibility = no_mod. \
+                                       set_next(bg_comp). \
+                                       set_next(df_over_f)
         
-        bg_comp.set_next(df_over_f)
+    def set_mod(self, original_data, mod_switch):
+        apply_mod(original_data, mod_switch)
         
     # Not use
+    """
     def create_mod(self, mod_factory):
         product = mod_factory.create_mod()
         return product
-    
-    def apply_mod(self, mod_switch):
-        i = 0
-        for mod in self.mod_list:
-            if mod_switch[i] is True:
-                pass
-                
+    """
+
         
 
 # NOT USE
@@ -96,6 +100,19 @@ class ModHandler(Handler):  # BaseHandler
 """
 ConcreteHandler
 """
+class NoModHandler(ModHandler):
+    def __init__(self):
+        super().__init__()
+        
+    def apply_mod(self, original_data, mod_switch):
+        i = 0
+        for mod in self.mod_switch:
+            if mod_switch[i] is True:
+                return
+            else:
+                return super().handle_request(request)
+                
+
 class BgCompHandler(ModHandler):
     def __init__(self):
         self.name = self.__class__.__name__
