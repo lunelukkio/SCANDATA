@@ -74,23 +74,24 @@ class DataSet(DataSetInterface):
         self.print_infor()
         
     def create_data(self, key: str) -> None:
-        self.data_strategy.strategy_type = Translator.key_checker(key)
-        self.data_strategy.create_data(self.__builder, self.__data)
+        self.__data_strategy.set_strategy(Translator.key_checker(key))
+        self.__data_strategy.create_data(self.__builder, self.__data)
         self.print_infor()
 
     def set_data(self, key: str, val: tuple):
-        self.data_strategy.strategy_type = Translator.key_checker(key)
-        self.data_strategy.set_data(key, val)
+        self.__data_strategy.set_strategy(Translator.key_checker(key))
+        self.__data_strategy.set_data(key, val)
 
     def add_data(self, key: str, val: tuple):
         return self.__controller[key].add_data(*val)
     
     def get_data(self, key: str) -> object:
-        self.data_strategy.strategy_type = Translator.key_checker(key)
-        original_data, mod_key_list = self.data_strategy.get_data(key)
-        
-        mod_data = self.__mod_client.set_mod(original_data, mod_key_list)
-        return mod_data
+        strategy_key = self.__data_strategy.set_strategy(Translator.key_checker(key))
+        data = self.__data_strategy.get_data(key)
+        if strategy_key == 'TraceStrategy' or 'ImageStrategy' or 'ElecTraceStrategy':
+            mod_key_list = self.__data_strategy.get_mod_key()
+            data = self.__mod_client.set_mod(data, mod_key_list)
+        return data
 
     def bind_data(self, controller_key: str, data_key: str) -> None:
         self.__controller[controller_key].add_observer(self.__data[data_key])
@@ -117,18 +118,18 @@ class DataSet(DataSetInterface):
         num = KeyCounter.count_key(self.data, key)
         return num
     
-    def add_mod(self, data_key: str, mod_key: str):  # add a mod to strategy class.
-        self.data_strategy.strategy_type = Translator.key_checker(data_key)
-        self.data_strategy.add_mod(mod_key)
+    def add_mod(self, key: str, mod_key: str):  # add a mod to strategy class.
+        self.__data_strategy.set_strategy(Translator.key_checker(key))
+        self.__data_strategy.add_mod(mod_key)
         
-    def remove_mod(self, data_key: str, mod_key: str):  # remove a mod from strategy class.
-        self.data_strategy.strategy_type = Translator.key_checker(data_key)
-        self.data_strategy.remove_mod(mod_key)
+    def remove_mod(self, key: str, mod_key: str):  # remove a mod from strategy class.
+        self.__data_strategy.set_strategy(Translator.key_checker(key))
+        self.__data_strategy.remove_mod(mod_key)
 
 
     def get_infor(self, key):
-        strategy_type = Translator.key_checker(key, self.__data_dict_list)
-        infor = strategy_type.get_infor(key)
+        self.__data_strategy.set_strategy(Translator.key_checker(key))
+        infor = self.__data_strategy.get_infor(key)
         return infor
 
     @property
@@ -220,29 +221,38 @@ class DataStrategy(DataSetStrategyInterface):
         self._object_dict[key].set_data(val)
 
     def get_data(self, key):  # overrided by childern classes
-        return self._object_dict[key].get_data(), self.__mod_key_list
+        return self._object_dict[key].get_data()
     
     def get_infor(self, key):
         return self._ogject_dict[key].get_infor()
+    
+    def get_mod_key(self):
+        return self.__mod_key_list
+    
+    def add_mod(self, key: str):
+        self.__mod_key_list.append(key)
+        self.__mod_key_list = sorted(self.__mod_key_list)
+    
+    def remove_mod(self, key: str):
+        self.__mod_key_list.remove(key)
     
     
 class ControllerStrategy(DataSetStrategyInterface):
     def __init__(self, object_dict):  # object_dict = dataset._controller defined by Translator class
         self._object_dict = object_dict
-        self.__mod_key_list = []  # mod keys: str
 
     def set_data(self, key, val):
         self._object_dict[key].set_data(*val)
         
     def get_data(self, key):
-        return self._object_dict[key].get_data(), self.__mod_key_list
+        return self._object_dict[key].get_data()
     
     def get_infor(self, key):
         return self._object_dict[key].get_infor()
     
 
 class FramesStrategy(DataStrategy):
-    def __init__(self, object_dict, builder):
+    def __init__(self, object_dict):
         super().__init__(object_dict)
         
     def create_data(self):
@@ -255,38 +265,34 @@ class ImageStrategy(DataStrategy):
         
     def create_data(self, builder, data):
         builder.build_image_set(data)
+        
+    def get_data(self, key):
+        return self._object_dict[key].get_data()
 
 
 class TraceStrategy(DataStrategy):  # FluoTrace
     def __init__(self, object_dict):  # object_dict = dataset._data defined by Translator class
         super().__init__(object_dict)
-        self.__mod_key_list = []  # mod keys: str
 
     def create_data(self, builder, data):
         builder.build_trace_set(data)
         
     def get_data(self, key):
-        return self._object_dict[key].get_data(), self.__mod_key_list
+        return self._object_dict[key].get_data()
     
-    def add_mod(self, key: str):
-        self.__mod_key_list.append(key)
-        self.__mod_key_list = sorted(self.__mod_key_list)
-    
-    def remove_mod(self, key: str):
-        self.__mod_key_list.remove(key)
+
         
     
     
 class ElecTraceStrategy(DataStrategy):
     def __init__(self, object_dict):  # object_dict = dataset._data defined by Translator class
         super().__init__(object_dict)
-        self.__mod_key_list = []  # mod keys: str
         
     def create_data(self, builder, data):
         builder.build_elec_trace_set(self._object_dict)
         
     def get_data(self, key):
-        return self._object_dict[key].get_data(), self.mod_switch
+        return self._object_dict[key].get_data()
     
         
 class RoiStrategy(ControllerStrategy):
@@ -347,7 +353,7 @@ class Translator:
             raise Exception("The file is incorrect!!!")
             
     @staticmethod
-    def key_checker(key: str, object_dict_list: list) -> object:  # [file_io, self.__data, self.__controller]  
+    def key_checker(key: str) -> str:
         print('Key Checker received a key: ' + str(key))
         
         if 'Roi' in key:
