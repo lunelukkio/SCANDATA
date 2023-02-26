@@ -74,21 +74,24 @@ class DataSet(DataSetInterface):
         self.print_infor()
         
     def create_data(self, key: str) -> None:
-        self.__data_strategy.set_strategy(Translator.key_checker(key))
+        strategy_key = Translator.key_checker(key)
+        self.__data_strategy.set_strategy(strategy_key)
         self.__data_strategy.create_data(self.__builder, self.__data)
         self.print_infor()
 
     def set_data(self, key: str, val: tuple):
-        self.__data_strategy.set_strategy(Translator.key_checker(key))
+        strategy_key = Translator.key_checker(key)
+        self.__data_strategy.set_strategy(strategy_key)
         self.__data_strategy.set_data(key, val)
 
     def add_data(self, key: str, val: tuple):
         return self.__controller[key].add_data(*val)
     
     def get_data(self, key: str) -> object:
-        strategy_key = self.__data_strategy.set_strategy(Translator.key_checker(key))
+        strategy_key = Translator.key_checker(key)
+        self.__data_strategy.set_strategy(strategy_key)
         data = self.__data_strategy.get_data(key)
-        if strategy_key == 'TraceStrategy' or 'ImageStrategy' or 'ElecTraceStrategy':
+        if strategy_key == ['TraceStrategy' or 'ImageStrategy' or 'ElecTraceStrategy']:
             mod_key_list = self.__data_strategy.get_mod_key()
             data = self.__mod_client.set_mod(data, mod_key_list)
         return data
@@ -119,16 +122,19 @@ class DataSet(DataSetInterface):
         return num
     
     def add_mod(self, key: str, mod_key: str):  # add a mod to strategy class.
-        self.__data_strategy.set_strategy(Translator.key_checker(key))
+        strategy_key = Translator.key_checker(key)
+        self.__data_strategy.set_strategy(strategy_key)
         self.__data_strategy.add_mod(mod_key)
         
     def remove_mod(self, key: str, mod_key: str):  # remove a mod from strategy class.
-        self.__data_strategy.set_strategy(Translator.key_checker(key))
+        strategy_key = Translator.key_checker(key)
+        self.__data_strategy.set_strategy(strategy_key)
         self.__data_strategy.remove_mod(mod_key)
 
 
     def get_infor(self, key):
-        self.__data_strategy.set_strategy(Translator.key_checker(key))
+        strategy_key = Translator.key_checker(key)
+        self.__data_strategy.set_strategy(strategy_key)
         infor = self.__data_strategy.get_infor(key)
         return infor
 
@@ -192,8 +198,17 @@ class TSMDataStrategyContext:  # TMS data specific.
     def create_data(self, builder, data):
         self.__strategy.create_data(builder, data)
         
-    def get_infor(self):
-        self.__strategy.get_infor()
+    def get_infor(self, key):
+        self.__strategy.get_infor(key)
+        
+    def get_mod_key(self):
+        self.__strategy.get_mod_key()
+        
+    def add_mod(self, mod_key):
+        self.__strategy.add_mod(mod_key)
+        
+    def remove_mod(self, mod_key):
+        self.__strategy.remove_mod(mod_key)
 
 class DataSetStrategyInterface(metaclass=ABCMeta):
     @abstractmethod
@@ -250,7 +265,7 @@ class ControllerStrategy(DataSetStrategyInterface):
     def get_infor(self, key):
         return self._object_dict[key].get_infor()
     
-
+# Not use in initializeing process
 class FramesStrategy(DataStrategy):
     def __init__(self, object_dict):
         super().__init__(object_dict)
