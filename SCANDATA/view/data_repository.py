@@ -58,7 +58,7 @@ class ViewDataRepository:
         
     def create_elec(self, ax_list):
         elec = self.create_view_data(ElecViewFactory())
-        elec.add_observer(ax_list[2])  # fof elec trace
+        elec.add_observer(ax_list[2])  # fof elec data
         elec_name = 'ElecController' + str(self.count_data('ElecView'))
         self.model.bind_view(elec_name, elec)
         elec.update()

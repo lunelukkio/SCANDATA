@@ -53,9 +53,9 @@ class ChTraceFactory(DataFactory):
         return ChTrace(data, *args)
     
     
-class ChElecTraceFactory(DataFactory):  # data = 3D raw data, interval
+class ChElecFactory(DataFactory):  # data = 3D raw data, interval
     def create_data(self, data, *args):  # data = 
-        return ChElecTrace(data, *args)
+        return ChElec(data, *args)
     
 
 """
@@ -303,7 +303,7 @@ class DifImage(FluoImage):
 
 
 "Fluo Trace"
-class FluoTrace(Data):  # Fluo trae, Elec trace
+class FluoTrace(Data):  # Fluo trae
     def __init__(self, frames_obj, interval):
         #self.__trace_obj  # create in _read_data
         self.__frames_obj = frames_obj
@@ -424,7 +424,7 @@ class ChTrace(FluoTrace):
 
 
 "Elec trace"
-class ElecTrace(Data):  # Fluo trae, Elec trace
+class ElecData(Data):  # Elec trace
     def __init__(self, interval):
         #self._trace_obj  # create in _read_data of sub classes
         self._interval = interval
@@ -455,7 +455,7 @@ class ElecTrace(Data):  # Fluo trae, Elec trace
     def print_infor(self):
         pass
         
-class ChElecTrace(ElecTrace):
+class ChElec(ElecData):
     def __init__(self, trace_data_obj, interval):
         super().__init__(interval)
         self.object_num = 0  # instance number
@@ -480,10 +480,10 @@ class ChElecTrace(ElecTrace):
         self.__name = object_name
     
     def print_infor(self):
-        print('This is ElecTrace' + str(self.object_num))
+        print('This is ElecData' + str(self.object_num))
         print(self._trace_obj.data)
         
-class LongElecTrace(ElecTrace):
+class LongElecData(ElecData):
     pass
         
 

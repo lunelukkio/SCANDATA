@@ -7,7 +7,7 @@ lunelukkio@gmail.com
 
 
 import unittest
-from SCANDATA.model.data_factory import ChElecTraceFactory
+from SCANDATA.model.data_factory import ChElecFactory
 from SCANDATA.model.io_factory import TsmFileIOFactory, TbnFileIOFactory
 from SCANDATA.model.value_object import Filename, TraceData
 import matplotlib.pyplot as plt
@@ -29,7 +29,7 @@ class TestTrace(unittest.TestCase):
         
         elec_data = TraceData(rawelec_data[:,0], interval)
         
-        data_factory = ChElecTraceFactory()
+        data_factory = ChElecFactory()
         
         trace = data_factory.create_data(elec_data, interval)
         a = plt.figure()

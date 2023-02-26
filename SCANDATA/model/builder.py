@@ -11,7 +11,7 @@ from SCANDATA.model.io_factory import TsmFileIOFactory, TbnFileIOFactory
 from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory
 from SCANDATA.model.data_factory import CellImageFactory
 from SCANDATA.model.data_factory import FullTraceFactory, ChTraceFactory
-from SCANDATA.model.data_factory import ChElecTraceFactory
+from SCANDATA.model.data_factory import ChElecFactory
 from SCANDATA.model.controller_factory import RoiFactory, FrameWindowFactory, ElecControllerFactory
 from SCANDATA.model.value_object import FramesData, TraceData
 
@@ -144,7 +144,7 @@ class TsmFileBuilder(Builder):
             trace = self.create_data(ChTraceFactory(), i.frames_obj, i.interval)
             roi.add_observer(trace)
             
-    def build_elec_trace_set(self, raw_data):
+    def build_elec_data_set(self, raw_data):
         # Make a controller
         elec_controller = self.create_controller(ElecControllerFactory())
         # Make elec traces
@@ -155,9 +155,10 @@ class TsmFileBuilder(Builder):
         for i in range(0, num_elec_ch):
             # Convert from raw data to a value object
             elec_trace_obj = TraceData(raw_elec_data[:,i], elec_interval)
-            # make ElecTrace
-            trace = self.create_data(ChElecTraceFactory(), elec_trace_obj, elec_interval)
+            # make channel electric data
+            trace = self.create_data(ChElecFactory(), elec_trace_obj, elec_interval)
             elec_controller.add_observer(trace)
+            
         
     def count_data(self):
         #num = 2  # This should be got from cunting ChFrames.

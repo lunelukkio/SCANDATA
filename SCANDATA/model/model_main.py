@@ -185,14 +185,14 @@ Strategy Method for set and get data
 class TSMDataStrategyContext:  # TMS data specific.
     def __init__(self, data_dict_list):  # data_dict_list: 1=data_io, 2=data, 3=controller
         self.data_set_strategy_dict = {}
-        self.data_set_strategy_dict['FramesStrategy'] = FramesStrategy(data_dict_list[1])
-        self.data_set_strategy_dict['ImageStrategy'] = ImageStrategy(data_dict_list[1])
-        self.data_set_strategy_dict['TraceStrategy'] = TraceStrategy(data_dict_list[1])
-        self.data_set_strategy_dict['ElecStrategy'] = ElecStrategy(data_dict_list[0])
-        self.data_set_strategy_dict['RoiStrategy'] = RoiStrategy(data_dict_list[2])
-        self.data_set_strategy_dict['FrameWindowStrategy'] = FrameWindowStrategy(data_dict_list[2])
-        self.data_set_strategy_dict['ElecControllerStrategy'] = ElecControllerStrategy(data_dict_list[2])
-        self.data_set_strategy_dict['ModStrategy'] = ModStrategy(data_dict_list[1])
+        self.data_set_strategy_dict['FramesStrategy'] = FramesStrategy(data_dict_list)
+        self.data_set_strategy_dict['ImageStrategy'] = ImageStrategy(data_dict_list)
+        self.data_set_strategy_dict['TraceStrategy'] = TraceStrategy(data_dict_list)
+        self.data_set_strategy_dict['ElecStrategy'] = ElecStrategy(data_dict_list)
+        self.data_set_strategy_dict['RoiStrategy'] = RoiStrategy(data_dict_list)
+        self.data_set_strategy_dict['FrameWindowStrategy'] = FrameWindowStrategy(data_dict_list)
+        self.data_set_strategy_dict['ElecControllerStrategy'] = ElecControllerStrategy(data_dict_list)
+        self.data_set_strategy_dict['ModStrategy'] = ModStrategy(data_dict_list)
         
         self.__strategy = self.data_set_strategy_dict['FramesStrategy']
         
@@ -256,13 +256,13 @@ class ControllerStrategy(DataSetStrategyInterface):
         self._object_dict = object_dict
 
     def set_data(self, key, val):
-        self._object_dict[key].set_data(*val)
+        self._object_dict[2][key].set_data(*val)
         
     def get_data(self, key):
-        return self._object_dict[key].get_data()
+        return self._object_dict[2][key].get_data()
     
     def get_infor(self, key):
-        return self._object_dict[key].get_infor()
+        return self._object_dict[2][key].get_infor()
     
 # Not use in initializeing process
 class FramesStrategy(DataStrategy):
@@ -282,7 +282,7 @@ class ImageStrategy(DataStrategy):
         builder.build_image_set(data)
         
     def get_data(self, key):
-        return self._object_dict[key].get_data()
+        return self._object_dict[1][key].get_data()
     
     def get_mod_key(self):
         return self.__mod_key_list
@@ -306,7 +306,7 @@ class TraceStrategy(DataStrategy):  # FluoTrace
         builder.build_trace_set(data)
         
     def get_data(self, key):
-        return self._object_dict[key].get_data()
+        return self._object_dict[1][key].get_data()
     
     def get_mod_key(self):
         return self.__mod_key_list
@@ -327,10 +327,10 @@ class ElecStrategy(DataStrategy):
         self.__mod_key_list = []  # mod keys: str
         
     def create_data(self, builder, data):
-        builder.build_elec_trace_set(self._object_dict)
+        builder.build_elec_data_set(self._object_dict[0])
         
     def get_data(self, key):
-        return self._object_dict[key].get_data()
+        return self._object_dict[1][key].get_data()
     
     def get_mod_key(self):
         return self.__mod_key_list
