@@ -158,7 +158,7 @@ class TsmFileBuilder(Builder):
             # make ElecTrace
             trace = self.create_data(ChElecTraceFactory(), elec_trace_obj, elec_interval)
             elec_controller.add_observer(trace)
-
+        
     def count_data(self):
         #num = 2  # This should be got from cunting ChFrames.
         #ch_frames_list = []

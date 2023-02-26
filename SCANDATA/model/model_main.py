@@ -57,36 +57,43 @@ class DataSet(DataSetInterface):
     def __init__(self, full_filename: str):
         self.__filename = Filename(full_filename)
         self.__builder = Translator.file_type_checker(self.__filename)  # Using statsitc method in Translator class.
-
+        self.__data_set_strategy_dict = {}
+        self.__create_data_set_strategy()
+        
         # Reset a data set.
         (self.__file_io, self.__data, self.__controller) = self.__builder.reset()
         
         # This list is for strategy_types
-        self.__object_dict_list = [self.__file_io, self.__data, self.__controller]
+        self.__data_dict_list = [self.__file_io, self.__data, self.__controller]
         
         # instance for mod.
-        self.__mod_client = ModClient(self.__data)
+        self.__mod_client = ModClient()
         
         # Initialized the data set.
         self.__builder.initialize()
         self.print_infor()
+        
+    def __create_data_set_strategy(self):
+        self.data_set_strategy_dict['FramesStrategy'] = FramesStrategy(self.__controller,
+                                                                       self.__builder)
+        self.data_set_strategy_dict[]
 
     def create_data(self, key: str) -> None:
-        strategy_type = Translator.key_checker(key, self.__object_dict_list)
+        strategy_type = Translator.key_checker(key, self.__data_dict_list)
         strategy_type.create_data(self.__builder, self.__data)
         self.print_infor()
 
     def set_data(self, key: str, val: tuple):
-        strategy_type = Translator.key_checker(key, self.__object_dict_list)
+        strategy_type = Translator.key_checker(key, self.__data_dict_list)
         strategy_type.set_data(key, val)
 
     def add_data(self, key: str, val: tuple):
         return self.__controller[key].add_data(*val)
     
     def get_data(self, key: str) -> object:
-        strategy_type = Translator.key_checker(key, self.__object_dict_list)
-        original_data, mod_switch = strategy_type.get_data(key)
-        mod_data = self.__mod_client.aplly_mod(mod_switch)
+        strategy_type = Translator.key_checker(key, self.__data_dict_list)
+        original_data, mod_key_list = strategy_type.get_data(key)
+        mod_data = self.__mod_client.set_mod(original_data, mod_key_list)
         return mod_data
 
     def bind_data(self, controller_key: str, data_key: str) -> None:
@@ -113,9 +120,14 @@ class DataSet(DataSetInterface):
     def count_data(self, key):
         num = KeyCounter.count_key(self.data, key)
         return num
+    
+    def add_mod(self, data_key: str, mod_key: str):
+        strategy_type = Translator.key_checker(key, self.__data_dict_list)
+        original_data, mod_key_list = strategy_type.get_data(key)
+        mod_data = self.__mod_client.set_mod(original_data, mod_key_list)
 
     def get_infor(self, key):
-        strategy_type = Translator.key_checker(key, self.__object_dict_list)
+        strategy_type = Translator.key_checker(key, self.__data_dict_list)
         infor = strategy_type.get_infor(key)
         return infor
 
@@ -189,12 +201,13 @@ class FilenameStrategy(DataSetStrategyInterface):
 class DataStrategy(DataSetStrategyInterface):   
     def __init__(self, object_dict):  # object_dict = dataset._data defined by Translator class
         self._object_dict = object_dict
+        self.__mod_key_list = []  # mod keys: str
         
     def set_data(self, key, *val):  
         self._object_dict[key].set_data(val)
 
     def get_data(self, key):  # overrided by childern classes
-        return self._object_dict[key].get_data(), None
+        return self._object_dict[key].get_data(), self.__mod_key_list
     
     def get_infor(self, key):
         return self._ogject_dict[key].get_infor()
@@ -203,12 +216,13 @@ class DataStrategy(DataSetStrategyInterface):
 class ControllerStrategy(DataSetStrategyInterface):
     def __init__(self, object_dict):  # object_dict = dataset._controller defined by Translator class
         self._object_dict = object_dict
+        self.__mod_key_list = []  # mod keys: str
 
     def set_data(self, key, val):
         self._object_dict[key].set_data(*val)
         
     def get_data(self, key):
-        return self._object_dict[key].get_data(), None
+        return self._object_dict[key].get_data(), self.__mod_key_list
     
     def get_infor(self, key):
         return self._object_dict[key].get_infor()
@@ -233,19 +247,27 @@ class ImageStrategy(DataStrategy):
 class TraceStrategy(DataStrategy):  # FluoTrace
     def __init__(self, object_dict):  # object_dict = dataset._data defined by Translator class
         super().__init__(object_dict)
-        self.mod_switch = []  # mod keys: str
+        self.__mod_key_list = []  # mod keys: str
 
     def create_data(self, builder, data):
         builder.build_trace_set(data)
         
     def get_data(self, key):
-        return self._object_dict[key].get_data(), self.mod_switch
+        return self._object_dict[key].get_data(), self.__mod_key_list
+    
+    def add_mod(self, key: str):
+        self.__mod_key_list.append(key)
+        self.__mod_key_list = sorted(self.__mod_key_list)
+    
+    def remove_mod(self, key: str):
+        self.__mod_key_list.remove(key)
+        
     
     
 class ElecTraceStrategy(DataStrategy):
     def __init__(self, object_dict):  # object_dict = dataset._data defined by Translator class
         super().__init__(object_dict)
-        self.mod_switch = []  # mod keys: str
+        self.__mod_key_list = []  # mod keys: str
         
     def create_data(self, builder, data):
         builder.build_elec_trace_set(self._object_dict)
