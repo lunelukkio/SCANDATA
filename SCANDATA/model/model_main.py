@@ -131,7 +131,6 @@ class DataSet(DataSetInterface):
         self.__data_strategy.set_strategy(strategy_key)
         self.__data_strategy.remove_mod(mod_key)
 
-
     def get_infor(self, key):
         strategy_key = Translator.key_checker(key)
         self.__data_strategy.set_strategy(strategy_key)
@@ -193,16 +192,16 @@ class TSMDataStrategyContext:  # TMS data specific.
         self.__strategy.set_data(key, *val)
         
     def get_data(self, key):
-        self.__strategy.get_data(key)
+        return self.__strategy.get_data(key)
         
     def create_data(self, builder, data):
         self.__strategy.create_data(builder, data)
         
     def get_infor(self, key):
-        self.__strategy.get_infor(key)
+        return self.__strategy.get_infor(key)
         
     def get_mod_key(self):
-        self.__strategy.get_mod_key()
+        return self.__strategy.get_mod_key()
         
     def add_mod(self, mod_key):
         self.__strategy.add_mod(mod_key)
@@ -294,10 +293,7 @@ class TraceStrategy(DataStrategy):  # FluoTrace
         
     def get_data(self, key):
         return self._object_dict[key].get_data()
-    
 
-        
-    
     
 class ElecTraceStrategy(DataStrategy):
     def __init__(self, object_dict):  # object_dict = dataset._data defined by Translator class

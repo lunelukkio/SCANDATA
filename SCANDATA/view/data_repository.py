@@ -224,7 +224,7 @@ class ImageView(ViewData):
         self.__key = 'FrameWindow' + str(object_num)
         self.__model.create_data('Image')
         self.__frame_windoww_val = self.__model.get_data(self.__key)
-        self.__data_name_list = self.__model.get_infor(self.__key)
+        self.__data_name_list = self.__model.get_infor(self.__key)  # FrameWindow obserber names
         self.__data_list = []  # a list of value object 
 
     def reset(self):
