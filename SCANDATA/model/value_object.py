@@ -187,7 +187,7 @@ class TraceData:
         return TraceData(bg_comp_trace, self.__interval)
 
         
-        
+    #def __/__
         
     def __create_time_data(self, trace, interval) -> np.ndarray:
         num_data_point = interval * np.shape(trace)[0]

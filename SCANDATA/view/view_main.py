@@ -29,7 +29,7 @@ class MainView(tk.Frame):
         self.data_window = []  # data window obj
         
         self.pack()
-        master.geometry('500x800')
+        master.geometry('500x100')
         master.title('SCANDATA')
         
                
@@ -39,7 +39,7 @@ class MainView(tk.Frame):
         
         "Top frame"
         frame_top = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=0, bg = 'azure')
-        button_open_data = tk.Button(frame_top,text='Open data',command=self.open_file_with_list,width=10)
+        button_open_data = tk.Button(frame_top,text='Open data',command=self.open_file,width=10)
         button_open_data.place(x=110, y=150)
         button_open_data.config(fg='black', bg='skyblue')
         button_open_data.pack(side=tk.LEFT)
@@ -47,7 +47,7 @@ class MainView(tk.Frame):
         
         "Bottom frame"
         frame_bottom = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=0, bg = 'azure')
-        button_open_data = tk.Button(frame_bottom,text='Open data',command=self.open_file_with_list,width=10)
+        button_open_data = tk.Button(frame_bottom,text='Open data',state='disable',command=self.open_file_with_list,width=10)
         button_open_data.place(x=110, y=150)
         button_open_data.config(fg='black', bg='skyblue')
         button_exit = tk.Button(frame_bottom, text='Exit')
@@ -116,7 +116,11 @@ class MainView(tk.Frame):
         self.data_window.append(DataWindow(self.window[len(self.window)-1], filename_obj, self.controller))
 
     def open_file(self, event=None):
-        fullname = self.button_fn.get_fullname()
+        fullname = FileService.get_fullname()  # This is str filename
+        filename_obj = WholeFilename(fullname)
+        self.__filename_obj_list.append(filename_obj)
+        self.window.append(tk.Toplevel())
+        self.data_window.append(DataWindow(self.window[len(self.window)-1], filename_obj))
         print('Open ' + str(fullname))
         
 
@@ -128,7 +132,7 @@ class DataWindow(tk.Frame):
         self.model = None
         self.controller = None
         self.view_data_repository = ViewDataRepository()
-        self.current_roi_num = 1
+        self.current_roi_num = None  # roi class start from Roi1
         
         master.geometry('1400x700')
         master.configure(background='azure')
@@ -140,33 +144,55 @@ class DataWindow(tk.Frame):
 
         """ Top Buttons"""
         frame_top = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=2, bg = 'white')
-        button_open = tk.Button(frame_top, text='Open',command=self.file_open)
-        button_close = tk.Button(frame_top, text='Close')
-        button_open.pack(side=tk.LEFT)
-        button_close.pack(side=tk.LEFT, padx=5)
+        tk.Button(frame_top, text='Open',command=self.file_open).pack(side=tk.LEFT)
+        tk.Button(frame_top, text='Close').pack(side=tk.LEFT, padx=5)
         frame_top.pack(fill=tk.X)
         
         """Bottom Buttons"""
         frame_bottom = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=0, bg = 'azure')
         
         #This is an example for using arguments in a button #button_large_roi = tk.Button(frame_bottom, text='Large ROI', command=lambda: self.large_roi(1), width=20)  #need lambda for a fuction with aguments
-        button_large_roi = tk.Button(frame_bottom, text='Large ROI', command=self.large_roi, width=20)
-        button_large_roi.pack(side=tk.LEFT)
+        tk.Button(frame_bottom, text='Large ROI', command=self.large_roi, width=20).pack(side=tk.LEFT)
+        tk.Button(frame_bottom, text='Small ROI', command=self.small_roi, width=20).pack(side=tk.LEFT)
+        #tk.Button(frame_bottom, text='Add ROI', fg="black", bg="pink", command=self.add_roi, width=5).pack(side=tk.LEFT, padx=5)
         
-        button_small_roi = tk.Button(frame_bottom, text='Small ROI', command=self.small_roi, width=20)
-        button_small_roi.pack(side=tk.LEFT)
-        
-        button_add_roi = tk.Button(frame_bottom, text='Add ROI', command=self.add_roi, width=5)
-        button_add_roi.config(fg="black", bg="pink")
-        button_add_roi.pack(side=tk.LEFT, padx=5)
+        #tk.Button(frame_bottom, text='Delete ROI', fg="black", bg="pink", command=self.delete_roi, width=5).pack(side=tk.LEFT)
+        checkbox_flag_var_0 = tk.BooleanVar(value=False)
+        checkbox_flag_var_1 = tk.BooleanVar(value=False)
+        checkbox_flag_var_2 = tk.BooleanVar(value=False)
+        tk.Checkbutton(frame_bottom,
+                        text='Full',
+                        bg='azure',
+                        variable=checkbox_flag_var_0,
+                        command=lambda: self.ax_list[1].change_ch(0)).pack(side=tk.LEFT)
+        tk.Checkbutton(frame_bottom,
+                        text='Ch 1',
+                        bg='azure',
+                        variable=checkbox_flag_var_1,
+                        onvalue='Ture',
+                        offvalue='False',
+                        command=lambda: self.ax_list[1].change_ch(1)).pack(side=tk.LEFT)
 
-        button_delete_roi = tk.Button(frame_bottom, text='Delete ROI', command=self.delete_roi, width=5)
-        button_delete_roi.config(fg="black", bg="pink")
-        button_delete_roi.pack(side=tk.LEFT)
-        
+        tk.Checkbutton(frame_bottom,
+                        text='Ch 2',
+                        bg='azure',
+                        variable=checkbox_flag_var_2,
+                        command=lambda: self.ax_list[1].change_ch(2)).pack(side=tk.LEFT)
         frame_bottom.pack(side=tk.BOTTOM, fill=tk.BOTH)
-
-        #frame_bottom = tk.Frame(master, pady=5, padx=5, relief=tk.RAISED, bd=2)
+        
+        var = tk.StringVar(value="DFoverF")
+        tk.Radiobutton(frame_bottom,
+                       text="DF/F",
+                       bg='azure',
+                       variable=var,
+                       value="DFoverF",
+                       command=lambda: self.controller.add_mod('Trace', 'DFoverF')).pack(side=tk.LEFT)
+        tk.Radiobutton(frame_bottom,
+                       text="F",
+                       bg='azure',
+                       variable=var,
+                       value="F",
+                       command=lambda: self.controller.remove_mod('Trace', 'DFoverF')).pack(side=tk.LEFT)
 
         """ Image Frame"""
         # tkinter image frame
@@ -199,9 +225,7 @@ class DataWindow(tk.Frame):
         # matplotlib trace figure
         trace_fig = Figure(figsize=(5, 5), dpi=100, facecolor='azure')  #Figure
         gridspec_trace_fig = trace_fig.add_gridspec(20, 1)
-        
-        ch_select_0 = tk.Checkbutton(trace_fig, text='Full', command=lambda self.ax_list[1].trace_show_flag[0]: not self.ax_list[1].trace_show_flag[0])
-        ch_select_0.pack(side=tk.LEFT)
+
         
         self.canvas_trace = FigureCanvasTkAgg(trace_fig, frame_right)
         #canvas_trace.get_tk_widget().pack()
@@ -210,7 +234,7 @@ class DataWindow(tk.Frame):
         trace_ax1 = trace_fig.add_subplot(gridspec_trace_fig[0:15])
         self.ax_list.append(TraceAx(self.canvas_trace, trace_ax1))  # ax_list[1]
         self.ax_list[1].trace_show_flag = [False,  # full trace
-                                           True,  # ch1 trace
+                                           False,  # ch1 trace
                                            False]  # ch2 trace
         
         # matplotlib elec trace axes
@@ -237,7 +261,7 @@ class DataWindow(tk.Frame):
             fullname = FileService.get_fullname()  # This is str filename
             if fullname == None:
                 return
-            self.__filename = self.create_filename_obj(fullname)
+            self.__filename = WholeFilename(fullname)
 
         self.reset()        
         
@@ -250,13 +274,6 @@ class DataWindow(tk.Frame):
         self.controller.add_mod('Trace', 'DFoverF')
         
         self.view_data_repository.initialize_view_data_repository(self.ax_list)
-        
-
-        
-    def create_filename_obj(self, filename: str):
-        filename_obj = WholeFilename(filename)  # Convert from str to value object.
-        self.__filename = filename_obj
-        return filename_obj
 
     def onclick_image(self, event):
         if event.button == 1:  # left click
@@ -291,7 +308,7 @@ class DataWindow(tk.Frame):
         self.current_roi_num -= 1
         
     def reset(self):
-        self.current_roi_num = 1
+        self.current_roi_num = 2
         RoiBox.roi_num = 0
         #self.view_data_repository.delete()
         
@@ -311,6 +328,7 @@ class TraceAx:
         self.canvas_trace = canvas
         self.ax_obj = ax
         self.current_ch = 1
+        self.data_list = []  # value object list
 
         self.trace = []
         # Need refactoring for valiable number of traces. Now num of flags is only 3.
@@ -318,16 +336,15 @@ class TraceAx:
         
         self.color_selection = ['black', 'red', 'blue', 'orange', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
  
-    def update(self, view_data):
-        data_list = view_data.get_data()
-        self.show_data(data_list)
-        self.draw_ax()
+    def update(self, view_data):  # TraceAx shold not hold view_data ex.RoiView because other axes also might have  the same view_data.
+        self.data_list = view_data.get_data()
+        self.show_data()
 
-    def show_data(self, data_list: list):
+    def show_data(self):
         line_num = len(self.trace)
         if line_num > 0:
             i = 0
-            for trace_value_obj in data_list:
+            for trace_value_obj in self.data_list:
                 if self.trace_show_flag[i] is True:
                     time = trace_value_obj.time
                     data = trace_value_obj.data
@@ -338,13 +355,14 @@ class TraceAx:
                 i += 1
         elif line_num == 0:
             i = 0
-            for trace_value_obj in data_list:
+            for trace_value_obj in self.data_list:
                 line_2d, = trace_value_obj.show_data(self.ax_obj)  # line"," means the first element of a list (convert from list to objet). Don't remove it.
                 self.trace.append(line_2d)  # Add to the list for trace1 trace line objects [Line_2D] of axes object
                 line_2d.set_color(self.color_selection[i])
                 if self.trace_show_flag[i] == False:
                     line_2d.set_data(None,None)
                 i += 1 
+        self.draw_ax()
         
     def draw_ax(self):
         self.ax_obj.relim()
@@ -355,6 +373,10 @@ class TraceAx:
         self.current_ch = 1
         self.trace = []
         self.ax_obj.clear()
+        
+    def change_ch(self, ch):
+        self.trace_show_flag[ch] = not self.trace_show_flag[ch]
+        self.show_data()
 
 class ImageAx:
     def __init__(self, canvas, ax):
@@ -362,23 +384,24 @@ class ImageAx:
         self.ax_obj = ax
         self.image = []
         self.current_ch = 1
+        self.data_list = []  # value object list
+        self.roi_box = None  # RoiBox class
         # Need refactoring for valiable number for images.
         self.image_show_flag = [True, False]   # 0 = full trace, 1 = ch1 trace, 2 = ch2 trace
         
     def update(self, view_data):
         if 'Image' in view_data.name:  # for cell images
-            data_list = view_data.get_data()  # get data from view data
-            self.show_data(data_list)
+            self.data_list = view_data.get_data()  # get data from view data
+            self.show_data()
         elif 'Roi' in view_data.name:  # for RoiBoxs
-            roi_box = view_data.roi_box
-            self.show_roi(roi_box)
-        self.draw_ax()
+            self.roi_box = view_data.roi_box
+            self.show_roi()
         
-    def show_data(self, data_list: list):  # data_list = value obj list  Delete old images, and make new images
+    def show_data(self):  # self.data_list = value obj list  Delete old images, and make new images
         image_num = len(self.image)
         if image_num >0:
             i = 0
-            for image_value_obj in data_list:
+            for image_value_obj in self.data_list:
                 if self.image_show_flag[i] is True:
                     data = image_value_obj.data
                 elif self.image_show_flag[i] is False:
@@ -388,15 +411,17 @@ class ImageAx:
 
         elif image_num == 0:
             i = 0
-            for image_value_obj in data_list:
+            for image_value_obj in self.data_list:
                 image = image_value_obj.show_data(self.ax_obj)  # line, mean the first element of a list (convert from list to objet)
                 self.image.append(image)  # Add to the list for trace line objects [Line_2D] of axes object
                 if self.image_show_flag[i] is False:
                     image.set_data([[],[]])
                 i += 1
+        self.draw_ax()
 
-    def show_roi(self, roi_box: object):  # not delete but update rectangle. RoiBox always has only one data in RoiView class
-        self.ax_obj.add_patch(roi_box.rectangle_obj)
+    def show_roi(self):  # not delete but update rectangle. RoiBox always has only one data in RoiView class
+        self.ax_obj.add_patch(self.roi_box.rectangle_obj)
+        self.draw_ax()
 
     def draw_ax(self):
         self.ax_obj.relim()

@@ -96,7 +96,7 @@ class DataSet(DataSetInterface):
         self.__tsm_data_context.set_data(key, val)
 
     def add_data(self, key: str, val: tuple):
-        return self.__controller[key].add_data(*val)
+        return self.__controller[key].add_data(*val)  # * unpacking val data
     
     def get_data(self, key: str) -> object:
         strategy_key = Translator.key_checker(key)
@@ -276,7 +276,7 @@ class FramesStrategy(DataStrategy):
 class ImageStrategy(DataStrategy):
     def __init__(self, object_dict):  # object_dict = dataset._data defined by Translator class
         super().__init__(object_dict)
-        self.__mod_key_list = []  # mod keys: str
+        self.__mod_list = ModList()  #delegation class
         
     def create_data(self, builder, data):
         builder.build_image_set(data)
@@ -285,22 +285,19 @@ class ImageStrategy(DataStrategy):
         return self._object_dict[1][key].get_data()
     
     def get_mod_key(self):
-        return self.__mod_key_list
+        return self.__mod_list.get_mod_key()
     
     def add_mod(self, key: str):
-        self.__mod_key_list.append(key)
-        self.__mod_key_list = sorted(self.__mod_key_list)
-        print('Current mod list = ' + str(self.__mod_key_list))
+        self.__mod_list.add_mod(key)
     
     def remove_mod(self, key: str):
-        self.__mod_key_list.remove(key)
-        print('Current mod list = ' + str(self.__mod_key_list))
+        self.__mod_list.remove_mod(key)
 
 
 class TraceStrategy(DataStrategy):  # FluoTrace
     def __init__(self, object_dict):  # object_dict = dataset._data defined by Translator class
         super().__init__(object_dict)
-        self.__mod_key_list = []  # mod keys: str
+        self.__mod_list = ModList()  #delegation class
 
     def create_data(self, builder, data):
         builder.build_trace_set(data)
@@ -309,22 +306,19 @@ class TraceStrategy(DataStrategy):  # FluoTrace
         return self._object_dict[1][key].get_data()
     
     def get_mod_key(self):
-        return self.__mod_key_list
+        return self.__mod_list.get_mod_key()
     
     def add_mod(self, key: str):
-        self.__mod_key_list.append(key)
-        self.__mod_key_list = sorted(self.__mod_key_list)
-        print('Current mod list = ' + str(self.__mod_key_list))
+        self.__mod_list.add_mod(key)
     
     def remove_mod(self, key: str):
-        self.__mod_key_list.remove(key)
-        print('Current mod list = ' + str(self.__mod_key_list))
+        self.__mod_list.remove_mod(key)
 
     
 class ElecStrategy(DataStrategy):
     def __init__(self, object_dict):  # object_dict = dataset._data defined by Translator class
         super().__init__(object_dict)
-        self.__mod_key_list = []  # mod keys: str
+        self.__mod_list = ModList()  #delegation class
         
     def create_data(self, builder, data):
         builder.build_elec_data_set(self._object_dict[0])
@@ -333,16 +327,13 @@ class ElecStrategy(DataStrategy):
         return self._object_dict[1][key].get_data()
     
     def get_mod_key(self):
-        return self.__mod_key_list
+        return self.__mod_list.get_mod_key()
     
     def add_mod(self, key: str):
-        self.__mod_key_list.append(key)
-        self.__mod_key_list = sorted(self.__mod_key_list)
-        print('Current mod list = ' + str(self.__mod_key_list))
+        self.__mod_list.add_mod(key)
     
     def remove_mod(self, key: str):
-        self.__mod_key_list.remove(key)
-        print('Current mod list = ' + str(self.__mod_key_list))
+        self.__mod_list.remove_mod(key)
     
         
 class RoiStrategy(ControllerStrategy):
@@ -365,7 +356,22 @@ class ElecControllerStrategy(ControllerStrategy):
         
     def create_data(self):
         pass
-
+    
+class ModList():
+    def __init__(self):
+        self.__mod_key_list = []  # mod keys: str
+    
+    def get_mod_key(self):
+        return self.__mod_key_list
+            
+    def add_mod(self, key: str):
+        self.__mod_key_list.append(key)
+        self.__mod_key_list = sorted(self.__mod_key_list)
+        print('Current mod list = ' + str(self.__mod_key_list))
+    
+    def remove_mod(self, key: str):
+        self.__mod_key_list.remove(key)
+        print('Current mod list = ' + str(self.__mod_key_list))
 
 class ModStrategy(DataSetStrategyInterface):
     def __init__(self, data):

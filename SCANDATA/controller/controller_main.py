@@ -30,6 +30,7 @@ class ImagingController:
         self.__filename = filename_obj
         self.view = view
         self.model = None
+        self.__roi_num = None
         
     def create_model(self, filename_obj: object):  
         self.model = DataSet(filename_obj.fullname)  # send filename str
@@ -48,12 +49,13 @@ class ImagingController:
         self.show_data_repository()
         
     def create_view_data(self, factory_type):
-        return self.view_data_repository          .create_view_data(factory_type)
+        return self.view_data_repository.create_view_data(factory_type)
         
     def show_data_repository(self):
         self.view_data_repository            .show_data()
 
     def set_roi_position(self, event, roi_num=1):
+        self.__roi_num = roi_num
         key = 'Roi' + str(roi_num)
         print(key + ':')
         print(event.button, event.x, event.y, event.xdata, event.ydata)
@@ -62,25 +64,25 @@ class ImagingController:
         roi = [roi_x, roi_y]
         self.model.set_data(key, roi)
     
-    def change_roi_size(self, roi_num, val):
+    def change_roi_size(self, roi_num, val): #val = [x,y,x_length,y_length]
+        self.__roi_num = roi_num
         self.model.add_data('Roi' + str(roi_num), val)
-        
-    def get_controller(self, filename: str, key:str) -> object:
-        return self.model.get_data(filename, key)
     
     def add_mod(self, data_key: str, mod_key: str):
         self.model.add_mod(data_key, mod_key)
+        if self.__roi_num is None:
+            return
+        self.change_roi_size(self.__roi_num, [0, 0, 0, 0])
         
     def remove_mod(self, data_key: str, mod_key: str):
         self.model.remove_mod(data_key, mod_key)
+        if self.__roi_num is None:
+            return
+        self.change_roi_size(self.__roi_num, [0, 0, 0, 0])
     
     def count_data(self, filename, key):
         return self.model.count_data(filename, key)
         
-    
-    
-
-
         
 "Value object"
 class WholeFilename:  # Use it only in a view and controller
