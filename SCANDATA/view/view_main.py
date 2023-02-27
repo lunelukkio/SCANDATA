@@ -19,7 +19,6 @@ from SCANDATA.view.data_repository import ViewDataRepository, RoiBox
 from SCANDATA.controller.controller_main import WholeFilename
 
 
-
 class MainView(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
@@ -137,7 +136,9 @@ class DataWindow(tk.Frame):
         
         self.ax_list = []  # [0] = main cell image ax (ImageAxsis class), [1] = fluoresent trace ax (TraceAx class), [2] = elec trace ax
 
-        # set frames
+        #self.button_func = ButtonFunction(self)
+
+        """ Top Buttons"""
         frame_top = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=2, bg = 'white')
         button_open = tk.Button(frame_top, text='Open',command=self.file_open)
         button_close = tk.Button(frame_top, text='Close')
@@ -147,25 +148,27 @@ class DataWindow(tk.Frame):
         
         """Bottom Buttons"""
         frame_bottom = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=0, bg = 'azure')
-        button_add_roi = tk.Button(frame_bottom, text='Add ROI', command=self.add_roi, width=20)
-        button_add_roi.config(fg="black", bg="pink")
-        button_add_roi.pack(side=tk.LEFT, padx=5)
-
-        button_delete_roi = tk.Button(frame_bottom, text='Delete ROI', command=self.delete_roi, width=20)
-        button_delete_roi.config(fg="black", bg="pink")
-        button_delete_roi.pack(side=tk.LEFT)
         
-        #button_large_roi = tk.Button(frame_bottom, text='Large ROI', command=lambda: self.large_roi(1), width=20)  #need lambda for a fuction with aguments
+        #This is an example for using arguments in a button #button_large_roi = tk.Button(frame_bottom, text='Large ROI', command=lambda: self.large_roi(1), width=20)  #need lambda for a fuction with aguments
         button_large_roi = tk.Button(frame_bottom, text='Large ROI', command=self.large_roi, width=20)
         button_large_roi.pack(side=tk.LEFT)
         
         button_small_roi = tk.Button(frame_bottom, text='Small ROI', command=self.small_roi, width=20)
         button_small_roi.pack(side=tk.LEFT)
         
+        button_add_roi = tk.Button(frame_bottom, text='Add ROI', command=self.add_roi, width=5)
+        button_add_roi.config(fg="black", bg="pink")
+        button_add_roi.pack(side=tk.LEFT, padx=5)
+
+        button_delete_roi = tk.Button(frame_bottom, text='Delete ROI', command=self.delete_roi, width=5)
+        button_delete_roi.config(fg="black", bg="pink")
+        button_delete_roi.pack(side=tk.LEFT)
+        
         frame_bottom.pack(side=tk.BOTTOM, fill=tk.BOTH)
 
         #frame_bottom = tk.Frame(master, pady=5, padx=5, relief=tk.RAISED, bd=2)
 
+        """ Image Frame"""
         # tkinter image frame
         frame_left = tk.Frame(master, pady=0, padx=0)
         frame_left.pack(side=tk.LEFT)
@@ -185,14 +188,20 @@ class DataWindow(tk.Frame):
 
         self.canvas_image.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
+        # mouse click events
         self.canvas_image.mpl_connect('button_press_event', self.onclick_image)
         
+        """ Trace Frames"""
         # tkinter trace frame
         frame_right = tk.Frame(master, pady=1, padx=1)
         frame_right.pack(side=tk.RIGHT,expand=True,fill=tkinter.BOTH)
+        
         # matplotlib trace figure
         trace_fig = Figure(figsize=(5, 5), dpi=100, facecolor='azure')  #Figure
         gridspec_trace_fig = trace_fig.add_gridspec(20, 1)
+        
+        ch_select_0 = tk.Checkbutton(trace_fig, text='Full', command=lambda self.ax_list[1].trace_show_flag[0]: not self.ax_list[1].trace_show_flag[0])
+        ch_select_0.pack(side=tk.LEFT)
         
         self.canvas_trace = FigureCanvasTkAgg(trace_fig, frame_right)
         #canvas_trace.get_tk_widget().pack()
@@ -204,7 +213,7 @@ class DataWindow(tk.Frame):
                                            True,  # ch1 trace
                                            False]  # ch2 trace
         
-        # elec trace axes
+        # matplotlib elec trace axes
         trace_ax2 = trace_fig.add_subplot(gridspec_trace_fig[16:20], sharex=self.ax_list[1].ax_obj)
         self.ax_list.append(TraceAx(self.canvas_trace, trace_ax2))  # ax_list[2]
         self.ax_list[2].trace_show_flag = [True,  # ch1
@@ -218,6 +227,7 @@ class DataWindow(tk.Frame):
         
         toolbar_trace = NavigationToolbarTrace(self.canvas_trace, frame_right)
         toolbar_trace.update()
+        
         self.canvas_trace.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
         self.file_open(self.__filename)

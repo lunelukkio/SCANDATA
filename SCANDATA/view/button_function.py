@@ -12,8 +12,11 @@ import os
 
 
 class ButtonFn:
-    def __init__(self, controller):
-        self.contoller = controller
+    def __init__(self, data_window):
+        self.data_window = data_window
+        
+    
+    
   
 
 
