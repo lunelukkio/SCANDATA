@@ -358,12 +358,12 @@ class Observer:
         self.__observers.remove(observer)
     
     def notify_observer(self):
-        for observer_name in self.__observers:
-            observer_name.update(self.view_data)
         name_list = []
         for name in self.__observers:
             name_list.append(name.__class__.__name__)
-        print('Notified to ax: ' + str(name_list))
+        print('Notifiy to ax: ' + str(name_list))
+        for observer_name in self.__observers:
+            observer_name.update(self.view_data)
 
     @property
     def observers(self):

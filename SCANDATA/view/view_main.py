@@ -315,10 +315,30 @@ class DataWindow(tk.Frame):
         self.current_roi_num -= 1
         
     def add_mod(self, data_key, mod_key):
+        if mod_key == 'DFoverF':
+            try:
+                self.remove_mod(data_key, 'Normalize')
+            except:
+                print('No normalize mod.')
+        elif mod_key == 'Normalize':
+            try:
+                self.remove_mod(data_key, 'DFoverF')
+            except:
+                print('No DFoverF mod.')
         self.controller.add_mod(data_key, mod_key)
         self.ax_list[1].draw_ax()
     
     def remove_mod(self, data_key, mod_key):
+        if mod_key == 'F':
+            try:
+                self.controller.remove_mod(data_key, 'DFoverF')
+            except:
+                pass
+            try:
+                self.controller.remove_mod(data_key, 'Normalize')
+            except:
+                pass
+                
         self.controller.remove_mod(data_key, mod_key)
         self.ax_list[1].draw_ax()
         
@@ -383,6 +403,7 @@ class TraceAx:
         self.ax_obj.relim()
         self.ax_obj.autoscale_view()
         self.canvas_trace.draw()
+        print('')
         
     def reset(self):
         self.current_ch = 1
@@ -442,6 +463,7 @@ class ImageAx:
         self.ax_obj.relim()
         self.ax_obj.autoscale_view()
         self.canvas_image.draw()
+        print('')
         
     def reset(self):
         self.current_ch = 1

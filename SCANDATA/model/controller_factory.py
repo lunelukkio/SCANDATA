@@ -111,10 +111,10 @@ class Roi(ModelController):
             y_width = self.__roi_obj.data[3]
             
         self.__roi_obj = RoiVal(x, y, x_width, y_width)  # replace the roi
-        self.notify_observer()
         self.check_val()
         self.print_infor()
-      
+        self.notify_observer()
+
     def add_data(self, x: int, y: int, x_width=0, y_width=0) -> None:
         add_roi_obj = RoiVal(x, y, x_width, y_width)
         self.__roi_obj += add_roi_obj
@@ -128,6 +128,7 @@ class Roi(ModelController):
     
     def reset(self) -> None:
         self.__roi_obj = RoiVal(40, 40, 1, 1)
+        self.print_infor()
         self.notify_observer()
         #print('Reset ROI{} and notified'.format(self.object_num))
         self.print_infor()
@@ -170,26 +171,28 @@ class FrameWindow(ModelController):
 
     def set_data(self, start: int, end: int, start_width=0, end_width=0) -> None:
         self.__frame_window_obj = FrameWindowVal(start, end, start_width, end_width)
+        self.print_infor()
         self.notify_observer()
         #print('Set FrameWindow-{} and notified'.format(self.object_num))
-        self.print_infor()
+
         
     def add_data(self, start: int, end: int, start_width=0, end_width=0) -> None:
         add_frame_window_obj = FrameWindowVal(start, end, start_width, end_width)
         self.__frame_window_obj += add_frame_window_obj
+        self.print_infor()
         self.notify_observer()
         #print('Add to FrameWindow{} and notified'.format(self.object_num))
-        self.print_infor()
+
 
     def get_data(self) -> object:
         return self.__frame_window_obj
     
     def reset(self) -> None:
         self.__frame_window_obj = FrameWindowVal(0, 0, 0, 0)
+        self.print_infor()
         self.notify_observer()
         #print('Reset FrameWindow{} and notified'.format(self.object_num))
-        self.print_infor()
-    
+
     def add_observer(self, observer: object) -> None:
         self.__observers.append(observer)
         
@@ -296,25 +299,25 @@ class ElecController(ModelController):
 
     def set_data(self, start: int, end: int) -> None:
         self.__time_window_obj = TimeWindowVal(start, end)
+        self.print_infor()
         self.notify_observer()
         #print('Set TimeWindow{} and notified'.format(self.object_num))
-        self.print_infor()
-        
+
     def add_data(self, start: int, end: int) -> None:
         add_time_window_obj = TimeWindowVal(start, end)
         self.__time_window_obj += add_time_window_obj
+        self.print_infor()
         self.notify_observer()
         #print('Add to TimeWindow{} and notified'.format(self.object_num))
-        self.print_infor()
 
     def get_data(self) -> object:
         return self.__time_window_obj
     
     def reset(self) -> None:
         self.__time_window_obj = FrameWindowVal(0, 100)
+        self.print_infor()
         self.notify_observer()
         #print('Reset FrameWindow{} and notified'.format(self.object_num))
-        self.print_infor()
     
     def add_observer(self, observer: object) -> None:
         self.__observers.append(observer)

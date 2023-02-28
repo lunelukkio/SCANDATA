@@ -5,6 +5,7 @@ Created on Wed Jan  4 22:57:01 2023
 
 When adding a mod, make a new instance of it \ 
 and add it to instance of chain of responsibility in ModCliet class.
+Also check ModList class in model_main.py
 """
 
 from abc import ABCMeta, abstractmethod
@@ -209,7 +210,9 @@ class TraceCalculation:
         return new_obj
     
     def create_normalize(self, trace_obj):
-        max_val = np.argmax(trace_obj.data)
+        print(trace_obj.data)
+        max_val = np.max(trace_obj.data)
+        print(max_val)
         norm_trace = trace_obj.data/max_val
         norm_obj = self.create_new_value_obj(norm_trace, trace_obj.interval)
         return norm_obj
