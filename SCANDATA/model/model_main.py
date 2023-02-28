@@ -157,7 +157,7 @@ class DataSet(DataSetInterface):
         return self.__controller
 
     def print_infor(self):
-        print('=================== Data keys of ' + str(self.__filename.name) + ' ==================== (called by a DataSet class.create_data())')
+        print('------------------------------Data keys of ' + str(self.__filename.name) + ' ------------------------------ (called by data_set.create_data())')
         print('--- IO Keys = ' + str(list(self.__file_io.keys())))
         print('--- Data Keys = ' + str(list(self.__data.keys())))
         print('--- Controller Keys = ' + str(list(self.__controller.keys())))

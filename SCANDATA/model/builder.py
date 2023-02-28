@@ -117,36 +117,33 @@ class TsmFileBuilder(Builder):
         return product 
     
     def build_image_set(self, data_set) -> None:
-        frame_window = self.create_controller(FrameWindowFactory())
+        self.create_controller(FrameWindowFactory())
         num_ch_frames = KeyCounter.count_key(data_set, 'ChFrames')
         ch_frames_list = []
         for i in range(0, num_ch_frames):
             ch_frames_list.append(data_set['ChFrames' + str(i+1)])
         for i in ch_frames_list:
-            image = self.create_data(CellImageFactory(), i.frames_obj)
-            frame_window.add_observer(image)
+            self.create_data(CellImageFactory(), i.frames_obj)
     
     # for making trace data set
     def build_trace_set(self, data_set) -> None:
         # Make a controller
-        roi = self.create_controller(RoiFactory())
+        self.create_controller(RoiFactory())
         # Make traces
-        full_trace = self.create_data(FullTraceFactory(), 
+        self.create_data(FullTraceFactory(), 
                                       data_set['FullFrames1'].frames_obj, 
                                       data_set['FullFrames1'].interval)
-        roi.add_observer(full_trace)
 
         num_ch_frames = KeyCounter.count_key(data_set, 'ChFrames')
         ch_frames_list = []
         for i in range(0, num_ch_frames):
             ch_frames_list.append(data_set['ChFrames' + str(i+1)])
         for i in ch_frames_list:
-            trace = self.create_data(ChTraceFactory(), i.frames_obj, i.interval)
-            roi.add_observer(trace)
-            
+            self.create_data(ChTraceFactory(), i.frames_obj, i.interval)
+
     def build_elec_data_set(self, raw_data):
         # Make a controller
-        elec_controller = self.create_controller(ElecControllerFactory())
+        self.create_controller(ElecControllerFactory())
         # Make elec traces
         raw_elec_data = copy.deepcopy(raw_data['TbnFileIO1'].get_data())  # made indipendent from the file
         elec_interval = copy.deepcopy(raw_data['TbnFileIO1'].get_infor())    # made indipendent from the file
@@ -156,10 +153,8 @@ class TsmFileBuilder(Builder):
             # Convert from raw data to a value object
             elec_trace_obj = TraceData(raw_elec_data[:,i], elec_interval)
             # make channel electric data
-            trace = self.create_data(ChElecFactory(), elec_trace_obj, elec_interval)
-            elec_controller.add_observer(trace)
+            self.create_data(ChElecFactory(), elec_trace_obj, elec_interval)
             
-        
     def count_data(self):
         #num = 2  # This should be got from cunting ChFrames.
         #ch_frames_list = []
@@ -222,4 +217,5 @@ class KeyCounter:
         for i in key_list:
             if key in i:
                 num += 1
+        print('The number of ' + key + ' is ' + str(num) +'. (KeyCounter)')
         return num    

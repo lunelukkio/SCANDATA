@@ -84,25 +84,16 @@ class NoModHandler(ModHandler):
 class BgCompMod(ModHandler):
     def __init__(self):
         super().__init__()
+        self.trace_calc = TraceCalculation()
         self.__bg_trace_entiry = None
+        
+    def set_bg_trace(self, trace):
+        self.__bg_trace_entiry = trace
         
     def apply_mod(self, original_data, key):
         if key == 'BgComp':
-            print('----------------------- !!!!!!!!! --------------------')
-            print('Tip Need Filter class for filtering a background trace')
-            print('----------------------- !!!!!!!!! --------------------')
-            mod_trace_obj = original_data - self.bg_trace_obj
-            
-            """
-            if self.__data_type != other.data_type:
-                raise Exception('Wrong trace data')
-            F = self.__data[0: 5]
-            mean_F = np.mean(F, axis = 0)
-            delta_F_trace = self.__data - other.data
-            bg_comp_trace = delta_F_trace + mean_F
-            return TraceData(bg_comp_trace, self.__interval)
-            """
-            return mod_trace_obj
+            bg_comp_trace_obj = self.trace_calc.create_bg_comp(original_data)
+            return bg_comp_trace_obj
         else:
             return super().handle_request(original_data, key)
         
@@ -200,9 +191,10 @@ class ErrorMod(ModHandler):
 Trace modify class
 """
 class TraceCalculation:
-    def __init__(self, average_start: int = 1, average_length: int = 4): # frames
-        self.__average_start = average_start
-        self.__average_length = average_length
+    def __init__(self): # frames
+        self.__average_start = 1  # this is for a F value
+        self.__average_length = 4  # This is for a F value
+        self.__bg_trace = None
         
     def create_df_over_f(self, trace_obj):
         f = self.f_value(trace_obj)
@@ -222,4 +214,15 @@ class TraceCalculation:
         max_val = np.max(trace_obj.data)
         norm_obj = trace_obj/max_val
         return norm_obj
+    
+    def create_bg_comp(self, trace_obj):
+            f = self.f_value(trace_obj)
+            bg_f = self.f_value(self.__bg_trace)
+            
+            
+            
+            delta_F_trace = self.__data - other.data
+            bg_comp_trace = delta_F_trace + mean_F
+            return TraceData(bg_comp_trace, self.__interval)
+
     

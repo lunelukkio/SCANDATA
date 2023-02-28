@@ -24,7 +24,7 @@ class ViewDataRepository:
         self.create_elec(ax_list)
         
         print('View Data = ' + str(list(self.__view_data)))
-        print('Initialized the Data Window.')
+        print('==============================Initialized the Data Window.==============================')
         print('')
     
     def create_view_data(self,  factory_type):

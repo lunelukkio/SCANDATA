@@ -10,28 +10,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import inspect
 
-
-
-"""
-Value object factory
-"""
-"""
-
-class ValueObjectFactory(metaclass=ABCMeta):
-    @abstractmethod
-    def create_value_object(self, val):
-        raise NotImplementedError()
-
-
-class FilenameFactory(ValueObjectFactory):
-    def create_value_object(self, val):
-        return Filename(val)
-        
-class Value_object(metaclass=ABCMeta):
-    @abstractmethod
-    def show_data(self, val):
-        raise NotImplementedError()
-"""
         
 """
 Value object

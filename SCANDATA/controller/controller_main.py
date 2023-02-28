@@ -37,7 +37,8 @@ class ImagingController:
         if self.model == None:
             raise Exception('Failed to create a model.')
         else:
-            print('Suceeded to make a model.')
+            print('==============================Suceeded to make a model.============================== (from ImagingController)')
+            print('')
         return self.model
     
     def create_filename_obj(self, filename: str):
