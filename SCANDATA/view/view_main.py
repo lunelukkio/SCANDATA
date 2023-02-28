@@ -192,7 +192,12 @@ class DataWindow(tk.Frame):
                        text="F",
                        variable=self.radio_button_var_1,
                        value="F",
-                       command=lambda: self.remove_mod('Trace', 'DFoverF')).pack(side=tk.LEFT)
+                       command=lambda: self.remove_mod('Trace', 'all')).pack(side=tk.LEFT)
+        ttk.Radiobutton(frame_bottom,
+                       text="Norm",
+                       variable=self.radio_button_var_1,
+                       value="Norm",
+                       command=lambda: self.add_mod('Trace', 'Normalize')).pack(side=tk.LEFT)
 
         """ Image Frame"""
         # tkinter image frame

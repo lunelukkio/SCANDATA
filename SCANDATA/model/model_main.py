@@ -374,8 +374,11 @@ class ModList():
     
     def remove_mod(self, key: str):
         if not self.__mod_key_list:
-            return
-        self.__mod_key_list.remove(key)
+            pass
+        elif key == 'all':
+            self.__mod_key_list = []
+        else:
+            self.__mod_key_list.remove(key)
         print('Current mod list = ' + str(self.__mod_key_list))
 
 class ModStrategy(DataSetStrategyInterface):

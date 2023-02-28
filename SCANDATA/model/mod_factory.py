@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Jan  4 22:57:01 2023
-
 @author: lulul
+
+When adding a mod, make a new instance of it \ 
+and add it to instance of chain of responsibility in ModCliet class.
 """
 
 from abc import ABCMeta, abstractmethod
@@ -19,12 +21,14 @@ class ModClient:  # Put every mods. Don't need to sepalate mods for each data ty
         self.no_mod = NoModHandler()
         self.bg_comp = BgCompMod()
         self.df_over_f = DFOverFMod()
+        self.normalize = Normalize()
         self.error_mod = ErrorMod()
 
         # Chain of resonsibility
         self.chain_of_responsibility = self.no_mod. \
                                        set_next(self.bg_comp). \
                                        set_next(self.df_over_f). \
+                                       set_next(self.normalize). \
                                        set_next(self.error_mod)
         
     def set_mod(self, original_data, mod_keys):
@@ -35,42 +39,6 @@ class ModClient:  # Put every mods. Don't need to sepalate mods for each data ty
             for key in mod_keys:
                 mod_trace = self.no_mod.apply_mod(original_data, key)
         return mod_trace
-    
-    # Not use
-    """
-    def create_mod(self, mod_factory):
-        product = mod_factory.create_mod()
-        return product
-    """
-
-# NOT USE
-"""
-Mod Factory
-
-class ModFactory(metaclass=ABCMeta):
-    @abstractmethod
-    def create_mod(self):
-        raise NotImplementedError()
-
-
-class BgCompFactory(ModFactory):
-    def create_mod(self):
-        return BgCompMod()
-    
-
-class DfOverFFactory(ModFactory):
-    def create_mod(self):
-        return DFOverFMod()
-    
-
-class TraceFilterFactory(ModFactory):
-    def create_mod(self):
-        return TraceFilterMod()
-    
-class FlamesFilterFactory(ModFactory):
-    def create_mod(self):
-        return FlamesFilterMod()
-"""
     
 """
 Handler
@@ -159,6 +127,19 @@ class DFOverFMod(ModHandler):
         else:
             return super().handle_request(original_data, key)
         
+class Normalize(ModHandler):
+    def __init__(self):
+        super().__init__()
+        self.trace_calc = TraceCalculation()
+        
+    def apply_mod(self, original_data, key):
+        if key == 'Normalize':
+            normalize = self.trace_calc.create_normalize(original_data)
+            mod_trace_obj = normalize
+            return mod_trace_obj
+        else:
+            return super().handle_request(original_data, key)
+        
     # This should be in View class?
 class Invert(ModHandler):
     pass
@@ -226,4 +207,10 @@ class TraceCalculation:
     def create_new_value_obj(self, val, interval):
         new_obj = TraceData(val, interval)
         return new_obj
+    
+    def create_normalize(self, trace_obj):
+        max_val = np.argmax(trace_obj.data)
+        norm_trace = trace_obj.data/max_val
+        norm_obj = self.create_new_value_obj(norm_trace, trace_obj.interval)
+        return norm_obj
     
