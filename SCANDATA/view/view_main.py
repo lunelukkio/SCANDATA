@@ -168,16 +168,16 @@ class DataWindow(tk.Frame):
         ttk.Checkbutton(frame_bottom,
                         text='Full',
                         variable=self.checkbox_flag_var_0,
-                        command=lambda: self.ax_list[1].change_ch(0)).pack(side=tk.LEFT)
+                        command=lambda: self.select_ch(0)).pack(side=tk.LEFT)
         ttk.Checkbutton(frame_bottom,
                         text='Ch 1',
                         variable=self.checkbox_flag_var_1,
-                        command=lambda: self.ax_list[1].change_ch(1)).pack(side=tk.LEFT)
+                        command=lambda: self.select_ch(1)).pack(side=tk.LEFT)
 
         ttk.Checkbutton(frame_bottom,
                         text='Ch 2',
                         variable=self.checkbox_flag_var_2,
-                        command=lambda: self.ax_list[1].change_ch(2)).pack(side=tk.LEFT)
+                        command=lambda: self.select_ch(2)).pack(side=tk.LEFT)
         frame_bottom.pack(side=tk.BOTTOM, fill=tk.BOTH)
         
         # for the mod radio buttons
@@ -295,6 +295,9 @@ class DataWindow(tk.Frame):
             else:
                 pass
             self.view_data_repository.update('RoiView' + str(self.current_roi_num))
+            
+    def select_ch(self, ch):
+        self.ax_list[1].select_ch(ch)
                 
     def large_roi(self):
         self.change_roi_size([0, 0, 1, 1])
@@ -410,7 +413,7 @@ class TraceAx:
         self.trace = []
         self.ax_obj.clear()
         
-    def change_ch(self, ch):
+    def select_ch(self, ch):
         self.trace_show_flag[ch] = not self.trace_show_flag[ch]
         self.show_data()
 
