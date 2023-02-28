@@ -275,7 +275,8 @@ class DataWindow(tk.Frame):
         self.add_mod('Trace', 'DFoverF')
         
         self.view_data_repository.initialize_view_data_repository(self.ax_list)
-
+        self.controller.current_roi_num = self.current_roi_num
+        
     def onclick_image(self, event):
         if event.button == 1:  # left click
             self.controller.set_roi_position(event, self.current_roi_num)

@@ -6,6 +6,7 @@ lunelukkio@gmail.com
 """
 
 import tkinter as tk
+import inspect, pprint
 
 class Application(tk.Frame):
   def __init__(self,master):
@@ -21,11 +22,11 @@ class Application(tk.Frame):
     self.button.place(x=110, y=150)
     self.button.config(fg="black", bg="skyblue")
     
-    frame = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=0)
-    var = tk.BooleanVar(value=True)
-    checkbutton = tk.Checkbutton(frame, text="Check", variable=var)
-    checkbutton.pack()
-    frame.pack(fill=tk.X)
+frame = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=0)
+        var = tk.BooleanVar(value=True)
+        checkbutton = tk.Checkbutton(frame, text="Check", variable=var)
+        checkbutton.pack()
+        frame.pack(fill=tk.X)
 
     print(self.window)
     print(self.user)

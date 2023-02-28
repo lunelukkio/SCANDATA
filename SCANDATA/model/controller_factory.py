@@ -100,12 +100,14 @@ class Roi(ModelController):
            self.__roi_obj.data[3] < 1:
             raise ValueError('ROI value shold be more than 1')
 
-    def set_data(self, x: int, y: int, *args) -> None:
-        try:
-            x_width = args[0]
-            y_width = args[1]
-        except:
+    def set_data(self, x = None, y = None, x_width = None, y_width = None) -> None:
+        if x is None:
+            x = self.__roi_obj.data[0]
+        if y is None:
+            y = self.__roi_obj.data[1]
+        if x_width is None:
             x_width = self.__roi_obj.data[2]
+        if y_width is None:
             y_width = self.__roi_obj.data[3]
             
         self.__roi_obj = RoiVal(x, y, x_width, y_width)  # replace the roi

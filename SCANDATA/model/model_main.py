@@ -256,7 +256,7 @@ class ControllerStrategy(DataSetStrategyInterface):
         self._object_dict = object_dict
 
     def set_data(self, key, val):
-        self._object_dict[2][key].set_data(*val)
+        self._object_dict[2][key].set_data(*val)  # Expend val and send to Roi class
         
     def get_data(self, key):
         return self._object_dict[2][key].get_data()
