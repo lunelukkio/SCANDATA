@@ -161,21 +161,20 @@ class DataWindow(tk.Frame):
         #for the ch select buttons
         style = ttk.Style()
         style.configure('TCheckbutton', background=self.my_color)
-        self.checkbox_flag_var_0 = tk.BooleanVar(value=False)
-        self.checkbox_flag_var_1 = tk.BooleanVar(value=True)
-        self.checkbox_flag_var_2 = tk.BooleanVar(value=False)
+        
+        self.checkbox_flag_list = [tk.BooleanVar(value=False), tk.BooleanVar(value=True), tk.BooleanVar(value=False)]
         ttk.Checkbutton(frame_bottom,
                         text='Full',
-                        variable=self.checkbox_flag_var_0,
+                        variable=self.checkbox_flag_list[0],
                         command=lambda: self.select_ch(0)).pack(side=tk.LEFT)
         ttk.Checkbutton(frame_bottom,
                         text='Ch 1',
-                        variable=self.checkbox_flag_var_1,
+                        variable=self.checkbox_flag_list[1],
                         command=lambda: self.select_ch(1)).pack(side=tk.LEFT)
 
         ttk.Checkbutton(frame_bottom,
                         text='Ch 2',
-                        variable=self.checkbox_flag_var_2,
+                        variable=self.checkbox_flag_list[2],
                         command=lambda: self.select_ch(2)).pack(side=tk.LEFT)
         frame_bottom.pack(side=tk.BOTTOM, fill=tk.BOTH)
         
@@ -295,10 +294,16 @@ class DataWindow(tk.Frame):
                 pass
             self.view_data_repository.update('RoiView' + str(self.current_roi_num))
             
+    # this method need refactoring.
     def select_ch(self, ch):
         self.ax_list[1].select_ch(ch)  # This is for flag to showing traces.
-        self.controller.select_ch(ch)
-                
+        if ch == 0:
+            self.controller.bind_keys('Roi' + str(self.current_roi_num),
+                                      'FullTrace' + str(self.current_roi_num))
+        else:
+            self.controller.bind_keys('Roi' + str(self.current_roi_num),
+                                      'ChTrace' + str(self.current_roi_num*2-2+ch))
+
     def large_roi(self):
         self.change_roi_size([0, 0, 1, 1])
 

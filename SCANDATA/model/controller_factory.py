@@ -134,7 +134,11 @@ class Roi(ModelController):
         self.print_infor()
 
     def add_observer(self, observer):
-        self.__observers.append(observer)
+        for check_observer in self.__observers:
+            if check_observer == observer:
+                self.remove_observer(observer)
+        else:
+            self.__observers.append(observer)
  
     def remove_observer(self, observer):
         self.__observers.remove(observer)
