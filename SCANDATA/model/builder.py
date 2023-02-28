@@ -124,7 +124,7 @@ class TsmFileBuilder(Builder):
             ch_frames_list.append(data_set['ChFrames' + str(i+1)])
         for i in ch_frames_list:
             image = self.create_data(CellImageFactory(), i.frames_obj)
-            #frame_window.add_observer(image)
+            frame_window.add_observer(image)
     
     # for making trace data set
     def build_trace_set(self, data_set) -> None:
@@ -142,7 +142,7 @@ class TsmFileBuilder(Builder):
             ch_frames_list.append(data_set['ChFrames' + str(i+1)])
         for i in ch_frames_list:
             trace = self.create_data(ChTraceFactory(), i.frames_obj, i.interval)
-            #roi.add_observer(trace)
+            roi.add_observer(trace)
             
     def build_elec_data_set(self, raw_data):
         # Make a controller
@@ -157,7 +157,7 @@ class TsmFileBuilder(Builder):
             elec_trace_obj = TraceData(raw_elec_data[:,i], elec_interval)
             # make channel electric data
             trace = self.create_data(ChElecFactory(), elec_trace_obj, elec_interval)
-            #elec_controller.add_observer(trace)
+            elec_controller.add_observer(trace)
             
         
     def count_data(self):

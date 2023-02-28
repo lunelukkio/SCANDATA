@@ -74,9 +74,6 @@ class ImagingController:
         self.model.set_data(key, val)
         
     def bind_keys(self, controller_key, data_key):
-        print('ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd')
-        print(controller_key)
-        print(data_key)
         self.model.bind_data(controller_key, data_key)
     
     def add_mod(self, data_key: str, mod_key: str):

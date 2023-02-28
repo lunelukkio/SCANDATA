@@ -162,7 +162,7 @@ class DataWindow(tk.Frame):
         style = ttk.Style()
         style.configure('TCheckbutton', background=self.my_color)
         
-        self.checkbox_flag_list = [tk.BooleanVar(value=False), tk.BooleanVar(value=True), tk.BooleanVar(value=False)]
+        self.checkbox_flag_list = [tk.BooleanVar(value=True), tk.BooleanVar(value=True), tk.BooleanVar(value=True)]
         ttk.Checkbutton(frame_bottom,
                         text='Full',
                         variable=self.checkbox_flag_list[0],
@@ -237,9 +237,9 @@ class DataWindow(tk.Frame):
         # matplotlib trace axes
         trace_ax1 = trace_fig.add_subplot(gridspec_trace_fig[0:15])
         self.ax_list.append(TraceAx(self.canvas_trace, trace_ax1))  # ax_list[1]
-        self.ax_list[1].trace_show_flag = [False,  # full trace
+        self.ax_list[1].trace_show_flag = [True,  # full trace
                                            True,  # ch1 trace
-                                           False]  # ch2 trace
+                                           True]  # ch2 trace
         
         # matplotlib elec trace axes
         trace_ax2 = trace_fig.add_subplot(gridspec_trace_fig[16:20], sharex=self.ax_list[1].ax_obj)
@@ -296,7 +296,7 @@ class DataWindow(tk.Frame):
             
     # this method need refactoring.
     def select_ch(self, ch):
-        self.ax_list[1].select_ch(ch)  # This is for flag to showing traces.
+        #self.ax_list[1].select_ch(ch)  # This is for flag to showing traces.
         if ch == 0:
             self.controller.bind_keys('Roi' + str(self.current_roi_num),
                                       'FullTrace' + str(self.current_roi_num))
@@ -375,7 +375,7 @@ class TraceAx:
 
         self.trace = []
         # Need refactoring for valiable number of traces. Now num of flags is only 3.
-        self.trace_show_flag = []
+        #self.trace_show_flag = []
         
         self.color_selection = ['black', 'red', 'blue', 'orange', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
  
@@ -383,9 +383,19 @@ class TraceAx:
         self.data_list = view_data.get_data()
         self.show_data()
 
+
     def show_data(self):
         line_num = len(self.trace)
-        if line_num > 0:
+        if line_num == 0:
+            i = 0
+            for trace_value_obj in self.data_list:
+                line_2d, = trace_value_obj.show_data(self.ax_obj)  # line"," means the first element of a list (convert from list to objet). Don't remove it.
+                self.trace.append(line_2d)  # Add to the list for trace1 trace line objects [Line_2D] of axes object
+                line_2d.set_color(self.color_selection[i])
+                if self.trace_show_flag[i] == False:
+                    line_2d.set_data(None,None)
+                i += 1 
+        elif line_num > 0:
             i = 0
             for trace_value_obj in self.data_list:
                 if self.trace_show_flag[i] is True:
@@ -396,15 +406,7 @@ class TraceAx:
                     data = None
                 self.trace[i].set_data(time,data)
                 i += 1
-        elif line_num == 0:
-            i = 0
-            for trace_value_obj in self.data_list:
-                line_2d, = trace_value_obj.show_data(self.ax_obj)  # line"," means the first element of a list (convert from list to objet). Don't remove it.
-                self.trace.append(line_2d)  # Add to the list for trace1 trace line objects [Line_2D] of axes object
-                line_2d.set_color(self.color_selection[i])
-                if self.trace_show_flag[i] == False:
-                    line_2d.set_data(None,None)
-                i += 1 
+
         self.draw_ax()
         
     def draw_ax(self):

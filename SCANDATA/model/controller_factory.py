@@ -131,18 +131,17 @@ class Roi(ModelController):
         self.print_infor()
         self.notify_observer()
         #print('Reset ROI{} and notified'.format(self.object_num))
-        self.print_infor()
 
     def add_observer(self, observer):
         for check_observer in self.__observers:
             if check_observer == observer:
                 self.remove_observer(observer)
-        else:
-            self.__observers.append(observer)
+                return
+        self.__observers.append(observer)
  
     def remove_observer(self, observer):
         self.__observers.remove(observer)
-    
+
     def notify_observer(self):
         for observer_name in self.__observers:
             observer_name.update(self.get_data())

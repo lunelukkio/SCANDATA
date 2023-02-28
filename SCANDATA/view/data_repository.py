@@ -161,7 +161,6 @@ class RoiView(ViewData):
         self.__key = 'Roi' + str(object_num)
         self.__model.create_data('Trace')
         self.__roi_box = RoiBox(self.__model, self.__key)
-        self.__data_name_list = self.__model.get_infor(self.__key)
         self.__data_list = []  # a list of value object 
         
         print('Created ' + self.__key + ' view instance including Roi controller and traces.')
@@ -170,9 +169,13 @@ class RoiView(ViewData):
         raise NotImplementedError()
 
     def update(self, *no_use):  # no_use is a RoiVal object. it need for FluoTrace observers.
+        observer_trace_list = []
+        for key in self.__model.get_infor(self.__key):  # get only keys which include 'Trace'
+            if 'Trace' in key:
+                observer_trace_list.append(key)
         # for traces
         new_data = []
-        for data_name in self.__data_name_list:
+        for data_name in observer_trace_list:
             new_data.append(self.__model.get_data(data_name))
         self.__data_list = new_data
         #for roibox
