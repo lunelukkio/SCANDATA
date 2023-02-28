@@ -365,11 +365,16 @@ class ModList():
         return self.__mod_key_list
             
     def add_mod(self, key: str):
+        for key_in_list in self.__mod_key_list:
+            if key == key_in_list:
+                return
         self.__mod_key_list.append(key)
         self.__mod_key_list = sorted(self.__mod_key_list)
         print('Current mod list = ' + str(self.__mod_key_list))
     
     def remove_mod(self, key: str):
+        if not self.__mod_key_list:
+            return
         self.__mod_key_list.remove(key)
         print('Current mod list = ' + str(self.__mod_key_list))
 

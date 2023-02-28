@@ -153,48 +153,46 @@ class DataWindow(tk.Frame):
         """Bottom Buttons"""
         frame_bottom = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=0, bg = self.my_color)
         
-        #This is an example for using arguments in a button #button_large_roi = tk.Button(frame_bottom, text='Large ROI', command=lambda: self.large_roi(1), width=20)  #need lambda for a fuction with aguments
+        # for ROI control
         tk.Button(frame_bottom, text='Large ROI', command=self.large_roi, width=20).pack(side=tk.LEFT)
         tk.Button(frame_bottom, text='Small ROI', command=self.small_roi, width=20).pack(side=tk.LEFT)
-        #tk.Button(frame_bottom, text='Add ROI', fg="black", bg="pink", command=self.add_roi, width=5).pack(side=tk.LEFT, padx=5)
+        tk.Button(frame_bottom, text='Add ROI', fg="black", bg="pink", state='disable', command=self.add_roi, width=5).pack(side=tk.LEFT, padx=5)
+        tk.Button(frame_bottom, text='Delete ROI', fg="black", bg="pink", state='disable', command=self.delete_roi, width=5).pack(side=tk.LEFT)
         
-        #tk.Button(frame_bottom, text='Delete ROI', fg="black", bg="pink", command=self.delete_roi, width=5).pack(side=tk.LEFT)
-        checkbox_flag_var_0 = tk.BooleanVar(value=False)
-        checkbox_flag_var_1 = tk.BooleanVar(value=False)
-        checkbox_flag_var_2 = tk.BooleanVar(value=False)
-        tk.Checkbutton(frame_bottom,
+        #for the ch select buttons
+        style = ttk.Style()
+        style.configure('TCheckbutton', background=self.my_color)
+        self.checkbox_flag_var_0 = tk.BooleanVar(value=False)
+        self.checkbox_flag_var_1 = tk.BooleanVar(value=True)
+        self.checkbox_flag_var_2 = tk.BooleanVar(value=False)
+        ttk.Checkbutton(frame_bottom,
                         text='Full',
-                        bg=self.my_color,
-                        variable=checkbox_flag_var_0,
+                        variable=self.checkbox_flag_var_0,
                         command=lambda: self.ax_list[1].change_ch(0)).pack(side=tk.LEFT)
-        tk.Checkbutton(frame_bottom,
+        ttk.Checkbutton(frame_bottom,
                         text='Ch 1',
-                        bg=self.my_color,
-                        variable=checkbox_flag_var_1,
-                        onvalue='Ture',
-                        offvalue='False',
+                        variable=self.checkbox_flag_var_1,
                         command=lambda: self.ax_list[1].change_ch(1)).pack(side=tk.LEFT)
 
-        tk.Checkbutton(frame_bottom,
+        ttk.Checkbutton(frame_bottom,
                         text='Ch 2',
-                        bg=self.my_color,
-                        variable=checkbox_flag_var_2,
+                        variable=self.checkbox_flag_var_2,
                         command=lambda: self.ax_list[1].change_ch(2)).pack(side=tk.LEFT)
         frame_bottom.pack(side=tk.BOTTOM, fill=tk.BOTH)
         
-        var = tk.StringVar(value="DFoverF")
-        tk.Radiobutton(frame_bottom,
+        # for the mod radio buttons
+        style.configure('TRadiobutton', background=self.my_color)
+        self.radio_button_var_1 = tk.StringVar(value="DFoverF")
+        ttk.Radiobutton(frame_bottom,
                        text="DF/F",
-                       bg=self.my_color,
-                       variable=var,
+                       variable=self.radio_button_var_1,
                        value="DFoverF",
-                       command=lambda: self.controller.add_mod('Trace', 'DFoverF')).pack(side=tk.LEFT)
-        tk.Radiobutton(frame_bottom,
+                       command=lambda: self.add_mod('Trace', 'DFoverF')).pack(side=tk.LEFT)
+        ttk.Radiobutton(frame_bottom,
                        text="F",
-                       bg=self.my_color,
-                       variable=var,
+                       variable=self.radio_button_var_1,
                        value="F",
-                       command=lambda: self.controller.remove_mod('Trace', 'DFoverF')).pack(side=tk.LEFT)
+                       command=lambda: self.remove_mod('Trace', 'DFoverF')).pack(side=tk.LEFT)
 
         """ Image Frame"""
         # tkinter image frame
@@ -237,7 +235,7 @@ class DataWindow(tk.Frame):
         trace_ax1 = trace_fig.add_subplot(gridspec_trace_fig[0:15])
         self.ax_list.append(TraceAx(self.canvas_trace, trace_ax1))  # ax_list[1]
         self.ax_list[1].trace_show_flag = [False,  # full trace
-                                           False,  # ch1 trace
+                                           True,  # ch1 trace
                                            False]  # ch2 trace
         
         # matplotlib elec trace axes
@@ -274,7 +272,7 @@ class DataWindow(tk.Frame):
         self.model = self.controller.create_model(self.__filename)
         self.view_data_repository.model = self.model
         
-        self.controller.add_mod('Trace', 'DFoverF')
+        self.add_mod('Trace', 'DFoverF')
         
         self.view_data_repository.initialize_view_data_repository(self.ax_list)
 
@@ -309,6 +307,14 @@ class DataWindow(tk.Frame):
         for i in range(len(self.ax_list)):
             self.ax_list[i].draw_ax()
         self.current_roi_num -= 1
+        
+    def add_mod(self, data_key, mod_key):
+        self.controller.add_mod(data_key, mod_key)
+        self.ax_list[1].draw_ax()
+    
+    def remove_mod(self, data_key, mod_key):
+        self.controller.remove_mod(data_key, mod_key)
+        self.ax_list[1].draw_ax()
         
     def reset(self):
         self.current_roi_num = 2

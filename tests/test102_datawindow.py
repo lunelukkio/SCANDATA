@@ -22,7 +22,7 @@ class TestFullFrames(unittest.TestCase):
         
         view = DataWindow(root, filename_obj)
         
-        view.mainloop()
+        root.mainloop()
 
 
 if __name__ == '__main__':

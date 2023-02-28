@@ -148,7 +148,6 @@ class ImageData:
         return self.__data_type
     
     def show_data(self, plt=plt) -> object:    # plt shold be an axis in a view class object = AxisImage
-        plt.rcParams["figure.autolayout"] = True
         return plt.imshow(self.__data, cmap='gray', interpolation='none', aspect='auto')
     
     

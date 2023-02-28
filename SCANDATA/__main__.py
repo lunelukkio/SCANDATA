@@ -32,7 +32,7 @@ class Main:
         controller.view = view
         
 
-        view.mainloop()
+        root.mainloop()
 
 if __name__ == '__main__':
     scandata = Main()

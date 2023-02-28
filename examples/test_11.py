@@ -1,11 +1,16 @@
-import numpy as np
-from matplotlib import pyplot as plt
+import tkinter as tk
+class A:
+    def __init__(self):
+        root = tk.Tk()
+        view = B(root)
+        root.mainloop()
 
-plt.rcParams["figure.figsize"] = [7.00, 3.50]
-plt.rcParams["figure.autolayout"] = True
+class B(tk.Frame):
+    def __init__(self, master=None):
+        super().__init__(master)
+        self.check_var = tk.BooleanVar(value=True)
+        self.check_button = tk.Checkbutton(master,text="Check", variable=self.check_var)
+        self.check_button.pack()
 
-data = np.random.rand(4, 4)
-
-plt.imshow(data, origin='lower', extent=[-4, 4, -1, 1], aspect=4)
-
-plt.show()
+if __name__ == '__main__':
+    test = A()
