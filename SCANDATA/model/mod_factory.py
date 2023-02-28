@@ -92,6 +92,16 @@ class BgCompMod(ModHandler):
             print('Tip Need Filter class for filtering a background trace')
             print('----------------------- !!!!!!!!! --------------------')
             mod_trace_obj = original_data - self.bg_trace_obj
+            
+            """
+            if self.__data_type != other.data_type:
+                raise Exception('Wrong trace data')
+            F = self.__data[0: 5]
+            mean_F = np.mean(F, axis = 0)
+            delta_F_trace = self.__data - other.data
+            bg_comp_trace = delta_F_trace + mean_F
+            return TraceData(bg_comp_trace, self.__interval)
+            """
             return mod_trace_obj
         else:
             return super().handle_request(original_data, key)
@@ -196,9 +206,8 @@ class TraceCalculation:
         
     def create_df_over_f(self, trace_obj):
         f = self.f_value(trace_obj)
-        df_over_f_val = (trace_obj.data/f -1) * 100
-        new_obj = self.create_new_value_obj(df_over_f_val, trace_obj.interval)
-        return new_obj
+        df_over_f = (trace_obj/f -1) * 100
+        return df_over_f
         
     def f_value(self, trace_obj) -> float: # trace is value object.
         part_trace = trace_obj.data[self.__average_start : self.__average_start + self.__average_length]
@@ -210,10 +219,7 @@ class TraceCalculation:
         return new_obj
     
     def create_normalize(self, trace_obj):
-        print(trace_obj.data)
         max_val = np.max(trace_obj.data)
-        print(max_val)
-        norm_trace = trace_obj.data/max_val
-        norm_obj = self.create_new_value_obj(norm_trace, trace_obj.interval)
+        norm_obj = trace_obj/max_val
         return norm_obj
     

@@ -176,18 +176,33 @@ class TraceData:
         #print('Deleted a TraceData object.' + '  myId= {}'.format(id(self)))
         pass
         
-    # This is for background substruction
-    def __sub__(self, other: object) -> object:
-        if self.__data_type != other.data_type:
-            raise Exception('Wrong trace data')
-        F = self.__data[0: 5]
-        mean_F = np.mean(F, axis = 0)
-        delta_F_trace = self.__data - other.data
-        bg_comp_trace = delta_F_trace + mean_F
-        return TraceData(bg_comp_trace, self.__interval)
-
+    def __sub__(self, sub_val) -> object:
+        if type(sub_val) != float and \
+           type(sub_val) != int and \
+           type(sub_val) != np.int64 and \
+           type(sub_val) != np.float64:
+            raise Exception('Wrong value. This value object should be dvided by int or float')
+        sub_trace = self.__data - sub_val
+        return TraceData(sub_trace, self.__interval)
         
-    #def __/__
+    def __truediv__(self, div_val) -> object:
+        if type(div_val) != float and \
+           type(div_val) != int and \
+           type(div_val) != np.int64 and \
+           type(div_val) != np.float64:
+            raise Exception('Wrong value. This value object should be dvided by int or float')
+        div_trace = self.__data/div_val
+        return TraceData(div_trace, self.__interval)
+    
+    def __mul__(self, mul_val) -> object:
+        if type(mul_val) != float and \
+           type(mul_val) != int and \
+           type(mul_val) != np.int64 and \
+           type(mul_val) != np.float64:
+            raise Exception('Wrong value. This value object should be dvided by int or float')
+        mul_trace = self.__data * mul_val
+        return TraceData(mul_trace, self.__interval)
+        
         
     def __create_time_data(self, trace, interval) -> np.ndarray:
         num_data_point = interval * np.shape(trace)[0]
