@@ -27,6 +27,7 @@ class MainView(tk.Frame):
         self.__filename_obj_list = []
         self.window = []
         self.data_window = []  # data window obj
+        self.my_color_main = 'azure'
         
         self.pack()
         master.geometry('500x100')
@@ -38,7 +39,7 @@ class MainView(tk.Frame):
         """
         
         "Top frame"
-        frame_top = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=0, bg = 'azure')
+        frame_top = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=0, bg = self.my_color_main)
         button_open_data = tk.Button(frame_top,text='Open data',command=self.open_file,width=10)
         button_open_data.place(x=110, y=150)
         button_open_data.config(fg='black', bg='skyblue')
@@ -46,7 +47,7 @@ class MainView(tk.Frame):
         frame_top.pack(side=tk.TOP, fill=tk.X)
         
         "Bottom frame"
-        frame_bottom = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=0, bg = 'azure')
+        frame_bottom = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=0, bg = self.my_color_main)
         button_open_data = tk.Button(frame_bottom,text='Open data',state='disable',command=self.open_file_with_list,width=10)
         button_open_data.place(x=110, y=150)
         button_open_data.config(fg='black', bg='skyblue')
@@ -58,7 +59,7 @@ class MainView(tk.Frame):
         frame_bottom.pack(side=tk.BOTTOM, fill=tk.X)
         
         "Middle frame"
-        frame_middle = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=2, bg = 'azure')
+        frame_middle = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=2, bg = self.my_color_main)
         frame_middle.pack(side=tk.TOP, fill=tk.BOTH)
 
         self.create_menu()
@@ -133,9 +134,10 @@ class DataWindow(tk.Frame):
         self.controller = None
         self.view_data_repository = ViewDataRepository()
         self.current_roi_num = None  # roi class start from Roi1
+        self.my_color = '#BCD2EE'
         
         master.geometry('1400x700')
-        master.configure(background='azure')
+        master.configure(background=self.my_color)
         master.title(self.__filename.name)
         
         self.ax_list = []  # [0] = main cell image ax (ImageAxsis class), [1] = fluoresent trace ax (TraceAx class), [2] = elec trace ax
@@ -149,7 +151,7 @@ class DataWindow(tk.Frame):
         frame_top.pack(fill=tk.X)
         
         """Bottom Buttons"""
-        frame_bottom = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=0, bg = 'azure')
+        frame_bottom = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=0, bg = self.my_color)
         
         #This is an example for using arguments in a button #button_large_roi = tk.Button(frame_bottom, text='Large ROI', command=lambda: self.large_roi(1), width=20)  #need lambda for a fuction with aguments
         tk.Button(frame_bottom, text='Large ROI', command=self.large_roi, width=20).pack(side=tk.LEFT)
@@ -162,12 +164,12 @@ class DataWindow(tk.Frame):
         checkbox_flag_var_2 = tk.BooleanVar(value=False)
         tk.Checkbutton(frame_bottom,
                         text='Full',
-                        bg='azure',
+                        bg=self.my_color,
                         variable=checkbox_flag_var_0,
                         command=lambda: self.ax_list[1].change_ch(0)).pack(side=tk.LEFT)
         tk.Checkbutton(frame_bottom,
                         text='Ch 1',
-                        bg='azure',
+                        bg=self.my_color,
                         variable=checkbox_flag_var_1,
                         onvalue='Ture',
                         offvalue='False',
@@ -175,7 +177,7 @@ class DataWindow(tk.Frame):
 
         tk.Checkbutton(frame_bottom,
                         text='Ch 2',
-                        bg='azure',
+                        bg=self.my_color,
                         variable=checkbox_flag_var_2,
                         command=lambda: self.ax_list[1].change_ch(2)).pack(side=tk.LEFT)
         frame_bottom.pack(side=tk.BOTTOM, fill=tk.BOTH)
@@ -183,13 +185,13 @@ class DataWindow(tk.Frame):
         var = tk.StringVar(value="DFoverF")
         tk.Radiobutton(frame_bottom,
                        text="DF/F",
-                       bg='azure',
+                       bg=self.my_color,
                        variable=var,
                        value="DFoverF",
                        command=lambda: self.controller.add_mod('Trace', 'DFoverF')).pack(side=tk.LEFT)
         tk.Radiobutton(frame_bottom,
                        text="F",
-                       bg='azure',
+                       bg=self.my_color,
                        variable=var,
                        value="F",
                        command=lambda: self.controller.remove_mod('Trace', 'DFoverF')).pack(side=tk.LEFT)
@@ -199,7 +201,7 @@ class DataWindow(tk.Frame):
         frame_left = tk.Frame(master, pady=0, padx=0)
         frame_left.pack(side=tk.LEFT)
         # matplotlib image figure
-        image_fig = Figure(figsize=(5, 5), dpi=100, facecolor='azure')  #Figure
+        image_fig = Figure(figsize=(5, 5), dpi=100, facecolor=self.my_color)  #Figure
         # matplotlib image axes
         image_ax = image_fig.add_subplot(1, 1, 1)           #Axes
         
@@ -221,9 +223,10 @@ class DataWindow(tk.Frame):
         # tkinter trace frame
         frame_right = tk.Frame(master, pady=1, padx=1)
         frame_right.pack(side=tk.RIGHT,expand=True,fill=tkinter.BOTH)
+        frame_right.pack_propagate(False)
         
         # matplotlib trace figure
-        trace_fig = Figure(figsize=(5, 5), dpi=100, facecolor='azure')  #Figure
+        trace_fig = Figure(figsize=(5, 5), dpi=100, facecolor=self.my_color)  #Figure
         gridspec_trace_fig = trace_fig.add_gridspec(20, 1)
 
         
@@ -249,7 +252,7 @@ class DataWindow(tk.Frame):
                                            False,  # ch7
                                            False]  # ch8
         
-        toolbar_trace = NavigationToolbarTrace(self.canvas_trace, frame_right)
+        toolbar_trace = NavigationToolbarTrace(self.canvas_trace, frame_right, self.my_color)
         toolbar_trace.update()
         
         self.canvas_trace.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
@@ -435,14 +438,15 @@ class ImageAx:
         
 
 class NavigationToolbarTrace(NavigationToolbar2Tk):
-    def __init__(self, canvas=None, master=None):
+    def __init__(self, canvas=None, master=None, my_color=None):
         super().__init__(canvas, master)   
         self.canvas = canvas
         self.master = master
+        self.bg_color = my_color
 
-        self['bg'] = 'azure'
+        self['bg'] = self.bg_color
         for item in self.winfo_children():
-           item['bg'] = 'azure'
+           item['bg'] = self.bg_color
 
     def get_val(self):
         pass
