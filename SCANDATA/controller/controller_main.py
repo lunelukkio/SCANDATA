@@ -63,29 +63,32 @@ class ImagingController:
         roi_x = math.floor(event.xdata)
         roi_y = math.floor(event.ydata)
         roi = [roi_x, roi_y]
-        self.send_message(key, roi)
+        self.send_update_message(key, roi)
     
     def change_roi_size(self, roi_num, val): #val = [x,y,x_length,y_length]
         self.current_roi_num = roi_num
         key = 'Roi' + str(roi_num)
-        self.send_message(key, val)
+        self.send_update_message(key, val)
         
-    def send_message(self, key, val):
+    def send_update_message(self, key, val):
         self.model.set_data(key, val)
+        
+    def select_ch(self, ch):
+        self.model.bind_data()
     
     def add_mod(self, data_key: str, mod_key: str):
         self.model.add_mod(data_key, mod_key)
         if self.current_roi_num is None:
             return
         key = 'Roi' + str(self.current_roi_num)
-        self.send_message(key, [])
+        self.send_update_message(key, [])
         
     def remove_mod(self, data_key: str, mod_key: str):
         self.model.remove_mod(data_key, mod_key)
         if self.current_roi_num is None:
             return
         key = 'Roi' + str(self.current_roi_num)
-        self.send_message(key, [])
+        self.send_update_message(key, [])
     
     def count_data(self, filename, key):
         return self.model.count_data(filename, key)

@@ -11,7 +11,6 @@ from tkinter import ttk
 import tkinter.filedialog
 import os
 from matplotlib.figure import Figure
-from cycler import cycler
 import gc
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from SCANDATA.controller.controller_main import ImagingController
@@ -297,7 +296,8 @@ class DataWindow(tk.Frame):
             self.view_data_repository.update('RoiView' + str(self.current_roi_num))
             
     def select_ch(self, ch):
-        self.ax_list[1].select_ch(ch)
+        self.ax_list[1].select_ch(ch)  # This is for flag to showing traces.
+        self.controller.select_ch(ch)
                 
     def large_roi(self):
         self.change_roi_size([0, 0, 1, 1])
