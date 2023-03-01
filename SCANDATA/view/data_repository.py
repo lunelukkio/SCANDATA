@@ -156,6 +156,7 @@ class RoiView(ViewData):
         self.__name = None
         self.__model = model
         self.__ax_observer = Observer(self)
+        self.__sort_num = 5
         
     def create_data(self, object_num):
         self.__key = 'Roi' + str(object_num)
@@ -212,6 +213,10 @@ class RoiView(ViewData):
     @property
     def roi_box(self):
         return self.__roi_box
+    
+    @property
+    def sort_num(self):
+        return self.__sort_num
 
 
 class ImageView(ViewData):
@@ -219,6 +224,7 @@ class ImageView(ViewData):
         self.__name = None
         self.__model = model
         self.__ax_observer = Observer(self)
+        self.__sort_num = 6
         
     def create_data(self, object_num):
         self.__key = 'FrameWindow' + str(object_num)
@@ -267,13 +273,18 @@ class ImageView(ViewData):
     @name.setter
     def name(self, name: str):
         self.__name = name
-        
+    
+    @property
+    def sort_num(self):
+        return self.__sort_num
+
 
 class ElecView(ViewData):
     def __init__(self, model):
         self.__name = None
         self.__model = model
         self.__ax_observer = Observer(self)
+        self.__sort_num = 7
         
     def create_data(self, object_num):
         self.__key = 'ElecController' + str(object_num)
@@ -317,7 +328,10 @@ class ElecView(ViewData):
     @name.setter
     def name(self, name: str):
         self.__name = name
-        
+    
+    @property
+    def sort_num(self):
+        return self.__sort_num
         
         
 class RoiBox():

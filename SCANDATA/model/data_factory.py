@@ -380,6 +380,7 @@ class FullTrace(FluoTrace):
         super().__init__(frames_obj, interval)
         self.object_num = 0  # instance number
         self.__name = None
+        self.__sort_num = 1
 
     def update(self, roi_obj: object) -> None:  # value object
         self._roi = roi_obj.data
@@ -397,13 +398,17 @@ class FullTrace(FluoTrace):
     @name.setter
     def name(self, object_name):
         self.__name = object_name
-        
+
+    @property
+    def sort_num(self):
+        return self.__sort_num
 
 class ChTrace(FluoTrace):
     def __init__(self, frames_obj, interval):
         super().__init__(frames_obj, interval)
         self.object_num = 0  # instance number
         self.__name = None
+        self.__sort_num = 2
         
     def update(self, roi_obj: list) -> None:  # value object
         self._roi = roi_obj.data
@@ -422,12 +427,16 @@ class ChTrace(FluoTrace):
     def name(self, object_name):
         self.__name = object_name
 
+    @property
+    def sort_num(self):
+        return self.__sort_num
 
 "Elec trace"
 class ElecData(Data):  # Elec trace
     def __init__(self, interval):
         #self._trace_obj  # create in _read_data of sub classes
         self._interval = interval
+        self.__sort_num = 3
         
     def _read_data(self):
         pass
@@ -448,6 +457,10 @@ class ElecData(Data):  # Elec trace
     @property
     def interval(self):
         return self._interval
+    
+    @property
+    def sort_num(self):
+        return self.__sort_num
     
     def show_data(self) -> None:
         self._trace_obj.show_data()  

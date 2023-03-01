@@ -138,6 +138,11 @@ class Roi(ModelController):
                 self.remove_observer(observer)
                 return
         self.__observers.append(observer)
+        self.__observers = sorted(self.__observers, key=lambda x: str(x.sort_num)+x.name)
+        name_list = []
+        for i in self.__observers:
+            name_list.append(i.name)
+        print('Roi observer list: ' + str(name_list))
  
     def remove_observer(self, observer):
         self.__observers.remove(observer)

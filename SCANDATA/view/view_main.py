@@ -383,7 +383,10 @@ class TraceAx:
     def update(self, view_data):  # TraceAx shold not hold view_data ex.RoiView because other axes also might have  the same view_data.
         self.data_list = view_data.get_data()
         self.show_data()
-
+        
+    def select_ch(self, ch):
+        self.trace_show_flag[ch] = not self.trace_show_flag[ch]
+        self.show_data()
 
     def show_data(self):
         line_num = len(self.trace)
@@ -422,10 +425,7 @@ class TraceAx:
         self.current_ch = 1
         self.trace = []
         self.ax_obj.clear()
-        
-    def select_ch(self, ch):
-        self.trace_show_flag[ch] = not self.trace_show_flag[ch]
-        self.show_data()
+
 
 class ImageAx:
     def __init__(self, canvas, ax):
