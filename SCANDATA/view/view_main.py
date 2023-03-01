@@ -296,7 +296,7 @@ class DataWindow(tk.Frame):
             
     # this method need refactoring.
     def select_ch(self, ch):
-        #self.ax_list[1].select_ch(ch)  # This is for flag to showing traces.
+        self.ax_list[1].select_ch(ch)  # This is for flag to showing traces.
         if ch == 0:
             self.controller.bind_keys('Roi' + str(self.current_roi_num),
                                       'FullTrace' + str(self.current_roi_num))
@@ -372,6 +372,7 @@ class TraceAx:
         self.ax_obj = ax
         self.current_ch = 1
         self.data_list = []  # value object list
+        self.trace_show_flag = []
 
         self.trace = []
         # Need refactoring for valiable number of traces. Now num of flags is only 3.
@@ -386,6 +387,8 @@ class TraceAx:
 
     def show_data(self):
         line_num = len(self.trace)
+        print('tttttttttttttttttttttttttttttttttttttttttttttt')
+        print(self.trace)
         if line_num == 0:
             i = 0
             for trace_value_obj in self.data_list:
