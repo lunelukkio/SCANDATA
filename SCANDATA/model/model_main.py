@@ -252,7 +252,7 @@ class DataStrategy(DataSetStrategyInterface):
     
     
 class ControllerStrategy(DataSetStrategyInterface):
-    def __init__(self, object_dict):  # object_dict = dataset._controller defined by Translator class
+    def __init__(self, object_dict):  # object_dict = [dataset io,data,controller]
         self._object_dict = object_dict
 
     def set_data(self, key, val):

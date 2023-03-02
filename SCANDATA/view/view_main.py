@@ -162,7 +162,7 @@ class DataWindow(tk.Frame):
         style = ttk.Style()
         style.configure('TCheckbutton', background=self.my_color)
         
-        self.checkbox_flag_list = [tk.BooleanVar(value=True), tk.BooleanVar(value=True), tk.BooleanVar(value=True)]
+        self.checkbox_flag_list = [tk.BooleanVar(value=True), tk.BooleanVar(value=True), tk.BooleanVar(value=True)]  # Should be the same as the default of trace flags
         ttk.Checkbutton(frame_bottom,
                         text='Full',
                         variable=self.checkbox_flag_list[0],
@@ -180,17 +180,17 @@ class DataWindow(tk.Frame):
         
         # for the mod radio buttons
         style.configure('TRadiobutton', background=self.my_color)
-        self.radio_button_var_1 = tk.StringVar(value="DFoverF")
-        ttk.Radiobutton(frame_bottom,
-                       text="DF/F",
-                       variable=self.radio_button_var_1,
-                       value="DFoverF",
-                       command=lambda: self.add_mod('Trace', 'DFoverF')).pack(side=tk.LEFT)
+        self.radio_button_var_1 = tk.StringVar(value="F")
         ttk.Radiobutton(frame_bottom,
                        text="F",
                        variable=self.radio_button_var_1,
                        value="F",
                        command=lambda: self.remove_mod('Trace', 'all')).pack(side=tk.LEFT)
+        ttk.Radiobutton(frame_bottom,
+                       text="DF/F",
+                       variable=self.radio_button_var_1,
+                       value="DFoverF",
+                       command=lambda: self.add_mod('Trace', 'DFoverF')).pack(side=tk.LEFT)
         ttk.Radiobutton(frame_bottom,
                        text="Norm",
                        variable=self.radio_button_var_1,
@@ -213,7 +213,7 @@ class DataWindow(tk.Frame):
         
         self.ax_list[0].ax_obj.set_xticks([])  # To remove ticks of image window.
         self.ax_list[0].ax_obj.set_yticks([])  # To remove ticks of image window.
-        self.ax_list[0].trace_show_flag = [True, False]  # ch1, ch2
+        self.ax_list[0].trace_show_flag = [True, True]  # ch1, ch2
 
         self.canvas_image.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
@@ -237,7 +237,7 @@ class DataWindow(tk.Frame):
         # matplotlib trace axes
         trace_ax1 = trace_fig.add_subplot(gridspec_trace_fig[0:15])
         self.ax_list.append(TraceAx(self.canvas_trace, trace_ax1))  # ax_list[1]
-        self.ax_list[1].trace_show_flag = [True,  # full trace
+        self.ax_list[1].trace_show_flag = [True,  # full trace shold be the same as the default checkbox BooleanVar
                                            True,  # ch1 trace
                                            True]  # ch2 trace
         
@@ -275,10 +275,15 @@ class DataWindow(tk.Frame):
         self.model = self.controller.create_model(self.__filename)
         self.view_data_repository.model = self.model
         
-        self.add_mod('Trace', 'DFoverF')
-        
         self.view_data_repository.initialize_view_data_repository(self.ax_list)
         self.controller.current_roi_num = self.current_roi_num
+        
+        """ write here for default switches."""
+                
+        #self.radio_button_var_1 = tk.StringVar(value="DFoverF")
+        
+        print('==============================Initialized the Data Window.==============================')
+        print('')
         
     def onclick_image(self, event):
         if event.button == 1:  # left click
@@ -297,12 +302,16 @@ class DataWindow(tk.Frame):
     # this method need refactoring.
     def select_ch(self, ch):
         self.ax_list[1].select_ch(ch)  # This is for flag to showing traces.
-        if ch == 0:
-            self.controller.bind_keys('Roi' + str(self.current_roi_num),
-                                      'FullTrace' + str(self.current_roi_num))
-        else:
-            self.controller.bind_keys('Roi' + str(self.current_roi_num),
-                                      'ChTrace' + str(self.current_roi_num*2-2+ch))
+        self.ax_list[0].select_ch(ch)  # for changing images
+        
+        num_roi = self.view_data_repository.view_data_counter['RoiView']
+        for i in range(1, num_roi+1):
+            if ch == 0:  #This is for getting trace value objects. it shold be match to flags of trace_ax.
+                self.controller.bind_keys('Roi' + str(i),
+                                          'FullTrace' + str(i))
+            else:
+                self.controller.bind_keys('Roi' + str(i),
+                                          'ChTrace' + str(i*2-2+ch))
 
     def large_roi(self):
         self.change_roi_size([0, 0, 1, 1])
@@ -386,15 +395,12 @@ class TraceAx:
         
     def select_ch(self, ch):
         self.trace_show_flag[ch] = not self.trace_show_flag[ch]
-        self.show_data()
 
     def show_data(self):
         line_num = len(self.trace)
-        print('tttttttttttttttttttttttttttttttttttttttttttttt')
-        print(self.trace)
         if line_num == 0:
             i = 0
-            for trace_value_obj in self.data_list:
+            for trace_value_obj in self.data_list:  # self.data_list = TraceData Value objects
                 line_2d, = trace_value_obj.show_data(self.ax_obj)  # line"," means the first element of a list (convert from list to objet). Don't remove it.
                 self.trace.append(line_2d)  # Add to the list for trace1 trace line objects [Line_2D] of axes object
                 line_2d.set_color(self.color_selection[i])
@@ -403,15 +409,17 @@ class TraceAx:
                 i += 1 
         elif line_num > 0:
             i = 0
-            for trace_value_obj in self.data_list:
-                if self.trace_show_flag[i] is True:
-                    time = trace_value_obj.time
-                    data = trace_value_obj.data
-                elif self.trace_show_flag[i] is False:
+            j = 0
+            for trace_flag in self.trace_show_flag:
+                if trace_flag == True:
+                    time = self.data_list[i].time
+                    data = self.data_list[i].data
+                    i += 1
+                elif trace_flag == False:
                     time = None
                     data = None
-                self.trace[i].set_data(time,data)
-                i += 1
+                self.trace[j].set_data(time,data)
+                j += 1
 
         self.draw_ax()
         
@@ -436,7 +444,7 @@ class ImageAx:
         self.data_list = []  # value object list
         self.roi_box = None  # RoiBox class
         # Need refactoring for valiable number for images.
-        self.image_show_flag = [True, False]   # 0 = full trace, 1 = ch1 trace, 2 = ch2 trace
+        self.image_show_flag = [True, True]   # 0 = full trace, 1 = ch1 trace, 2 = ch2 trace
         
     def update(self, view_data):
         if 'Image' in view_data.name:  # for cell images
@@ -445,8 +453,20 @@ class ImageAx:
         elif 'Roi' in view_data.name:  # for RoiBoxs
             self.roi_box = view_data.roi_box
             self.show_roi()
+            
+    def select_ch(self, ch):
+        if ch == 0:
+            pass
+        else:
+            self.image_show_flag[ch-1] = not self.image_show_flag[ch-1]
+        print('//////////////////////////////////////////////////////////////////////////////////////////')
+        print('Need refactoring!!!')
+        print('ImageAx self.select_ch self.show_data.  It should be deleted, when messages go to a model.')
+
+        self.show_data()
         
     def show_data(self):  # self.data_list = value obj list  Delete old images, and make new images
+        print(self.image_show_flag)
         image_num = len(self.image)
         if image_num >0:
             i = 0

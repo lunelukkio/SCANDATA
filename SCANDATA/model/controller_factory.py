@@ -109,7 +109,6 @@ class Roi(ModelController):
             x_width = self.__roi_obj.data[2]
         if y_width is None:
             y_width = self.__roi_obj.data[3]
-            
         self.__roi_obj = RoiVal(x, y, x_width, y_width)  # replace the roi
         self.check_val()
         self.print_infor()
@@ -136,17 +135,21 @@ class Roi(ModelController):
         for check_observer in self.__observers:
             if check_observer == observer:
                 self.remove_observer(observer)
+                self.notify_observer()
+                #print(self.get_infor())
                 return
         self.__observers.append(observer)
         self.__observers = sorted(self.__observers, key=lambda x: str(x.sort_num)+x.name)
-        name_list = []
-        for i in self.__observers:
-            name_list.append(i.name)
-        print('Roi observer list: ' + str(name_list))
+        self.notify_observer()
+        #print(self.get_infor())
+
  
     def remove_observer(self, observer):
         self.__observers.remove(observer)
-
+        name_list = []
+        for i in self.__observers:
+            name_list.append(i.name)
+            
     def notify_observer(self):
         for observer_name in self.__observers:
             observer_name.update(self.get_data())
@@ -157,8 +160,9 @@ class Roi(ModelController):
     
     def get_infor(self):  # get names from observers
         name_list = []
-        for i in range(len(self.__observers)):
-            name_list.append(self.__observers[i].name)
+        for observer in self.__observers:
+            name_list.append(observer.name)
+        print('Roi observer list: ' + str(name_list))
         return name_list
     
     def print_infor(self) -> None:

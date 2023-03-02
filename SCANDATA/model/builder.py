@@ -58,7 +58,7 @@ class TsmFileBuilder(Builder):
         return self.__file_io, self.__data, self.__controller
         
     # make a full frames and channel frames from data files.
-    def initialize(self):
+    def initialize(self):  # for making Frames data without traces and images.
         # make file_io
         tsm = self.create_file_io(TsmFileIOFactory(), self.__filename)
         tbn = self.create_file_io(TbnFileIOFactory(), self.__filename, tsm)

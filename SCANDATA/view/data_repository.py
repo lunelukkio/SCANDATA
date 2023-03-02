@@ -22,10 +22,8 @@ class ViewDataRepository:
         self.create_roi(ax_list)  # for backgound compensation
         self.create_roi(ax_list)  # for trace analysing
         self.create_elec(ax_list)
-        
+            
         print('View Data = ' + str(list(self.__view_data)))
-        print('==============================Initialized the Data Window.==============================')
-        print('')
     
     def create_view_data(self,  factory_type):
         product = factory_type.create_view_data(self.model)
@@ -82,6 +80,10 @@ class ViewDataRepository:
     def delete(self):
         for view_data in self.__view_data.values():  # get values from dict
             view_data.delete()
+            
+    @property
+    def view_data_counter(self):
+        return self.__view_data_counter
 
 
 """
@@ -169,7 +171,7 @@ class RoiView(ViewData):
     def reset(self):
         raise NotImplementedError()
 
-    def update(self, *no_use):  # no_use is a RoiVal object. it need for FluoTrace observers.
+    def update(self, *no_use):  # "no_use" is a RoiVal object. it need for FluoTrace observers.
         observer_trace_list = []
         for key in self.__model.get_infor(self.__key):  # get only keys which include 'Trace'
             if 'Trace' in key:

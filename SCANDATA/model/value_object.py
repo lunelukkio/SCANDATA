@@ -219,7 +219,7 @@ class TraceData:
         return bool(self.__length == data.length)
     
     def show_data(self, plt=plt) -> list:  # plt shold be an axis in a view class object = [matplotlib.lines.Line2D]
-        return plt.plot(self.__time, self.__data) 
+        return plt.plot(self.__time, self.__data ,linewidth=0.7) 
 
     
 """

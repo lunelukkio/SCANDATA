@@ -212,7 +212,9 @@ class TraceCalculation:
     
     def create_normalize(self, trace_obj):
         max_val = np.max(trace_obj.data)
-        norm_obj = trace_obj/max_val
+        min_val = np.min(trace_obj.data)
+        true_max = max([max_val, abs(min_val)])
+        norm_obj = trace_obj/true_max
         return norm_obj
     
     def create_bg_comp(self, trace_obj):

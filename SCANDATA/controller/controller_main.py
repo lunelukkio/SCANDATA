@@ -68,7 +68,7 @@ class ImagingController:
     def change_roi_size(self, roi_num, val): #val = [x,y,x_length,y_length]
         self.current_roi_num = roi_num
         key = 'Roi' + str(roi_num)
-        self.send_update_message(key, val)
+        self.model.add_data(key, val)
         
     def send_update_message(self, key, val):
         self.model.set_data(key, val)
