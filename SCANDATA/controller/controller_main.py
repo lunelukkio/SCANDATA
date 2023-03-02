@@ -60,8 +60,11 @@ class ImagingController:
         key = 'Roi' + str(roi_num)
         print(key + ':')
         print(event.button, event.x, event.y, event.xdata, event.ydata)
-        roi_x = math.floor(event.xdata)
-        roi_y = math.floor(event.ydata)
+        roi_val = self.model.get_data(key)
+        
+        # Set roi center to click poist.
+        roi_x = math.floor(event.xdata) - round(roi_val.data[2]/2) + 1
+        roi_y = math.floor(event.ydata) - round(roi_val.data[3]/2) + 1
         roi = [roi_x, roi_y]
         self.send_update_message(key, roi)
     

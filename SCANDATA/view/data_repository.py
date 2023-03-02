@@ -173,7 +173,7 @@ class RoiView(ViewData):
 
     def update(self, *no_use):  # "no_use" is a RoiVal object. it need for FluoTrace observers.
         observer_trace_list = []
-        for key in self.__model.get_infor(self.__key):  # get only keys which include 'Trace'
+        for key in self.__model.get_infor(self.__key):  # get only keys which include 'Trace' from DataSet class.
             if 'Trace' in key:
                 observer_trace_list.append(key)
         # for traces
