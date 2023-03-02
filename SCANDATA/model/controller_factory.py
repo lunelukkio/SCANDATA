@@ -93,12 +93,15 @@ class Roi(ModelController):
         print('Deleted a Roi object.' + '  myId={}'.format(id(self)))
         #pass
         
-    def check_val(self) -> None:
-        if self.__roi_obj.data[0] < 0 or \
-           self.__roi_obj.data[1] < 0 or \
-           self.__roi_obj.data[2] < 1 or \
-           self.__roi_obj.data[3] < 1:
-            raise ValueError('ROI value shold be more than 1')
+    def check_val(self, x, y, x_width, y_width) -> None:
+        if x < 0 or \
+           y < 0 or \
+           x_width < 1 or \
+           y_width < 1:
+            print('ROI value shold be more than 1')
+            return False
+        else:
+            return True
 
     def set_data(self, x = None, y = None, x_width = None, y_width = None) -> None:
         if x is None:
@@ -109,18 +112,26 @@ class Roi(ModelController):
             x_width = self.__roi_obj.data[2]
         if y_width is None:
             y_width = self.__roi_obj.data[3]
-        self.__roi_obj = RoiVal(x, y, x_width, y_width)  # replace the roi
-        self.check_val()
-        self.print_infor()
-        self.notify_observer()
+        check_bool = self.check_val(x, y, x_width, y_width)
+        if check_bool is True:
+            self.__roi_obj = RoiVal(x, y, x_width, y_width)  # replace the roi
+            self.print_infor()
+            self.notify_observer()
+        elif check_bool is False:
+            pass
 
     def add_data(self, x: int, y: int, x_width=0, y_width=0) -> None:
-        add_roi_obj = RoiVal(x, y, x_width, y_width)
-        self.__roi_obj += add_roi_obj
-        self.notify_observer()
-        #print('Add to ROI{} and notified'.format(self.object_num))
-        self.print_infor()
-        self.check_val()
+        check_bool = self.check_val(self.__roi_obj.data[0] + x,
+                                    self.__roi_obj.data[1] + y,
+                                    self.__roi_obj.data[2] + x_width,
+                                    self.__roi_obj.data[3] + y_width)
+        if check_bool is True:
+            add_roi_obj = RoiVal(x, y, x_width, y_width)  # make new additional RoiVal
+            self.__roi_obj += add_roi_obj  # override of + in type:RoiVal
+            self.print_infor()
+            self.notify_observer()
+        elif check_bool is False:
+            pass
 
     def get_data(self) -> object:
         return self.__roi_obj
@@ -152,7 +163,7 @@ class Roi(ModelController):
             
     def notify_observer(self):
         for observer_name in self.__observers:
-            observer_name.update(self.get_data())
+            observer_name.update(self.__roi_obj.data)
 
     @property
     def observers(self) -> list:

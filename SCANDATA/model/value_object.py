@@ -227,11 +227,10 @@ Value object for controller
 """
 class RoiVal:
     def __init__(self, x: int, y: int, x_width: int, y_width: int):         
-
         if x < 0 or y < 0 or x_width < -1 or y_width < -1:  # width -1 is for small ROI subtraction
             raise Exception('ROI values should be 0 or more')
         called_class = inspect.stack()[1].frame.f_locals['self']
-        self.__data = [x, y, x_width, y_width]
+        self.__data = np.array([x, y, x_width, y_width])  # self.__data should be np.array data.
         self.__data_type = called_class.__class__.__name__
         #print(self.__data_type + ' made a RoiVal' + '  myId= {}'.format(id(self)))
         
@@ -244,7 +243,6 @@ class RoiVal:
     def __add__(self, other: object)  -> object:
         if self.__data_type != other.data_type:
             raise Exception('Wrong data! Only RoiVal can be added!')
-        "Tip Need refactroing. This should be new roi value object."
         new_val = self.__data + other.data
         new_obj = RoiVal(*new_val)
         new_obj.data_type = self.__data_type

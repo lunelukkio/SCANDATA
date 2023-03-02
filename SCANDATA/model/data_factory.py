@@ -308,14 +308,13 @@ class FluoTrace(Data):  # Fluo trae
         #self.__trace_obj  # create in _read_data
         self.__frames_obj = frames_obj
         self.__interval = interval
-        self._roi = [40, 40, 1, 1]  #default
+        self.x_size = self.__frames_obj.data.shape[0]
+        self.y_size = self.__frames_obj.data.shape[1]
+        self._roi = np.array([40, 40, 1, 1])  #default. It should be np.array because of add calculation in RoiVal
         #self._read_data(self._roi)
 
     def _read_data(self, roi: list) -> None:  # roi[x, y, x_length, y_length]
-        x_size = self.__frames_obj.data.shape[0]
-        y_size = self.__frames_obj.data.shape[1]
-
-        if roi[0] + roi[2] > x_size - 1 or roi[1] + roi[3] > y_size - 1: 
+        if roi[0] + roi[2] > self.x_size - 1 or roi[1] + roi[3] > self.y_size - 1: 
             raise Exception("The roi size should be the same as the image size or less")
         if roi[0] < 0 or roi[1] < 0: 
             raise Exception("The roi should be the same as 0 or more")
@@ -323,7 +322,7 @@ class FluoTrace(Data):  # Fluo trae
         trace_val = self.__create_fluo_trace(self.__frames_obj, roi)
         self.__trace_obj = TraceData(trace_val, self.__interval)
     
-    def update(self, roi_obj) -> None:  # override by FullTrace or ChTrace class
+    def update(self, roi) -> None:  # override by FullTrace or ChTrace class
         raise NotImplementedError()
     
     def get_data(self) -> object:  # -> value object
@@ -352,7 +351,6 @@ class FluoTrace(Data):  # Fluo trae
         y_length = roi[3]
         mean_data = np.mean(frames_obj.data[x:x+x_length, y:y+y_length, :], axis = 0)
         mean_data = np.mean(mean_data, axis = 0)
-        print('Updated ROI = ' + str(roi))
         return mean_data
         
     def __create_time_data(self, trace, interval) -> np.ndarray:
@@ -381,11 +379,13 @@ class FullTrace(FluoTrace):
         self.__name = None
         self.__sort_num = 1
 
-    def update(self, roi_obj: object) -> None:  # value object
-        if self._roi == roi_obj.data:
+    def update(self, roi) -> None:  # value object
+        print(type(self._roi))
+        print(type(roi))
+        if np.all(self._roi == roi):
             print('Did not update. Receved the same ROI value. ')
         else:
-            self._roi = roi_obj.data
+            self._roi = roi
             super()._read_data(self._roi)
             print(f'FullTrace{self.object_num} recieved a notify message. ROI = {self._roi}')
         
@@ -412,11 +412,11 @@ class ChTrace(FluoTrace):
         self.__name = None
         self.__sort_num = 2
         
-    def update(self, roi_obj: object) -> None:  # value object
-        if self._roi == roi_obj.data:
+    def update(self, roi) -> None:  # value object
+        if np.all(self._roi == roi):
             print('Did not update. Receved the same ROI value. ')
         else:
-            self._roi = roi_obj.data
+            self._roi = roi
             super()._read_data(self._roi)
             print(f'ChTrace{self.object_num} recieved a notify message. ROI = {self._roi}')
         

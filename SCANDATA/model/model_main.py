@@ -97,7 +97,9 @@ class DataSet(DataSetInterface):
         self.__tsm_data_context.set_data(key, val)
 
     def add_data(self, key: str, val: tuple):
-        return self.__controller[key].add_data(*val)  # * unpacking val data
+        strategy_key = Translator.key_checker(key)
+        self.__tsm_data_context.set_strategy(strategy_key)
+        return self.__tsm_data_context.add_data(key, val)
     
     def get_data(self, key: str) -> object:
         strategy_key = Translator.key_checker(key)
@@ -109,13 +111,19 @@ class DataSet(DataSetInterface):
         return data
 
     def bind_data(self, controller_key: str, data_key: str) -> None:
-        self.__controller[controller_key].add_observer(self.__data[data_key])
+        strategy_key = Translator.key_checker(controller_key)
+        self.__tsm_data_context.set_strategy(strategy_key)
+        self.__tsm_data_context.bind_data(controller_key, data_key)
 
     def bind_view(self, controller_key: str, view_obj: object):
-        self.__controller[controller_key].add_observer(view_obj)
+        strategy_key = Translator.key_checker(controller_key)
+        self.__tsm_data_context.set_strategy(strategy_key)
+        self.__tsm_data_context.bind_view(controller_key, view_obj)
 
     def reset_data(self, key: str):
-        self.__controller[key].reset()
+        strategy_key = Translator.key_checker(key)
+        self.__tsm_data_context.set_strategy(strategy_key)
+        self.__tsm_data_context.reset(key)
 
     def delete_entity(self, key: str) -> None:
         if key in self.__data:
@@ -209,6 +217,15 @@ class TSMDataStrategyContext:  # TMS data specific.
     def create_data(self, builder, data):
         self.__strategy.create_data(builder, data)
         
+    def add_data(self, key: str, val: tuple):
+        return self.__strategy.add_data(key, val)
+    
+    def bind_data(self, controller_key: str, data_key: str) -> None:
+        self.__strategy.bind_data(controller_key, data_key)
+        
+    def bind_view(self, controller_key: str, view_obj: object):
+        self.__strategy.bind_view(controller_key, view_obj)
+
     def get_infor(self, key):
         return self.__strategy.get_infor(key)
         
@@ -220,6 +237,9 @@ class TSMDataStrategyContext:  # TMS data specific.
         
     def remove_mod(self, mod_key):
         self.__strategy.remove_mod(mod_key)
+        
+    def reset_data(self, key: str):
+        self.__strategy.reset(key)
 
 class DataSetStrategyInterface(metaclass=ABCMeta):
     @abstractmethod
@@ -253,7 +273,7 @@ class DataStrategy(DataSetStrategyInterface):
     
     
 class ControllerStrategy(DataSetStrategyInterface):
-    def __init__(self, object_dict):  # object_dict = [dataset io,data,controller]
+    def __init__(self, object_dict):  # object_dict = [dataset io, data, controller]
         self._object_dict = object_dict
 
     def set_data(self, key, val):
@@ -262,8 +282,20 @@ class ControllerStrategy(DataSetStrategyInterface):
     def get_data(self, key):
         return self._object_dict[2][key].get_data()
     
+    def add_data(self, key: str, val: tuple):
+        return self._object_dict[2][key].add_data(*val)  # * unpacking val data
+    
+    def bind_data(self, controller_key: str, data_key: str) -> None:
+        self._object_dict[2][controller_key].add_observer(self._object_dict[1][data_key])
+        
+    def bind_view(self, controller_key: str, view_obj: object):
+        self._object_dict[2][controller_key].add_observer(view_obj)
+    
     def get_infor(self, key):
         return self._object_dict[2][key].get_infor()
+    
+    def reset_data(self, key: str):
+        self._object_dict[2][key].reset()
     
 # Not use in initializeing process
 class FramesStrategy(DataStrategy):
