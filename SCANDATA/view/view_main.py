@@ -280,7 +280,12 @@ class DataWindow(tk.Frame):
         
         """ write here for default switches."""
                 
-        #self.radio_button_var_1 = tk.StringVar(value="DFoverF")
+        self.checkbox_flag_list[0].set(False)
+        self.select_ch(0)
+        self.checkbox_flag_list[2].set(False)
+        self.select_ch(2)
+        self.radio_button_var_1.set("DFoverF")
+        self.add_mod('Trace', 'DFoverF')
         
         print('==============================Initialized the Data Window.==============================')
         print('')
