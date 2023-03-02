@@ -218,7 +218,6 @@ class KeyCounter:
     def count_key(key_dict, key):
         num = 0
         key_list = key_dict.keys()
-        print(key_list)
         for i in key_list:
             if key in i:
                 num += 1

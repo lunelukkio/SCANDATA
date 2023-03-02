@@ -83,7 +83,7 @@ concrete product
 """
 class Roi(ModelController):
     def __init__(self):
-        self.__roi_obj = RoiVal(40, 40, 1, 1)
+        self.__roi_obj = RoiVal(40, 40, 2, 2)
         self.object_num = 0  # instance number
         self.__observers = []
         #print('Created ROI-{}.'.format(self.object_num))
@@ -126,10 +126,10 @@ class Roi(ModelController):
         return self.__roi_obj
     
     def reset(self) -> None:
-        self.__roi_obj = RoiVal(40, 40, 1, 1)
+        self.__roi_obj = RoiVal(40, 40, 2, 2)
         self.print_infor()
         self.notify_observer()
-        #print('Reset ROI{} and notified'.format(self.object_num))
+        print('Reset ROI{} and notified'.format(self.object_num))
 
     def add_observer(self, observer):
         for check_observer in self.__observers:

@@ -471,7 +471,6 @@ class ImageAx:
         self.show_data()
         
     def show_data(self):  # self.data_list = value obj list  Delete old images, and make new images
-        print(self.image_show_flag)
         image_num = len(self.image)
         if image_num >0:
             i = 0

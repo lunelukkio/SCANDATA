@@ -7,6 +7,7 @@ lunelukkio@gmail.com
 """
 
 from abc import ABCMeta, abstractmethod
+import inspect
 from SCANDATA.model.value_object import Filename
 from SCANDATA.model.builder import TsmFileBuilder, AbfFileBuilder, WcpFileBuilder, KeyCounter
 from SCANDATA.model.mod_factory import ModClient
@@ -418,7 +419,10 @@ class Translator:
             
     @staticmethod
     def key_checker(key: str) -> str:
-        print('Key Checker received a key: ' + str(key))
+
+        previous_frame = inspect.currentframe().f_back
+        (filename, line_number, function_name, lines, index) = inspect.getframeinfo(previous_frame)
+        print(f'Key Checker received a key "{key}" from {function_name}().')
         
         if 'Roi' in key:
             return 'RoiStrategy'

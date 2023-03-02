@@ -308,9 +308,8 @@ class FluoTrace(Data):  # Fluo trae
         #self.__trace_obj  # create in _read_data
         self.__frames_obj = frames_obj
         self.__interval = interval
-        self._roi = [40,40,1,1]  #default
-        
-        self._read_data(self._roi)
+        self._roi = [40, 40, 1, 1]  #default
+        #self._read_data(self._roi)
 
     def _read_data(self, roi: list) -> None:  # roi[x, y, x_length, y_length]
         x_size = self.__frames_obj.data.shape[0]
@@ -324,8 +323,8 @@ class FluoTrace(Data):  # Fluo trae
         trace_val = self.__create_fluo_trace(self.__frames_obj, roi)
         self.__trace_obj = TraceData(trace_val, self.__interval)
     
-    def update(self, roi_obj) -> None:
-        pass
+    def update(self, roi_obj) -> None:  # override by FullTrace or ChTrace class
+        raise NotImplementedError()
     
     def get_data(self) -> object:  # -> value object
         return self.__trace_obj
@@ -383,9 +382,12 @@ class FullTrace(FluoTrace):
         self.__sort_num = 1
 
     def update(self, roi_obj: object) -> None:  # value object
-        self._roi = roi_obj.data
-        super()._read_data(self._roi)
-        print('FullTrace{} recieved a notify message.'.format(self.object_num))
+        if self._roi == roi_obj.data:
+            print('Did not update. Receved the same ROI value. ')
+        else:
+            self._roi = roi_obj.data
+            super()._read_data(self._roi)
+            print(f'FullTrace{self.object_num} recieved a notify message. ROI = {self._roi}')
         
     def print_infor(self) -> None:
         print('This is ' + self.__name)
@@ -410,10 +412,13 @@ class ChTrace(FluoTrace):
         self.__name = None
         self.__sort_num = 2
         
-    def update(self, roi_obj: list) -> None:  # value object
-        self._roi = roi_obj.data
-        super()._read_data(self._roi)
-        print('ChTrace{} recieved a notify message.'.format(self.object_num))
+    def update(self, roi_obj: object) -> None:  # value object
+        if self._roi == roi_obj.data:
+            print('Did not update. Receved the same ROI value. ')
+        else:
+            self._roi = roi_obj.data
+            super()._read_data(self._roi)
+            print(f'ChTrace{self.object_num} recieved a notify message. ROI = {self._roi}')
         
     def print_infor(self) -> None:
         print('This is ChTrace{}'.format(self.object_num))

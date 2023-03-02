@@ -231,7 +231,7 @@ class RoiVal:
         if x < 0 or y < 0 or x_width < -1 or y_width < -1:  # width -1 is for small ROI subtraction
             raise Exception('ROI values should be 0 or more')
         called_class = inspect.stack()[1].frame.f_locals['self']
-        self.__data = np.array([x, y, x_width, y_width])
+        self.__data = [x, y, x_width, y_width]
         self.__data_type = called_class.__class__.__name__
         #print(self.__data_type + ' made a RoiVal' + '  myId= {}'.format(id(self)))
         
