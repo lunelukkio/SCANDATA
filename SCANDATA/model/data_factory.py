@@ -380,8 +380,6 @@ class FullTrace(FluoTrace):
         self.__sort_num = 1
 
     def update(self, roi) -> None:  # value object
-        print(type(self._roi))
-        print(type(roi))
         if np.all(self._roi == roi):
             print('Did not update. Receved the same ROI value. ')
         else:
