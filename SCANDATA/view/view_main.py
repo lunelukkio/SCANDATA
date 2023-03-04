@@ -203,9 +203,7 @@ class DataWindow(tk.Frame):
         self.canvas_image = FigureCanvasTkAgg(image_fig, frame_left)
         #canvas_image.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
         self.ax_list.append(ImageAx(self.canvas_image, image_ax))  # ax_list[0]
-        self.ax_list[0].ax_obj.set_xticks([])  # To remove ticks of image window.
-        self.ax_list[0].ax_obj.set_yticks([])  # To remove ticks of image window.
-        
+
         self.canvas_image.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
         # mouse click events
@@ -247,8 +245,13 @@ class DataWindow(tk.Frame):
         self.controller = None
         self.view_data_repository = ViewDataRepository()
         self.current_roi_num = 2  # roi class start from Roi1
-
+        for i in range (3):
+            self.ax_list[i].ax_obj.cla()  # clear axes data
+            
         # for image axes
+        self.ax_list[0].ax_obj.set_xticks([])  # To remove ticks of image window.
+        self.ax_list[0].ax_obj.set_yticks([])  # To remove ticks of image window.
+        
         self.ax_list[0].show_flag = [True, True]  # ch1, ch2  #  shold be the same as the default checkbox BooleanVar
 
         # for the ch select buttons
