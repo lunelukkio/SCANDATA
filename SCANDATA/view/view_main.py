@@ -86,7 +86,7 @@ class MainView(tk.Frame):
         
     def check_memory(self):
         memory_infor, maximum_memory, available_memory = self.controller.get_memory_infor()
-        print(f"Current memory usage: {memory_infor / 1024 / 1024:.2f} MB / {maximum_memory / 1024 / 1024:.2f} MB, available: {Available_memory / 1024 / 1024:.2f} MB")
+        print(f"Current memory usage: {memory_infor / 1024 / 1024:.2f} MB / {maximum_memory / 1024 / 1024:.2f} MB, Available memory: {available_memory / 1024 / 1024:.2f} MB")
         
         
     """
@@ -288,7 +288,6 @@ class DataWindow(tk.Frame):
 
         self.reset()        
         gc.collect()
-
         self.view_data_repository = ViewDataRepository()
         self.controller = ImagingController(self, self.__filename)
         self.create_model()
@@ -490,6 +489,9 @@ class ImageAx:
                 elif self.show_flag[i] is False:
                     data = [[],[]]
                 self.image[i].set_data(data)  # for delete privious images
+                print('ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss')
+                print(self.image[i])
+                print(data)
                 i += 1
 
         elif image_num == 0:
@@ -549,7 +551,11 @@ class FileService:
 
 
 if __name__ == '__main__':
-    root = tk.Tk()
-    root.title("SCANDATA")
-    test = DataWindow(root)
-    test.mainloop()
+        root = tk.Tk()
+        root.title("SCANDATA")
+        fullname = '..\\..\\220408\\20408B002.tsm'
+        filename_obj = WholeFilename(fullname)
+        
+        view = DataWindow(root, filename_obj)
+        
+        root.mainloop()

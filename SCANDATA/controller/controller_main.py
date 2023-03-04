@@ -17,14 +17,6 @@ class MainController:
     def __init__(self):
         self.controller_list = []
         
-    def create_filename_obj(self, fullname: str) -> object:
-        pass
-        filename_obj = WholeFilename(fullname)
-        return filename_obj
-        
-    def create_imaging_controller(self,filename):
-        pass
-        self.controller_list.append(ImagingController(filename))
         
     def get_memory_infor(self):
         pid = os.getpid()

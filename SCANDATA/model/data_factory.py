@@ -145,7 +145,7 @@ class FullFrames(FluoFrames):
     def __init__(self, frames_obj, *args):
         super().__init__(frames_obj, *args)
         self.object_num = 0  # instance number, It shold be increased by data_set
-        self.__name = None
+        self.__name = None  # This is defainded by builder create_data()
         
         @property
         def name(self):
@@ -164,8 +164,8 @@ class FullFrames(FluoFrames):
 class ChFrames(FluoFrames):
     def __init__(self, frames_obj, *args):
         super().__init__(frames_obj, *args)
-        self.object_num = 0  # instance number
-        self.__name = None
+        self.object_num = 0  # instance number  # This is defainded by builder create_data()
+        self.__name = None  # This is defainded by builder create_data()
         
     @property
     def name(self):

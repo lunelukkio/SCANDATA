@@ -45,7 +45,7 @@ class TestRoi(unittest.TestCase):
         
         data_factory = ChTraceFactory()
         trace = data_factory.create_data(frames_data, interval)
-        
+        trace.name = 'ChTrace1'
         controller_factory = RoiFactory()
 
         roi = controller_factory.create_controller()
