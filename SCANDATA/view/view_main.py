@@ -13,15 +13,15 @@ import os
 from matplotlib.figure import Figure
 import gc
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-from SCANDATA.controller.controller_main import ImagingController
-from SCANDATA.view.data_repository import ViewDataRepository, RoiBox
+from SCANDATA.controller.controller_main import MainController, ImagingController
+from SCANDATA.view.data_repository import ViewDataRepository
 from SCANDATA.controller.controller_main import WholeFilename
 
 
 class MainView(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
-        self.controller = None
+        self.controller = MainController()
         
         self.__filename_obj_list = []
         self.window = []
@@ -31,7 +31,6 @@ class MainView(tk.Frame):
         self.pack()
         master.geometry('500x100')
         master.title('SCANDATA')
-        
                
         """
         Widgit mapping
@@ -45,14 +44,20 @@ class MainView(tk.Frame):
         button_open_data.pack(side=tk.LEFT)
         frame_top.pack(side=tk.TOP, fill=tk.X)
         
+        button_memory = tk.Button(frame_top,text='Check memory',command=self.check_memory,width=10)
+        button_memory.place(x=110, y=150)
+        button_memory.config(fg='black', bg='skyblue')
+        button_memory.pack(side=tk.LEFT)
+        frame_top.pack(side=tk.TOP, fill=tk.X)
+        
         "Bottom frame"
         frame_bottom = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=0, bg = self.my_color_main)
-        button_open_data = tk.Button(frame_bottom,text='Open data',state='disable',command=self.open_file_with_list,width=10)
-        button_open_data.place(x=110, y=150)
-        button_open_data.config(fg='black', bg='skyblue')
+        button_open_data2 = tk.Button(frame_bottom,text='Open data',state='disable',command=self.open_file_with_list,width=10)
+        button_open_data2.place(x=110, y=150)
+        button_open_data2.config(fg='black', bg='skyblue')
         button_exit = tk.Button(frame_bottom, text='Exit')
         
-        button_open_data.pack(side=tk.LEFT)
+        button_open_data2.pack(side=tk.LEFT)
         button_exit.pack(side=tk.RIGHT, padx=5)
 
         frame_bottom.pack(side=tk.BOTTOM, fill=tk.X)
@@ -78,6 +83,11 @@ class MainView(tk.Frame):
 
         # set to parent menu
         self.master.config(menu = menu_bar)
+        
+    def check_memory(self):
+        memory_infor, maximum_memory, available_memory = self.controller.get_memory_infor()
+        print(f"Current memory usage: {memory_infor / 1024 / 1024:.2f} MB / {maximum_memory / 1024 / 1024:.2f} MB, available: {Available_memory / 1024 / 1024:.2f} MB")
+        
         
     """
     send to a button function class

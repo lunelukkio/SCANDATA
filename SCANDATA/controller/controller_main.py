@@ -10,6 +10,7 @@ from SCANDATA.model.model_main import DataSet
 import os
 import math
 import glob
+import psutil
 
 
 class MainController:
@@ -24,6 +25,14 @@ class MainController:
     def create_imaging_controller(self,filename):
         pass
         self.controller_list.append(ImagingController(filename))
+        
+    def get_memory_infor(self):
+        pid = os.getpid()
+        process = psutil.Process(pid)
+        memory_infor = process.memory_info().rss
+        maximum_memory = psutil.virtual_memory().total
+        available_memory = psutil.virtual_memory().available
+        return memory_infor, maximum_memory, available_memory
 
 class ImagingController:
     def __init__(self, view, filename_obj):

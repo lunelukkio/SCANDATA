@@ -7,7 +7,6 @@ lunelukkio@gmail.com
 
     
 from SCANDATA.view.view_main import MainView
-from SCANDATA.controller.controller_main import MainController
 import tkinter as tk
 import gc
 
@@ -21,16 +20,7 @@ class Main:
         root = tk.Tk()
         root.title("SCANDATA")
 
-        # Make instance of a model, a view and a controller
         view = MainView(root)
-        controller = MainController()
-        
-        # The view knows a model and controller .
-
-        
-        # The controller knows model and view. 
-        controller.view = view
-        
 
         root.mainloop()
 

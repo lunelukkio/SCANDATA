@@ -1,16 +1,18 @@
+import psutil
 import tkinter as tk
-class A:
-    def __init__(self):
-        root = tk.Tk()
-        view = B(root)
-        root.mainloop()
+from tkinter.ttk import Progressbar
 
-class B(tk.Frame):
-    def __init__(self, master=None):
-        super().__init__(master)
-        self.check_var = tk.BooleanVar(value=True)
-        self.check_button = tk.Checkbutton(master,text="Check", variable=self.check_var)
-        self.check_button.pack()
+class MemoryUsageProgressBar(Progressbar):
+    def __init__(self, master=None, cnf={}, **kw):
+        super().__init__(master=master, cnf=cnf, **kw)
+        self.maximum = psutil.virtual_memory().total
+        self.update_memory_usage()
 
-if __name__ == '__main__':
-    test = A()
+    def update_memory_usage(self):
+        memory_usage = psutil.Process().memory_info().rss
+        self.configure(value=memory_usage, maximum=self.maximum)
+        self.after(1000, self.update_memory_usage)
+
+root = tk.Tk()
+MemoryUsageProgressBar(master=root, length=200, mode="determinate").pack()
+root.mainloop()
