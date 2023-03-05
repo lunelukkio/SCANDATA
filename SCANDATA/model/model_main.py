@@ -152,6 +152,9 @@ class DataSet(DataSetInterface):
         self.__tsm_data_context.remove_mod(mod_key)
 
     def get_infor(self, key):
+        previous_frame = inspect.currentframe().f_back
+        (filename, line_number, function_name, lines, index) = inspect.getframeinfo(previous_frame)
+        print(f'get_data() in the model recieved "{key}" from {function_name} of {filename}')
         strategy_key = Translator.key_checker(key)
         self.__tsm_data_context.set_strategy(strategy_key)
         infor = self.__tsm_data_context.get_infor(key)

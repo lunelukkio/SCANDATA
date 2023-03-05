@@ -256,14 +256,17 @@ class DataWindow(tk.Frame):
         self.controller = None
         self.view_data_repository = ViewDataRepository()
         self.current_roi_num = 2  # roi class start from Roi1
-
+        self.ax_list[0].current_roi_num = 2
             
         # for image axes
         self.ax_list[0].ax_obj.set_xticks([])  # To remove ticks of image window.
         self.ax_list[0].ax_obj.set_yticks([])  # To remove ticks of image window.
         
         self.ax_list[0].show_flag = [True, True]  # ch1, ch2  #  shold be the same as the default checkbox BooleanVar
-
+        
+        # for RoiBox
+        self.ax_list[0].remove_rectangles()
+        
         # for the ch select buttons
         for i in range(3):
             self.checkbox_flag_list[i].set(True)
@@ -326,7 +329,9 @@ class DataWindow(tk.Frame):
                 self.current_roi_num = 1
             else:
                 pass
+            self.ax_list[0].current_roi_num = self.current_roi_num
             self.view_data_repository.update('RoiView' + str(self.current_roi_num))
+
             
     # this method need refactoring.
     def select_ch(self, ch):
@@ -398,7 +403,6 @@ class TraceAx:
         self.data_list = []  # value object list
         self.show_flag = []
 
-        self.trace = []
         # Need refactoring for valiable number of traces. Now num of flags is only 3.
         #self.show_flag = []
         
@@ -412,15 +416,12 @@ class TraceAx:
         self.show_flag[ch] = not self.show_flag[ch]
 
     def show_data(self):
-        line_num = len(self.trace)
+        line_num = len(self.ax_obj.get_lines())
         if line_num == 0:
             i = 0
             for trace_value_obj in self.data_list:  # self.data_list = TraceData Value objects
                 line_2d, = trace_value_obj.show_data(self.ax_obj)  # line"," means the first element of a list (convert from list to objet). Don't remove it.
-                self.trace.append(line_2d)  # Add to the list for trace1 trace line objects [Line_2D] of axes object
                 line_2d.set_color(self.color_selection[i])
-                if self.show_flag[i] == False:
-                    line_2d.set_data(None,None)
                 i += 1 
         elif line_num > 0:
             i = 0
@@ -433,7 +434,7 @@ class TraceAx:
                 elif trace_flag is False:
                     time = None
                     data = None
-                self.trace[j].set_data(time,data)
+                self.ax_obj.lines[j].set_data(time,data)
                 j += 1
 
         self.draw_ax()
@@ -446,7 +447,6 @@ class TraceAx:
         
     def reset(self):
         self.current_ch = 1
-        self.trace = []
         self.ax_obj.clear()
 
 
@@ -455,8 +455,8 @@ class ImageAx:
         self.tools = AxesTools(ax)
         self.canvas_image = canvas
         self.ax_obj = ax
-        self.image = []
         self.current_ch = 1
+        self.current_roi_num = 2  # Roi class start from  "1"
         self.data_list = []  # value object list
         self.roi_box = None  # RoiBox class
         # Need refactoring for valiable number for images.
@@ -478,15 +478,12 @@ class ImageAx:
         self.show_data()
         
     def show_data(self):  # self.data_list = value obj list  Delete old images, and make new images
-        image_num = len(self.image)
+        image_num = len(self.ax_obj.get_images())
         if image_num == 0:
             i = 0
             for image_value_obj in self.data_list:
-                image = image_value_obj.show_data(self.ax_obj)  # line, mean the first element of a list (convert from list to objet)
-                self.image.append(image)  # Add to the list for trace line objects [Line_2D] of axes object
-                if self.show_flag[i] is False:
-                    image.set_data([[],[]])
-                i += 1
+                image_value_obj.show_data(self.ax_obj)  # add image to self.ax_obj.images
+            print(self.ax_obj.images)
                 
         elif image_num >0:
             i = 0
@@ -497,21 +494,24 @@ class ImageAx:
                     i += 1
                 elif image_flag is False:
                     data = [[],[]]
-                self.image[j].set_data(data)  # for delete privious images
+                self.ax_obj.images[j].set_data(data)  # for delete privious images
                 j += 1
         self.draw_ax()
-        
-        rectangles = self.tools.axes_patches_check(plt.ImShow)
-        print(rectangles)
 
-    def show_roi(self):  # not delete but update rectangle. RoiBox always has only one data in RoiView class
-        self.ax_obj.add_patch(self.roi_box.rectangle_obj)
-        self.draw_ax()
-
-        print('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')
-        print('Tip Need bug fix. Axes doesnt update rectangles, append many rectangles.')
+    def show_roi(self): 
         rectangles = self.tools.axes_patches_check(plt.Rectangle)
-        print(rectangles)
+        if len(rectangles) < self.current_roi_num:
+            self.ax_obj.add_patch(self.roi_box.rectangle_obj)
+        else:
+            pass
+        rectangles = self.tools.axes_patches_check(plt.Rectangle)
+
+        self.draw_ax()
+        
+    def remove_rectangles(self):
+        rectangles = self.tools.axes_patches_check(plt.Rectangle)
+        for rectangle in rectangles:
+            rectangle.remove()
         
     def draw_ax(self):
         self.ax_obj.relim()
@@ -521,7 +521,6 @@ class ImageAx:
         
     def reset(self):
         self.current_ch = 1
-        self.image = []
         self.ax_obj.clear()
         
 

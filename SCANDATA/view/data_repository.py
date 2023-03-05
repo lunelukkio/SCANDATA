@@ -22,7 +22,7 @@ class ViewDataRepository:
         # default data
         self.create_image(ax_list)
         self.create_roi(ax_list)  # for backgound compensation
-        self.create_roi(ax_list)  # for trace analysing
+        self.create_roi(ax_list)  # for trace analysing red ROI
         self.create_elec(ax_list)
             
         print('View Data = ' + str(list(self.__view_data)))
@@ -54,7 +54,6 @@ class ViewDataRepository:
         roi_view.add_observer(ax_list[1])  # Add axes to RoiView observer for trace
         roi_name = 'Roi' + str(self.count_data('RoiView'))
         self.model.bind_view(roi_name, roi_view)  # Add RoiView to Roi class
-        roi_view.update()
         
     def create_elec(self, ax_list):
         elec = self.create_view_data(ElecViewFactory())
@@ -250,7 +249,7 @@ class ImageView(ViewData):
             new_data_name.append(value_data_obj.data_type)
         self.__data_list = new_data
         
-        print('View Data updated: ' + str(new_data_name))
+        #print('ImageView Data updated: ' + str(new_data_name))
         self.notify_observer()
         
     def get_data(self) -> list:
