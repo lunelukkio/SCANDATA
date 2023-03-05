@@ -10,8 +10,9 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.filedialog
 import os
-from matplotlib.figure import Figure
 import gc
+from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from SCANDATA.controller.controller_main import MainController, ImagingController
 from SCANDATA.view.data_repository import ViewDataRepository
@@ -255,8 +256,7 @@ class DataWindow(tk.Frame):
         self.controller = None
         self.view_data_repository = ViewDataRepository()
         self.current_roi_num = 2  # roi class start from Roi1
-        for i in range (3):
-            self.ax_list[i].ax_obj.cla()  # clear axes data
+
             
         # for image axes
         self.ax_list[0].ax_obj.set_xticks([])  # To remove ticks of image window.
@@ -391,6 +391,7 @@ class DataWindow(tk.Frame):
 
 class TraceAx:
     def __init__(self, canvas, ax):
+        self.tools = AxesTools(ax)
         self.canvas_trace = canvas
         self.ax_obj = ax
         self.current_ch = 1
@@ -425,11 +426,11 @@ class TraceAx:
             i = 0
             j = 0
             for trace_flag in self.show_flag:
-                if trace_flag == True:
+                if trace_flag is True:
                     time = self.data_list[i].time
                     data = self.data_list[i].data
                     i += 1
-                elif trace_flag == False:
+                elif trace_flag is False:
                     time = None
                     data = None
                 self.trace[j].set_data(time,data)
@@ -451,6 +452,7 @@ class TraceAx:
 
 class ImageAx:
     def __init__(self, canvas, ax):
+        self.tools = AxesTools(ax)
         self.canvas_image = canvas
         self.ax_obj = ax
         self.image = []
@@ -473,28 +475,11 @@ class ImageAx:
             pass
         else:
             self.show_flag[ch-1] = not self.show_flag[ch-1]
-        print('//////////////////////////////////////////////////////////////////////////////////////////')
-        print('Need refactoring!!!')
-        print('ImageAx self.select_ch self.show_data.  It should be deleted, when messages go to a model.')
-
         self.show_data()
         
     def show_data(self):  # self.data_list = value obj list  Delete old images, and make new images
         image_num = len(self.image)
-        if image_num >0:
-            i = 0
-            for image_value_obj in self.data_list:
-                if self.show_flag[i] is True:
-                    data = image_value_obj.data
-                elif self.show_flag[i] is False:
-                    data = [[],[]]
-                self.image[i].set_data(data)  # for delete privious images
-                print('ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss')
-                print(self.image[i])
-                print(data)
-                i += 1
-
-        elif image_num == 0:
+        if image_num == 0:
             i = 0
             for image_value_obj in self.data_list:
                 image = image_value_obj.show_data(self.ax_obj)  # line, mean the first element of a list (convert from list to objet)
@@ -502,12 +487,32 @@ class ImageAx:
                 if self.show_flag[i] is False:
                     image.set_data([[],[]])
                 i += 1
+                
+        elif image_num >0:
+            i = 0
+            j = 0
+            for image_flag in self.show_flag:
+                if image_flag is True:
+                    data = self.data_list[i].data
+                    i += 1
+                elif image_flag is False:
+                    data = [[],[]]
+                self.image[j].set_data(data)  # for delete privious images
+                j += 1
         self.draw_ax()
+        
+        rectangles = self.tools.axes_patches_check(plt.ImShow)
+        print(rectangles)
 
     def show_roi(self):  # not delete but update rectangle. RoiBox always has only one data in RoiView class
         self.ax_obj.add_patch(self.roi_box.rectangle_obj)
         self.draw_ax()
 
+        print('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')
+        print('Tip Need bug fix. Axes doesnt update rectangles, append many rectangles.')
+        rectangles = self.tools.axes_patches_check(plt.Rectangle)
+        print(rectangles)
+        
     def draw_ax(self):
         self.ax_obj.relim()
         self.ax_obj.autoscale_view()
@@ -548,6 +553,20 @@ class FileService:
                        ('All files', '*.*'))
                       )
         return fullname
+    
+    
+class AxesTools:
+    def __init__(self, axes):
+        self.axes = axes
+    
+    def axes_patches_check(self, target_class):
+        target_list = []
+        for target in  self.axes.patches:
+            if isinstance(target, target_class):
+                target_list.append(target)
+        return target_list
+    
+
 
 
 if __name__ == '__main__':
