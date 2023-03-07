@@ -202,6 +202,13 @@ class DataWindow(tk.Frame):
                        value="Norm",
                        command=lambda: self.add_mod('Trace', 'Normalize')).pack(side=tk.LEFT)
         
+        elec_ch = ['Ch 1', 'Ch 2', 'Ch 3', 'Ch 4', 'Ch 5', 'Ch 6', 'Ch 7', 'Ch 8', ]
+        self.combo_box_elec_ch = ttk.Combobox(frame_bottom, values=elec_ch, width=4)
+        self.combo_box_elec_ch.current(0)
+        self.combo_box_elec_ch.pack(side=tk.LEFT)
+        self.combo_box_elec_ch.bind('<<ComboboxSelected>>', self.elec_ch_select)
+        
+        
         """ Image Frame"""
         # tkinter image frame
         frame_left = tk.Frame(master, pady=0, padx=0)
@@ -274,13 +281,13 @@ class DataWindow(tk.Frame):
         self.radio_button_var_1.set("F")
         
         self.ax_list[2].show_flag = [True,  # ch1
-                                           True,  # ch2
-                                           True,  # ch3
-                                           True,  # ch4
-                                           True,  # ch5
-                                           True,  # ch6
-                                           True,  # ch7
-                                           True]  # ch8
+                                     True,  # ch2
+                                     True,  # ch3
+                                     True,  # ch4
+                                     True,  # ch5
+                                     True,  # ch6
+                                     True,  # ch7
+                                     True]  # ch8
             
     def file_open(self, *filename):
         if filename == ():
@@ -346,7 +353,34 @@ class DataWindow(tk.Frame):
             else:
                 self.controller.bind_keys('Roi' + str(i),
                                           'ChTrace' + str(i*2-2+ch))
+                
+    def elec_ch_select(self, event):
+        selected_value = self.combo_box_elec_ch.get()
+        # This is for a trace_ax flag
+        if selected_value == 'Ch 1':
+            elec_flag = [True, False, False, False, False, False, False, False]
+        elif selected_value == 'Ch 2':
+            elec_flag = [False, True, False, False, False, False, False, False]
+        elif selected_value == 'Ch 3':
+            elec_flag = [False, False, True, False, False, False, False, False]
+        elif selected_value == 'Ch 4':
+            elec_flag = [False, False, False, True, False, False, False, False]
+        elif selected_value == 'Ch 5':
+            elec_flag = [False, False, False, False, True, False, False, False]
+        elif selected_value == 'Ch 6':
+            elec_flag = [False, False, False, False, False, True, False, False]
+        elif selected_value == 'Ch 7':
+            elec_flag = [False, False, False, False, False, False, True, False]
+        elif selected_value == 'Ch 8':
+            elec_flag = [False, False, False, False, False, False, False, True]
+        
+        num_elec = self.view_data_repository.view_data_counter['ElecView']
+        for i in range(1, num_elec+1):
+            self.controller.bind_keys('ElecController' + str(i),
+                                      'ChElec' + str(i))
 
+        self.ax_list[2].show_flag = elec_flag
+        
     def large_roi(self):
         self.change_roi_size([0, 0, 1, 1])
 

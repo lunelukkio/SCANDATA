@@ -74,6 +74,9 @@ class ImagingController:
         key = 'Roi' + str(roi_num)
         self.model.add_data(key, val)
         
+    def set_frame_window_position(self, event):
+        pass
+        
     def send_update_message(self, key, val):
         self.model.set_data(key, val)
         

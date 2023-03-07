@@ -152,7 +152,7 @@ class Roi(ModelController):
         self.__observers.append(observer)
         self.__observers = sorted(self.__observers, key=lambda x: str(x.sort_num)+x.name)
         self.notify_observer()
-        #print(self.get_infor())
+        print(self.get_infor())
 
  
     def remove_observer(self, observer):
@@ -160,6 +160,7 @@ class Roi(ModelController):
         name_list = []
         for i in self.__observers:
             name_list.append(i.name)
+        print(self.get_infor())
             
     def notify_observer(self):
         for observer_name in self.__observers:
@@ -173,7 +174,6 @@ class Roi(ModelController):
         name_list = []
         for observer in self.__observers:
             name_list.append(observer.name)
-        print('Roi observer list: ' + str(name_list))
         return name_list
     
     def print_infor(self) -> None:
@@ -181,8 +181,7 @@ class Roi(ModelController):
         num = len(self.__observers)
         for i in range(num):
             name_list.append(self.__observers[i].name)
-        print('ROI{} = '.format(self.object_num) + str(self.get_data().data) + 
-              ', observer = ' + str(name_list))
+        print(f'Roi{self.object_num} observer list = {str(name_list)}, ROI = {self.get_data().data}')
 
 
 class FrameWindow(ModelController):

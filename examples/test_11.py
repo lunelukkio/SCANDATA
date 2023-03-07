@@ -1,18 +1,11 @@
-import psutil
+
+from tkinter import ttk
 import tkinter as tk
-from tkinter.ttk import Progressbar
-
-class MemoryUsageProgressBar(Progressbar):
-    def __init__(self, master=None, cnf={}, **kw):
-        super().__init__(master=master, cnf=cnf, **kw)
-        self.maximum = psutil.virtual_memory().total
-        self.update_memory_usage()
-
-    def update_memory_usage(self):
-        memory_usage = psutil.Process().memory_info().rss
-        self.configure(value=memory_usage, maximum=self.maximum)
-        self.after(1000, self.update_memory_usage)
 
 root = tk.Tk()
-MemoryUsageProgressBar(master=root, length=200, mode="determinate").pack()
+
+combo = ttk.Combobox(root, values=["Item 1", "Item 2", "Item 3"])
+combo.current(2)
+combo.pack()
+
 root.mainloop()
