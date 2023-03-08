@@ -231,7 +231,7 @@ class CellImage(FluoImage):
         super().__init__(frames_obj, *args)
         self.object_num = 0  # instance number
         self.__name = None
-        self.__sort_num = 4
+        self.__sort_num = 104
         
         self._read_data(self._frame_window)
 
@@ -254,10 +254,9 @@ class CellImage(FluoImage):
             raise Exception('The end frame should be higher than the start frame.')
         
     def update(self, frame_window_obj) -> None:  # value object
+        print('CellImage{} recieved a notify message.'.format(self.object_num) + str(self._frame_window))
         self._frame_window = frame_window_obj.data  # frame_window = [start, end, start_width, end_width]
         self._read_data(self._frame_window)
-        print('CellImage{} recieved a notify message.'.format(self.object_num) + str(self._frame_window))
-            
         
     def print_infor(self) -> None:
         print('This is CellImage{}'.format(self.object_num))
@@ -281,7 +280,7 @@ class DifImage(FluoImage):
         super().__init__(frames_obj)
         self.object_num = 0  # instance number
         self.__name = None
-        self.__sort_num = 5
+        self.__sort_num = 105
 
     def _read_data(self):
         pass
@@ -387,15 +386,15 @@ class FullTrace(FluoTrace):
         super().__init__(frames_obj, interval)
         self.object_num = 0  # instance number
         self.__name = None
-        self.__sort_num = 1
+        self.__sort_num = 101
 
     def update(self, roi) -> None:  # value object
+        print(f'FullTrace{self.object_num} recieved a notify message. ROI = {self._roi}')
         if np.all(self._roi == roi):
-            print('Did not update. Receved the same ROI value. ')
+            print('Did not update. Recieved the same ROI value. ')
         else:
             self._roi = roi
             super()._read_data(self._roi)
-            print(f'FullTrace{self.object_num} recieved a notify message. ROI = {self._roi}')
         
     def print_infor(self) -> None:
         print('This is ' + self.__name)
@@ -418,15 +417,15 @@ class ChTrace(FluoTrace):
         super().__init__(frames_obj, interval)
         self.object_num = 0  # instance number
         self.__name = None
-        self.__sort_num = 2
+        self.__sort_num = 102
         
     def update(self, roi) -> None:  # value object
+        print(f'ChTrace{self.object_num} recieved a notify message. ROI = {self._roi}')
         if np.all(self._roi == roi):
-            print('Did not update. Receved the same ROI value. ')
+            print('Did not update. Recieved the same ROI value. ')
         else:
             self._roi = roi
             super()._read_data(self._roi)
-            print(f'ChTrace{self.object_num} recieved a notify message. ROI = {self._roi}')
         
     def print_infor(self) -> None:
         print('This is ChTrace{}'.format(self.object_num))
@@ -482,7 +481,7 @@ class ChElec(ElecData):
         self.object_num = 0  # instance number
         self._read_data(trace_data_obj)
         self.__name = None
-        self.__sort_num = 3
+        self.__sort_num = 103
 
     def _read_data(self, trace_data_obj: np.ndarray) -> None:
         self._trace_obj = trace_data_obj

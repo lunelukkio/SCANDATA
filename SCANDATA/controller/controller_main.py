@@ -32,6 +32,7 @@ class ImagingController:
         self.view = view
         self.model = None
         self.current_roi_num = None
+        self.view_data_repository = None
         
     def create_model(self, filename_obj: object):  
         self.model = DataSet(filename_obj.fullname)  # send filename str
@@ -46,15 +47,6 @@ class ImagingController:
         filename_obj = WholeFilename(filename)  # Convert from str to value object.
         self.__filename = filename_obj
         return filename_obj
-
-    def initialize_data_window(self):
-        self.show_data_repository()
-        
-    def create_view_data(self, factory_type):
-        return self.view_data_repository.create_view_data(factory_type)
-        
-    def show_data_repository(self):
-        self.view_data_repository            .show_data()
 
     def set_roi_position(self, event, roi_num=1):
         self.current_roi_num = roi_num

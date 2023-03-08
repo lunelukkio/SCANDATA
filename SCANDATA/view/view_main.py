@@ -389,7 +389,6 @@ class DataWindow(tk.Frame):
             self.controller.bind_keys('ElecController' + str(i),
                                           'ChElec' + str(i))
 
-        self.ax_list[2].show_flag = elec_flag
         
     def large_roi(self):
         self.change_roi_size([0, 0, 1, 1])
