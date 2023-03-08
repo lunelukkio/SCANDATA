@@ -231,6 +231,7 @@ class CellImage(FluoImage):
         super().__init__(frames_obj, *args)
         self.object_num = 0  # instance number
         self.__name = None
+        self.__sort_num = 4
         
         self._read_data(self._frame_window)
 
@@ -270,12 +271,17 @@ class CellImage(FluoImage):
     def name(self, object_name):
         self.__name = object_name
         
+    @property
+    def sort_num(self):
+        return self.__sort_num
+        
         
 class DifImage(FluoImage):
     def __init__(self, frames_obj):
         super().__init__(frames_obj)
         self.object_num = 0  # instance number
         self.__name = None
+        self.__sort_num = 5
 
     def _read_data(self):
         pass
@@ -300,6 +306,10 @@ class DifImage(FluoImage):
     @name.setter
     def name(self, object_name):
         self.__name = object_name
+        
+    @property
+    def sort_num(self):
+        return self.__sort_num
 
 
 "Fluo Trace"
@@ -439,7 +449,6 @@ class ElecData(Data):  # Elec trace
     def __init__(self, interval):
         #self._trace_obj  # create in _read_data of sub classes
         self._interval = interval
-        self.__sort_num = 3
         
     def _read_data(self):
         pass
@@ -461,10 +470,6 @@ class ElecData(Data):  # Elec trace
     def interval(self):
         return self._interval
     
-    @property
-    def sort_num(self):
-        return self.__sort_num
-    
     def show_data(self) -> None:
         self._trace_obj.show_data()  
     
@@ -477,6 +482,7 @@ class ChElec(ElecData):
         self.object_num = 0  # instance number
         self._read_data(trace_data_obj)
         self.__name = None
+        self.__sort_num = 3
 
     def _read_data(self, trace_data_obj: np.ndarray) -> None:
         self._trace_obj = trace_data_obj
@@ -494,6 +500,10 @@ class ChElec(ElecData):
     @name.setter
     def name(self, object_name):
         self.__name = object_name
+        
+    @property
+    def sort_num(self):
+        return self.__sort_num
     
     def print_infor(self):
         print('This is ElecData' + str(self.object_num))

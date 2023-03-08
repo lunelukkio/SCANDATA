@@ -70,10 +70,6 @@ class ModelController(metaclass=ABCMeta):
         raise NotImplementedError()
 
     @abstractmethod
-    def remove_observer(self, observer):
-        raise NotImplementedError()
-
-    @abstractmethod
     def notify_observer(self):
         raise NotImplementedError()
 
@@ -85,7 +81,7 @@ class Roi(ModelController):
     def __init__(self):
         self.__roi_obj = RoiVal(40, 40, 2, 2)
         self.object_num = 0  # instance number
-        self.__observers = []
+        self.__observer = ControllerObserver()
         #print('Created ROI-{}.'.format(self.object_num))
         
     def __del__(self):
@@ -143,51 +139,33 @@ class Roi(ModelController):
         print('Reset ROI{} and notified'.format(self.object_num))
 
     def add_observer(self, observer):
-        for check_observer in self.__observers:
-            if check_observer == observer:
-                self.remove_observer(observer)
-                self.notify_observer()
-                #print(self.get_infor())
-                return
-        self.__observers.append(observer)
-        self.__observers = sorted(self.__observers, key=lambda x: str(x.sort_num)+x.name)
-        self.notify_observer()
-        print(self.get_infor())
-
- 
-    def remove_observer(self, observer):
-        self.__observers.remove(observer)
-        name_list = []
-        for i in self.__observers:
-            name_list.append(i.name)
-        print(self.get_infor())
+        self.__observer.add_observer(observer)
+        self.__observer.notify_observer(self.__roi_obj)
+        print(self.print_infor())
             
     def notify_observer(self):
-        for observer_name in self.__observers:
-            observer_name.update(self.__roi_obj.data)
+        self.__observer.notify_observer(self.__roi_obj)
 
     @property
     def observers(self) -> list:
-        return self.__observers
+        return self.__observer.observers
     
     def get_infor(self):  # get names from observers
-        name_list = []
-        for observer in self.__observers:
-            name_list.append(observer.name)
+        name_list = self.__observer.get_infor()
         return name_list
     
     def print_infor(self) -> None:
         name_list = []
-        num = len(self.__observers)
+        num = len(self.__observer.observers)
         for i in range(num):
-            name_list.append(self.__observers[i].name)
+            name_list.append(self.__observer.observers[i].name)
         print(f'Roi{self.object_num} observer list = {str(name_list)}, ROI = {self.get_data().data}')
 
 
 class FrameWindow(ModelController):
     def __init__(self):
         self.__frame_window_obj = FrameWindowVal(0, 0, 1, 1)
-        self.__observers = []
+        self.__observer = ControllerObserver()
         self.object_num = 0
         #print('Create FrameWindow{}.'.format(self.object_num))
 
@@ -205,7 +183,6 @@ class FrameWindow(ModelController):
         self.notify_observer()
         #print('Add to FrameWindow{} and notified'.format(self.object_num))
 
-
     def get_data(self) -> object:
         return self.__frame_window_obj
     
@@ -216,28 +193,27 @@ class FrameWindow(ModelController):
         #print('Reset FrameWindow{} and notified'.format(self.object_num))
 
     def add_observer(self, observer: object) -> None:
-        self.__observers.append(observer)
-        
-    def remove_observer(self, observer: object) -> None:
-        self.__observers.remove(observer)
+        self.__observer.add_observer(observer)
+        self.__observer.notify_observer(self.__frame_window_obj)
+        print(self.print_infor())
     
     def notify_observer(self) -> None:
-        for observer_name in self.__observers:
-            observer_name.update(self.get_data())
+        self.__observer.notify_observer(self.__frame_window_obj)
             
     @property
     def observers(self) -> list:
-        return self.__observers
+        return self.__observer.observers
     
     def get_infor(self):  # get names from observers
-        name_list = []
-        for i in range(len(self.__observers)):
-            name_list.append(self.__observers[i].name)
+        name_list = self.__observer.get_infor()
         return name_list
 
     def print_infor(self) -> None:
-        print('FrameWindow{} = '.format(self.object_num) + str(self.get_data()) + 
-              ', observer = ' + str(self.__observers))
+        name_list = []
+        num = len(self.__observer.observers)
+        for i in range(num):
+            name_list.append(self.__observer.observers[i].name)
+        print(f'Roi{self.object_num} observer list = {str(name_list)}, ROI = {self.get_data().data}')
 
 
 class FrameShift(ModelController): 
@@ -315,7 +291,7 @@ class Line(ModelController):
 class ElecController(ModelController):
     def __init__(self):
         self.__time_window_obj = TimeWindowVal(0, 100)
-        self.__observers = []
+        self.__observer = ControllerObserver()
         self.object_num = 0
         #print('Create TimeController{}.'.format(self.object_num))
 
@@ -342,25 +318,56 @@ class ElecController(ModelController):
         #print('Reset FrameWindow{} and notified'.format(self.object_num))
     
     def add_observer(self, observer: object) -> None:
-        self.__observers.append(observer)
-        
-    def remove_observer(self, observer: object) -> None:
-        self.__observers.remove(observer)
+        self.__observer.add_observer(observer)
+        self.__observer.notify_observer(self.__time_window_obj)
+        print(self.print_infor())
     
     def notify_observer(self) -> None:
-        for observer_name in self.__observers:
-            observer_name.update(self.get_data())
+        self.__observer.notify_observer(self.__time_window_obj)
             
     @property
     def observers(self) -> list:
-        return self.__observers
+        return self.__observer.observers
     
     def get_infor(self):  # get names from observers
-        name_list = []
-        for i in range(len(self.__observers)):
-            name_list.append(self.__observers[i].name)
+        name_list = self.__observer.get_infor()
         return name_list
 
     def print_infor(self) -> None:
-        print('TimeWindow{} = '.format(self.object_num) + str(self.get_data()) + 
-              ', observer = ' + str(self.__observers))
+        name_list = []
+        num = len(self.__observer.observers)
+        for i in range(num):
+            name_list.append(self.__observer.observers[i].name)
+        print(f'Roi{self.object_num} observer list = {str(name_list)}, ROI = {self.get_data().data}')
+        
+class ControllerObserver:
+    def __init__(self):
+        self.__observers = []
+        
+    def add_observer(self, observer):
+        for check_observer in self.__observers:
+            if check_observer == observer:
+                self.remove_observer(observer)
+                return
+        self.__observers.append(observer)
+        self.__observers = sorted(self.__observers, key=lambda x: str(x.sort_num)+x.name)
+
+    def remove_observer(self, observer):
+        self.__observers.remove(observer)
+        name_list = []
+        for i in self.__observers:
+            name_list.append(i.name)
+            
+    def notify_observer(self, controller_obj):
+        for observer_name in self.__observers:
+            observer_name.update(controller_obj.data)
+            
+    def get_infor(self):
+        name_list = []
+        for observer in self.__observers:
+            name_list.append(observer.name)
+        return name_list
+
+    @property
+    def observers(self) -> list:
+        return self.__observers

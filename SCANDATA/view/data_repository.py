@@ -159,7 +159,7 @@ class RoiView(ViewData):
         self.__name = None
         self.__model = model
         self.__ax_observer = Observer(self)
-        self.__sort_num = 5
+        self.__sort_num = 101  # to sort view object and data object in observers of model controllers.
         
     def create_data(self, object_num):
         self.__key = 'Roi' + str(object_num)
@@ -228,7 +228,7 @@ class ImageView(ViewData):
         self.__name = None
         self.__model = model
         self.__ax_observer = Observer(self)
-        self.__sort_num = 6
+        self.__sort_num = 102
         
     def create_data(self, object_num):
         self.__key = 'FrameWindow' + str(object_num)
@@ -288,7 +288,7 @@ class ElecView(ViewData):
         self.__name = None
         self.__model = model
         self.__ax_observer = Observer(self)
-        self.__sort_num = 7
+        self.__sort_num = 103
         
     def create_data(self, object_num):
         self.__key = 'ElecController' + str(object_num)

@@ -316,12 +316,16 @@ class DataWindow(tk.Frame):
         
     def default_setting(self):
         """ write here for default switches."""
-                
+        # for Fluo Traces
         self.checkbox_flag_list[0].set(False)
         self.select_ch(0)
         self.checkbox_flag_list[2].set(False)
         self.select_ch(2)
         self.radio_button_var_1.set("DFoverF")
+        
+        # for Elec Traces
+        self.set_elec_ch('Ch 1')
+        
         self.add_mod('Trace', 'DFoverF')
         
     def onclick_image(self, event):
@@ -356,28 +360,34 @@ class DataWindow(tk.Frame):
                 
     def elec_ch_select(self, event):
         selected_value = self.combo_box_elec_ch.get()
+        self.set_elec_ch(selected_value)
+        
+    def set_elec_ch(self, ch: str):
         # This is for a trace_ax flag
-        if selected_value == 'Ch 1':
+        if ch == 'Ch 1':
             elec_flag = [True, False, False, False, False, False, False, False]
-        elif selected_value == 'Ch 2':
+        elif ch == 'Ch 2':
             elec_flag = [False, True, False, False, False, False, False, False]
-        elif selected_value == 'Ch 3':
+        elif ch == 'Ch 3':
             elec_flag = [False, False, True, False, False, False, False, False]
-        elif selected_value == 'Ch 4':
+        elif ch == 'Ch 4':
             elec_flag = [False, False, False, True, False, False, False, False]
-        elif selected_value == 'Ch 5':
+        elif ch == 'Ch 5':
             elec_flag = [False, False, False, False, True, False, False, False]
-        elif selected_value == 'Ch 6':
+        elif ch == 'Ch 6':
             elec_flag = [False, False, False, False, False, True, False, False]
-        elif selected_value == 'Ch 7':
+        elif ch == 'Ch 7':
             elec_flag = [False, False, False, False, False, False, True, False]
-        elif selected_value == 'Ch 8':
+        elif ch == 'Ch 8':
             elec_flag = [False, False, False, False, False, False, False, True]
+            
+        self.ax_list[2].show_flag = elec_flag
         
         num_elec = self.view_data_repository.view_data_counter['ElecView']
         for i in range(1, num_elec+1):
+            print('Tip need bug fix. Now elec window only can 1 trace of the 8 traces. because trace_ax.show_data() received always 8 traces.')
             self.controller.bind_keys('ElecController' + str(i),
-                                      'ChElec' + str(i))
+                                          'ChElec' + str(i))
 
         self.ax_list[2].show_flag = elec_flag
         
