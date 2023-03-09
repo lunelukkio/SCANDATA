@@ -359,6 +359,7 @@ class ControllerObserver:
             name_list.append(i.name)
             
     def notify_observer(self, controller_obj):
+        """ The order of ViewDatas should be after Data entiries """
         for observer_name in self.__observers:
             observer_name.update(controller_obj.data)
             

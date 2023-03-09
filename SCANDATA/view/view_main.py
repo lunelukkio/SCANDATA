@@ -158,8 +158,8 @@ class DataWindow(tk.Frame):
         frame_bottom = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=0, bg = self.my_color)
         
         # for ROI control
-        tk.Button(frame_bottom, text='Large ROI', command=self.large_roi, width=20).pack(side=tk.LEFT)
-        tk.Button(frame_bottom, text='Small ROI', command=self.small_roi, width=20).pack(side=tk.LEFT)
+        tk.Button(frame_bottom, text='Large ROI', command=self.large_roi, width=10).pack(side=tk.LEFT)
+        tk.Button(frame_bottom, text='Small ROI', command=self.small_roi, width=10).pack(side=tk.LEFT)
         tk.Button(frame_bottom, text='Add ROI', fg="black", bg="pink", state='disable', command=self.add_roi, width=5).pack(side=tk.LEFT, padx=5)
         tk.Button(frame_bottom, text='Delete ROI', fg="black", bg="pink", state='disable', command=self.delete_roi, width=5).pack(side=tk.LEFT)
         
@@ -223,6 +223,12 @@ class DataWindow(tk.Frame):
         self.ax_list.append(ImageAx(self.canvas_image, image_ax))  # ax_list[0]
 
         self.canvas_image.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        toolbar_image = NavigationToolbarMyTool(self.canvas_image, frame_left, self.my_color)
+        toolbar_image.children['!button2'].pack_forget()
+        toolbar_image.children['!button3'].pack_forget()
+        toolbar_image.children['!button4'].pack_forget()
+        toolbar_image.update()
+        image_fig.subplots_adjust(left=0.03, right=0.97, bottom=0.01, top=0.97)
         
         # mouse click events
         self.canvas_image.mpl_connect('button_press_event', self.onclick_image)   
@@ -248,10 +254,13 @@ class DataWindow(tk.Frame):
         self.ax_list.append(TraceAx(self.canvas_trace, trace_ax2))  # ax_list[2]
         
         #canvas_trace.get_tk_widget().pack()
-        toolbar_trace = NavigationToolbarTrace(self.canvas_trace, frame_right, self.my_color)
+        toolbar_trace = NavigationToolbarMyTool(self.canvas_trace, frame_right, self.my_color)
+        toolbar_trace.children['!button2'].pack_forget()
+        toolbar_trace.children['!button3'].pack_forget()
+        toolbar_trace.children['!button4'].pack_forget()
         toolbar_trace.update()
-        
         self.canvas_trace.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        trace_fig.subplots_adjust(left=0.06, right=0.97, bottom=0.05, top=0.9)
         
         if filename_obj is not None:
             master.title(filename_obj.name)
@@ -479,7 +488,6 @@ class TraceAx:
                     data = None
                 self.ax_obj.lines[j].set_data(time,data)
                 j += 1
-
         self.draw_ax()
         
     def draw_ax(self):
@@ -567,7 +575,7 @@ class ImageAx:
         self.ax_obj.clear()
         
 
-class NavigationToolbarTrace(NavigationToolbar2Tk):
+class NavigationToolbarMyTool(NavigationToolbar2Tk):
     def __init__(self, canvas=None, master=None, my_color=None):
         super().__init__(canvas, master)   
         self.canvas = canvas
