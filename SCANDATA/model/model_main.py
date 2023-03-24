@@ -30,17 +30,23 @@ class DataSetInterface(metaclass=ABCMeta):
     @abstractmethod
     def get_data(self, key: str):
         raise NotImplementedError()
-        
+    
+    @abstractmethod
     def bind_data(self, controller_key: str, data_key: str):
-        raise NotImplementedError()
-        
-    def bind_view(self, data_key: str, view_obj: object):
         raise NotImplementedError()
     
     @abstractmethod
+    def bind_view(self, data_key: str, view_obj: object):
+        raise NotImplementedError()
+        
+    @abstractmethod
+    def update_data(self):
+        raise NotImplementedError()
+        
+    @abstractmethod
     def reset_data(self, key: str):
         raise NotImplementedError()
-     
+
     @abstractmethod
     def delete_entity(self, key: str):
         raise NotImplementedError()
@@ -56,8 +62,6 @@ class DataSetInterface(metaclass=ABCMeta):
     @abstractmethod
     def remove_mod(self, key: str, mod_key: str):
         raise NotImplementedError()
-        
-        
         
     @abstractmethod
     def get_infor(self,  key: str):
@@ -90,7 +94,7 @@ class DataSet(DataSetInterface):
         strategy_key = Translator.key_checker(key)
         self.__tsm_data_context.set_strategy(strategy_key)
         self.__tsm_data_context.create_data(self.__builder, self.__data)
-        print('=== Model ----- Created data')
+        print('----- Done: create_data() ----- Model')
         self.print_infor()
 
     def set_data(self, key: str, val: tuple):
@@ -98,13 +102,13 @@ class DataSet(DataSetInterface):
         strategy_key = Translator.key_checker(key)
         self.__tsm_data_context.set_strategy(strategy_key)
         self.__tsm_data_context.set_data(key, val)
-        print('=== Model ----- Set data')
+        print('----- Done: set_data() ----- Model')
 
     def add_data(self, key: str, val: tuple):
         print(f'Model ----- add_data({key}), ({val})')
         strategy_key = Translator.key_checker(key)
         self.__tsm_data_context.set_strategy(strategy_key)
-        print('=== Model ----- Added data')
+        print('----- Done: add_data() ----- Model')
         return self.__tsm_data_context.add_data(key, val)
 
     
@@ -116,7 +120,7 @@ class DataSet(DataSetInterface):
         if strategy_key in {'TraceStrategy', 'ImageStrategy', 'ElecStrategy'}:
             mod_key_list = self.__tsm_data_context.get_mod_key()
             data = self.__mod_client.set_mod(data, mod_key_list)
-        print('=== Model ----- got data')
+        print('----- Done: get_data() ----- Model')
         return data
 
     def bind_data(self, controller_key: str, data_key: str) -> None:
@@ -124,21 +128,28 @@ class DataSet(DataSetInterface):
         strategy_key = Translator.key_checker(controller_key)
         self.__tsm_data_context.set_strategy(strategy_key)
         self.__tsm_data_context.bind_data(controller_key, data_key)
-        print('=== Model ----- binded data')
+        print('----- Done: bind_data() ----- Model')
 
     def bind_view(self, controller_key: str, view_obj: object):
         print(f'Model ----- bind_view({controller_key}), ({view_obj.name})')
         strategy_key = Translator.key_checker(controller_key)
         self.__tsm_data_context.set_strategy(strategy_key)
         self.__tsm_data_context.bind_view(controller_key, view_obj)
-        print('=== Model ----- binded view')
+        print('----- Done: bind_view() ----- Model')
+        
+    def update_data(self, key):
+        print(f'Model ----- update_data({key})')
+        strategy_key = Translator.key_checker(key)
+        self.__tsm_data_context.set_strategy(strategy_key)
+        self.__tsm_data_context.update_data(key)
+        print('----- Done: update_data() ----- Model')
 
     def reset_data(self, key: str):
         print(f'Model ----- reset_data({key})')
         strategy_key = Translator.key_checker(key)
         self.__tsm_data_context.set_strategy(strategy_key)
         self.__tsm_data_context.reset(key)
-        print('=== Model ----- Reset')
+        print('----- Done: reset_data() ----- Model')
 
     def delete_entity(self, key: str) -> None:
         print(f'Model ----- delete_entity({key})')
@@ -152,12 +163,12 @@ class DataSet(DataSetInterface):
             print('====================================')
             print('No key. Can not delete ' + key)
             print('====================================')
-        print('=== Model ----- Deleted an entity')
+        print('----- Done: delete_entity() ----- Model')
 
     def count_data(self, key):
         print(f'Model ----- count_data({key})')
         num = KeyCounter.count_key(self.data, key)
-        print('=== Model ----- Counted')
+        print('----- Done: count_data() ----- Model')
         return num
     
     def add_mod(self, key: str, mod_key: str):  # add a mod to strategy class.
@@ -165,14 +176,14 @@ class DataSet(DataSetInterface):
         strategy_key = Translator.key_checker(key)
         self.__tsm_data_context.set_strategy(strategy_key)
         self.__tsm_data_context.add_mod(mod_key)
-        print('=== Model ----- Added a mod')
+        print('----- Done: add_mod() ----- Model')
         
     def remove_mod(self, key: str, mod_key: str):  # remove a mod from strategy class.
         print(f'Model ----- remove_mod({key}) ({mod_key})')
         strategy_key = Translator.key_checker(key)
         self.__tsm_data_context.set_strategy(strategy_key)
         self.__tsm_data_context.remove_mod(mod_key)
-        print('=== Model ----- Removed a mod')
+        print('----- Done: remove_mod() ----- Model')
 
     def get_infor(self, key):
         
@@ -194,12 +205,15 @@ class DataSet(DataSetInterface):
         return self.__controller
 
     def print_infor(self):
+        print('')
         print('------------------------------Data keys of ' + str(self.__filename.name) + ' ------------------------------ (called by data_set.create_data())')
-        print('--- IO Keys = ' + str(list(self.__file_io.keys())))
-        print('--- Data Keys = ' + str(list(self.__data.keys())))
-        print('--- Controller Keys = ' + str(list(self.__controller.keys())))
+        print('----- IO Keys = ' + str(list(self.__file_io.keys())))
+        print('----- Data Keys = ' + str(list(self.__data.keys())))
+        print('----- Controller Keys = ' + str(list(self.__controller.keys())))
+        print('')
 
     def help(self):
+        print('')
         print('===================================================================================')
         print('HELP for commands to MODEL')
         print('DataSet(filename)     <------------ only this is full file name.')
@@ -215,6 +229,7 @@ class DataSet(DataSetInterface):
         print('reset_data(key: str): reset controller')
         print('            e.g. test.reset_data("Roi1")')
         print('===================================================================================')
+        print('')
 
 """
 Strategy Method for set and get data
@@ -253,6 +268,9 @@ class TSMDataStrategyContext:  # TMS data specific.
         
     def bind_view(self, controller_key: str, view_obj: object):
         self.__strategy.bind_view(controller_key, view_obj)
+        
+    def update_data(self, key):
+        self.__strategy.update_data(key)
 
     def get_infor(self, key):
         return self.__strategy.get_infor(key)
@@ -318,12 +336,16 @@ class ControllerStrategy(DataSetStrategyInterface):
         
     def bind_view(self, controller_key: str, view_obj: object):
         self._object_dict[2][controller_key].add_observer(view_obj)
-    
-    def get_infor(self, key):
-        return self._object_dict[2][key].get_infor()
+        
+    def update_data(self, key: str):
+        self._object_dict[2][key].notify_observer()
     
     def reset_data(self, key: str):
         self._object_dict[2][key].reset()
+    
+    def get_infor(self, key):
+        return self._object_dict[2][key].get_infor()
+
     
 # Not use in initializeing process
 class FramesStrategy(DataStrategy):

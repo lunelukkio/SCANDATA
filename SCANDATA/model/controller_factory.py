@@ -86,18 +86,27 @@ class Roi(ModelController):
         
     def __del__(self):
         #print('.')
-        print('Deleted a Roi object.' + '  myId={}'.format(id(self)))
+        print('----- Deleted a Roi object.' + '  myId={}'.format(id(self)))
         #pass
         
     def check_val(self, x, y, x_width, y_width) -> None:
-        if x < 0 or \
-           y < 0 or \
-           x_width < 1 or \
-           y_width < 1:
-            print('ROI value shold be more than 1')
-            return False
+        # check the val as the same or not
+        if x == self.__roi_obj.data[0] and \
+           y == self.__roi_obj.data[1] and \
+           x_width == self.__roi_obj.data[2] and \
+           y_width == self.__roi_obj.data[3]:
+               print('----- The new ROI value is the same as previous.')
+               return False
+        # check the val for limit
         else:
-            return True
+            if x < 0 or \
+               y < 0 or \
+               x_width < 1 or \
+               y_width < 1:
+                print('ROI value shold be more than 1')
+                return False
+            else:
+                return True
 
     def set_data(self, x = None, y = None, x_width = None, y_width = None) -> None:
         if x is None:
@@ -109,6 +118,7 @@ class Roi(ModelController):
         if y_width is None:
             y_width = self.__roi_obj.data[3]
         check_bool = self.check_val(x, y, x_width, y_width)
+        # make a new value object
         if check_bool is True:
             self.__roi_obj = RoiVal(x, y, x_width, y_width)  # replace the roi
             self.print_infor()
@@ -136,11 +146,11 @@ class Roi(ModelController):
         self.__roi_obj = RoiVal(40, 40, 2, 2)
         self.print_infor()
         self.notify_observer()
-        print('Reset ROI{} and notified'.format(self.object_num))
+        print('----- Reset ROI{} and notified'.format(self.object_num))
 
     def add_observer(self, observer):
         self.__observer.add_observer(observer)
-        self.notify_observer()
+        self.notify_observer()  # this message come from a controller
             
     def notify_observer(self):
         self.__observer.notify_observer(self.__roi_obj)
@@ -169,6 +179,14 @@ class FrameWindow(ModelController):
         #print('Create FrameWindow{}.'.format(self.object_num))
 
     def set_data(self, start: int, end: int, start_width=0, end_width=0) -> None:
+        # check data
+        print('Tip: Didnt test this check program.')
+        if start == self.__frame_window_obj.data[0] and \
+           end == self.__frame_window_obj.data[1] and \
+           start_width == self.__frame_window_obj.data[2] and \
+           end_width == self.__frame_window_obj.data[3]:
+               print('----- The new FrameWindow value is the same as previous.')
+               return
         self.__frame_window_obj = FrameWindowVal(start, end, start_width, end_width)
         self.print_infor()
         self.notify_observer()
@@ -193,7 +211,7 @@ class FrameWindow(ModelController):
 
     def add_observer(self, observer: object) -> None:
         self.__observer.add_observer(observer)
-        self.notify_observer()
+        self.notify_observer()  # this message come from a controller
     
     def notify_observer(self) -> None:
         self.__observer.notify_observer(self.__frame_window_obj)
@@ -317,7 +335,7 @@ class ElecController(ModelController):
     
     def add_observer(self, observer: object) -> None:
         self.__observer.add_observer(observer)
-        self.notify_observer()
+        self.notify_observer()  # this message come from a controller
     
     def notify_observer(self) -> None:
         self.__observer.notify_observer(self.__time_window_obj)
@@ -356,6 +374,10 @@ class ControllerObserver:
             name_list.append(i.name)
             
     def notify_observer(self, controller_obj):
+        name_list = []
+        for observer in self.__observers:
+            name_list.append(observer.name)
+        print('----- Notify to observers: ' + str(name_list))
         """ The order of ViewDatas should be after Data entiries """
         for observer_name in self.__observers:
             observer_name.update(controller_obj.data)

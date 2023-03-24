@@ -338,9 +338,11 @@ class DataWindow(tk.Frame):
         self.add_mod('Trace', 'DFoverF')
         
         # for Elec Traces
-        #for i in range(1,9):
-        #    self.controller.bind_keys('ElecController1',
-        #                              'ChElec' + str(i))
+        for i in range(1,9):
+            self.ax_list[2].show_flag[i-1] = False
+            self.controller.bind_keys('ElecController1',
+                                      'ChElec' + str(i))
+
         self.set_elec_ch('Ch 1')
         
     def onclick_image(self, event):
@@ -357,6 +359,7 @@ class DataWindow(tk.Frame):
                 pass
             self.ax_list[0].current_roi_num = self.current_roi_num
             self.view_data_repository.update('RoiView' + str(self.current_roi_num))
+        print('')
 
             
     # this method need refactoring.
@@ -372,57 +375,65 @@ class DataWindow(tk.Frame):
             else:
                 self.controller.bind_keys('Roi' + str(i),
                                           'ChTrace' + str(i*2-2+ch))
+        print('')
                 
     def elec_ch_select(self, event):
         selected_value = self.combo_box_elec_ch.get()
         self.set_elec_ch(selected_value)
+        print('')
         
     def set_elec_ch(self, ch: str):
         # This is for a trace_ax flag
         if ch == 'Ch 1':
             elec_flag = [True, False, False, False, False, False, False, False]
+            self.controller.bind_keys('ElecController1', 'ChElec1')
         elif ch == 'Ch 2':
             elec_flag = [False, True, False, False, False, False, False, False]
+            self.controller.bind_keys('ElecController1', 'ChElec2')
         elif ch == 'Ch 3':
             elec_flag = [False, False, True, False, False, False, False, False]
+            self.controller.bind_keys('ElecController1', 'ChElec3')
         elif ch == 'Ch 4':
             elec_flag = [False, False, False, True, False, False, False, False]
+            self.controller.bind_keys('ElecController1', 'ChElec4')
         elif ch == 'Ch 5':
             elec_flag = [False, False, False, False, True, False, False, False]
+            self.controller.bind_keys('ElecController1', 'ChElec5')
         elif ch == 'Ch 6':
             elec_flag = [False, False, False, False, False, True, False, False]
+            self.controller.bind_keys('ElecController1', 'ChElec6')
         elif ch == 'Ch 7':
             elec_flag = [False, False, False, False, False, False, True, False]
+            self.controller.bind_keys('ElecController1', 'ChElec7')
         elif ch == 'Ch 8':
             elec_flag = [False, False, False, False, False, False, False, True]
+            self.controller.bind_keys('ElecController1', 'ChElec8')
             
         self.ax_list[2].show_flag = elec_flag
-        
-        num_elec = self.view_data_repository.view_data_counter['ElecView']
-        for i in range(1, num_elec+1):
-            self.controller.bind_keys('ElecController' + str(i),
-                                          'ChElec' + str(i))
-            print('Tip: Need a bug fix. Now, elec window can show onlythe first trace of the 8 traces, because trace_ax.show_data() received always 8 traces.')
-            print('Tip: Fluo trace need overwriting, but elec trace doesnt need that.')
 
         
     def large_roi(self):
         self.change_roi_size([0, 0, 1, 1])
+        print('')
 
     def small_roi(self):
         self.change_roi_size([0, 0, -1, -1])
+        print('')
 
     def change_roi_size(self, val):
         self.controller.change_roi_size(self.current_roi_num, val)
+        print('')
 
     def add_roi(self):
         self.view_data_repository.create_roi(self.ax_list)
+        print('')
         
     def delete_roi(self):
         self.view_data_repository.delete_roi(self.ax_list)
         for i in range(len(self.ax_list)):
             self.ax_list[i].draw_ax()
         self.current_roi_num -= 1
+        print('')
         
     def add_mod(self, data_key, mod_key):
         if mod_key == 'DFoverF':
@@ -437,6 +448,7 @@ class DataWindow(tk.Frame):
                 print('No DFoverF mod.')
         self.controller.add_mod(data_key, mod_key)
         self.ax_list[1].draw_ax()
+        print('')
     
     def remove_mod(self, data_key, mod_key):
         if mod_key == 'F':
@@ -451,6 +463,7 @@ class DataWindow(tk.Frame):
                 
         self.controller.remove_mod(data_key, mod_key)
         self.ax_list[1].draw_ax()
+        print('')
         
 
 class TraceAx:
@@ -501,7 +514,6 @@ class TraceAx:
         self.ax_obj.relim()
         self.ax_obj.autoscale_view()
         self.canvas_trace.draw()
-        print('')
         
     def reset(self):
         self.current_ch = 1
@@ -575,7 +587,6 @@ class ImageAx:
         self.ax_obj.relim()
         self.ax_obj.autoscale_view()
         self.canvas_image.draw()
-        print('')
         
     def reset(self):
         self.current_ch = 1
