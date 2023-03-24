@@ -150,7 +150,7 @@ class Roi(ModelController):
 
     def add_observer(self, observer):
         self.__observer.add_observer(observer)
-        self.notify_observer()  # this message come from a controller
+        #self.notify_observer()  # this message come from a controller
             
     def notify_observer(self):
         self.__observer.notify_observer(self.__roi_obj)
@@ -211,7 +211,7 @@ class FrameWindow(ModelController):
 
     def add_observer(self, observer: object) -> None:
         self.__observer.add_observer(observer)
-        self.notify_observer()  # this message come from a controller
+        #self.notify_observer()  # this message come from a controller
     
     def notify_observer(self) -> None:
         self.__observer.notify_observer(self.__frame_window_obj)
@@ -335,7 +335,7 @@ class ElecController(ModelController):
     
     def add_observer(self, observer: object) -> None:
         self.__observer.add_observer(observer)
-        self.notify_observer()  # this message come from a controller
+        #self.notify_observer()  # this message come from a controller
     
     def notify_observer(self) -> None:
         self.__observer.notify_observer(self.__time_window_obj)

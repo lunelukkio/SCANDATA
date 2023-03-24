@@ -46,7 +46,6 @@ class ViewDataRepository:
         image.add_observer(ax_list[0])  # for cell image
         frame_window_name = 'FrameWindow' + str(self.count_data('ImageView'))
         self.model.bind_view(frame_window_name, image)
-        image.update()
     
     def create_roi(self, ax_list):
         roi_view = self.create_view_data(RoiViewFactory())  # This is Roi1 for background
