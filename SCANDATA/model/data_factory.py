@@ -232,8 +232,6 @@ class CellImage(FluoImage):
         self.object_num = 0  # instance number
         self.__name = None
         self.__sort_num = 104
-        
-        self._read_data(self._frame_window)
 
     def _read_data(self, frame_window) -> None:
         frame_length = self._frames_obj.data.shape[2]
@@ -244,19 +242,18 @@ class CellImage(FluoImage):
         if end - start == 0:
             val = self._frames_obj.data[:, :, frame_window[0]]
             self._image_obj = ImageData(val)
-            #print('Read a single cell image')
+            print(f'Cell image from a single frame# {start} to {end}: Succeeded')
         elif end - start > 0: 
             val = np.mean(self._frames_obj.data[:, :, start:end], axis = 2)
             self._image_obj = ImageData(val)
-            #print('Read an avarage cell image')
+            print(f'Cell image from an avaraged frame# {start} to {end}: Succeeded')
         else:
             self._data = np.zeros((2, 2))
             raise Exception('The end frame should be higher than the start frame.')
         
-    def update(self, frame_window_obj) -> None:  # value object
-        print('CellImage{} recieved a notify message.'.format(self.object_num) + str(self._frame_window))
-        self._frame_window = frame_window_obj.data  # frame_window = [start, end, start_width, end_width]
-        self._read_data(self._frame_window)
+    def update(self, frame_window_data) -> None:  # value object
+        print(f'CellImage{self.object_num} recieved a notify message: {frame_window_data}')
+        self._read_data(frame_window_data)  # frame_window = [start, end, start_width, end_width]
         
     def print_infor(self) -> None:
         print('This is CellImage{}'.format(self.object_num))

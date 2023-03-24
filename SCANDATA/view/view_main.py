@@ -278,7 +278,8 @@ class DataWindow(tk.Frame):
         self.ax_list[0].ax_obj.set_xticks([])  # To remove ticks of image window.
         self.ax_list[0].ax_obj.set_yticks([])  # To remove ticks of image window.
         
-        self.ax_list[0].show_flag = [True, True]  # ch1, ch2  #  shold be the same as the default checkbox BooleanVar
+        self.ax_list[0].show_flag = [True, 
+                                     True]  # ch1, ch2  #  shold be the same as the default checkbox BooleanVar
         
         # for RoiBox
         self.ax_list[0].remove_rectangles()
@@ -286,7 +287,9 @@ class DataWindow(tk.Frame):
         # for the ch select buttons
         for i in range(3):
             self.checkbox_flag_list[i].set(True)
-        self.ax_list[1].show_flag = [True, True, True]  #  shold be the same as the default checkbox BooleanVar
+        self.ax_list[1].show_flag = [True,
+                                     True, 
+                                     True]  #  shold be the same as the default checkbox BooleanVar
         self.radio_button_var_1.set("F")
         
         self.ax_list[2].show_flag = [True,  # ch1
@@ -332,10 +335,13 @@ class DataWindow(tk.Frame):
         self.select_ch(2)
         self.radio_button_var_1.set("DFoverF")
         
-        # for Elec Traces
-        self.set_elec_ch('Ch 1')
-        
         self.add_mod('Trace', 'DFoverF')
+        
+        # for Elec Traces
+        #for i in range(1,9):
+        #    self.controller.bind_keys('ElecController1',
+        #                              'ChElec' + str(i))
+        self.set_elec_ch('Ch 1')
         
     def onclick_image(self, event):
         if event.button == 1:  # left click
@@ -394,9 +400,10 @@ class DataWindow(tk.Frame):
         
         num_elec = self.view_data_repository.view_data_counter['ElecView']
         for i in range(1, num_elec+1):
-            print('Tip need bug fix. Now elec window only can 1 trace of the 8 traces. because trace_ax.show_data() received always 8 traces.')
             self.controller.bind_keys('ElecController' + str(i),
                                           'ChElec' + str(i))
+            print('Tip: Need a bug fix. Now, elec window can show onlythe first trace of the 8 traces, because trace_ax.show_data() received always 8 traces.')
+            print('Tip: Fluo trace need overwriting, but elec trace doesnt need that.')
 
         
     def large_roi(self):

@@ -39,7 +39,7 @@ class ImagingController:
         if self.model == None:
             raise Exception('Failed to create a model.')
         else:
-            print('==============================Suceeded to make a model.============================== (from ImagingController)')
+            print('============================== Suceeded to read data from data files. ============================== (from ImagingController)')
             print('')
         return self.model
     

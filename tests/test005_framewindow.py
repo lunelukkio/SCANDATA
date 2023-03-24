@@ -46,9 +46,12 @@ class TestFrameWindow(unittest.TestCase):
         
         data_factory = CellImageFactory()
         cellimage = data_factory.create_data(frames_data, pixel_size)
+        cellimage.name = 'CellImage1'
         
         controller_factory = FrameWindowFactory()
         framewindow = controller_factory.create_controller()
+
+
         
         
         framewindow.add_observer(cellimage)

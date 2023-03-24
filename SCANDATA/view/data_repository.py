@@ -60,7 +60,6 @@ class ViewDataRepository:
         elec.add_observer(ax_list[2])  # fof elec data
         elec_name = 'ElecController' + str(self.count_data('ElecView'))
         self.model.bind_view(elec_name, elec)
-        elec.update()
         
     def delete_roi(self, ax_list):
         roi_num = self.__view_data_counter['RoiView']
@@ -174,6 +173,7 @@ class RoiView(ViewData):
         del self.__roi_box
 
     def update(self, *no_use):  # "no_use" is a RoiVal object. it need for FluoTrace observers.
+        # update Trace list from model controller
         observer_trace_list = []
         for key in self.__model.get_infor(self.__key):  # get only keys which include 'Trace' from DataSet class.
             if 'Trace' in key:
@@ -292,18 +292,25 @@ class ElecView(ViewData):
     def create_data(self, object_num):
         self.__key = 'ElecController' + str(object_num)
         self.__model.create_data('Elec')
-        self.__time_windoww_val = self.__model.get_data(self.__key)
-        self.__data_name_list = self.__model.get_infor(self.__key)
         self.__data_list = []  # a list of value object 
+        
+        print('Created ' + self.__key + ' View instance.')
     
     def reset(self):
-        raise NotImplementedError()
+        del self.__data_list
 
     def update(self, *no_use):
+        # update Elec list from model controller
+        observer_trace_list = []
+        for key in self.__model.get_infor(self.__key):  # get only keys which include 'Trace' from DataSet class.
+            if 'ChElec' in key:
+                observer_trace_list.append(key)
+        # for traces
         new_data = []
-        for data_name in self.__data_name_list:
+        for data_name in observer_trace_list:
             new_data.append(self.__model.get_data(data_name))
         self.__data_list = new_data
+
         self.notify_observer()
         
     def get_data(self) -> list:

@@ -86,46 +86,62 @@ class DataSet(DataSetInterface):
         self.print_infor()
         
     def create_data(self, key: str) -> None:
+        print(f'Model ----- create_data({key})')
         strategy_key = Translator.key_checker(key)
         self.__tsm_data_context.set_strategy(strategy_key)
         self.__tsm_data_context.create_data(self.__builder, self.__data)
+        print('=== Model ----- Created data')
         self.print_infor()
 
     def set_data(self, key: str, val: tuple):
+        print(f'Model ----- set_data({key}), ({val})')
         strategy_key = Translator.key_checker(key)
         self.__tsm_data_context.set_strategy(strategy_key)
         self.__tsm_data_context.set_data(key, val)
+        print('=== Model ----- Set data')
 
     def add_data(self, key: str, val: tuple):
+        print(f'Model ----- add_data({key}), ({val})')
         strategy_key = Translator.key_checker(key)
         self.__tsm_data_context.set_strategy(strategy_key)
+        print('=== Model ----- Added data')
         return self.__tsm_data_context.add_data(key, val)
+
     
     def get_data(self, key: str) -> object:
+        print(f'Model ----- get_data({key})')
         strategy_key = Translator.key_checker(key)
         self.__tsm_data_context.set_strategy(strategy_key)
         data = self.__tsm_data_context.get_data(key)
         if strategy_key in {'TraceStrategy', 'ImageStrategy', 'ElecStrategy'}:
             mod_key_list = self.__tsm_data_context.get_mod_key()
             data = self.__mod_client.set_mod(data, mod_key_list)
+        print('=== Model ----- got data')
         return data
 
     def bind_data(self, controller_key: str, data_key: str) -> None:
+        print(f'Model ----- bind_data({controller_key}), ({data_key})')
         strategy_key = Translator.key_checker(controller_key)
         self.__tsm_data_context.set_strategy(strategy_key)
         self.__tsm_data_context.bind_data(controller_key, data_key)
+        print('=== Model ----- binded data')
 
     def bind_view(self, controller_key: str, view_obj: object):
+        print(f'Model ----- bind_view({controller_key}), ({view_obj.name})')
         strategy_key = Translator.key_checker(controller_key)
         self.__tsm_data_context.set_strategy(strategy_key)
         self.__tsm_data_context.bind_view(controller_key, view_obj)
+        print('=== Model ----- binded view')
 
     def reset_data(self, key: str):
+        print(f'Model ----- reset_data({key})')
         strategy_key = Translator.key_checker(key)
         self.__tsm_data_context.set_strategy(strategy_key)
         self.__tsm_data_context.reset(key)
+        print('=== Model ----- Reset')
 
     def delete_entity(self, key: str) -> None:
+        print(f'Model ----- delete_entity({key})')
         if key in self.__data:
             del self.__data[key]
             print('Deleted ' + key + 'from data')
@@ -136,20 +152,27 @@ class DataSet(DataSetInterface):
             print('====================================')
             print('No key. Can not delete ' + key)
             print('====================================')
+        print('=== Model ----- Deleted an entity')
 
     def count_data(self, key):
+        print(f'Model ----- count_data({key})')
         num = KeyCounter.count_key(self.data, key)
+        print('=== Model ----- Counted')
         return num
     
     def add_mod(self, key: str, mod_key: str):  # add a mod to strategy class.
+        print(f'Model ----- add_mod({key}) ({mod_key})')
         strategy_key = Translator.key_checker(key)
         self.__tsm_data_context.set_strategy(strategy_key)
         self.__tsm_data_context.add_mod(mod_key)
+        print('=== Model ----- Added a mod')
         
     def remove_mod(self, key: str, mod_key: str):  # remove a mod from strategy class.
+        print(f'Model ----- remove_mod({key}) ({mod_key})')
         strategy_key = Translator.key_checker(key)
         self.__tsm_data_context.set_strategy(strategy_key)
         self.__tsm_data_context.remove_mod(mod_key)
+        print('=== Model ----- Removed a mod')
 
     def get_infor(self, key):
         
@@ -457,9 +480,11 @@ class Translator:
     @staticmethod
     def key_checker(key: str) -> str:
 
+        """
         previous_frame = inspect.currentframe().f_back
         (filename, line_number, function_name, lines, index) = inspect.getframeinfo(previous_frame)
         print(f'Key Checker received a key "{key}" from {function_name}().')
+        """
         
         if 'Roi' in key:
             return 'RoiStrategy'

@@ -140,8 +140,7 @@ class Roi(ModelController):
 
     def add_observer(self, observer):
         self.__observer.add_observer(observer)
-        self.__observer.notify_observer(self.__roi_obj)
-        print(self.print_infor())
+        self.notify_observer()
             
     def notify_observer(self):
         self.__observer.notify_observer(self.__roi_obj)
@@ -194,8 +193,7 @@ class FrameWindow(ModelController):
 
     def add_observer(self, observer: object) -> None:
         self.__observer.add_observer(observer)
-        self.__observer.notify_observer(self.__frame_window_obj)
-        print(self.print_infor())
+        self.notify_observer()
     
     def notify_observer(self) -> None:
         self.__observer.notify_observer(self.__frame_window_obj)
@@ -213,7 +211,7 @@ class FrameWindow(ModelController):
         num = len(self.__observer.observers)
         for i in range(num):
             name_list.append(self.__observer.observers[i].name)
-        print(f'Roi{self.object_num} observer list = {str(name_list)}, ROI = {self.get_data().data}')
+        print(f'FrameWindow{self.object_num} observer list = {str(name_list)}, ROI = {self.get_data().data}')
 
 
 class FrameShift(ModelController): 
@@ -319,8 +317,7 @@ class ElecController(ModelController):
     
     def add_observer(self, observer: object) -> None:
         self.__observer.add_observer(observer)
-        self.__observer.notify_observer(self.__time_window_obj)
-        print(self.print_infor())
+        self.notify_observer()
     
     def notify_observer(self) -> None:
         self.__observer.notify_observer(self.__time_window_obj)
@@ -338,7 +335,7 @@ class ElecController(ModelController):
         num = len(self.__observer.observers)
         for i in range(num):
             name_list.append(self.__observer.observers[i].name)
-        print(f'Roi{self.object_num} observer list = {str(name_list)}, ROI = {self.get_data().data}')
+        print(f'ElecController{self.object_num} observer list = {str(name_list)}, ROI = {self.get_data().data}')
         
 class ControllerObserver:
     def __init__(self):
