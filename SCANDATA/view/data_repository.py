@@ -156,6 +156,7 @@ class RoiView(ViewData):
     def __init__(self, model):
         self.__name = None
         self.__model = model
+        self.__total_num_trace = []
         self.__ax_observer = Observer(self)
         self.__sort_num = 901  # to sort view object and data object in observers of model controllers.
         
@@ -163,6 +164,7 @@ class RoiView(ViewData):
         self.__key = 'Roi' + str(object_num)
         self.__model.create_data('Trace')
         self.__roi_box = RoiBox(self.__model, self.__key)
+        self.__total_num_trace = self.__model.count_data('Trace')
         self.__data_list = []  # a list of value object 
         
         print('Created ' + self.__key + ' view instance including Roi controller and traces.')
