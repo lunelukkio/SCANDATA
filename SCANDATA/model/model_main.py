@@ -89,13 +89,14 @@ class DataSet(DataSetInterface):
         self.__builder.initialize()
         self.print_infor()
         
-    def create_data(self, key: str) -> None:
+    def create_data(self, key: str) -> list:  # return an entity name list created by this method 
         print(f'Model ----- create_data({key})')
         strategy_key = Translator.key_checker(key)
         self.__tsm_data_context.set_strategy(strategy_key)
-        self.__tsm_data_context.create_data(self.__builder, self.__data)
+        entity_name_list = self.__tsm_data_context.create_data(self.__builder, self.__data)
         print('----- Done: create_data() ----- Model')
         self.print_infor()
+        return entity_name_list
 
     def set_data(self, key: str, val: tuple):
         print(f'Model ----- set_data({key}), ({val})')
@@ -258,7 +259,7 @@ class TSMDataStrategyContext:  # TMS data specific.
         return self.__strategy.get_data(key)
         
     def create_data(self, builder, data):
-        self.__strategy.create_data(builder, data)
+        return self.__strategy.create_data(builder, data)
         
     def add_data(self, key: str, val: tuple):
         return self.__strategy.add_data(key, val)
@@ -362,7 +363,7 @@ class ImageStrategy(DataStrategy):
         self.__mod_list = ModList()  #delegation class
         
     def create_data(self, builder, data):
-        builder.build_image_set(data)
+        return builder.build_image_set(data)
         
     def get_data(self, key):
         return self._object_dict[1][key].get_data()
@@ -383,7 +384,7 @@ class TraceStrategy(DataStrategy):  # FluoTrace
         self.__mod_list = ModList()  #delegation class
 
     def create_data(self, builder, data):
-        builder.build_trace_set(data)
+        return builder.build_trace_set(data)
         
     def get_data(self, key):
         return self._object_dict[1][key].get_data()
@@ -404,7 +405,7 @@ class ElecStrategy(DataStrategy):
         self.__mod_list = ModList()  #delegation class
         
     def create_data(self, builder, data):
-        builder.build_elec_data_set(self._object_dict[0])
+        return builder.build_elec_data_set(self._object_dict[0])
         
     def get_data(self, key):
         return self._object_dict[1][key].get_data()

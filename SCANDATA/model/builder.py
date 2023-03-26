@@ -128,6 +128,7 @@ class TsmFileBuilder(Builder):
     
     # for making trace data set
     def build_trace_set(self, data_set) -> None:
+        entity_name_list = []  # for RoiView
         # Make a controller
         roi = self.create_controller(RoiFactory())
         # Make traces
@@ -135,6 +136,7 @@ class TsmFileBuilder(Builder):
                                       data_set['FullFrames1'].frames_obj, 
                                       data_set['FullFrames1'].interval)
         roi.add_observer(full_trace)
+        entity_name_list.append(full_trace.name)
 
         num_ch_frames = KeyCounter.count_key(data_set, 'ChFrames')
         ch_frames_list = []
@@ -143,6 +145,8 @@ class TsmFileBuilder(Builder):
         for i in ch_frames_list:
             trace = self.create_data(ChTraceFactory(), i.frames_obj, i.interval)
             roi.add_observer(trace)
+            entity_name_list.append(trace.name)
+        return entity_name_list
             
     def build_elec_data_set(self, raw_data):
         # Make a controller

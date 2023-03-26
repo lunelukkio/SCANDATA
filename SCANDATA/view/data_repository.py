@@ -156,17 +156,20 @@ class RoiView(ViewData):
     def __init__(self, model):
         self.__name = None
         self.__model = model
-        self.__total_num_trace = []
+        self.__data_dict = {}
         self.__ax_observer = Observer(self)
         self.__sort_num = 901  # to sort view object and data object in observers of model controllers.
         
     def create_data(self, object_num):
         self.__key = 'Roi' + str(object_num)
-        self.__model.create_data('Trace')
+        entity_name_list = self.__model.create_data('Trace')
+        for key in entity_name_list:
+            self.__data_dict[key] = None
+        print(self.__data_dict)
+        print('rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr')
         self.__roi_box = RoiBox(self.__model, self.__key)
-        self.__total_num_trace = self.__model.count_data('Trace')
         self.__data_list = []  # a list of value object 
-        
+
         print('Created ' + self.__key + ' view instance including Roi controller and traces.')
 
     def reset(self):

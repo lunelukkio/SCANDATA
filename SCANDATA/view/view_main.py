@@ -507,16 +507,9 @@ class TraceAx:
                     time = None
                     data = None
 
-                print(self.show_flag)
-                print(self.data_list)
-                print(self.ax_obj.lines)
-                print(self.ax_obj.lines[2])
-                print(time)
-                print(data)
                 self.ax_obj.lines[j].set_data(time,data)
                 j += 1
-                print(i)
-                print(j)
+
         self.draw_ax()
         
     def draw_ax(self):
