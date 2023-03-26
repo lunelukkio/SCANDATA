@@ -156,7 +156,7 @@ class RoiView(ViewData):
     def __init__(self, model):
         self.__name = None
         self.__model = model
-        self.__data_dict = {}
+        self.__data_dict = {}  #{entity name: value object}
         self.__ax_observer = Observer(self)
         self.__sort_num = 901  # to sort view object and data object in observers of model controllers.
         
@@ -165,34 +165,29 @@ class RoiView(ViewData):
         entity_name_list = self.__model.create_data('Trace')
         for key in entity_name_list:
             self.__data_dict[key] = None
-        print(self.__data_dict)
-        print('rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr')
         self.__roi_box = RoiBox(self.__model, self.__key)
-        self.__data_list = []  # a list of value object 
 
         print('Created ' + self.__key + ' view instance including Roi controller and traces.')
 
     def reset(self):
-        del self.__data_list
+        del self.__data_dict
         del self.__roi_box
 
     def update(self, *no_use):  # "no_use" is a RoiVal object. it need for FluoTrace observers.
-        # update Trace list from model controller
-        observer_trace_list = []
+        # update entity list from model controller
+        observer_entity_list = []
         for key in self.__model.get_infor(self.__key):  # get only keys which include 'Trace' from DataSet class.
             if 'Trace' in key:
-                observer_trace_list.append(key)
+                observer_entity_list.append(key)
         # for traces
-        new_data = []
-        for data_name in observer_trace_list:
-            new_data.append(self.__model.get_data(data_name))
-        self.__data_list = new_data
+        for data_name in observer_entity_list:
+            self.__data_dict[data_name] = self.__model.get_data(data_name)
         #for roibox
         self.__roi_box.set_roi()
         self.notify_observer()
         
-    def get_data(self) -> list:
-        return self.__data_list
+    def get_data(self) -> dict:
+        return self.__data_dict
             
     def delete(self):
         raise NotImplementedError()
@@ -230,33 +225,34 @@ class ImageView(ViewData):
     def __init__(self, model):
         self.__name = None
         self.__model = model
+        self.__data_dict = {}  #{entity name: value object}
         self.__ax_observer = Observer(self)
         self.__sort_num = 902
         
     def create_data(self, object_num):
         self.__key = 'FrameWindow' + str(object_num)
-        self.__model.create_data('Image')
-        self.__frame_windoww_val = self.__model.get_data(self.__key)
-        self.__data_name_list = self.__model.get_infor(self.__key)  # FrameWindow obserber names
-        self.__data_list = []  # a list of value object 
+        entity_name_list = self.__model.create_data('Image')
+        print(entity_name_list)
+        for key in entity_name_list:
+            self.__data_dict[key] = None
 
     def reset(self):
         raise NotImplementedError()
 
     def update(self, *no_use):
-        new_data = []
-        new_data_name = []
-        for data_name in self.__data_name_list:
-            value_data_obj = self.__model.get_data(data_name)
-            new_data.append(value_data_obj)
-            new_data_name.append(value_data_obj.data_type)
-        self.__data_list = new_data
-        
-        #print('ImageView Data updated: ' + str(new_data_name))
+        # update entity list from model controller
+        observer_entity_list = []
+        for key in self.__model.get_infor(self.__key):  # get only keys which include 'Trace' from DataSet class.
+            if 'Image' in key:
+                observer_entity_list.append(key)
+        # for images
+        for data_name in observer_entity_list:
+            self.__data_dict[data_name] = self.__model.get_data(data_name)
         self.notify_observer()
-        
+        #print('ImageView Data updated: ' + str(new_data_name))
+
     def get_data(self) -> list:
-        return self.__data_list
+        return self.__data_dict
         
     def delete(self):
         raise NotImplementedError()
@@ -290,35 +286,35 @@ class ElecView(ViewData):
     def __init__(self, model):
         self.__name = None
         self.__model = model
+        self.__data_dict = {}  #{entity name: value object}
         self.__ax_observer = Observer(self)
         self.__sort_num = 903
         
     def create_data(self, object_num):
         self.__key = 'ElecController' + str(object_num)
-        self.__model.create_data('Elec')
-        self.__data_list = []  # a list of value object 
+        entity_name_list = self.__model.create_data('Elec')
+        for key in entity_name_list:
+            self.__data_dict[key] = None
         
         print('Created ' + self.__key + ' View instance.')
     
     def reset(self):
-        del self.__data_list
+        del self.__data_dict
 
     def update(self, *no_use):
-        # update Elec list from model controller
-        observer_trace_list = []
+        # update entity list from model controller
+        observer_entity_list = []
         for key in self.__model.get_infor(self.__key):  # get only keys which include 'Trace' from DataSet class.
             if 'ChElec' in key:
-                observer_trace_list.append(key)
-        # for traces
-        new_data = []
-        for data_name in observer_trace_list:
-            new_data.append(self.__model.get_data(data_name))
-        self.__data_list = new_data
-
+                observer_entity_list.append(key)
+        # for ChElec traces
+        for data_name in observer_entity_list:
+            self.__data_dict[data_name] = self.__model.get_data(data_name)
         self.notify_observer()
+        #print('ElecView Data updated: ' + str(new_data_name))
         
     def get_data(self) -> list:
-        return self.__data_list
+        return self.__data_dict
         
     def delete(self):
         raise NotImplementedError()
