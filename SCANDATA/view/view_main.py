@@ -555,7 +555,6 @@ class ImageAx:
             i = 0
             for image_value_obj in self.data_list:
                 image_value_obj.show_data(self.ax_obj)  # add image to self.ax_obj.images
-            print(self.ax_obj.images)
                 
         elif image_num >0:
             i = 0

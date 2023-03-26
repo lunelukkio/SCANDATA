@@ -117,6 +117,7 @@ class TsmFileBuilder(Builder):
         return product 
     
     def build_image_set(self, data_set) -> None:
+        entity_name_list = []  # for FrameWindowView
         frame_window = self.create_controller(FrameWindowFactory())
         num_ch_frames = KeyCounter.count_key(data_set, 'ChFrames')
         ch_frames_list = []
@@ -125,6 +126,8 @@ class TsmFileBuilder(Builder):
         for i in ch_frames_list:
             image = self.create_data(CellImageFactory(), i.frames_obj)
             frame_window.add_observer(image)
+            entity_name_list.append(image.name)
+        return entity_name_list
     
     # for making trace data set
     def build_trace_set(self, data_set) -> None:
@@ -149,6 +152,7 @@ class TsmFileBuilder(Builder):
         return entity_name_list
             
     def build_elec_data_set(self, raw_data):
+        entity_name_list = []  # for ElecView
         # Make a controller
         elec_controller = self.create_controller(ElecControllerFactory())
         # Make elec traces
@@ -161,7 +165,9 @@ class TsmFileBuilder(Builder):
             elec_trace_obj = TraceData(raw_elec_data[:,i], elec_interval)
             # make channel electric data
             trace = self.create_data(ChElecFactory(), elec_trace_obj, elec_interval)
-            elec_controller.add_observer(trace)    
+            elec_controller.add_observer(trace)
+            entity_name_list.append(trace.name)
+        return entity_name_list
         
     def count_data(self):
         #num = 2  # This should be got from cunting ChFrames.

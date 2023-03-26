@@ -232,7 +232,6 @@ class ImageView(ViewData):
     def create_data(self, object_num):
         self.__key = 'FrameWindow' + str(object_num)
         entity_name_list = self.__model.create_data('Image')
-        print(entity_name_list)
         for key in entity_name_list:
             self.__data_dict[key] = None
 
