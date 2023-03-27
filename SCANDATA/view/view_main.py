@@ -472,16 +472,13 @@ class TraceAx:
         self.canvas_trace = canvas
         self.ax_obj = ax
         self.current_ch = 1
-        self.data_list = []  # value object list
+        self.data_dict = {}  # {key: value object}
         self.show_flag = []
-
-        # Need refactoring for valiable number of traces. Now num of flags is only 3.
-        #self.show_flag = []
         
         self.color_selection = ['black', 'red', 'blue', 'orange', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
  
     def update(self, view_data):  # TraceAx shold not hold view_data ex.RoiView because other axes also might have  the same view_data.
-        self.data_list = view_data.get_data()
+        self.data_dict = view_data.get_data()
         self.show_data()
         
     def select_ch(self, ch):
@@ -489,19 +486,21 @@ class TraceAx:
 
     def show_data(self):
         line_num = len(self.ax_obj.get_lines())
+            
+            
         if line_num == 0:
             i = 0
-            for trace_value_obj in self.data_list:  # self.data_list = TraceData Value objects
+            for trace_value_obj in self.data_dict:  # self.data_dict = {key: TraceData Value objects}
                 line_2d, = trace_value_obj.show_data(self.ax_obj)  # line"," means the first element of a list (convert from list to objet). Don't remove it.
                 line_2d.set_color(self.color_selection[i])
                 i += 1 
         elif line_num > 0:
-            i = 0  # for data_list
+            i = 0  # for data_dict
             j = 0
             for trace_flag in self.show_flag:
                 if trace_flag is True:
-                    time = self.data_list[i].time
-                    data = self.data_list[i].data
+                    time = self.data_dict[i].time
+                    data = self.data_dict[i].data
                     i += 1
                 elif trace_flag is False:
                     time = None
@@ -529,14 +528,14 @@ class ImageAx:
         self.ax_obj = ax
         self.current_ch = 1
         self.current_roi_num = 2  # Roi class start from  "1"
-        self.data_list = []  # value object list
+        self.data_dict = {}  # {key: value object}
         self.roi_box = None  # RoiBox class
         # Need refactoring for valiable number for images.
         self.show_flag = [True, True]   # 0 = full trace, 1 = ch1 trace, 2 = ch2 trace
         
     def update(self, view_data):
         if 'Image' in view_data.name:  # for cell images
-            self.data_list = view_data.get_data()  # get data from view data
+            self.data_dict = view_data.get_data()  # get data from view data
             self.show_data()
         elif 'Roi' in view_data.name:  # for RoiBoxs
             self.roi_box = view_data.roi_box
@@ -549,11 +548,11 @@ class ImageAx:
             self.show_flag[ch-1] = not self.show_flag[ch-1]
         self.show_data()
         
-    def show_data(self):  # self.data_list = value obj list  Delete old images, and make new images
+    def show_data(self):  # self.data_dict = {key: value obj} Delete old images, and make new images
         image_num = len(self.ax_obj.get_images())
         if image_num == 0:
             i = 0
-            for image_value_obj in self.data_list:
+            for image_value_obj in self.data_dict:
                 image_value_obj.show_data(self.ax_obj)  # add image to self.ax_obj.images
                 
         elif image_num >0:
@@ -561,7 +560,7 @@ class ImageAx:
             j = 0
             for image_flag in self.show_flag:
                 if image_flag is True:
-                    data = self.data_list[i].data
+                    data = self.data_dict[i].data
                     i += 1
                 elif image_flag is False:
                     data = [[],[]]
