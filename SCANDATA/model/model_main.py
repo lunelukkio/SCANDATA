@@ -40,7 +40,7 @@ class DataSetInterface(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
-    def update_data(self):
+    def update_data(self, key):
         raise NotImplementedError()
         
     @abstractmethod

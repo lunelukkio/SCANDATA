@@ -24,10 +24,14 @@ class ViewDataRepository:
         self.create_roi(ax_list)  # for backgound compensation
         self.create_roi(ax_list)  # for trace analysing red ROI
         self.create_elec(ax_list)
+        for view_data in self.__view_data.values():
+            self.model.update_data(view_data.key)
             
         print('View Data = ' + str(list(self.__view_data)))
+        print('Initialized the view data repository.')
+        print('')
     
-    def create_view_data(self,  factory_type):
+    def create_view_data(self, factory_type) ->object:  # View data object
         product = factory_type.create_view_data(self.model)
         object_name = product.__class__.__name__  # str
         
@@ -219,6 +223,10 @@ class RoiView(ViewData):
     @property
     def sort_num(self):
         return self.__sort_num
+    
+    @property
+    def key(self):
+        return self.__key
 
 
 class ImageView(ViewData):
@@ -242,7 +250,7 @@ class ImageView(ViewData):
         # update entity list from model controller
         observer_entity_list = []
         for key in self.__model.get_infor(self.__key):  # get only keys which include 'Trace' from DataSet class.
-            if 'Image' in key:
+            if 'CellImage' in key:
                 observer_entity_list.append(key)
         # for images
         for data_name in observer_entity_list:
@@ -280,6 +288,10 @@ class ImageView(ViewData):
     def sort_num(self):
         return self.__sort_num
 
+    @property
+    def key(self):
+        return self.__key
+    
 
 class ElecView(ViewData):
     def __init__(self, model):
@@ -341,6 +353,10 @@ class ElecView(ViewData):
     @property
     def sort_num(self):
         return self.__sort_num
+    
+    @property
+    def key(self):
+        return self.__key
         
         
 class RoiBox():

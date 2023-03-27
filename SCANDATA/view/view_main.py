@@ -329,6 +329,7 @@ class DataWindow(tk.Frame):
     def default_setting(self):
         """ write here for default switches."""
         # for Fluo Traces
+        print('Set default setting.')
         self.checkbox_flag_list[0].set(False)
         self.select_ch(0)
         self.checkbox_flag_list[2].set(False)
@@ -485,30 +486,24 @@ class TraceAx:
         self.show_flag[ch] = not self.show_flag[ch]
 
     def show_data(self):
-        line_num = len(self.ax_obj.get_lines())
-            
-            
+        line_num = len(self.ax_obj.lines)
+        print('rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr')
+        print(self.data_dict)
         if line_num == 0:
             i = 0
-            for trace_value_obj in self.data_dict:  # self.data_dict = {key: TraceData Value objects}
+            for trace_value_obj in self.data_dict.values():  # self.data_dict = {key: TraceData Value objects}
                 line_2d, = trace_value_obj.show_data(self.ax_obj)  # line"," means the first element of a list (convert from list to objet). Don't remove it.
                 line_2d.set_color(self.color_selection[i])
                 i += 1 
         elif line_num > 0:
             i = 0  # for data_dict
-            j = 0
             for trace_flag in self.show_flag:
                 if trace_flag is True:
-                    time = self.data_dict[i].time
-                    data = self.data_dict[i].data
-                    i += 1
+                    self.ax_obj.lines[i].set_data(self.data_dict[i].time,
+                                                  self.data_dict[i].data)
                 elif trace_flag is False:
-                    time = None
-                    data = None
-
-                self.ax_obj.lines[j].set_data(time,data)
-                j += 1
-
+                    self.ax_obj.lines[i].set_data(None,None)
+                i += 1
         self.draw_ax()
         
     def draw_ax(self):
@@ -549,23 +544,20 @@ class ImageAx:
         self.show_data()
         
     def show_data(self):  # self.data_dict = {key: value obj} Delete old images, and make new images
-        image_num = len(self.ax_obj.get_images())
+        image_num = len(self.ax_obj.images)
         if image_num == 0:
             i = 0
-            for image_value_obj in self.data_dict:
+            for image_value_obj in self.data_dict.values():
                 image_value_obj.show_data(self.ax_obj)  # add image to self.ax_obj.images
                 
         elif image_num >0:
             i = 0
-            j = 0
             for image_flag in self.show_flag:
                 if image_flag is True:
-                    data = self.data_dict[i].data
-                    i += 1
+                    self.ax_obj.images[i].set_data(self.data_dict[i].data)  # for delete privious images
                 elif image_flag is False:
-                    data = [[],[]]
-                self.ax_obj.images[j].set_data(data)  # for delete privious images
-                j += 1
+                    self.ax_obj.images[i].set_data([[],[]])
+                i += 1
         self.draw_ax()
 
     def show_roi(self): 

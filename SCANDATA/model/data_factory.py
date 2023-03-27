@@ -183,7 +183,7 @@ class ChFrames(FluoFrames):
 "Fluo Image"
 class FluoImage(Data):  # cell image, dif image
     def __init__(self, frames_obj: object, pixel_size=0, unit=0):  # 3D raw data from IO
-        #self._image_obj  # create in _read_data
+        #self._image_obj = ([],[])  # create in _read_data
         self._frames_obj = frames_obj
         self._frame_window = [0,0]  # default [start, end] 
         self._pixel_size = pixel_size  # (um)
