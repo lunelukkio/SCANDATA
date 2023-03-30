@@ -84,6 +84,7 @@ class TsmFileIO(IORepositoryInterface):
     def read_fileinfor(self):
         try:
             with open(self.full_filename, 'rb') as f:
+                # redshirt data format
                 # https://fits.gsfc.nasa.gov/fits_primer.html
                 
                 self.header = f.read(2880)

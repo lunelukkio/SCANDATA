@@ -278,7 +278,7 @@ class DataWindow(tk.Frame):
         self.ax_list[0].ax_obj.set_xticks([])  # To remove ticks of image window.
         self.ax_list[0].ax_obj.set_yticks([])  # To remove ticks of image window.
         
-        self.ax_list[0].show_flag = {'Data0': True, 
+        self.ax_list[0].flag_dict = {'Data0': True, 
                                      'Data1': True}   # ch1, ch2  #  shold be the same as the default checkbox BooleanVar
                                       
         
@@ -288,12 +288,12 @@ class DataWindow(tk.Frame):
         # for the ch select buttons
         for key in self.checkbox_flag_dict:
             self.checkbox_flag_dict[key].set(True)
-        self.ax_list[1].show_flag = {'Data0': True,
+        self.ax_list[1].flag_dict = {'Data0': True,
                                      'Data1': True, 
                                      'Data2': True}  #  shold be the same as the default checkbox BooleanVar
         self.radio_button_var_1.set("F")
         
-        self.ax_list[2].show_flag = {'Data0': True,  # ch1
+        self.ax_list[2].flag_dict = {'Data0': True,  # ch1
                                      'Data1': True,  # ch2
                                      'Data2': True,  # ch3
                                      'Data3': True,  # ch4
@@ -342,7 +342,7 @@ class DataWindow(tk.Frame):
         # for Elec Traces
         for i in range(0,8):
             key = 'Data' + str(i)
-            self.ax_list[2].show_flag[key] = False
+            self.ax_list[2].flag_dict[key] = False
             self.controller.bind_keys('ElecController1',
                                       'ChElec' + str(i+1))
 
@@ -374,6 +374,7 @@ class DataWindow(tk.Frame):
                 key = 'ChTrace' + str(i*2-1)
             elif '2' in key:
                 key = 'ChTrace' + str(i*2)
+                
             # send flags to ax.
             self.ax_list[1].select_ch(key)  # This is for flag to showing traces.
             self.ax_list[0].select_ch(key)  # for changing images
@@ -388,32 +389,32 @@ class DataWindow(tk.Frame):
         
     def set_elec_ch(self, ch: str):
         # reset flag
-        for key in self.ax_list[2].show_flag:
-            self.ax_list[2].show_flag[key] = False
+        for key in self.ax_list[2].flag_dict:
+            self.ax_list[2].flag_dict[key] = False
         # This is for a trace_ax flag
         if ch == 'Ch 1':
-            self.ax_list[2].show_flag['Data0'] = True
+            self.ax_list[2].flag_dict['Data0'] = True
             self.controller.bind_keys('ElecController1', 'ChElec1')
         elif ch == 'Ch 2':
-            self.ax_list[2].show_flag['Data1'] = True
+            self.ax_list[2].flag_dict['Data1'] = True
             self.controller.bind_keys('ElecController1', 'ChElec2')
         elif ch == 'Ch 3':
-            self.ax_list[2].show_flag['Data2'] = True
+            self.ax_list[2].flag_dict['Data2'] = True
             self.controller.bind_keys('ElecController1', 'ChElec3')
         elif ch == 'Ch 4':
-            self.ax_list[2].show_flag['Data3'] = True
+            self.ax_list[2].flag_dict['Data3'] = True
             self.controller.bind_keys('ElecController1', 'ChElec4')
         elif ch == 'Ch 5':
-            self.ax_list[2].show_flag['Data4'] = True
+            self.ax_list[2].flag_dict['Data4'] = True
             self.controller.bind_keys('ElecController1', 'ChElec5')
         elif ch == 'Ch 6':
-            self.ax_list[2].show_flag['Data5'] = True
+            self.ax_list[2].flag_dict['Data5'] = True
             self.controller.bind_keys('ElecController1', 'ChElec6')
         elif ch == 'Ch 7':
-            self.ax_list[2].show_flag['Data6'] = True
+            self.ax_list[2].flag_dict['Data6'] = True
             self.controller.bind_keys('ElecController1', 'ChElec7')
         elif ch == 'Ch 8':
-            self.ax_list[2].show_flag['Data7'] = True
+            self.ax_list[2].flag_dict['Data7'] = True
             self.controller.bind_keys('ElecController1', 'ChElec8')
 
     def large_roi(self):
@@ -484,11 +485,10 @@ class TraceAx:
  
     def update(self, view_data):  # TraceAx shold not hold view_data ex.RoiView because other axes also might have  the same view_data.
         self.data_dict = view_data.get_data()
+        print('dddddddddddddddddddddddddddddddddddddddddd')
         self.show_data()
         
     def select_ch(self, key):
-        print(self.flag_dict)
-        print('ttttttttttttttttttttttttttttttttttttttttttttttttttt')
         self.flag_dict[key] = not self.flag_dict[key]
 
     def show_data(self):
@@ -499,9 +499,9 @@ class TraceAx:
                 line_2d, = self.data_dict[key].show_data(self.ax_obj)  # line"," means the first element of a list (convert from list to objet). Don't remove it.
                 self.line_dict[key] = line_2d  # bind key and line data. the key is the same name as value data dict
                 line_2d.set_color(self.color_selection[i])
-                i += 1 
+                i += 1
         elif line_num > 0:
-            for key in self.flag_dict:
+            for key in self.data_dict:
                 if self.flag_dict[key] is True:
                     self.line_dict[key].set_data(self.data_dict[key].time,
                                                   self.data_dict[key].data)
@@ -545,7 +545,7 @@ class ImageAx:
         if ch == 0:
             pass
         else:
-            self.show_flag[ch-1] = not self.show_flag[ch-1]
+            self.flag_dict[ch-1] = not self.flag_dict[ch-1]
         self.show_data()
         
     def show_data(self):  # self.data_dict = {key: value obj} Delete old images, and make new images
