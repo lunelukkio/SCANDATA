@@ -151,24 +151,30 @@ class ViewData(metaclass=ABCMeta):
     def print_infor(self):
         raise NotImplementedError()
         
+       
 """
 concrete product
 """
 
 #subscriber of data entities
+# RoiView knows the names of traces as self.data_dict{}
 class RoiView(ViewData):
     def __init__(self, model):
         self.__name = None
         self.__model = model
+        self.__entity_name_list = []
         self.__data_dict = {}  #{entity name: value object}
+        self.__ax_data_dict = {}  # dict for sending data to axes
         self.__ax_observer = Observer(self)
         self.__sort_num = 901  # to sort view object and data object in observers of model controllers.
         
     def create_data(self, object_num):
         self.__key = 'Roi' + str(object_num)
-        entity_name_list = self.__model.create_data('Trace')
-        for key in entity_name_list:
+        self.__entity_name_list = self.__model.create_data('Trace')
+        
+        for key in self.__entity_name_list:
             self.__data_dict[key] = None
+            
         self.__roi_box = RoiBox(self.__model, self.__key)
 
         print('Created ' + self.__key + ' view instance including Roi controller and traces.')
@@ -191,7 +197,11 @@ class RoiView(ViewData):
         self.notify_observer()
         
     def get_data(self) -> dict:
-        return self.__data_dict
+        i = 0
+        for data in self.__entity_name_list:
+            self.__ax_data_dict['Data' + str(i)] = self.__data_dict[data]
+            i += 1
+        return self.__ax_data_dict
             
     def delete(self):
         raise NotImplementedError()
@@ -233,14 +243,16 @@ class ImageView(ViewData):
     def __init__(self, model):
         self.__name = None
         self.__model = model
+        self.__entity_name_list = []
         self.__data_dict = {}  #{entity name: value object}
+        self.__ax_data_dict = {}  # dict for sending data to axes
         self.__ax_observer = Observer(self)
         self.__sort_num = 902
         
     def create_data(self, object_num):
         self.__key = 'FrameWindow' + str(object_num)
-        entity_name_list = self.__model.create_data('Image')
-        for key in entity_name_list:
+        self.__entity_name_list = self.__model.create_data('Image')
+        for key in self.__entity_name_list:
             self.__data_dict[key] = None
 
     def reset(self):
@@ -259,7 +271,11 @@ class ImageView(ViewData):
         #print('ImageView Data updated: ' + str(new_data_name))
 
     def get_data(self) -> list:
-        return self.__data_dict
+        i = 0
+        for data in self.__entity_name_list:
+            self.__ax_data_dict['Data' + str(i)] = self.__data_dict[data]
+            i += 1
+        return self.__ax_data_dict
         
     def delete(self):
         raise NotImplementedError()
@@ -297,14 +313,16 @@ class ElecView(ViewData):
     def __init__(self, model):
         self.__name = None
         self.__model = model
+        self.__entity_name_list = []
         self.__data_dict = {}  #{entity name: value object}
+        self.__ax_data_dict = {}  # dict for sending data to axes
         self.__ax_observer = Observer(self)
         self.__sort_num = 903
         
     def create_data(self, object_num):
         self.__key = 'ElecController' + str(object_num)
-        entity_name_list = self.__model.create_data('Elec')
-        for key in entity_name_list:
+        self.__entity_name_list = self.__model.create_data('Elec')
+        for key in self.__entity_name_list:
             self.__data_dict[key] = None
         
         print('Created ' + self.__key + ' View instance.')
@@ -325,7 +343,11 @@ class ElecView(ViewData):
         #print('ElecView Data updated: ' + str(new_data_name))
         
     def get_data(self) -> list:
-        return self.__data_dict
+        i = 0
+        for data in self.__entity_name_list:
+            self.__ax_data_dict['Data' + str(i)] = self.__data_dict[data]
+            i += 1
+        return self.__ax_data_dict
         
     def delete(self):
         raise NotImplementedError()

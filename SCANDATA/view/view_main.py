@@ -278,8 +278,8 @@ class DataWindow(tk.Frame):
         self.ax_list[0].ax_obj.set_xticks([])  # To remove ticks of image window.
         self.ax_list[0].ax_obj.set_yticks([])  # To remove ticks of image window.
         
-        self.ax_list[0].flag_dict = {'Data0': True, 
-                                     'Data1': True}   # ch1, ch2  #  shold be the same as the default checkbox BooleanVar
+        self.ax_list[0].flag_dict = {'Data1': True,
+                                     'Data2': True}   # ch1, ch2  #  shold be the same as the default checkbox BooleanVar
                                       
         
         # for RoiBox
@@ -335,6 +335,7 @@ class DataWindow(tk.Frame):
         self.select_ch('Data0')
         self.checkbox_flag_dict['Data2'].set(False)
         self.select_ch('Data2')
+        
         self.radio_button_var_1.set("DFoverF")
         
         self.add_mod('Trace', 'DFoverF')
@@ -366,7 +367,10 @@ class DataWindow(tk.Frame):
 
     def select_ch(self, key):
         num_roi = self.view_data_repository.view_data_counter['RoiView']
-
+        # send flags to ax.
+        self.ax_list[1].select_ch(key)  # This is for flag to showing traces.
+        self.ax_list[0].select_ch(key)  # for changing images
+        
         for i in range(1, num_roi+1):
             if '0' in key:
                 key = 'FullTrace' + str(i)
@@ -374,10 +378,7 @@ class DataWindow(tk.Frame):
                 key = 'ChTrace' + str(i*2-1)
             elif '2' in key:
                 key = 'ChTrace' + str(i*2)
-                
-            # send flags to ax.
-            self.ax_list[1].select_ch(key)  # This is for flag to showing traces.
-            self.ax_list[0].select_ch(key)  # for changing images
+
             # for binding trace and controller
             self.controller.bind_keys('Roi' + str(i), key)
         print('')
@@ -485,7 +486,6 @@ class TraceAx:
  
     def update(self, view_data):  # TraceAx shold not hold view_data ex.RoiView because other axes also might have  the same view_data.
         self.data_dict = view_data.get_data()
-        print('dddddddddddddddddddddddddddddddddddddddddd')
         self.show_data()
         
     def select_ch(self, key):
@@ -541,11 +541,10 @@ class ImageAx:
             self.roi_box = view_data.roi_box
             self.show_roi()
             
-    def select_ch(self, ch):
-        if ch == 0:
-            pass
-        else:
-            self.flag_dict[ch-1] = not self.flag_dict[ch-1]
+    def select_ch(self, key):
+        if '0' in key:
+            return
+        self.flag_dict[key] = not self.flag_dict[key]
         self.show_data()
         
     def show_data(self):  # self.data_dict = {key: value obj} Delete old images, and make new images
@@ -555,14 +554,19 @@ class ImageAx:
                 image = self.data_dict[key].show_data(self.ax_obj)  # add image to self.ax_obj.images
                 self.image_dict[key] = image  # bind key and image data. the key is the same name as value data dict
                 
-        elif image_num >0:
-            for key in self.flag+dict:
+        elif image_num > 0:
+            for key in self.data_dict:
+                if '0' in key:
+                    return
                 if self.flag_dict[key] is True:
                     self.image_dict[key].set_data(self.data_dict[key].data)  # for delete privious images
                 elif self.flag_dict[key] is False:
                     self.image_dict[key].set_data([[],[]])
+        print('iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiimage')
+        print(self.data_dict)
+        print(self.image_dict)
+        print(self.flag_dict)
         self.draw_ax()
-        
 
     def show_roi(self): 
         rectangles = self.tools.axes_patches_check(plt.Rectangle)
