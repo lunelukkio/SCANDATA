@@ -151,6 +151,7 @@ class Roi(ModelController):
     def add_observer(self, observer):
         self.__observer.add_observer(observer)
         #self.notify_observer()  # this message come from a controller
+        print(self.get_infor())
             
     def notify_observer(self):
         self.__observer.notify_observer(self.__roi_obj)

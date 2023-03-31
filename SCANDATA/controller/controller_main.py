@@ -92,6 +92,9 @@ class ImagingController:
     
     def count_data(self, filename, key):
         return self.model.count_data(filename, key)
+    
+    def update_data(self, key):
+        self.model.update_data(key)
         
         
 "Value object"

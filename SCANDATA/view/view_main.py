@@ -268,8 +268,8 @@ class DataWindow(tk.Frame):
             self.file_open(self.__filename)
         
     def reset(self):
-        self.model = None
-        self.controller = None
+        self.model = None  # in self.file_open()
+        self.controller = None  # in self.file_open()
         self.view_data_repository = ViewDataRepository()
         self.current_roi_num = 2  # roi class start from Roi1
         self.ax_list[0].current_roi_num = 2
@@ -278,9 +278,9 @@ class DataWindow(tk.Frame):
         self.ax_list[0].ax_obj.set_xticks([])  # To remove ticks of image window.
         self.ax_list[0].ax_obj.set_yticks([])  # To remove ticks of image window.
         
-        self.ax_list[0].flag_dict = {'Data1': True,
+        self.ax_list[0].flag_dict = {'Data0': True,
+                                     'Data1': True,
                                      'Data2': True}   # ch1, ch2  #  shold be the same as the default checkbox BooleanVar
-                                      
         
         # for RoiBox
         self.ax_list[0].remove_rectangles()
@@ -337,7 +337,6 @@ class DataWindow(tk.Frame):
         self.select_ch('Data2')
         
         self.radio_button_var_1.set("DFoverF")
-        
         self.add_mod('Trace', 'DFoverF')
         
         # for Elec Traces
@@ -373,14 +372,14 @@ class DataWindow(tk.Frame):
         
         for i in range(1, num_roi+1):
             if '0' in key:
-                key = 'FullTrace' + str(i)
+                entity_key = 'FullTrace' + str(i)
             elif '1' in key:
-                key = 'ChTrace' + str(i*2-1)
+                entity_key = 'ChTrace' + str(i*2-1)
             elif '2' in key:
-                key = 'ChTrace' + str(i*2)
+                entity_key = 'ChTrace' + str(i*2)
 
             # for binding trace and controller
-            self.controller.bind_keys('Roi' + str(i), key)
+            self.controller.bind_keys('Roi' + str(i), entity_key)
         print('')
 
     def elec_ch_select(self, event):
@@ -453,6 +452,7 @@ class DataWindow(tk.Frame):
             except:
                 print('No DFoverF mod.')
         self.controller.add_mod(data_key, mod_key)
+        self.update_trace()
         self.ax_list[1].draw_ax()
         print('')
     
@@ -468,8 +468,12 @@ class DataWindow(tk.Frame):
                 pass
                 
         self.controller.remove_mod(data_key, mod_key)
+        self.update_trace()
         self.ax_list[1].draw_ax()
         print('')
+        
+    def update_trace(self):
+        self.controller.update_data('Roi' + str(self.current_roi_num))
         
 
 class TraceAx:
@@ -542,8 +546,6 @@ class ImageAx:
             self.show_roi()
             
     def select_ch(self, key):
-        if '0' in key:
-            return
         self.flag_dict[key] = not self.flag_dict[key]
         self.show_data()
         
@@ -556,16 +558,10 @@ class ImageAx:
                 
         elif image_num > 0:
             for key in self.data_dict:
-                if '0' in key:
-                    return
                 if self.flag_dict[key] is True:
                     self.image_dict[key].set_data(self.data_dict[key].data)  # for delete privious images
                 elif self.flag_dict[key] is False:
                     self.image_dict[key].set_data([[],[]])
-        print('iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiimage')
-        print(self.data_dict)
-        print(self.image_dict)
-        print(self.flag_dict)
         self.draw_ax()
 
     def show_roi(self): 

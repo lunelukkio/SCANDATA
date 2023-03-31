@@ -119,6 +119,12 @@ class TsmFileBuilder(Builder):
     def build_image_set(self, data_set) -> None:
         entity_name_list = []  # for FrameWindowView
         frame_window = self.create_controller(FrameWindowFactory())
+        # Make an image from full trace
+        full_image = self.create_data(CellImageFactory(), data_set['FullFrames1'].frames_obj)
+        frame_window.add_observer(full_image)
+        entity_name_list.append(full_image.name)
+        
+        # make images from ch traces
         num_ch_frames = KeyCounter.count_key(data_set, 'ChFrames')
         ch_frames_list = []
         for i in range(0, num_ch_frames):
