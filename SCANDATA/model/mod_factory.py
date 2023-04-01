@@ -97,6 +97,9 @@ class BgCompMod(ModHandler):
         else:
             return super().handle_request(original_data, key)
         
+    def get_bg_trace(self):
+        self.__bg_trace_entiry = 
+        
     @property
     def bg_trace(self):
         return self.__bg_trace
@@ -216,6 +219,8 @@ class TraceCalculation:
         max_val = np.max(pre_trace_obj.data)
         norm_obj = pre_trace_obj/max_val
         return norm_obj
+    
+
     
     def create_bg_comp(self, trace_obj):
             f = self.f_value(trace_obj)
