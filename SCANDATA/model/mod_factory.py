@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Jan  4 22:57:01 2023
-@author: lulul
+@author: lunelukkio@gmail.com
 
 When adding a mod, make a new instance of it \ 
 and add it to instance of chain of responsibility in ModCliet class.
@@ -10,17 +10,16 @@ Also check ModList class in model_main.py
 
 from abc import ABCMeta, abstractmethod
 import numpy as np
-from SCANDATA.model.value_object import ImageData, TraceData
 
 """
 Chain of responsibility client
 """
 
 class ModClient:  # Put every mods. Don't need to sepalate mods for each data type..
-    def __init__(self):  # data_dict_list = [{data_io}, {data}, {controller}]
+    def __init__(self, controller_entities):  # data_dict_list = [{data_io}, {data}, {controller}]
         self.mod_list = []
         self.no_mod = NoModHandler()
-        self.bg_comp = BgCompMod()
+        self.bg_comp = BgCompMod(controller_entities)  # get controllers rather instead of the entities
         self.df_over_f = DFOverFMod()
         self.normalize = Normalize()
         self.error_mod = ErrorMod()
@@ -82,35 +81,26 @@ class NoModHandler(ModHandler):
                 
 
 class BgCompMod(ModHandler):
-    def __init__(self):
+    def __init__(self, controller_entities):
         super().__init__()
         self.trace_calc = TraceCalculation()
-        self.__bg_trace_entiry = None
-        
-    def set_bg_trace(self, trace):
-        self.__bg_trace_entiry = trace
+        self.__controller_entities = controller_entities
+        self.__roi_num = 1  # This is roi number "ROI1" for backgrand trace
         
     def apply_mod(self, original_data, key):
         if key == 'BgComp':
-            bg_comp_trace_obj = self.trace_calc.create_bg_comp(original_data)
+            bg_trace_entities = self.__get_bg_trace()
+            bg_comp_trace_obj = self.trace_calc.create_bg_comp(original_data, bg_trace_entities)
             return bg_comp_trace_obj
         else:
             return super().handle_request(original_data, key)
         
-    def get_bg_trace(self):
-        self.__bg_trace_entiry = 
-        
-    @property
-    def bg_trace(self):
-        return self.__bg_trace
+    def __get_bg_trace(self):
+        bg_trace_entities = self.__controller_entities['Roi' + str(self.__roi_num)].observers
+        print('eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeyyyyyyyyyyyyyyyyyyyy')
+        print(bg_trace_entities)
+        return bg_trace_entities
 
-    @bg_trace.setter
-    def bg_trace(self, bg_trace_entiry):
-        self.__bg_trace_entiry = bg_trace_entiry
-
-    def __str__(self):
-    #return "[{0}]".format(self.__name)
-        pass
     
     def handle_request(self, request):
         if request < 10:
@@ -222,7 +212,7 @@ class TraceCalculation:
     
 
     
-    def create_bg_comp(self, trace_obj):
+    def create_bg_comp(self, trace_obj, bg_trace_entities):
             f = self.f_value(trace_obj)
             bg_f = self.f_value(self.__bg_trace)
             

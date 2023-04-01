@@ -83,7 +83,7 @@ class DataSet(DataSetInterface):
         self.__tsm_data_context = TSMDataStrategyContext(self.__data_dict_list)
         
         # instance for mod.
-        self.__mod_client = ModClient()
+        self.__mod_client = ModClient(self.__controller)
         
         # Initialized the data set.
         self.__builder.initialize()
