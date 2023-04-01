@@ -39,6 +39,7 @@ class Testimage(unittest.TestCase):
         data_factory = CellImageFactory()
         
         cellimage = data_factory.create_data(frames_data)
+        cellimage.update([0,0])
         cellimage.show_data()
 
 

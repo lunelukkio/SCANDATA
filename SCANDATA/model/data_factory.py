@@ -317,9 +317,9 @@ class FluoTrace(Data):  # Fluo trae
         self.x_size = self.__frames_obj.data.shape[0]
         self.y_size = self.__frames_obj.data.shape[1]
         self._roi = np.array([40, 40, 1, 1])  #default. It should be np.array because of add calculation in RoiVal
-        #self._read_data(self._roi)
+        # Shold not update here because this class is named after __init__.
 
-    def _read_data(self, roi: list) -> None:  # roi[x, y, x_length, y_length]
+    def _read_data(self, roi) -> None:  # roi[x, y, x_length, y_length]
         if roi[0] + roi[2] > self.x_size - 1 or roi[1] + roi[3] > self.y_size - 1: 
             raise Exception("The roi size should be the same as the image size or less")
         if roi[0] < 0 or roi[1] < 0: 

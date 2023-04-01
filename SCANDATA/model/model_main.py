@@ -118,9 +118,10 @@ class DataSet(DataSetInterface):
         strategy_key = Translator.key_checker(key)
         self.__tsm_data_context.set_strategy(strategy_key)
         data = self.__tsm_data_context.get_data(key)
+        # for data modulation
         if strategy_key in {'TraceStrategy', 'ImageStrategy', 'ElecStrategy'}:
             mod_key_list = self.__tsm_data_context.get_mod_key()
-            data = self.__mod_client.set_mod(data, mod_key_list)
+            data = self.__mod_client.set_mod(key, data, mod_key_list)
         print('----- Done: get_data() ----- Model')
         return data
 

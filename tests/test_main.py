@@ -22,6 +22,8 @@ def suite():
         test_suite.addTest(ts)
     return test_suite
 
+    print('Need large refactoring: DataSet class shold not have data entities. model controller classes has entities.')
+
 
 
 if __name__ == '__main__':
