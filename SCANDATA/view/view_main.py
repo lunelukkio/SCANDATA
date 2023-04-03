@@ -142,19 +142,25 @@ class DataWindow(tk.Frame):
         self.__filename = []  # filename_obj
         self.ax_list = []  # [0] = main cell image ax (ImageAxsis class), [1] = fluoresent trace ax (TraceAx class), [2] = elec trace ax
         self.my_color = '#BCD2EE'
+        
+        # for data window
         master.geometry('1400x700')
         master.configure(background=self.my_color)
         master.title('None')
 
         #self.button_func = ButtonFunction(self)
 
-        """ Top Buttons"""
+        """ 
+        Top Buttons
+        """
         frame_top = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=2, bg = 'white')
         tk.Button(frame_top, text='Open',command=self.file_open).pack(side=tk.LEFT)
         tk.Button(frame_top, text='Close').pack(side=tk.LEFT, padx=5)
         frame_top.pack(fill=tk.X)
         
-        """Bottom Buttons"""
+        """
+        Bottom Buttons
+        """
         frame_bottom = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=0, bg = self.my_color)
         
         # for ROI control
@@ -209,7 +215,9 @@ class DataWindow(tk.Frame):
         self.combo_box_elec_ch.bind('<<ComboboxSelected>>', self.elec_ch_select)
         
         
-        """ Image Frame"""
+        """
+        Image Frame
+        """
         # tkinter image frame
         frame_left = tk.Frame(master, pady=0, padx=0)
         frame_left.pack(side=tk.LEFT)
@@ -222,8 +230,10 @@ class DataWindow(tk.Frame):
         #canvas_image.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
         self.ax_list.append(ImageAx(self.canvas_image, image_ax))  # ax_list[0]
 
+        # for tool bar in the image window
         self.canvas_image.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         toolbar_image = NavigationToolbarMyTool(self.canvas_image, frame_left, self.my_color)
+        # delete tools
         toolbar_image.children['!button2'].pack_forget()
         toolbar_image.children['!button3'].pack_forget()
         toolbar_image.children['!button4'].pack_forget()
@@ -233,7 +243,16 @@ class DataWindow(tk.Frame):
         # mouse click events
         self.canvas_image.mpl_connect('button_press_event', self.onclick_image)   
         
-        """ Trace Frames"""
+        # image update switch
+        self.checkbox_update_pass_switch = tk.BooleanVar()
+        ttk.Checkbutton(frame_left,
+                        text='Pass update',
+                        variable=self.checkbox_update_pass_switch,
+                        command=self.update_pass_switch_function).pack(side=tk.LEFT)
+        
+        """ 
+        Trace Frames
+        """
         # tkinter trace frame
         frame_right = tk.Frame(master, pady=1, padx=1)
         frame_right.pack(side=tk.RIGHT,expand=True,fill=tkinter.BOTH)
@@ -475,6 +494,9 @@ class DataWindow(tk.Frame):
     def update_trace(self):
         self.controller.update_data('Roi' + str(self.current_roi_num))
         
+    def update_pass_switch_function(self):
+        self.ax_list[0].update_pass_switch = not self.ax_list[0].update_pass_switch
+        
 
 class TraceAx:
     def __init__(self, canvas, ax):
@@ -536,6 +558,7 @@ class ImageAx:
         self.image_dict = {}  # {key: ax image obj}
         self.flag_dict = {}  # {key: flag}
         # Need refactoring for valiable number for images.
+        self.update_pass_switch = False
         
     def update(self, view_data):
         if 'Image' in view_data.name:  # for cell images
@@ -550,6 +573,8 @@ class ImageAx:
         self.show_data()
         
     def show_data(self):  # self.data_dict = {key: value obj} Delete old images, and make new images
+        if self.update_pass_switch is True:
+            return
         image_num = len(self.ax_obj.images)
         if image_num == 0:
             for key in self.data_dict:
