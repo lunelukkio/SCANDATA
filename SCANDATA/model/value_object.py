@@ -153,14 +153,33 @@ class TraceData:
         #print('.')
         #print('Deleted a TraceData object.' + '  myId= {}'.format(id(self)))
         pass
+    
+    def __add__(self, sum_val) -> object:
+        if type(sum_val) == float or \
+           type(sum_val) == int or \
+           type(sum_val) == np.int64 or \
+           type(sum_val) == np.float64:
+            sub_trace = self.__data + sum_val
+        elif self.__data_type == sum_val.data_type:
+            if len(self.__data) != len(sum_val.data):
+                print('!!! Caution! The length of these data is not matched!')
+            sub_trace = np.sum(self.__data, sum_val.data)
+        else:
+            raise Exception('Wrong value. This value object should be dvided by int or float or other value object')
+        return TraceData(sub_trace, self.__interval)
         
     def __sub__(self, sub_val) -> object:
-        if type(sub_val) != float and \
-           type(sub_val) != int and \
-           type(sub_val) != np.int64 and \
-           type(sub_val) != np.float64:
-            raise Exception('Wrong value. This value object should be dvided by int or float')
-        sub_trace = self.__data - sub_val
+        if type(sub_val) == float or \
+           type(sub_val) == int or \
+           type(sub_val) == np.int64 or \
+           type(sub_val) == np.float64:
+            sub_trace = self.__data - sub_val
+        elif self.__data_type == sub_val.data_type:
+            if len(self.__data) != len(sub_val.data):
+                print('!!! Caution! The length of these data is not matched!')
+            sub_trace = np.subtract(self.__data, sub_val.data)
+        else:
+            raise Exception('Wrong value. This value object should be dvided by int or float or other value object')
         return TraceData(sub_trace, self.__interval)
         
     def __truediv__(self, div_val) -> object:
