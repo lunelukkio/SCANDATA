@@ -81,6 +81,8 @@ class Roi(ModelController):
     def __init__(self):
         self.__roi_obj = RoiVal(40, 40, 2, 2)
         self.object_num = 0  # instance number
+        self.__data_counter = {}  # counter dict
+        self.__data_dict = {}  # data dict
         self.__observer = ControllerObserver()
         #print('Created ROI-{}.'.format(self.object_num))
         

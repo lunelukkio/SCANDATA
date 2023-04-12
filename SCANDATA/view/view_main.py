@@ -182,7 +182,6 @@ class DataWindow(tk.Frame):
                         text='Ch 1',
                         variable=self.checkbox_flag_dict['Data1'],
                         command=lambda: self.select_ch('Data1')).pack(side=tk.LEFT)
-
         ttk.Checkbutton(frame_bottom,
                         text='Ch 2',
                         variable=self.checkbox_flag_dict['Data2'],
@@ -207,6 +206,12 @@ class DataWindow(tk.Frame):
                        variable=self.radio_button_var_1,
                        value="Norm",
                        command=lambda: self.add_mod('Trace', 'Normalize')).pack(side=tk.LEFT)
+        # check button
+        self.mod_bg_comp = tk.BooleanVar()
+        ttk.Checkbutton(frame_bottom,
+                        text='BG Comp',
+                        variable=self.mod_bg_comp,
+                       command=lambda: self.add_mod('Trace', 'BgComp')).pack(side=tk.LEFT)
         
         elec_ch = ['Ch 1', 'Ch 2', 'Ch 3', 'Ch 4', 'Ch 5', 'Ch 6', 'Ch 7', 'Ch 8', ]
         self.combo_box_elec_ch = ttk.Combobox(frame_bottom, values=elec_ch, width=4)

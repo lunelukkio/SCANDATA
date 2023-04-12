@@ -17,10 +17,10 @@ Chain of responsibility client
 """
 
 class ModClient:  # Put every mods. Don't need to sepalate mods for each data type..
-    def __init__(self, controller_entities):  # data_dict_list = [{data_io}, {data}, {controller}]
+    def __init__(self, data_dict_list):  # data_dict_list = [{data_io}, {data}, {controller}]
         self.mod_list = []
         self.no_mod = NoModHandler()
-        self.bg_comp = BgCompMod(controller_entities)  # get controllers rather instead of the entities
+        self.bg_comp = BgCompMod(data_dict_list[1])  # [1] = data_list
         self.df_over_f = DFOverFMod()
         self.normalize = Normalize()
         self.error_mod = ErrorMod()
@@ -81,11 +81,12 @@ class NoModHandler(ModHandler):
                 
 
 class BgCompMod(ModHandler):
-    def __init__(self, controller_entities):
+    def __init__(self, data_dict):
         super().__init__()
         self.trace_calc = TraceCalculation()
-        self.__controller_entities = controller_entities
-        self.__roi_num = 1  # This is the roi number for backgrand trace (Roi1)
+        #self.__controller_entities = controller_entities
+        self.__data_dict = data_dict
+        self.__bg_roi_num = 1  # This is the roi number for backgrand trace (Roi1)
         
     def apply_mod(self, data_key, original_data, key):
         if key == 'BgComp':
@@ -96,16 +97,15 @@ class BgCompMod(ModHandler):
             return super().handle_request(data_key, original_data, key)
         
     def __get_bg_trace(self, data_key):
-        print('Tip: Need refactoring. Now is only for two traces.')
-        entities = self.__controller_entities['Roi' + str(self.__roi_num)].observers
+        print('Tip: Need refactoring. Now is only for two traces. bg traces should be got from Roi class observers and macth the data_key to an obserber name')
         if 'Full' in data_key:
-            bg_trace_entity = entities[0]
+            bg_trace_entity = self.__data_dict['FullTrace1']
         elif 'ChTrace' in data_key:
-            last_digit = int(data_key[-1])/(len(entities)-1)
+            last_digit = int(data_key[-1])
             if last_digit % 2 == 0:
-                bg_trace_entity = entities[1]
+                bg_trace_entity = self.__data_dict['ChTrace2']
             else:
-                bg_trace_entity = entities[2] 
+                bg_trace_entity = self.__data_dict['ChTrace1']
         return bg_trace_entity
     
     def handle_request(self, request):
@@ -215,16 +215,14 @@ class TraceCalculation:
         norm_obj = pre_trace_obj/max_val
         return norm_obj
     
-
+    def delta_f(self, trace_obj, bg_trace_obj):
+        return trace_obj - bg_trace_obj
     
     def create_bg_comp(self, trace_obj, bg_trace_obj):
             f = self.f_value(trace_obj)
-
-
-            
-            
-            
-            delta_F_trace = trace_obj - bg_trace_obj
+            delta_F_trace = self.delta_f(trace_obj, bg_trace_obj)
+            trace_obj.show_data()
+            delta_F_trace.show_data()
             bg_comp_trace = delta_F_trace + f
             return bg_comp_trace
 

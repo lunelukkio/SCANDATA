@@ -180,6 +180,7 @@ class TraceData:
             sub_trace = np.subtract(self.__data, sub_val.data)
         else:
             raise Exception('Wrong value. This value object should be dvided by int or float or other value object')
+            
         return TraceData(sub_trace, self.__interval)
         
     def __truediv__(self, div_val) -> object:

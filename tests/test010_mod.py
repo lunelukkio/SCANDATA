@@ -19,6 +19,9 @@ class TestMod(unittest.TestCase):
         dataset.update_data('Roi1')
         dataset.update_data('Roi2')
         
+        trace = dataset.get_data('ChTrace3')
+        trace.show_data()
+        
         dataset.add_mod('Trace', 'BgComp')
         
         trace = dataset.get_data('ChTrace3')
