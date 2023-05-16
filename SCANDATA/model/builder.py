@@ -7,7 +7,7 @@ Created on Sun Jan  8 17:33:00 2023
 
 from abc import ABCMeta, abstractmethod
 import copy
-from SCANDATA.model.io_factory import TsmFileIOFactory, TbnFileIOFactory
+from SCANDATA.model.repository import Repository
 from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory
 from SCANDATA.model.data_factory import CellImageFactory
 from SCANDATA.model.data_factory import FullTraceFactory, ChTraceFactory
@@ -21,7 +21,7 @@ Builder
 """
 class Builder(metaclass=ABCMeta):
     @abstractmethod
-    def create_file_io(self, factory_type, filename, *args) -> None:
+    def read_file(self, filename) -> None:
         raise NotImplementedError()
 
     @abstractmethod
@@ -37,10 +37,11 @@ class Builder(metaclass=ABCMeta):
         raise NotImplementedError()
 
 
-class TsmFileBuilder(Builder):
+class ImagingBuilder(Builder):
     def __init__(self, filename):
         self.__filename = filename
-        self.reset()
+        self.__data+repository = Repository()
+        self.reset()                                                                                                           
         
     def reset(self) -> tuple:
         #self.__file_io = WeakValueDictionary()  # weak referece dictionary
@@ -78,7 +79,11 @@ class TsmFileBuilder(Builder):
             ch_frames = FramesData(tsm_raw_data_tuple[1][:, :, :, i])
             self.create_data(ChFramesFactory(), ch_frames, ch_interval)
         
-    def create_file_io(self, factory_type, filename, *args) -> object:  # factory_type
+class FileIOBuilder(Builder):
+    def __int__(self, filename):
+        self.file_io = Translator.file_type_checker(filename)
+    
+    def create_data(self, factory_type, filename, *args) -> object:  # factory_type
         product = factory_type.create_file_io(filename, *args)
         object_name = product.__class__.__name__  # str
         
@@ -90,6 +95,7 @@ class TsmFileBuilder(Builder):
         self.__file_io[object_name + str(product.object_num)] = product
         return product
     
+class FluoTraceBuilder(Builder):
     # for making a single trace    
     def create_data(self, factory_type, data, *args) -> object:
         product = factory_type.create_data(data, *args)
@@ -104,6 +110,7 @@ class TsmFileBuilder(Builder):
         self.__data[object_name + str(product.object_num)] = product
         return product
     
+class Controller_builder(Builder):
     def create_controller(self, factory_type) -> object:
         product = factory_type.create_controller()
         object_name = product.__class__.__name__  # str
@@ -116,6 +123,7 @@ class TsmFileBuilder(Builder):
         self.__controller[object_name + str(product.object_num)] = product
         return product 
     
+class ImageBuilder(Builder):
     def build_image_set(self, data_set) -> None:
         entity_name_list = []  # for FrameWindowView
         frame_window = self.create_controller(FrameWindowFactory())
@@ -135,6 +143,7 @@ class TsmFileBuilder(Builder):
             entity_name_list.append(image.name)
         return entity_name_list
     
+class TraceBuilder(Builder):
     # for making trace data set
     def build_trace_set(self, data_set) -> None:
         entity_name_list = []  # for RoiView
@@ -157,6 +166,7 @@ class TsmFileBuilder(Builder):
             entity_name_list.append(trace.name)
         return entity_name_list
             
+class ElecDataBuilder(Builder):
     def build_elec_data_set(self, raw_data):
         entity_name_list = []  # for ElecView
         # Make a controller
@@ -175,7 +185,7 @@ class TsmFileBuilder(Builder):
             entity_name_list.append(trace.name)
         return entity_name_list
         
-    def count_data(self):
+xx    def count_data(self):
         #num = 2  # This should be got from cunting ChFrames.
         #ch_frames_list = []
         #for i in range(0, num):
@@ -237,3 +247,4 @@ class KeyCounter:
             if key in i:
                 num += 1
         return num    
+

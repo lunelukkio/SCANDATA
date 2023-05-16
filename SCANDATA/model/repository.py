@@ -8,6 +8,50 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 import os
 
+# collection of raw data
+class DataRepository:
+    def __init__(self, filename):
+        self.__filename = filename
+        self.__factory_type = self.file_type_checker(self.__filename)
+        self.__file_io = None
+        self.__original_data_infor = {}
+        self.__original_data_3d = {}  #{full_1:[], ch_1:[]}
+        self.__original_data_2d = {}  #{full_1:[], ch_1:[]}
+        self.__original_data_1d = {}  #{full_1:[], ch_1:[]}
+        
+        self.__read_data(self.__factory_type, self.__filename)
+        
+    def __read_data(self, factory_type, filename:object):
+        self.__file_io = factory_type.create_file_io(filename)
+        
+        self.__original_data_infor.append(self.__file_io.get_infor())
+        self.__original_data_3d.append(self.__file_io.get_3d())
+        self.__original_data_2d.append(self.__file_io.get_2d())
+        self.__original_data_1d.append(self.__file_io.get_1d())
+
+    
+    def __write_file(self, filename, modified_data):
+        pass
+    
+    def print_fileinfor(self) -> None:
+        raise NotImplementedError()
+    
+    def file_type_checker(filename):
+        if filename.extension == '.tsm':
+            print('Found a .tsm file')
+            return TsmFileIOFactory(filename)
+        elif filename.extension == '.abf':
+            print('Found an .abf file')
+            raise NotImplementedError('return AbfFileIOFactory(filename)')
+        elif filename.extension == '.wcp':
+            print('Found a .wcp file')
+            raise NotImplementedError('return WcpFileIOFactory(filename)')
+        else:
+            print('--------------------------------------')
+            print('Can not find any builder for this file')
+            print('--------------------------------------')
+            raise Exception("The file is incorrect!!!")
+        
 
 """
 IO Factory
@@ -31,29 +75,25 @@ class TbnFileIOFactory(FileIOFactory):
 """
 Product
 """
-class IORepositoryInterface:
+class IOInterface:
     @abstractmethod
-    def read_fileinfor(self) -> None:
+    def get_infor(self) -> None:
         raise NotImplementedError()
     
     @abstractmethod
-    def read_data(self) -> None:
+    def get_3d(self) -> None:
         raise NotImplementedError()
     
     @abstractmethod
-    def get_data(self) -> tuple:
+    def get_2d(self) -> tuple:
         raise NotImplementedError()
 
     @abstractmethod
-    def get_infor(self) -> tuple:
-        raise NotImplementedError()
-    
-    @abstractmethod
-    def print_fileinfor(self) -> None:
+    def get_1d(self) -> tuple:
         raise NotImplementedError()
     
 
-class TsmFileIO(IORepositoryInterface):
+class TsmFileIO(IOInterface):
     def __init__(self, filename, num_fluo_ch=2):
         # about file
         self.filename = filename.name
@@ -81,7 +121,7 @@ class TsmFileIO(IORepositoryInterface):
         self.read_fileinfor()
         self.read_data()
         
-    def read_fileinfor(self):
+    def get_fileinfor(self):
         try:
             with open(self.full_filename, 'rb') as f:
                 # redshirt data format
@@ -177,11 +217,18 @@ class TsmFileIO(IORepositoryInterface):
                ch_frames[:, :, j//num_ch, i] = frames[:, :, j]
         return ch_frames  # = [:,:,:,ch]
     
-    def get_data(self) -> tuple:
-        return self.full_frames, self.ch_frames
-
     def get_infor(self) -> tuple:
         return self.full_frame_interval, self.ch_frame_interval
+    
+    def get_3d(self) -> tuple:
+        return {'full_1':self.full_frames, 'ch_1':self.ch_frames}
+    
+    def get_2d(self):
+        pass
+    
+    def get_1d(self):
+        pass
+
 
     def print_fileinfor(self):
         print(self.header.decode())
@@ -196,7 +243,7 @@ class TsmFileIO(IORepositoryInterface):
         print('data_pixel = ' + str(self.data_pixel))
 
         
-class TbnFileIO(IORepositoryInterface):
+class TbnFileIO(IOInterface):
     def __init__(self, filename, tsm_file_io):
         # about file
         self.filename = filename.name
@@ -272,6 +319,25 @@ class TbnFileIO(IORepositoryInterface):
         print('num_elec_ch = ' + str(self.num_elec_ch))
         print('elec_interval = ' + str(self.elec_interval))
         print('num_elec_data = ' + str(self.num_elec_data))
+        
+class Translator:
+    @staticmethod
+    def file_type_checker(filename):
+        if filename.extension == '.tsm':
+            print('Found a .tsm file')
+            return TsmFileBuilder(filename)
+        elif filename.extension == '.abf':
+            print('Found an .abf file')
+            return AbfFileBuilder(filename)
+        elif filename.extension == '.wcp':
+            print('Found a .wcp file')
+            return WcpFileBuilder(filename)
+        else:
+            print('--------------------------------------')
+            print('Can not find any builder for this file')
+            print('--------------------------------------')
+            raise Exception("The file is incorrect!!!")
+
         
 if __name__ == '__main__':
     pass

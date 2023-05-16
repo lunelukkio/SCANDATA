@@ -71,18 +71,8 @@ class DataSet(DataSetInterface):
     def __init__(self, full_filename: str):
         self.__filename = Filename(full_filename)
         self.__builder = Translator.file_type_checker(self.__filename)  # Using statsitc method in Translator class.
-        
-        # Reset a data set.
-        (self.__file_io, self.__data, self.__controller) = self.__builder.reset()
-        
-        # This list is for strategy_types
-        self.__data_dict_list = [self.__file_io, self.__data, self.__controller]
-        
-        # Need refactoring for sepalate tsm information
-        self.__tsm_data_context = TSMDataStrategyContext(self.__data_dict_list)
-        
-        # instance for mod.
-        self.__mod_client = ModClient(self.__data_dict_list)
+
+        self.__controller = {}
         
         # Initialized the data set.
         self.__builder.initialize()
@@ -482,7 +472,7 @@ class ModStrategy(DataSetStrategyInterface):
         raise NotImplementedError() 
                    
 
-class Translator:
+xxx class Translator:
     @staticmethod
     def file_type_checker(filename):
         if filename.extension == '.tsm':
