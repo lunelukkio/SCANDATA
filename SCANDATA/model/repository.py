@@ -137,6 +137,9 @@ class TsmFileIO(IOInterface):
         # read data
         self.read_infor()
         self.read_data()
+        self.elec_data_obj = TbnFileIO(filename, 
+                                   self. full_frame_interval, 
+                                   self.num_full_frames)
         
     def read_infor(self):
         try:
@@ -241,10 +244,12 @@ class TsmFileIO(IOInterface):
         return self.full_frames, self.ch_frames[:,:,:,0], self.ch_frames[:,:,:,1]
     
     def get_2d(self):
-        return None
+        return []
     
     def get_1d(self):
-        return None
+        data_1d = self.elec_data_obj.get_data()
+        return data_1d
+        
 
 
     def print_fileinfor(self):
@@ -261,15 +266,15 @@ class TsmFileIO(IOInterface):
 
         
 class TbnFileIO(IOInterface):
-    def __init__(self, filename, tsm_file_io):
+    def __init__(self, filename, full_frame_interval, num_full_frames):
         # about file
         self.filename = filename.name
         self.file_path = filename.path
         self.full_filename = filename.fullname
         
         # from a .tsm file
-        self.full_frame_interval = tsm_file_io.full_frame_interval
-        self.num_full_frames = tsm_file_io.num_full_frames
+        self.full_frame_interval = full_frame_interval
+        self.num_full_frames = num_full_frames
         
         # about elec
         self.elec_header = 0
@@ -322,12 +327,16 @@ class TbnFileIO(IOInterface):
             
         else:
             print('Imported a .tbn(.tsm) elec data file.')
-            
-    def get_data(self):
-        return self.elec_trace  # [data, ch]
-
+       
     def get_infor(self):
-        return self.elec_interval
+        return self.elec_interval     
+       
+    def get_data(self):
+        elec_data = []
+        for i in range(0,7):
+            elec_data = self.elec_trace[:,i]  # [data, ch]
+        return elec_data 
+    
             
     def print_fileinfor(self):
         print('elec_header = ' + str(self.elec_header))
