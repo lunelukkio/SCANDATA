@@ -13,8 +13,8 @@ filename = Filename('..\\220408\\20408B002.tsm')  # this isa a value object
 
 class TestRepository(unittest.TestCase):
     def test_repository(self):
-        repository = DataRepository()
-
+        repository = DataRepository(filename)
+        repository.print_data(3,1)
 
 
 if __name__ == '__main__':

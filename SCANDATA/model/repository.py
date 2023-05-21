@@ -14,32 +14,40 @@ class DataRepository:
         self.__filename = filename
         self.__factory_type = self.file_type_checker(self.__filename)
         self.__file_io = None
-        self.__original_data_infor = {}
-        self.__original_data_3d = {}  #{full_1:[], ch_1:[]}
-        self.__original_data_2d = {}  #{full_1:[], ch_1:[]}
-        self.__original_data_1d = {}  #{full_1:[], ch_1:[]}
+        self.__original_data_infor = []  #tsm->[full_interval, ch_interval]
+        self.__original_data_3d = []  #tsm->[0: full_1, 1: ch_1, 2: ch_2]
+        self.__original_data_2d = []  #tsm->[]
+        self.__original_data_1d = []  #tsm->[0: elec_1, 1: elec_2,..., 7: elec_8]
         
         self.__read_data(self.__factory_type, self.__filename)
         
     def __read_data(self, factory_type, filename:object):
         self.__file_io = factory_type.create_file_io(filename)
         
-        self.__original_data_infor.append(self.__file_io.get_infor())
-        self.__original_data_3d.append(self.__file_io.get_3d())
-        self.__original_data_2d.append(self.__file_io.get_2d())
-        self.__original_data_1d.append(self.__file_io.get_1d())
+        self.__original_data_infor.extend(self.__file_io.get_infor())
+        self.__original_data_3d.extend(self.__file_io.get_3d())
+        self.__original_data_2d.extend(self.__file_io.get_2d())
+        self.__original_data_1d.extend(self.__file_io.get_1d())
 
     
     def __write_file(self, filename, modified_data):
-        pass
-    
-    def print_fileinfor(self) -> None:
         raise NotImplementedError()
     
-    def file_type_checker(filename):
+    def print_infor(self) -> None:
+        print(self.__original_data_infor)
+        
+    def print_data(self, dim, data_num) -> None:
+        if dim == 3:
+            print(self.__original_data_3d[data_num])
+        if dim == 2:
+            print(self.__original_data_2d[data_num])
+        if dim == 1:
+            print(self.__original_data_1d[data_num])
+    
+    def file_type_checker(self, filename):
         if filename.extension == '.tsm':
             print('Found a .tsm file')
-            return TsmFileIOFactory(filename)
+            return TsmFileIOFactory()
         elif filename.extension == '.abf':
             print('Found an .abf file')
             raise NotImplementedError('return AbfFileIOFactory(filename)')
@@ -77,23 +85,32 @@ Product
 """
 class IOInterface:
     @abstractmethod
-    def get_infor(self) -> None:
+    def read_infor(self) -> None:  # should be in __init__
         raise NotImplementedError()
     
     @abstractmethod
-    def get_3d(self) -> None:
+    def read_data(self) -> None:  # should be in __init__
         raise NotImplementedError()
     
     @abstractmethod
-    def get_2d(self) -> tuple:
+    def get_infor(self) -> None:  # should be called by repository
+        raise NotImplementedError()
+    
+    @abstractmethod
+    def get_3d(self) -> None:  # should be called by repository
+        raise NotImplementedError()
+    
+    @abstractmethod
+    def get_2d(self) -> tuple:  # should be called by repository
         raise NotImplementedError()
 
     @abstractmethod
-    def get_1d(self) -> tuple:
+    def get_1d(self) -> tuple:  # should be called by repository
         raise NotImplementedError()
     
 
 class TsmFileIO(IOInterface):
+    #load a .tsn file
     def __init__(self, filename, num_fluo_ch=2):
         # about file
         self.filename = filename.name
@@ -118,10 +135,10 @@ class TsmFileIO(IOInterface):
         self.object_num = 0  # for counter
         
         # read data
-        self.read_fileinfor()
+        self.read_infor()
         self.read_data()
         
-    def get_fileinfor(self):
+    def read_infor(self):
         try:
             with open(self.full_filename, 'rb') as f:
                 # redshirt data format
@@ -221,13 +238,13 @@ class TsmFileIO(IOInterface):
         return self.full_frame_interval, self.ch_frame_interval
     
     def get_3d(self) -> tuple:
-        return {'full_1':self.full_frames, 'ch_1':self.ch_frames}
+        return self.full_frames, self.ch_frames[:,:,:,0], self.ch_frames[:,:,:,1]
     
     def get_2d(self):
-        pass
+        return None
     
     def get_1d(self):
-        pass
+        return None
 
 
     def print_fileinfor(self):
