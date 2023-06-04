@@ -160,7 +160,6 @@ class FullFrames(FluoFrames):
         super().print_additional_infor()
 
 
-
 class ChFrames(FluoFrames):
     def __init__(self, frames_obj, *args):
         super().__init__(frames_obj, *args)
@@ -242,10 +241,12 @@ class CellImage(FluoImage):
         if end - start == 0:
             val = self._frames_obj.data[:, :, frame_window[0]]
             self._image_obj = ImageData(val)
-            print(f'Cell image from a single frame# {start} to {end}: Succeeded')
+            self._frame_window = frame_window
+            print(f'Cell image from a single frame# {start} : Succeeded')
         elif end - start > 0: 
             val = np.mean(self._frames_obj.data[:, :, start:end], axis = 2)
             self._image_obj = ImageData(val)
+            self._frame_window = frame_window
             print(f'Cell image from an avaraged frame# {start} to {end}: Succeeded')
         else:
             self._data = np.zeros((2, 2))

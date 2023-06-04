@@ -10,7 +10,7 @@ import unittest
 from SCANDATA.model.data_factory import FullTraceFactory, ChTraceFactory
 from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory
 from SCANDATA.model.value_object import Filename, TraceData, FramesData
-from SCANDATA.model.io_factory import TsmFileIOFactory
+from SCANDATA.model.repository import DataRepository
 import numpy as np
 
 
@@ -30,14 +30,18 @@ class TestTimeData(unittest.TestCase):
 
 class TestTrace(unittest.TestCase):
     def test_gull_trace(self):
-        io_factory = TsmFileIOFactory()
-        io_data = io_factory.create_file_io(filename)
-        _, data = io_data.get_data()
-        rawdata = data[:,:,:,0]
-        _, interval = io_data.get_infor()
-        pixel_size = 0.25
-
+        #read data
+        repository = DataRepository(filename)
+        rawdata = repository.original_data_3d[1]
+        interval = repository.original_data_infor[0]
+        # make frames value object
         data = FramesData(rawdata)
+        pixel_size = 0.25
+        # make frames entity
+        data_factory = ChFramesFactory()
+        fullframes_entity = data_factory.create_data(data, interval, pixel_size)
+        fullframes_entity.show_data(8)
+        fullframes_value_obj = fullframes_entity.frames_obj
         
         #trace
         data_factory = ChFramesFactory()

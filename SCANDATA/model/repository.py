@@ -6,6 +6,7 @@ lunelukkio@gmail.com
 """
 from abc import ABCMeta, abstractmethod
 import numpy as np
+import copy
 import os
 
 # collection of raw data
@@ -28,10 +29,25 @@ class DataRepository:
         self.__original_data_3d.extend(self.__file_io.get_3d())
         self.__original_data_2d.extend(self.__file_io.get_2d())
         self.__original_data_1d.extend(self.__file_io.get_1d())
-
     
     def __write_file(self, filename, modified_data):
         raise NotImplementedError()
+        
+    @property
+    def original_data_infor(self):
+        return copy.deepcopy(self.__original_data_infor)
+    
+    @property
+    def original_data_3d(self):
+        return copy.deepcopy(self.__original_data_3d)
+    
+    @property
+    def original_data_2d(self):
+        return copy.deepcopy(self.__original_data_2d)
+    
+    @property
+    def original_data_1d(self):
+        return copy.deepcopy(self.__original_data_1d)
     
     def print_infor(self) -> None:
         print(self.__original_data_infor)
@@ -333,8 +349,8 @@ class TbnFileIO(IOInterface):
        
     def get_data(self):
         elec_data = []
-        for i in range(0,7):
-            elec_data = self.elec_trace[:,i]  # [data, ch]
+        for i in range(0,8):
+            elec_data.append(self.elec_trace[:,i])  # [data, ch]
         return elec_data 
     
             
