@@ -21,20 +21,15 @@ class DataFactory(metaclass=ABCMeta):
 
 
 "Frames"
-class FullFramesFactory(DataFactory):
+class FluoFramesFactory(DataFactory):
     def create_data(self, data, *args):  # data = 3D raw data. *args is for interval, pixel_size, unit
-        return FullFrames(data, *args)
-
-
-class ChFramesFactory(DataFactory):
-    def create_data(self, data, *args):  # data = 3D raw data. *args is for interval, pixel_size, unit
-        return ChFrames(data, *args)
+        return FluoFrames(data, *args)
 
 
 "Image"
-class CellImageFactory(DataFactory):
+class FluoImageFactory(DataFactory):
     def create_data(self, data, *args):  # data = 3D raw data, frame = [list]
-        return CellImage(data, *args)
+        return FluoImage(data, *args)
 
 
 class DifImageFactory(DataFactory):
@@ -43,19 +38,14 @@ class DifImageFactory(DataFactory):
 
 
 "Trace"
-class FullTraceFactory(DataFactory):
+class FluoTraceFactory(DataFactory):
     def create_data(self, data, *args):  # data = 3D raw data, interval
-        return FullTrace(data, *args)
-
-
-class ChTraceFactory(DataFactory):
-    def create_data(self, data, *args):  # data = 3D raw data, interval
-        return ChTrace(data, *args)
+        return FluoTrace(data, *args)
     
     
-class ChElecFactory(DataFactory):  # data = 3D raw data, interval
+class ElecTraceFactory(DataFactory):  # data = 3D raw data, interval
     def create_data(self, data, *args):  # data = 
-        return ChElec(data, *args)
+        return ElecTrace(data, *args)
     
 
 """
@@ -95,6 +85,8 @@ class FluoFrames(Data):  # 3D frames data: full frames, ch image
         self.__interval = interval  # (ms)
         self.__pixel_size = pixel_size  # (um)
         self.__unit = unit  # No unit because of raw camera data.
+        self.object_num = 0  # instance number, It shold be increased by data_set
+        self.__name = None  # This is defainded by builder create_data()
 
         self._read_data(frames_obj)
 
@@ -124,6 +116,14 @@ class FluoFrames(Data):  # 3D frames data: full frames, ch image
     @property
     def interval(self):
         return self.__interval
+    
+    @property
+    def name(self):
+        return self.__name
+        
+    @name.setter
+    def name(self, object_name):
+        self.__name = object_name
 
     def show_data(self, frame_num=0) -> None:
         self.__frames_obj.show_data(frame_num)
@@ -140,44 +140,16 @@ class FluoFrames(Data):  # 3D frames data: full frames, ch image
         #print(self.__unit)
         #np.set_printoptions(threshold=1000)
 
-
+"""
 class FullFrames(FluoFrames):
-    def __init__(self, frames_obj, *args):
-        super().__init__(frames_obj, *args)
-        self.object_num = 0  # instance number, It shold be increased by data_set
-        self.__name = None  # This is defainded by builder create_data()
-        
-        @property
-        def name(self):
-            return self.__name
-        
-        @name.setter
-        def name(self, object_name):
-            self.__name = object_name
-    
     def print_infor(self) -> None:
         print('This is Fullframes' + str(self.object_num))
         super().print_additional_infor()
-
-
-class ChFrames(FluoFrames):
-    def __init__(self, frames_obj, *args):
-        super().__init__(frames_obj, *args)
-        self.object_num = 0  # instance number  # This is defainded by builder create_data()
-        self.__name = None  # This is defainded by builder create_data()
-        
-    @property
-    def name(self):
-        return self.__name
-    
-    @name.setter
-    def name(self, object_name):
-        self.__name = object_name
         
     def print_infor(self) -> None:
         print('This is Chframes' + str(self.object_num))
         super().print_additional_infor()
-
+"""
         
 "Fluo Image"
 class FluoImage(Data):  # cell image, dif image
@@ -225,7 +197,7 @@ class FluoImage(Data):  # cell image, dif image
         #np.set_printoptions(threshold=1000)
 
 
-class CellImage(FluoImage):
+class FluoImage(FluoImage):
     def __init__(self, frames_obj, *args):
         super().__init__(frames_obj, *args)
         self.object_num = 0  # instance number
@@ -325,12 +297,15 @@ class FluoTrace(Data):  # Fluo trae
             raise Exception("The roi size should be the same as the image size or less")
         if roi[0] < 0 or roi[1] < 0: 
             raise Exception("The roi should be the same as 0 or more")
+        if roi[2] < 1 or roi[3] < 1: 
+           print("Warning!!!!!! The roi length is 0 or less")
 
         trace_val = self.__create_fluo_trace(self.__frames_obj, roi)
         self.__trace_obj = TraceData(trace_val, self.__interval)
     
-    def update(self, roi) -> None:  # override by FullTrace or ChTrace class
-        raise NotImplementedError()
+    def update(self, roi) -> None:
+        print(f'----- FluoTrace{self.object_num} recieved a notify message. ROI = {roi}')
+        self._read_data(roi)
     
     def get_data(self) -> object:  # -> value object
         return self.__trace_obj
@@ -378,7 +353,7 @@ class FluoTrace(Data):  # Fluo trae
         print(self.__interval)
         #np.set_printoptions(threshold=1000)
 
- 
+    """
 class FullTrace(FluoTrace):
     def __init__(self, frames_obj, interval):
         super().__init__(frames_obj, interval)
@@ -432,16 +407,25 @@ class ChTrace(FluoTrace):
     @property
     def sort_num(self):
         return self.__sort_num
-
-"Elec trace"
-class ElecData(Data):  # Elec trace
-    def __init__(self, interval):
-        #self._trace_obj  # create in _read_data of sub classes
-        self._interval = interval
-        
-    def _read_data(self):
-        pass
     
+    """
+
+"Elec trace"    
+        
+class ElecTrace(Data):
+    def __init__(self, trace_data_obj, interval):
+        self._interval = interval
+        self._read_data(trace_data_obj)
+
+    def _read_data(self, trace_data_obj: np.ndarray) -> None:
+        self._trace_obj = trace_data_obj
+        
+        if len(self._trace_obj.data) <= 1:
+            print('---------------------')
+            print('Can not make Elec data')
+            print('---------------------')
+            return None
+        
     def update(self, roi_obj) -> None:
         pass
     
@@ -463,43 +447,9 @@ class ElecData(Data):  # Elec trace
         self._trace_obj.show_data()  
     
     def print_infor(self):
-        pass
-        
-class ChElec(ElecData):
-    def __init__(self, trace_data_obj, interval):
-        super().__init__(interval)
-        self.object_num = 0  # instance number
-        self._read_data(trace_data_obj)
-        self.__name = None
-        self.__sort_num = 103
-
-    def _read_data(self, trace_data_obj: np.ndarray) -> None:
-        self._trace_obj = trace_data_obj
-        
-        if len(self._trace_obj.data) <= 1:
-            print('---------------------')
-            print('Can not make Elec data')
-            print('---------------------')
-            return None
-        
-    @property
-    def name(self):
-        return self.__name
-    
-    @name.setter
-    def name(self, object_name):
-        self.__name = object_name
-        
-    @property
-    def sort_num(self):
-        return self.__sort_num
-    
-    def print_infor(self):
-        print('This is ElecData' + str(self.object_num))
+        print('This is ElecData')
         print(self._trace_obj.data)
         
-class LongElecData(ElecData):
-    pass
         
 
 if __name__ == '__main__':

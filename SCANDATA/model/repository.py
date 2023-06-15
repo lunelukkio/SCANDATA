@@ -15,7 +15,7 @@ class DataRepository:
         self.__filename = filename
         self.__factory_type = self.file_type_checker(self.__filename)
         self.__file_io = None
-        self.__original_data_infor = []  #tsm->[full_interval, ch_interval]
+        self.__original_data_infor = []  #tsm->[full_interval, ch1_interval, , ch2_interval, elec_interval]
         self.__original_data_3d = []  #tsm->[0: full_1, 1: ch_1, 2: ch_2]
         self.__original_data_2d = []  #tsm->[]
         self.__original_data_1d = []  #tsm->[0: elec_1, 1: elec_2,..., 7: elec_8]
@@ -25,11 +25,11 @@ class DataRepository:
     def __read_data(self, factory_type, filename:object):
         self.__file_io = factory_type.create_file_io(filename)
         
-        self.__original_data_infor.extend(self.__file_io.get_infor())
         self.__original_data_3d.extend(self.__file_io.get_3d())
         self.__original_data_2d.extend(self.__file_io.get_2d())
         self.__original_data_1d.extend(self.__file_io.get_1d())
-    
+        self.__original_data_infor.extend(self.__file_io.get_infor())
+        
     def __write_file(self, filename, modified_data):
         raise NotImplementedError()
         
@@ -254,7 +254,14 @@ class TsmFileIO(IOInterface):
         return ch_frames  # = [:,:,:,ch]
     
     def get_infor(self) -> tuple:
-        return self.full_frame_interval, self.ch_frame_interval
+        data_infor = [self.full_frame_interval]
+        for i in range(self.num_fluo_ch):
+            data_infor.extend([self.ch_frame_interval])
+        elec_interval = self.elec_data_obj.get_infor()
+        for i in range(self.elec_data_obj.num_elec_ch):
+            data_infor.extend([elec_interval])
+        print(data_infor)
+        return data_infor
     
     def get_3d(self) -> tuple:
         return self.full_frames, self.ch_frames[:,:,:,0], self.ch_frames[:,:,:,1]
@@ -266,8 +273,6 @@ class TsmFileIO(IOInterface):
         data_1d = self.elec_data_obj.get_data()
         return data_1d
         
-
-
     def print_fileinfor(self):
         print(self.header.decode())
         print('filenmae = ' + self.full_filename)

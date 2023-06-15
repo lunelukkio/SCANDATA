@@ -7,7 +7,7 @@ Created on Sat Dec 24 11:25:49 2022
 
 
 import unittest
-from SCANDATA.model.data_factory import CellImageFactory, FullFramesFactory
+from SCANDATA.model.data_factory import FluoImageFactory
 from SCANDATA.model.value_object import Filename, FramesData
 from SCANDATA.model.repository import DataRepository
 
@@ -23,23 +23,17 @@ class TestImageData(unittest.TestCase):
 class Testimage(unittest.TestCase):
     def test_cell_image(self):
         #read data
+        data_channel = 2  # 0:fullFrames 1,2: chFrames
         repository = DataRepository(filename)
-        rawdata = repository.original_data_3d[0]
-        interval = repository.original_data_infor[0]
+        rawdata = repository.original_data_3d[data_channel] # 0:fullFrames 1,2: chFrames
         # make frames value object
         data = FramesData(rawdata)
-        pixel_size = 0.25
-        # make frames entity
-        data_factory = FullFramesFactory()
-        fullframes_entity = data_factory.create_data(data, interval, pixel_size)
-        fullframes_entity.show_data(8)
-        fullframes_value_obj = fullframes_entity.frames_obj
 
         # full frame image
-        data_factory = CellImageFactory()
+        data_factory = FluoImageFactory()
         
-        cellimage = data_factory.create_data(fullframes_value_obj)
-        cellimage.update([2,90])
+        cellimage = data_factory.create_data(data)
+        cellimage.update([3,5])
         cellimage.show_data()
         cellimage.print_infor()
 

@@ -5,14 +5,10 @@ Created on Sun Dec 25 13:33:19 2022
 @author: lulul
 """
 
-
 import unittest
-from SCANDATA.model.data_factory import FullTraceFactory, ChTraceFactory
-from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory
-from SCANDATA.model.value_object import Filename, TraceData, FramesData
+from SCANDATA.model.data_factory import FluoTraceFactory
+from SCANDATA.model.value_object import Filename, FramesData
 from SCANDATA.model.repository import DataRepository
-import numpy as np
-
 
 filename = Filename('..\\220408\\20408B002.tsm')
 
@@ -31,31 +27,19 @@ class TestTimeData(unittest.TestCase):
 class TestTrace(unittest.TestCase):
     def test_gull_trace(self):
         #read data
+        data_channel = 1  # 0:fullFrames 1,2: chFrames
         repository = DataRepository(filename)
-        rawdata = repository.original_data_3d[1]
-        interval = repository.original_data_infor[0]
+        rawdata = repository.original_data_3d[data_channel] # 0:fullFrames 1,2: chFrames
+        interval = repository.original_data_infor[data_channel] # 0:fullFrames interval 1,2: chFrames interval
         # make frames value object
         data = FramesData(rawdata)
-        pixel_size = 0.25
-        # make frames entity
-        data_factory = ChFramesFactory()
-        fullframes_entity = data_factory.create_data(data, interval, pixel_size)
-        fullframes_entity.show_data(8)
-        fullframes_value_obj = fullframes_entity.frames_obj
         
         #trace
-        data_factory = ChFramesFactory()
-        chframes = data_factory.create_data(data, interval, pixel_size)
-        frames_data = chframes.get_data()
-        
-        data_factory = ChTraceFactory()
-        
-        chtrace = data_factory.create_data(frames_data, interval)
-        chtrace._read_data([40,39,39,40])
+        data_factory = FluoTraceFactory()
+        trace = data_factory.create_data(data, interval)
+        trace._read_data([40,40,30,5])
 
-        chtrace.show_data()
-
-
+        trace.show_data()
 
 
 if __name__ == '__main__':

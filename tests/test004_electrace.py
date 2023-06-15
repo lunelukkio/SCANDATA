@@ -7,35 +7,28 @@ lunelukkio@gmail.com
 
 
 import unittest
-from SCANDATA.model.data_factory import ChElecFactory
-from SCANDATA.model.io_factory import TsmFileIOFactory, TbnFileIOFactory
+from SCANDATA.model.data_factory import ElecTraceFactory
+from SCANDATA.model.repository import DataRepository
 from SCANDATA.model.value_object import Filename, TraceData
-import matplotlib.pyplot as plt
 
 filename = Filename('..\\220408\\20408B002.tsm')
 
-
-
 class TestTrace(unittest.TestCase):
     def test_gull_trace(self):
-        io_factory = TsmFileIOFactory()
-        io_data = io_factory.create_file_io(filename)
-        io_factory = TbnFileIOFactory()
-        io_elec_data = io_factory.create_file_io(filename, io_data)
+        # read data
+        data_channel = 1  # 1-8 elec ch
+        repository = DataRepository(filename)
+        rawdata = repository.original_data_1d[data_channel-1]
+        interval = repository.original_data_infor[data_channel+2]
 
-        interval = io_elec_data.get_infor()
-        rawelec_data = io_elec_data.get_data()
-        print(rawelec_data.shape[1])
         
-        elec_data = TraceData(rawelec_data[:,0], interval)
+        elec_data = TraceData(rawdata, interval)
         
-        data_factory = ChElecFactory()
+        data_factory = ElecTraceFactory()
         
         trace = data_factory.create_data(elec_data, interval)
-        a = plt.figure()
         trace.show_data()
         trace.print_infor()
-
 
 
 if __name__ == '__main__':

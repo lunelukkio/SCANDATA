@@ -13,7 +13,7 @@ from SCANDATA.model.mod_factory import ModClient
 #from weakref import WeakValueDictionary
 
 
-class DataSetInterface(metaclass=ABCMeta):
+class DataServiceInterface(metaclass=ABCMeta):
     @abstractmethod
     def create_data(self, key, *args):
         raise NotImplementedError()
@@ -67,7 +67,7 @@ class DataSetInterface(metaclass=ABCMeta):
         raise NotImplementedError()
         
         
-class DataSet(DataSetInterface):
+class DataSet(DataServiceInterface):
     def __init__(self, full_filename: str):
         self.__filename = Filename(full_filename)
         self.__builder = Translator.file_type_checker(self.__filename)  # Using statsitc method in Translator class.
