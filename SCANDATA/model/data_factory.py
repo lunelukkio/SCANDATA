@@ -140,19 +140,9 @@ class FluoFrames(Data):  # 3D frames data: full frames, ch image
         #print(self.__unit)
         #np.set_printoptions(threshold=1000)
 
-"""
-class FullFrames(FluoFrames):
-    def print_infor(self) -> None:
-        print('This is Fullframes' + str(self.object_num))
-        super().print_additional_infor()
-        
-    def print_infor(self) -> None:
-        print('This is Chframes' + str(self.object_num))
-        super().print_additional_infor()
-"""
         
 "Fluo Image"
-class FluoImage(Data):  # cell image, dif image
+class Image(Data):  # cell image, dif image
     def __init__(self, frames_obj: object, pixel_size=0, unit=0):  # 3D raw data from IO
         #self._image_obj = ([],[])  # create in _read_data
         self._frames_obj = frames_obj
@@ -197,7 +187,7 @@ class FluoImage(Data):  # cell image, dif image
         #np.set_printoptions(threshold=1000)
 
 
-class FluoImage(FluoImage):
+class FluoImage(Image):
     def __init__(self, frames_obj, *args):
         super().__init__(frames_obj, *args)
         self.object_num = 0  # instance number
@@ -243,8 +233,8 @@ class FluoImage(FluoImage):
     @property
     def sort_num(self):
         return self.__sort_num
-        
-        
+
+
 class DifImage(FluoImage):
     def __init__(self, frames_obj):
         super().__init__(frames_obj)
