@@ -9,6 +9,37 @@ import numpy as np
 import copy
 import os
 
+# repository
+class DataRepositoryInterface(metaclass=ABCMeta):
+    @abstractmethod
+    def read_file(self, key):
+        raise NotImplementedError()
+        
+    @abstractmethod
+    def get_data(self, key):
+        raise NotImplementedError()
+        
+    @abstractmethod
+    def get_infor(self, key):
+        raise NotImplementedError()
+        
+    @abstractmethod
+    def print_infor(self, key):
+        raise NotImplementedError()
+    
+
+class 3DRepository(DataRepositoryInterface):
+    def __init__(self, filename):
+        self.__filename = filename
+        self.__factroy_type = self.file_type_checker(self.__filename)
+
+        self.__original_data = {}
+        self.__original_data_infor = {}
+
+        self.__read_data(self.__factory_type, self.__filename)
+        
+        self.__file_io = factory_type.create_file_io(filename)
+
 # collection of raw data
 class DataRepository:
     def __init__(self, filename):
