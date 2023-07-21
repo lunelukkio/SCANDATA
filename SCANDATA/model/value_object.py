@@ -14,13 +14,29 @@ import inspect
 """
 Value object
 """
-class Filename:
+
+class WholeFilename:  # Use it only in a view and controller
     def __init__(self, fullname: str):
-        self.__fullname = os.path.join(fullname)   # replace separater for each OS
+        self.__fullname = os.path.join(fullname)  # replace separater for each OS
         self.__filename = os.path.basename(self.__fullname)
         self.__filepath = os.path.dirname(self.__fullname) + os.sep
-        self.__abspath = os.path.abspath(self.__fullname)# absolute path
-        self.__extension = os.path.splitext(self.__fullname)[1]  # get only extension
+        self.__abspath = os.path.abspath(fullname)# absolute path
+        split_filename = os.path.splitext(self.__filename)
+        self.__file_name_no_ext = split_filename[0]
+        self.__extension =  split_filename[1]  # get only extension
+        
+        self.__filename_list = self.__make_filename_list()
+        
+    """
+    # List need A000-Z999 in the last of filenames
+    def __make_filename_list(self) -> list:
+        find =  self.__filepath + self.__file_name_no_ext[0:-3] + '*' + str(self.__extension)
+        fullname_list = glob.glob(find)
+        filename_list = []
+        for i in range(len(fullname_list)):
+            filename_list.append(os.path.basename(fullname_list[i]))
+        return  filename_list
+    """
 
     def __del__(self):
         #print('.')
@@ -32,7 +48,7 @@ class Filename:
         return self.__fullname
     
     @property
-    def name(self) -> str:
+    def filename(self) -> str:
         return self.__filename
     
     @property
@@ -44,20 +60,39 @@ class Filename:
         return self.__abspath
     
     @property
+    def file_name_no_ext(self) -> str:
+        return self.__file_name_no_ext
+    
+    @property
     def extension(self) -> str:
         return self.__extension
+    
+    @property
+    def filename_list(self) -> list:
+        return self.__filename_list
+    
+    def print_infor(self) -> None:
+        print('THe absolute path = ' + self.__abspath)
+        print('The full path = ' + self.__fullname)
+        print('The file name = ' + self.__filename)
+        print('The file path = ' + self.__filepath)
+        print('The file name without extension = ' + self.__file_name_no_ext)
+        print('The file extension = ' + self.__extension)
+        print('The file name list in the same folder = ' + str(self.__filename_list))
+        
+        
 """
 "Value object for Data
 """
 class FramesData:
-    def __init__(self, val: np.ndarray):
+    def __init__(self, val: np.ndarray, interval = 0, pixel_size = [0, 0]):  # need *args, **kwargs for constracting
         if val.ndim != 3: 
             raise Exception('The argument of FrameData should be numpy 3D data(x, y, t)')
-        size = val.shape
-        called_class = inspect.stack()[1].frame.f_locals['self']
         self.__data = val
-        self.__frames_size = size
-        self.__data_type = called_class.__class__.__name__
+        size = val.shape
+        self.__frames_size = size  # the number of pixels and frames [pixel, pixel, frame]
+        self.__interval = interval  # frame interbal (ms)
+        self.__pixel_size = pixel_size  #actual length (um)
         #print(self.__data_type + ' made a FramesData' + '  myId= {}'.format(id(self)))
         
     def __del__(self):
@@ -90,14 +125,13 @@ class FramesData:
     
     
 class ImageData:
-    def __init__(self, val: np.ndarray):
+    def __init__(self, val: np.ndarray, pixel_size = [0, 0]):  # need *args, **kwargs for constracting
         if val.ndim != 2: 
             raise Exception('The argument of ImageData should be numpy 2D data(x, y)')
         size = val.shape
-        called_class = inspect.stack()[1].frame.f_locals['self']
         self.__data = val
-        self.__image_size = size
-        self.__data_type = called_class.__class__.__name__
+        self.__image_size = size  # the number of pixels
+        self.__pixel_size = pixel_size
         #print(self.__data_type + ' made a ImageData' + '  myId= {}'.format(id(self)))
         
     def __del__(self):
@@ -130,7 +164,7 @@ class ImageData:
     
     
 class TraceData:
-    def __init__(self, val: np.ndarray, interval) -> None:
+    def __init__(self, val: np.ndarray, interval) -> None:  #  needs 2 variables
         if val.ndim != 1: 
             raise Exception('The argument of TraceData should be numpy 1D data(x)')
         if  val.shape[0] < 5: 
@@ -140,13 +174,11 @@ class TraceData:
             print('It makes a bug during dF over calculation !!!')
             print('------------------------------------------------------------------------')
 
-        length = val.shape[0]
-        called_class = inspect.stack()[1].frame.f_locals['self']
         self.__data = val
         self.__time = self.__create_time_data(val, interval)
-        self.__interval = interval
-        self.__length = length
-        self.__data_type = called_class.__class__.__name__
+        length = val.shape[0]
+        self.__length = length  # the number of data points
+        self.__interval = interval  # data interval
         #print(self.__data_type + ' made a TraceData' + '  myId= {}'.format(id(self)))
 
     def __del__(self):
