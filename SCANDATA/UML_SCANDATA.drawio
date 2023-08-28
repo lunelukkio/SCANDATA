@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2023-08-18T11:02:50.753Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36" etag="SGSUUdTTtTFUvOnMNSAJ" version="21.6.8" type="device" pages="10">
+<mxfile host="app.diagrams.net" modified="2023-08-25T10:52:17.705Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36" etag="jQmv-9iKwZfj6pZuUgOZ" version="21.6.8" type="device" pages="10">
   <diagram id="cKamBB-SNn25kszP2A9I" name="Model Diagram">
-    <mxGraphModel dx="3576" dy="2862" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="3918" dy="3083" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -1177,7 +1177,7 @@
             <mxPoint x="-1920" y="-862" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="ibf3R4BmpZKBdgTp4tME-22" value="ImageData" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#b0e3e6;strokeColor=#0e8088;" parent="1" vertex="1">
+        <mxCell id="ibf3R4BmpZKBdgTp4tME-22" value="ImageData&#xa;(not for timewindow image)" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#b0e3e6;strokeColor=#0e8088;" parent="1" vertex="1">
           <mxGeometry x="-2000" y="-718" width="160" height="138" as="geometry" />
         </mxCell>
         <mxCell id="ibf3R4BmpZKBdgTp4tME-23" value="- __image_data: np.ndarray" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ibf3R4BmpZKBdgTp4tME-22" vertex="1">
@@ -1223,7 +1223,7 @@
             <mxPoint x="-1720" y="-862" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="ibf3R4BmpZKBdgTp4tME-34" value="TraceData" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#b0e3e6;strokeColor=#0e8088;" parent="1" vertex="1">
+        <mxCell id="ibf3R4BmpZKBdgTp4tME-34" value="TraceData&#xa;(not for ROI trace)" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#b0e3e6;strokeColor=#0e8088;" parent="1" vertex="1">
           <mxGeometry x="-1800" y="-720" width="160" height="190" as="geometry" />
         </mxCell>
         <mxCell id="ibf3R4BmpZKBdgTp4tME-35" value="- __trace_data: np.ndarray" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="ibf3R4BmpZKBdgTp4tME-34" vertex="1">
@@ -1438,7 +1438,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="nelHY5-KBebeKL581avW-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="8jDcwf4Iu9xZiaEWFIBW-16" target="alcZlTHBairoDJrhwZ2K-5">
+        <mxCell id="nelHY5-KBebeKL581avW-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="8jDcwf4Iu9xZiaEWFIBW-16" target="alcZlTHBairoDJrhwZ2K-5" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="-1360" y="-1780" />
@@ -1502,6 +1502,9 @@
         </mxCell>
         <mxCell id="8jDcwf4Iu9xZiaEWFIBW-30" value="controller[list] = controller_repository.find_by_contoller_name(controller_type, name)" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="-1300" y="-1440" width="470" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="9GWmoxMs5ikinRqhbK3W-1" value="&lt;font color=&quot;#ff0000&quot;&gt;RoiTraceData?&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="-1440" y="130" width="100" height="30" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
