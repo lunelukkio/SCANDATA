@@ -85,7 +85,7 @@ class Roi(ModelController):
         self.__data_counter = {}  # counter dict
         self.__data_dict = {}  # data dict
         self.__observer = ControllerObserver()
-           self.__builder = TsmFileBuilder()
+        self.__builder = TsmFileBuilder()
         #print('Created ROI-{}.'.format(self.object_num))
         
     def __del__(self):
