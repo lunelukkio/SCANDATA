@@ -4,31 +4,30 @@ Created on Mon Dec 26 18:45:19 2022
 
 lunelukkio@gmail.com
 """
-
-
 import unittest
-from SCANDATA.model.data_factory import ElecTraceFactory
-from SCANDATA.model.repository import DataRepository
-from SCANDATA.model.value_object import Filename, TraceData
+from SCANDATA2.model.value_object import WholeFilename, TraceData
+from SCANDATA2.model.file_io import TsmFileIoFactory
 
-filename = Filename('..\\220408\\20408B002.tsm')
 
-class TestTrace(unittest.TestCase):
-    def test_gull_trace(self):
-        # read data
-        data_channel = 1  # 1-8 elec ch
-        repository = DataRepository(filename)
-        rawdata = repository.original_data_1d[data_channel-1]
-        interval = repository.original_data_infor[data_channel+2]
+filename = WholeFilename('..\\220408\\20408B002.tsm')  # this is a value object
 
+class Test(unittest.TestCase):
+    def test(self):
+
+        io_factory = TsmFileIoFactory()
+        file_io = io_factory.create_file_io(filename)
+
+        rawdata = file_io.get_1d()
         
-        elec_data = TraceData(rawdata, interval)
+
+        data_channel = 0  # 0:fullFrames 1,2: chFrames
+        interval = 1
         
-        data_factory = ElecTraceFactory()
+        data = rawdata[data_channel]
         
-        trace = data_factory.create_data(elec_data, interval)
-        trace.show_data()
-        trace.print_infor()
+        test = TraceData(data, interval)
+        
+        test.show_data()
 
 
 if __name__ == '__main__':

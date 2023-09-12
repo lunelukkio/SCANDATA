@@ -3,43 +3,33 @@
 Created on Sun Dec 25 13:33:19 2022
 
 @author: lulul
-"""
-
+"""     
 import unittest
-from SCANDATA.model.data_factory import FluoTraceFactory
-from SCANDATA.model.value_object import Filename, FramesData
-from SCANDATA.model.repository import DataRepository
+from SCANDATA2.model.value_object import WholeFilename, TraceData
+from SCANDATA2.model.file_io import TsmFileIoFactory
 
-filename = Filename('..\\220408\\20408B002.tsm')
 
-"""
-class TestTraceData(unittest.TestCase):
-    def test_val(self):
-        trace = TraceData(np.empty((100), dtype=float))
-        print(trace.trace_data)
+filename = WholeFilename('..\\220408\\20408B002.tsm')  # this isa a value object
+
+class Test(unittest.TestCase):
+    def test(self):
+
+        io_factory = TsmFileIoFactory()
+        file_io = io_factory.create_file_io(filename)
+
+        rawdata = file_io.get_3d()
         
-class TestTimeData(unittest.TestCase):
-    def test_val(self):
-        time = TimeData( np.empty((100), dtype=float))
-        print(time.time_data)
-"""
-
-class TestTrace(unittest.TestCase):
-    def test_gull_trace(self):
-        #read data
-        data_channel = 1  # 0:fullFrames 1,2: chFrames
-        repository = DataRepository(filename)
-        rawdata = repository.original_data_3d[data_channel] # 0:fullFrames 1,2: chFrames
-        interval = repository.original_data_infor[data_channel] # 0:fullFrames interval 1,2: chFrames interval
-        # make frames value object
-        data = FramesData(rawdata)
+        data_channel = 0  # 0:fullFrames 1,2: chFrames
         
-        #trace
-        data_factory = FluoTraceFactory()
-        trace = data_factory.create_data(data, interval)
-        trace._read_data([40,40,30,5])
-
-        trace.show_data()
+        x = 40
+        y = 40
+        interval = 1
+        
+        data = rawdata[data_channel][x,y,:]
+        
+        test = TraceData(data, interval)
+        
+        test.show_data()
 
 
 if __name__ == '__main__':

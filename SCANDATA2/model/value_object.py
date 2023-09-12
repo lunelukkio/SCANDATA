@@ -2,13 +2,14 @@
 """
 Created on Sun Jan  1 10:04:06 2023
 
-@author: lulul
+@author: lunelukkio@gmail.com
 """
 
 import os
 import numpy as np
 import matplotlib.pyplot as plt
 import inspect
+import glob
 
         
 """
@@ -27,16 +28,16 @@ class WholeFilename:  # Use it only in a view and controller
         
         self.__filename_list = self.__make_filename_list()
         
-    """
+    
     # List need A000-Z999 in the last of filenames
     def __make_filename_list(self) -> list:
-        find =  self.__filepath + self.__file_name_no_ext[0:-3] + '*' + str(self.__extension)
+        find = '*' + str(self.__extension)
         fullname_list = glob.glob(find)
         filename_list = []
         for i in range(len(fullname_list)):
             filename_list.append(os.path.basename(fullname_list[i]))
         return  filename_list
-    """
+    
 
     def __del__(self):
         #print('.')
@@ -48,7 +49,7 @@ class WholeFilename:  # Use it only in a view and controller
         return self.__fullname
     
     @property
-    def filename(self) -> str:
+    def name(self) -> str:
         return self.__filename
     
     @property

@@ -7,35 +7,28 @@ Created on Sat Dec 24 11:25:49 2022
 
 
 import unittest
-from SCANDATA.model.data_factory import FluoImageFactory
-from SCANDATA.model.value_object import Filename, FramesData
-from SCANDATA.model.repository import DataRepository
+from SCANDATA2.model.value_object import WholeFilename, ImageData
+from SCANDATA2.model.file_io import TsmFileIoFactory
 
-filename = Filename('..\\220408\\20408B002.tsm')  # this is a value object
 
-"""
-class TestImageData(unittest.TestCase):
-    def test_val(self):
-        image = ImageData( np.empty((1, 1), dtype=float))
-        print(image.data)
-"""
+filename = WholeFilename('..\\220408\\20408B002.tsm')  # this isa a value object
 
-class Testimage(unittest.TestCase):
-    def test_cell_image(self):
-        #read data
-        data_channel = 2  # 0:fullFrames 1,2: chFrames
-        repository = DataRepository(filename)
-        rawdata = repository.original_data_3d[data_channel] # 0:fullFrames 1,2: chFrames
-        # make frames value object
-        data = FramesData(rawdata)
+class Test(unittest.TestCase):
+    def test(self):
 
-        # full frame image
-        data_factory = FluoImageFactory()
+        io_factory = TsmFileIoFactory()
+        file_io = io_factory.create_file_io(filename)
+
+        rawdata = file_io.get_3d()
         
-        cellimage = data_factory.create_data(data)
-        cellimage.update([3,5])
-        cellimage.show_data()
-        cellimage.print_infor()
+        data_channel = 0  # 0:fullFrames 1,2: chFrames
+        frame_num = 0
+        
+        data = rawdata[data_channel][:,:,frame_num]
+        
+        test = ImageData(data)
+        
+        test.show_data()
 
 
 if __name__ == '__main__':

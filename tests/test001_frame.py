@@ -6,25 +6,27 @@ lunelukkio@gmail.com
 """
 
 import unittest
-from SCANDATA.model.data_factory import FluoFramesFactory
-from SCANDATA.model.value_object import Filename,FramesData
-from SCANDATA.model.repository import DataRepository
+from SCANDATA2.model.value_object import WholeFilename, FramesData
+from SCANDATA2.model.file_io import TsmFileIoFactory
 
-filename = Filename('..\\220408\\20408B002.tsm')  # this isa a value object
 
-class TestFullFrames(unittest.TestCase):
-    def test_full_frame(self):
+filename = WholeFilename('..\\220408\\20408B002.tsm')  # this isa a value object
+
+class TestFrames(unittest.TestCase):
+    def test_frame(self):
+
+        io_factory = TsmFileIoFactory()
+        file_io = io_factory.create_file_io(filename)
+
+        rawdata = file_io.get_3d()
+        
         data_channel = 0  # 0:fullFrames 1,2: chFrames
-        repository = DataRepository(filename)
-        rawdata = repository.original_data_3d[data_channel]  
-        interval = repository.original_data_infor[data_channel]  # 0:fullFrames interval 1,2: chFrames interval
-        data = FramesData(rawdata)
-        pixel_size = 0.25
+        frame_num = 0
         
-        data_factory = FluoFramesFactory()
-        fullframes = data_factory.create_data(data, interval, pixel_size)
+        print(rawdata[data_channel])
         
-        fullframes.show_data(8)
+        test = FramesData(rawdata[data_channel])
+        test.show_data(frame_num)
 
 
 if __name__ == '__main__':
