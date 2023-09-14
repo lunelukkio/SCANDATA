@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Dec 26 18:45:19 2022
+Created on Thu Sep 14 17:48:55 2023
 
-lunelukkio@gmail.com
+@author: lunelukkio@gmail.com
 """
+
 import unittest
 from SCANDATA2.model.value_object import WholeFilename, TraceData
+from SCANDATA2.model.model_main import Experiments
 from SCANDATA2.model.file_io import TsmFileIo
 
 
@@ -16,17 +18,9 @@ class Test(unittest.TestCase):
 
         file_io = TsmFileIo(filename_obj)
 
-        rawdata = file_io.get_1d()
-        
-
-        data_channel = 0  # 0:fullFrames 1,2: chFrames
-        interval = 1
-        
-        data = rawdata[data_channel]
-        
-        test = TraceData(data, interval)
-        
-        test.show_data()
+        experiments = Experiments(filename_obj)
+        experiments.trace["Full"].show_data()
+        print("dane")
 
 
 if __name__ == '__main__':

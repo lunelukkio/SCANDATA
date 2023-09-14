@@ -6,16 +6,15 @@ Created on Sun Dec 25 13:33:19 2022
 """     
 import unittest
 from SCANDATA2.model.value_object import WholeFilename, TraceData
-from SCANDATA2.model.file_io import TsmFileIoFactory
+from SCANDATA2.model.file_io import TsmFileIo
 
 
-filename = WholeFilename('..\\220408\\20408B002.tsm')  # this isa a value object
+filename_obj = WholeFilename('..\\220408\\20408B002.tsm')  # this isa a value object
 
 class Test(unittest.TestCase):
     def test(self):
 
-        io_factory = TsmFileIoFactory()
-        file_io = io_factory.create_file_io(filename)
+        file_io = TsmFileIo(filename_obj)
 
         rawdata = file_io.get_3d()
         

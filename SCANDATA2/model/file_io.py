@@ -4,58 +4,10 @@ Created on Tue Sep 12 17:20:25 2023
 
 @author: lunelukkio@gmail.com
 """
-from abc import ABCMeta, abstractmethod
 import numpy as np
-
-"""
-IO Factory
-"""
-class FileIoFactory(metaclass=ABCMeta):
-    @abstractmethod
-    def create_file_io(self, *args):
-        raise NotImplementedError()
-
-
-class TsmFileIoFactory(FileIoFactory):
-    def create_file_io(self, filename: object, *args):
-        return TsmFileIo(filename)
-
-
-class TbnFileIoFactory(FileIoFactory):
-    def create_file_io(self, filename: object, *args):
-        return TbnFileIo(filename, *args)
-
-
-"""
-Product
-"""
-class IoInterface:
-    @abstractmethod
-    def read_infor(self) -> None:  # should be in __init__
-        raise NotImplementedError()
-    
-    @abstractmethod
-    def read_data(self) -> None:  # should be in __init__
-        raise NotImplementedError()
-    
-    @abstractmethod
-    def get_infor(self) -> None:  # should be called by repository
-        raise NotImplementedError()
-    
-    @abstractmethod
-    def get_3d(self) -> None:  # should be called by repository
-        raise NotImplementedError()
-    
-    @abstractmethod
-    def get_2d(self) -> tuple:  # should be called by repository
-        raise NotImplementedError()
-
-    @abstractmethod
-    def get_1d(self) -> tuple:  # should be called by repository
-        raise NotImplementedError()
     
 
-class TsmFileIo(IoInterface):
+class TsmFileIo:
     #load a .tsn file
     def __init__(self, filename, num_fluo_ch=2):
         # about file
@@ -203,7 +155,7 @@ class TsmFileIo(IoInterface):
         data_1d = self.elec_data_obj.get_data()
         return data_1d
         
-    def print_fileinfor(self):
+    def print_data_infor(self):
         print(self.header.decode())
         print('filenmae = ' + self.full_filename)
         print('num_fluo_ch = ' + str(self.num_fluo_ch))
@@ -216,7 +168,7 @@ class TsmFileIo(IoInterface):
         print('data_pixel = ' + str(self.data_pixel))
 
         
-class TbnFileIo(IoInterface):
+class TbnFileIo:
     def __init__(self, filename, full_frame_interval, num_full_frames):
         # about file
         self.filename = filename.name
@@ -289,7 +241,7 @@ class TbnFileIo(IoInterface):
         return elec_data 
     
             
-    def print_fileinfor(self):
+    def print_data_infor(self):
         print('elec_header = ' + str(self.elec_header))
         print('filenmae = ' + self.full_filename)
         print('bnc_ratio = ' + str(self.bnc_ratio))
