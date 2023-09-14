@@ -5,7 +5,7 @@ Created on Wed Sep 13 09:11:15 2023
 @author: lunelukkio@gmail.com
 """
 from abc import ABCMeta, abstractmethod
-from SCANDATA2.model.value_object import WholeFilename
+from SCANDATA2.model.value_object import WholeFilename, FramesData, ImageData, TraceData
 from SCANDATA2.model.file_io import TsmFileIo
 #import inspect
 #from SCANDATA.model.mod_factory import ModClient
@@ -107,12 +107,12 @@ class Experiments:   # entity
         self.filename_obj = filename_obj
         # create default data set.
         builder_factory = self.factory_selector(self.filename_obj)
-        self.builder = builder_factory.create_builder()
+        self.builder = builder_factory.create_builder(self.filename_obj)
 
-        self.txt_data = None   # str???
-        self.frame_dict = self.builder.get_frame()   # {type:data}
+        self.txt_data = self.builder.get_infor()
+        self.frames_dict = self.builder.get_frame()   # {type:frames data}
         self.image_dict = {}
-        self.trace_dict = {}
+        self.trace_dict = self.builder.get_trace()   # {type:Elec data}
         
         
         
@@ -120,7 +120,7 @@ class Experiments:   # entity
     
     def factory_selector(self, filename_obj):
         if filename_obj.extension == ".tsm":
-            return TsmBuilderFactory
+            return TsmBuilderFactory()
         elif filename_obj.extension == ".da":
             raise NotImplementedError()
         else:
@@ -228,12 +228,12 @@ Builder
 """
 class BuilderFactory(metaclass=ABCMeta):
     @abstractmethod
-    def create_builder(filename_obj):
+    def create_builder(self, filename_obj):
         raise NotImplementedError()
 
 
 class TsmBuilderFactory(BuilderFactory):
-    def create_builder(filename_obj):
+    def create_builder(self, filename_obj):
         return TsmBuilder(filename_obj)
 
 
@@ -261,34 +261,57 @@ class Builder(metaclass=ABCMeta):
 class TsmBuilder(Builder):
     def __init__(self, filename_obj):
         num_ch = 2   # this is for Na+ and Ca2+ recording.
+        infor_keys = ["Full_interval",
+                     "Ch1_interval",
+                     "Ch2_interval",
+                     "Elec1_interval",
+                     "Elec2_interval",
+                     "Elec3_interval",
+                     "Elec4_interval",
+                     "Elec5_interval",
+                     "Elec6_interval",
+                     "Elec7_interval",
+                     "Elec8_interval"]
         file_io = TsmFileIo(filename_obj, num_ch)
         
         # get and set data from files
-        self.data_infor = file_io.get_infor
-        self.frames = file_io.get_3d
-        self.elec_data = file_io.get_1d
+        data_infor = file_io.get_infor()   # get interval infor from the io
+        self.data_infor_dict = dict(zip(infor_keys, data_infor))   # make an interval dict
+        self.frames = file_io.get_3d()
+        self.elec_data = file_io.get_1d()
         
         file_io.print_data_infor()
         
         del file_io   # release the io object to allow file changes during recording.
         
     def get_infor(self):
-        return self.data_infor
+        return self.data_infor_dict
         
     def get_frame(self):
-        return {"Full": self.frames[0],
-                "Ch1": self.frames[1], 
-                "Ch2": self.frame[2]}
+        return {"Full": FramesData(self.frames[0], 
+                                   self.data_infor_dict["Full_interval"]),   # change to numpy to value obj
+                "Ch1": FramesData(self.frames[1], 
+                                  self.data_infor_dict["Ch1_interval"]),    # change to numpy to value obj
+                "Ch2": FramesData(self.frames[2], 
+                                  self.data_infor_dict["Ch2_interval"])}   # change to numpy to value obj
 
     def get_image(self):
         return None
     
-    def get_trace(self):
-        return {"Elc_ch1": self.elec_data[0], 
-                "Elc_ch2": self.elec_data[1], 
-                "Elc_ch3": self.elec_data[2],
-                "Elc_ch4": self.elec_data[3],
-                "Elc_ch5": self.elec_data[4],
-                "Elc_ch6": self.elec_data[5],
-                "Elc_ch7": self.elec_data[6],
-                "Elc_ch8": self.elec_data[7]}
+    def get_trace(self):       
+        return {"Elec_ch1": TraceData(self.elec_data[0], 
+                                      self.data_infor_dict["Elec1_interval"]), 
+                "Elec_ch2": TraceData(self.elec_data[1], 
+                                      self.data_infor_dict["Elec2_interval"]), 
+                "Elec_ch3": TraceData(self.elec_data[2], 
+                                      self.data_infor_dict["Elec3_interval"]),
+                "Elec_ch4": TraceData(self.elec_data[3], 
+                                      self.data_infor_dict["Elec4_interval"]),
+                "Elec_ch5": TraceData(self.elec_data[4], 
+                                      self.data_infor_dict["Elec5_interval"]),
+                "Elec_ch6": TraceData(self.elec_data[5], 
+                                      self.data_infor_dict["Elec6_interval"]),
+                "Elec_ch7": TraceData(self.elec_data[6], 
+                                      self.data_infor_dict["Elec7_interval"]),
+                "Elec_ch8": TraceData(self.elec_data[7], 
+                                      self.data_infor_dict["Elec8_interval"])}

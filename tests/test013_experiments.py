@@ -6,9 +6,9 @@ Created on Thu Sep 14 17:48:55 2023
 """
 
 import unittest
-from SCANDATA2.model.value_object import WholeFilename, TraceData
+from SCANDATA2.model.value_object import WholeFilename
 from SCANDATA2.model.model_main import Experiments
-from SCANDATA2.model.file_io import TsmFileIo
+import matplotlib.pyplot as plt
 
 
 filename_obj = WholeFilename('..\\220408\\20408B002.tsm')  # this is a value object
@@ -16,11 +16,12 @@ filename_obj = WholeFilename('..\\220408\\20408B002.tsm')  # this is a value obj
 class Test(unittest.TestCase):
     def test(self):
 
-        file_io = TsmFileIo(filename_obj)
-
         experiments = Experiments(filename_obj)
-        experiments.trace["Full"].show_data()
-        print("dane")
+        plt.figure()
+        experiments.frames_dict["Full"].show_data()
+        plt.figure()
+        experiments.trace_dict["Elec_ch1"].show_data()
+        print(experiments.txt_data)
 
 
 if __name__ == '__main__':
