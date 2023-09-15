@@ -7,6 +7,7 @@ Created on Wed Sep 13 09:11:15 2023
 from abc import ABCMeta, abstractmethod
 from SCANDATA2.model.value_object import WholeFilename, FramesData, ImageData, TraceData
 from SCANDATA2.model.file_io import TsmFileIo
+from SCANDATA2.model.user_controller import RoiFactory, FrameWindow, FrameShift, Line
 #import inspect
 #from SCANDATA.model.mod_factory import ModClient
 #from weakref import WeakValueDictionary
@@ -14,17 +15,13 @@ from SCANDATA2.model.file_io import TsmFileIo
 """
 Service
 """
-class ModelInterface(metaclass=ABCMeta):
-    @abstractmethod
-    def create_filename_obj(self, fullname):
-        raise NotImplementedError()
-    
+class ModelInterface(metaclass=ABCMeta):   
     @abstractmethod
     def create_model(self, fullname):
         raise NotImplementedError()
         
         
-        
+    """    
         
     @abstractmethod
     def set_data(self, key: str, val: tuple):
@@ -73,30 +70,63 @@ class ModelInterface(metaclass=ABCMeta):
     @abstractmethod
     def get_infor(self,  key: str):
         raise NotImplementedError()
-        
+    """
+    
         
 class DataService(ModelInterface):
     def __init__(self):
         experiments_repository = ExperimentsRepository()
         user_controller_repository = UserControllerRepository()
         mod_repository = ModRepository()
-        self.__repository = {"ExperimentsRepository":experiments_repository,
+        self.repository = {"ExperimentsRepository":experiments_repository,
                              "UserContoller":user_controller_repository,
                              "ModCOntoller":mod_repository}
         
-    def create_filename_obj(self, fullname):
+    def __create_filename_obj(self, fullname):
         filename_obj = WholeFilename(fullname)
         return filename_obj
         
     def create_model(self, fullname):
         # make a filename value obj from fullname
-        filename_obj = self.create_filename_obj(fullname)
+        filename_obj = self.__create_filename_obj(fullname)
         # make a data entity
         experiments = Experiments(filename_obj)
         # save entity to the repository
-        self.__repository["ExperimentsRespoitory"].save(filename_obj.filenmae,
+        self.repository["ExperimentsRepository"].save(filename_obj.name,
                                                         experiments)
+        # make user controller
+        self.make_user_controller(filename_obj)
         
+    def make_user_controller(self, filename_obj, controller_key):
+        controller_factory = self.__check_controller_type(controller_key)   # get a controller factory 
+        new_controller = controller_factory.create_controller(self, filename_obj)  # make a new controller
+        # save to the repository
+          #self.repository["UserContoller"].save("key???", new_controller)
+        return
+        
+    def find_by_key(self, key):
+        if key in list(self.repository["ExperimentsRepository"].data.keys()):
+            print(f"The key = {key} is in ExperimentsRepository")
+            return self.repository["ExperimentsRepository"].data[key]
+        elif key in list(self.repository["UserControllerRepositor"].data.keys()):
+            print(f"The key = {key} is in UserControllerRepositor")
+            return self.repository["UserControllerRepositor"].data[key]
+        elif key in list(self.repository["ModRepository"].data.keys()):
+            print(f"The key = {key} is in ModRepository")
+            return self.repository["ModRepository"].data[key]
+        else:
+            raise Exception(f"There is no {key}")
+            
+    def check_controller_type(self, key):
+        if key == "ROI":
+            return RoiFactory()
+        elif key == "FrameWindow":
+            return FrameWindow()
+        elif key == "FrameShift":
+            return FrameShift()
+        elif key == "Line":
+            return Line()
+
         
         
 """
@@ -106,19 +136,23 @@ class Experiments:   # entity
     def __init__(self, filename_obj):
         self.filename_obj = filename_obj
         # create default data set.
-        builder_factory = self.factory_selector(self.filename_obj)
+        builder_factory = self.__factory_selector(self.filename_obj)
         self.builder = builder_factory.create_builder(self.filename_obj)
 
         self.txt_data = self.builder.get_infor()
         self.frames_dict = self.builder.get_frame()   # {type:frames data}
-        self.image_dict = {}
+        self.image_dict = self.builder.get_image()
         self.trace_dict = self.builder.get_trace()   # {type:Elec data}
-        
-        
-        
+
         self.__observer = ExperimentsObserver()
+        
+    def __del__(self):  #make a message when this object is deleted.
+        #print('.')
+        print(f"----- Deleted a Expriments: {self.filename_obj.name}"  
+              + "  myId={}".format(id(self)))
+        #pass
     
-    def factory_selector(self, filename_obj):
+    def __factory_selector(self, filename_obj):
         if filename_obj.extension == ".tsm":
             return TsmBuilderFactory()
         elif filename_obj.extension == ".da":
@@ -126,10 +160,18 @@ class Experiments:   # entity
         else:
             raise Exception("This file is an undefineded file!!!")
             
-    def get_data_type(self, dict_type):   # dict_type = txt_data, frame_dict...
-        key_list = list(dict_type.keys())
+    def get_frames_list(self):   # dict_type = txt_data, frame_dict...
+        key_list = list(self.frames_dict.keys())
         return key_list
     
+    def get_image_list(self):   # dict_type = txt_data, frame_dict...
+        key_list = list(self.image_dict.keys())
+        return key_list
+    
+    def get_trace_list(self):   # dict_type = txt_data, frame_dict...
+        key_list = list(self.trace_dict.keys())
+        return key_list
+
 
 # need refactoring(2023/09/13)
 class ExperimentsObserver:
@@ -180,47 +222,67 @@ class RepositoryInterface(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
-    def find(self, key: str):
+    def find_by_name(self, key: str):
         raise NotImplementedError()
     
     @abstractmethod
     def delete(self, key: str):
         raise NotImplementedError()
         
+        
     
 class ExperimentsRepository(RepositoryInterface):
     def __init__(self):
-        self.data = {}   # {key:entiry}
+        self.__data = {}   # {key:entiry}
     
     def save(self, key: str, data):
-        self.data[key] = data
+        self.__data[key] = data
         
-    def find(self, key: str):
-        raise NotImplementedError()
+    def find_by_name(self, key: str):
+        return self.__data[key]
     
     def delete(self, key: str):
-        raise NotImplementedError()
+        del self.__data[key]
+        
+    @property
+    def data(self) -> dict:
+        return self.__data
+        
     
 class UserControllerRepository(RepositoryInterface):
-
-    def save(self, data, key: str):
-        raise NotImplementedError()
+    def __init__(self):
+        self.__data = {}   # {key:entiry}
+    
+    def save(self, key: str, data):
+        self.__data[key] = data
         
-    def find(self, key: str):
-        raise NotImplementedError()
+    def find_by_name(self, key: str):
+        return self.__data[key]
     
     def delete(self, key: str):
-        raise NotImplementedError()
+        del self.__data[key]
+        
+    @property
+    def data(self) -> dict:
+        return self.__data
     
 class ModRepository(RepositoryInterface):
-    def save(self, data, key: str):
-        raise NotImplementedError()
+    def __init__(self):
+        self.__data = {}   # {key:entiry}
+    
+    def save(self, key: str, data):
+        self.__data[key] = data
         
-    def find(self, key: str):
-        raise NotImplementedError()
+    def find_by_name(self, key: str):
+        return self.__data[key]
     
     def delete(self, key: str):
-        raise NotImplementedError()
+        del self.__data[key]
+        
+    @property
+    def data(self) -> dict:
+        return self.__data
+    
     
     
 """
@@ -237,24 +299,21 @@ class TsmBuilderFactory(BuilderFactory):
         return TsmBuilder(filename_obj)
 
 
-
-
-
 class Builder(metaclass=ABCMeta):
     @abstractmethod
-    def get_infor(self, filename_obj) -> None:
+    def get_infor(self, filename_obj):
         raise NotImplementedError()    
 
     @abstractmethod
-    def get_frame(self, filename_obj) -> None:
+    def get_frame(self, filename_obj):
         raise NotImplementedError()
         
     @abstractmethod
-    def get_image(self, filename_obj) -> None:
+    def get_image(self, filename_obj):
         raise NotImplementedError()
         
     @abstractmethod
-    def get_trace(self, filename_obj) -> None:
+    def get_trace(self, filename_obj):
         raise NotImplementedError()
 
 
@@ -296,6 +355,7 @@ class TsmBuilder(Builder):
                                   self.data_infor_dict["Ch2_interval"])}   # change to numpy to value obj
 
     def get_image(self):
+        print("There is no image data")
         return None
     
     def get_trace(self):       
@@ -315,3 +375,4 @@ class TsmBuilder(Builder):
                                       self.data_infor_dict["Elec7_interval"]),
                 "Elec_ch8": TraceData(self.elec_data[7], 
                                       self.data_infor_dict["Elec8_interval"])}
+    

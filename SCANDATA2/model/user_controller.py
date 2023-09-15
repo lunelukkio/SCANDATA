@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Nov  2 15:11:48 2022
-concrete classes for model controllers
+concrete classes for User controllers
 lunelukkio@gmail.com
 """
 from abc import ABCMeta, abstractmethod
-from SCANDATA.model.value_object import RoiVal, FrameWindowVal, TimeWindowVal
-from SCANDATA.model.builder import TsmFileBuilder, AbfFileBuilder, WcpFileBuilder, KeyCounter
+from SCANDATA2.model.value_object import RoiVal, FrameWindowVal, TimeWindowVal
 
 """
 abstract factory
 """
-class ModelControllerFactory(metaclass=ABCMeta):
+class UserControllerFactory(metaclass=ABCMeta):
     @abstractmethod
     def create_controller(self, val):
         raise NotImplementedError()
@@ -20,23 +19,23 @@ class ModelControllerFactory(metaclass=ABCMeta):
 """
 contrete factory
 """
-class RoiFactory(ModelControllerFactory):
-    def create_controller(self):
-        return Roi()
+class RoiFactory(UserControllerFactory):
+    def create_controller(self, data_service, filename_obj):
+        return Roi(data_service, filename_obj)
         
-class FrameWindowFactory(ModelControllerFactory):
+class FrameWindowFactory(UserControllerFactory):
     def create_controller(self):
         return FrameWindow()
     
-class FrameShiftFactory(ModelControllerFactory):
+class FrameShiftFactory(UserControllerFactory):
     def create_controller(self):
         return FrameShift()
         
-class LineFactory(ModelControllerFactory):
+class LineFactory(UserControllerFactory):
     def create_controller(self):
         return Line()
         
-class ElecControllerFactory(ModelControllerFactory):
+class ElecControllerFactory(UserControllerFactory):
     def create_controller(self):
         return ElecController() 
     
@@ -45,7 +44,7 @@ class ElecControllerFactory(ModelControllerFactory):
 """
 abstract product
 """
-class ModelController(metaclass=ABCMeta):
+class UserController(metaclass=ABCMeta):
     @abstractmethod
     def set_data(self):
         raise NotImplementedError()
@@ -66,32 +65,46 @@ class ModelController(metaclass=ABCMeta):
     def reset(self):
         raise NotImplementedError()
 
-    @abstractmethod
-    def add_observer(self, observer):
-        raise NotImplementedError()
 
-    @abstractmethod
-    def notify_observer(self):
-        raise NotImplementedError()
 
 
 """
 concrete product
 """
-class Roi(ModelController):
-    def __init__(self):
+class Roi(UserController):
+    def __init__(self, data_service, filename_obj):
+        self.data_service_instance = data_service
         self.__roi_obj = RoiVal(40, 40, 2, 2)
-        self.__data_dict = {None}  # data dict = {filename:frame_type{full:TraceData,ch1:TraceData,ch2:TraceData}}
-        self.__observer = ControllerObserver()
+        self.__data_dict = {}  # data dict = {filename:frame_type{full:TraceData,ch1:TraceData,ch2:TraceData}}
+        self.__mod_list = []
+        
+        self.__get_type_list(filename_obj)
         
     def __del__(self):  #make a message when this object is deleted.
         #print('.')
         print('----- Deleted a Roi object.' + '  myId={}'.format(id(self)))
         #pass
         
-    def set_data(self, x = None, y = None, x_width = None, y_width = None):
-        self.set_roival
-        return self ??? 
+    def set_data(self, x = None, y = None, x_width = None, y_width = None) -> None:
+        check_bool = self.check_val(x, y, x_width, y_width)
+        # make a new value object
+        if check_bool is True:
+            self.__roi_obj = RoiVal(x, y, x_width, y_width)  # replace the roi
+            self.__update(self.__roi_obj)
+            self.print_infor()
+        elif check_bool is False:
+            print('Failed to make a new ROI value')
+            
+    def __get_type_list(self, filename_obj):
+        key_list = self.data_service_instance.repository["Experiments_repository"][filename_obj.name]
+        print(key_list)
+            
+    def __update(self, val_obj):
+        self.data_service_instance.repository["Experiments_repository"][filename_obj.name]
+        pass
+            
+    def get_data(self) -> object:
+        return self
         
     def check_val(self, x = None, y = None, x_width = None, y_width = None) -> None:
         # check the val for existance
@@ -122,16 +135,6 @@ class Roi(ModelController):
             else:
                 return True
 
-    def set_roival(self, x = None, y = None, x_width = None, y_width = None) -> None:
-        check_bool = self.check_val(x, y, x_width, y_width)
-        # make a new value object
-        if check_bool is True:
-            self.__roi_obj = RoiVal(x, y, x_width, y_width)  # replace the roi
-            self.print_infor()
-            print('The new ROI value')
-        elif check_bool is False:
-            print('Failed to make a new ROI value')
-
     def add_data(self, x: int, y: int, x_width=0, y_width=0) -> None:
         check_bool = self.check_val(self.__roi_obj.data[0] + x,
                                     self.__roi_obj.data[1] + y,
@@ -144,17 +147,13 @@ class Roi(ModelController):
             self.notify_observer()
         elif check_bool is False:
             pass
-
-    def get_data(self) -> object:
-        return self.__roi_obj
     
     def reset(self) -> None:
         self.__roi_obj = RoiVal(40, 40, 2, 2)
         self.print_infor()
-        print('----- Reset ROI{} and notified'.format(self.object_num))
+        print('----- Reset ROI and notified')
 
-    def update():
-        raise NotImplementedError()
+
 
     @property   
     def get_infor(self):  # get names from observers
@@ -162,14 +161,11 @@ class Roi(ModelController):
         return name_list
     
     def print_infor(self) -> None:
-        name_list = []
-        num = len(self.__observer.observers)
-        for i in range(num):
-            name_list.append(self.__observer.observers[i].name)
-        print(f'Roi{self.object_num} observer list = {str(name_list)}, ROI = {self.get_data().data}')
+        dict_key = list(self.__data_dict.keys())
+        print(f" ROI = {self.__roi_obj.data}, data_dict_key = {dict_key}")
 
 
-class FrameWindow(ModelController):
+class FrameWindow(UserController):
     def __init__(self):
         self.__frame_window_obj = FrameWindowVal(0, 0, 1, 1)
         self.__observer = ControllerObserver()
@@ -230,7 +226,7 @@ class FrameWindow(ModelController):
         print(f'FrameWindow{self.object_num} observer list = {str(name_list)}, ROI = {self.get_data().data}')
 
 
-class FrameShift(ModelController): 
+class FrameShift(UserController): 
     def __init__(self):
         self.__observers = []
     
@@ -266,7 +262,7 @@ class FrameShift(ModelController):
         return name_list
 
 
-class Line(ModelController): 
+class Line(UserController): 
     def __init__(self):
         self.__observers = []
     
@@ -302,7 +298,7 @@ class Line(ModelController):
         return name_list
     
     
-class ElecController(ModelController):
+class ElecController(UserController):
     def __init__(self):
         self.__time_window_obj = TimeWindowVal(0, 100)
         self.__observer = ControllerObserver()

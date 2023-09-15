@@ -142,7 +142,6 @@ class TsmFileIo:
         elec_interval = self.elec_data_obj.get_infor()
         for i in range(self.elec_data_obj.num_elec_ch):
             data_infor.extend([elec_interval])
-        print(data_infor)
         return data_infor
     
     def get_3d(self) -> tuple:
@@ -156,7 +155,7 @@ class TsmFileIo:
         return data_1d
         
     def print_data_infor(self):
-        print(self.header.decode())
+        #print(self.header.decode())
         print('filenmae = ' + self.full_filename)
         print('num_fluo_ch = ' + str(self.num_fluo_ch))
         print('full_frame_interval = ' + str(self.full_frame_interval))
