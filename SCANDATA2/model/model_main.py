@@ -103,6 +103,12 @@ class DataService(ModelInterface):
         # save to the repository
           #self.repository["UserContoller"].save("key???", new_controller)
         return
+    
+    def bind_user_controller(self):
+        pass
+    
+    def repository_key_list(self):
+        pass
         
     def find_by_key(self, key):
         if key in list(self.repository["ExperimentsRepository"].data.keys()):

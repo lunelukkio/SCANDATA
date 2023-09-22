@@ -99,7 +99,7 @@ class Roi(UserController):
         key_list = self.data_service_instance.repository["Experiments_repository"][filename_obj.name]
         print(key_list)
             
-    def __update(self, val_obj):
+    def __update(self, filename_obj):
         self.data_service_instance.repository["Experiments_repository"][filename_obj.name]
         pass
             
