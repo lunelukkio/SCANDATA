@@ -78,7 +78,7 @@ class Roi(UserController):
         self.__data_dict = {}  # data dict = {filename:frame_type{full:TraceData,ch1:TraceData,ch2:TraceData}}
         self.__mod_list = []
         
-        self.__get_type_list(filename_obj)
+        #self.__get_type_list(filename_obj)
         
     def __del__(self):  #make a message when this object is deleted.
         #print('.')
@@ -89,16 +89,63 @@ class Roi(UserController):
         check_bool = self.check_val(x, y, x_width, y_width)
         # make a new value object
         if check_bool is True:
+            # make a new RoiVal
             self.__roi_obj = RoiVal(x, y, x_width, y_width)  # replace the roi
-            self.__update(self.__roi_obj)
+            # get frame data from DataService
+            for key in self.__data_dict.keys():
+                frame_data = self.data_service_instance.get_data(key)
+                trace_data = self.trace_culc(frame_data, self.__roi_obj)
+                self.__data_dict[key] = trace_data
+            #self.__update(self.__roi_obj)
             self.print_infor()
         elif check_bool is False:
             print('Failed to make a new ROI value')
             
+    # calculation from a frame data
+    def trace_culc(self, frame_data, roi_val):
+        
+        
+        
+        
+        
+        
+        if roi[0] + roi[2] > self.x_size - 1 or roi[1] + roi[3] > self.y_size - 1: 
+            raise Exception("The roi size should be the same as the image size or less")
+        if roi[0] < 0 or roi[1] < 0: 
+            raise Exception("The roi should be the same as 0 or more")
+        if roi[2] < 1 or roi[3] < 1: 
+           print("Warning!!!!!! The roi length is 0 or less")
+
+        trace_val = self.__create_fluo_trace(self.__frames_obj, roi)
+        self.__trace_obj = TraceData(trace_val, self.__interval)
+        
+        def __create_fluo_trace(frames_obj, roi) -> np.ndarray:
+            x = roi[0]
+            y = roi[1]
+            x_length = roi[2]
+            y_length = roi[3]
+            mean_data = np.mean(frames_obj.data[x:x+x_length, y:y+y_length, :], axis = 0)
+            mean_data = np.mean(mean_data, axis = 0)
+            return mean_data
+            
+        def __create_time_data(self, trace, interval) -> np.ndarray:
+            num_data_point = interval * np.shape(trace)[0]
+            time_val = np.linspace(interval, num_data_point, np.shape(trace)[0])
+            return time_val
+        
+        
+        
+        
+        
+        
+            
+    # should remove dependency
+    # no need
     def __get_type_list(self, filename_obj):
         key_list = self.data_service_instance.repository["Experiments_repository"][filename_obj.name]
         print(key_list)
-            
+    
+    # should remove dependency        
     def __update(self, filename_obj):
         self.data_service_instance.repository["Experiments_repository"][filename_obj.name]
         pass
