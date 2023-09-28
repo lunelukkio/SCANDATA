@@ -27,7 +27,13 @@ class Test(unittest.TestCase):
         data_service.print_infor()
         roi = data_service.get_user_controller("ROI1")
         roi.print_infor()
-        data_service.delete(Roi2)
+        
+        data_service.delete_user_controller("Roi2")
+        data_service.delete_user_controller("Roi1")
+        data_service.delete_user_controller("Roi3")
+        
+        data_service.create_user_controller("Roi")
+        data_service.print_infor()
 
 
 

@@ -29,6 +29,13 @@ class ModelInterface(metaclass=ABCMeta):
     def get_user_controller(self, key):
         raise NotImplementedError()
         
+    @abstractmethod
+    def delete_experiments(self, key):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def delete_user_controller(self, key):
+        raise NotImplementedError()
         
 class DataService(ModelInterface):
     def __init__(self):
@@ -64,6 +71,12 @@ class DataService(ModelInterface):
 
     def get_user_controller(self, key):
         return self.__user_controller_repository.data[key.upper()]
+    
+    def delete_experiments(self, key):
+        self.__experiments_repository.delete(key.upper())
+        
+    def delete_user_controller(self, key):
+        self.__user_controller_repository.delete(key.upper())
     
     def print_infor(self):
         print(f"Current experiments data = {list(self.__experiments_repository.data.keys())}")
@@ -137,7 +150,7 @@ class ExperimentsRepository(RepositoryInterface):
         return entity
 
     def delete(self, key: str):
-        del self.__data[key]
+        self.__data.pop(key)
         
     @property
     def data(self):
@@ -159,7 +172,7 @@ class UserControllerRepository(RepositoryInterface):
         return entity
     
     def delete(self, key: str):
-        del self.__data[key]
+        self.__data.pop(key)
         
     @property
     def data(self):
