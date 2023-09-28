@@ -21,7 +21,7 @@ class Test(unittest.TestCase):
         experiments.frames_dict["Full"].show_data()
         plt.figure()
         experiments.trace_dict["Elec_ch1"].show_data()
-
+        #experiments.print_infor()
         del(experiments)
 
 

@@ -5,7 +5,8 @@ concrete classes for User controllers
 lunelukkio@gmail.com
 """
 from abc import ABCMeta, abstractmethod
-from SCANDATA2.model.value_object import RoiVal, FrameWindowVal, TimeWindowVal
+from SCANDATA2.model.value_object import TraceData, RoiVal, FrameWindowVal, TimeWindowVal
+import numpy as np
 
 """
 abstract factory
@@ -20,8 +21,8 @@ class UserControllerFactory(metaclass=ABCMeta):
 contrete factory
 """
 class RoiFactory(UserControllerFactory):
-    def create_controller(self, data_service, filename_obj):
-        return Roi(data_service, filename_obj)
+    def create_controller(self, data_service):
+        return Roi(data_service)
         
 class FrameWindowFactory(UserControllerFactory):
     def create_controller(self):
@@ -48,10 +49,6 @@ class UserController(metaclass=ABCMeta):
     @abstractmethod
     def set_data(self):
         raise NotImplementedError()
-
-    @abstractmethod
-    def get_data(self):
-        raise NotImplementedError()
         
     @abstractmethod
     def get_infor(self):
@@ -65,20 +62,21 @@ class UserController(metaclass=ABCMeta):
     def reset(self):
         raise NotImplementedError()
 
-
-
+        
 
 """
 concrete product
 """
 class Roi(UserController):
-    def __init__(self, data_service, filename_obj):
-        self.data_service_instance = data_service
+    def __init__(self, get_experiments_method):
+        self.get_experiments = get_experiments_method
         self.__roi_obj = RoiVal(40, 40, 2, 2)
         self.__data_dict = {}  # data dict = {filename:frame_type{full:TraceData,ch1:TraceData,ch2:TraceData}}
         self.__mod_list = []
         
-        #self.__get_type_list(filename_obj)
+        self.__experiments_list = []
+        
+        self.print_infor()
         
     def __del__(self):  #make a message when this object is deleted.
         #print('.')
@@ -87,28 +85,22 @@ class Roi(UserController):
         
     def set_data(self, x = None, y = None, x_width = None, y_width = None) -> None:
         check_bool = self.check_val(x, y, x_width, y_width)
-        # make a new value object
         if check_bool is True:
-            # make a new RoiVal
+            # make a new Roi value object
             self.__roi_obj = RoiVal(x, y, x_width, y_width)  # replace the roi
-            # get frame data from DataService
-            for key in self.__data_dict.keys():
-                frame_data = self.data_service_instance.get_data(key)
-                trace_data = self.trace_culc(frame_data, self.__roi_obj)
-                self.__data_dict[key] = trace_data
-            #self.__update(self.__roi_obj)
+            for key in self.__experiments_list:
+                # get Experiments obj Data using a method in DataService
+                frames_dict = self.get_experiments(key).frames_dict
+                # make a traces data dict
+                for key in frames_dict:  # key = "Full", "Ch1", "Ch2"
+                    self.__data_dict[key] = self.trace_culc(frames_dict[key], self.__roi_obj)
             self.print_infor()
         elif check_bool is False:
             print('Failed to make a new ROI value')
             
     # calculation from a frame data
-    def trace_culc(self, frame_data, roi_val):
-        
-        
-        
-        
-        
-        
+    def trace_culc(self, frames, roi_val):
+        roi = roi_val.data
         if roi[0] + roi[2] > self.x_size - 1 or roi[1] + roi[3] > self.y_size - 1: 
             raise Exception("The roi size should be the same as the image size or less")
         if roi[0] < 0 or roi[1] < 0: 
@@ -119,39 +111,19 @@ class Roi(UserController):
         trace_val = self.__create_fluo_trace(self.__frames_obj, roi)
         self.__trace_obj = TraceData(trace_val, self.__interval)
         
-        def __create_fluo_trace(frames_obj, roi) -> np.ndarray:
-            x = roi[0]
-            y = roi[1]
-            x_length = roi[2]
-            y_length = roi[3]
-            mean_data = np.mean(frames_obj.data[x:x+x_length, y:y+y_length, :], axis = 0)
-            mean_data = np.mean(mean_data, axis = 0)
-            return mean_data
+    def __create_fluo_trace(frames_obj, roi) -> np.ndarray:
+        x = roi[0]
+        y = roi[1]
+        x_length = roi[2]
+        y_length = roi[3]
+        mean_data = np.mean(frames_obj.data[x:x+x_length, y:y+y_length, :], axis = 0)
+        mean_data = np.mean(mean_data, axis = 0)
+        return mean_data
             
-        def __create_time_data(self, trace, interval) -> np.ndarray:
-            num_data_point = interval * np.shape(trace)[0]
-            time_val = np.linspace(interval, num_data_point, np.shape(trace)[0])
-            return time_val
-        
-        
-        
-        
-        
-        
-            
-    # should remove dependency
-    # no need
-    def __get_type_list(self, filename_obj):
-        key_list = self.data_service_instance.repository["Experiments_repository"][filename_obj.name]
-        print(key_list)
-    
-    # should remove dependency        
-    def __update(self, filename_obj):
-        self.data_service_instance.repository["Experiments_repository"][filename_obj.name]
-        pass
-            
-    def get_data(self) -> object:
-        return self
+    def __create_time_data(self, trace, interval) -> np.ndarray:
+        num_data_point = interval * np.shape(trace)[0]
+        time_val = np.linspace(interval, num_data_point, np.shape(trace)[0])
+        return time_val
         
     def check_val(self, x = None, y = None, x_width = None, y_width = None) -> None:
         # check the val for existance
@@ -200,8 +172,6 @@ class Roi(UserController):
         self.print_infor()
         print('----- Reset ROI and notified')
 
-
-
     @property   
     def get_infor(self):  # get names from observers
         name_list = self.__observer.get_infor()
@@ -209,7 +179,8 @@ class Roi(UserController):
     
     def print_infor(self) -> None:
         dict_key = list(self.__data_dict.keys())
-        print(f" ROI = {self.__roi_obj.data}, data_dict_key = {dict_key}")
+        print("")
+        print(f"ROI = {self.__roi_obj.data}, data_dict_key = {dict_key}")
 
 
 class FrameWindow(UserController):
@@ -432,3 +403,4 @@ class ControllerObserver:
     @property
     def observers(self) -> list:
         return self.__observers
+    

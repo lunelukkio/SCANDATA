@@ -6,7 +6,9 @@ Created on Wed Sep 13 09:11:15 2023
 """
 from abc import ABCMeta, abstractmethod
 from SCANDATA2.model.value_object import WholeFilename
+from SCANDATA2.model.experiments import Experiments
 from SCANDATA2.model.user_controller import RoiFactory, FrameWindow, FrameShift, Line
+import re
 #import inspect
 #from SCANDATA.model.mod_factory import ModClient
 #from weakref import WeakValueDictionary
@@ -19,67 +21,19 @@ class ModelInterface(metaclass=ABCMeta):
     def create_model(self, fullname):
         raise NotImplementedError()
         
-        
-    """    
-        
     @abstractmethod
-    def set_data(self, key: str, val: tuple):
-        raise NotImplementedError()
-        
-    @abstractmethod
-    def add_data(self, key: str):
-        raise NotImplementedError()
-        
-    @abstractmethod
-    def get_data(self, key: str):
+    def get_experiments(self, key):  # return whole data_dict in experiments
         raise NotImplementedError()
     
     @abstractmethod
-    def bind_data(self, controller_key: str, data_key: str):
-        raise NotImplementedError()
-    
-    @abstractmethod
-    def bind_view(self, data_key: str, view_obj: object):
+    def get_user_controller(self, key):
         raise NotImplementedError()
         
-    @abstractmethod
-    def update_data(self, key):
-        raise NotImplementedError()
-        
-    @abstractmethod
-    def reset_data(self, key: str):
-        raise NotImplementedError()
-
-    @abstractmethod
-    def delete_entity(self, key: str):
-        raise NotImplementedError()
-
-    @abstractmethod
-    def count_data(self, key: str):
-        raise NotImplementedError()
-        
-    @abstractmethod
-    def add_mod(self, key: str, mod_key: str):
-        raise NotImplementedError()
-        
-    @abstractmethod
-    def remove_mod(self, key: str, mod_key: str):
-        raise NotImplementedError()
-        
-    @abstractmethod
-    def get_infor(self,  key: str):
-        raise NotImplementedError()
-    """
-    
         
 class DataService(ModelInterface):
     def __init__(self):
-        experiments_repository = ExperimentsRepository()
-        user_controller_repository = UserControllerRepository()
-        mod_repository = ModRepository()
-        self.repository = {"ExperimentsRepository":experiments_repository,
-                             "UserContoller":user_controller_repository,
-                             "ModCOntoller":mod_repository}
+        self.__experiments_repository = ExperimentsRepository()
+        self.__user_controller_repository = UserControllerRepository()
         
     def __create_filename_obj(self, fullname):
         filename_obj = WholeFilename(fullname)
@@ -91,59 +45,65 @@ class DataService(ModelInterface):
         # make a data entity
         experiments = Experiments(filename_obj)
         # save entity to the repository
-        self.repository["ExperimentsRepository"].save(filename_obj.name,
+        self.__experiments_repository.save(filename_obj.name,
                                                         experiments)
-        # make user controller
-        self.make_user_controller(filename_obj)
-        
-    def make_user_controller(self, filename_obj, controller_key):
-        controller_factory = self.__check_controller_type(controller_key)   # get a controller factory 
-        new_controller = controller_factory.create_controller(self, filename_obj)  # make a new controller
-        # save to the repository
-          #self.repository["UserContoller"].save("key???", new_controller)
-        return
-    
-    # This shold be used by a frontend or user controllers.
-    def get_data(self, key):  # return whole data_dict in experiments
-        experiments_entity = self.__find_by_key(key)
-        if experiments_entity is None:
-            raise Exception(f"There is no {key}")
-        data_dict = experiments_entity.get_data()
-        print(f"Return the key = {key}" )
-        return data_dict
-
-    def bind_user_controller(self):
-        pass
-    
-    def repository_key_list(self):
-        pass
-        
-
-    def __find_by_key(self, key) -> object:   # return experiments entity by key
-        if key in list(self.repository["ExperimentsRepository"].data.keys()):
-            print(f"The key = {key} is in ExperimentsRepository")
-            return self.repository["ExperimentsRepository"].data[key]
-        elif key in list(self.repository["UserControllerRepositor"].data.keys()):
-            print(f"The key = {key} is in UserControllerRepositor")
-            return self.repository["UserControllerRepositor"].data[key]
-        elif key in list(self.repository["ModRepository"].data.keys()):
-            print(f"The key = {key} is in ModRepository")
-            return self.repository["ModRepository"].data[key]
-        else:
-            raise Exception(f"There is no {key}")
-            
-    def __check_controller_type(self, key):
-        if key == "ROI":
-            return RoiFactory()
-        elif key == "FrameWindow":
-            return FrameWindow()
-        elif key == "FrameShift":
-            return FrameShift()
-        elif key == "Line":
-            return Line()
-
-        
+        print(f"Current experiments data = {list(self.__experiments_repository.data.keys())}")
  
+    def create_user_controller(self, controller_key):  # controller_key = "Roi", "TimeWindow"
+        controller_factory = self.__check_controller_type(controller_key)   # get a controller factory 
+        new_controller = controller_factory.create_controller(self.get_experiments)  # make a new controller
+
+        # save to the repository
+        new_key = self.__key_num_checker(self.__user_controller_repository.data)
+        if new_key is None:
+            new_key = controller_key.upper() + "1"
+        self.__user_controller_repository.save(new_key, new_controller)
+    
+    def get_experiments(self, key):  # return whole data_dict in experiments
+        return self.__experiments_repository.data[key]
+
+    def get_user_controller(self, key):
+        return self.__user_controller_repository.data[key.upper()]
+    
+    def print_infor(self):
+        print(f"Current experiments data = {list(self.__experiments_repository.data.keys())}")
+        print(f"Current user controllers = {list(self.__user_controller_repository.data.keys())}")
+        
+
+    def __check_controller_type(self, key):
+        if key.upper() == "ROI":
+            return RoiFactory()
+        elif key.upper() == "FRAMEWINDOW":
+            return FrameWindow()
+        elif key.upper() == "FRAMESSHIFT":
+            return FrameShift()
+        elif key.upper() == "LINE":
+            return Line()
+        
+    def __key_num_checker(self, controller_dict):
+        if not bool(controller_dict):
+            print("dict is empty.")
+            return None
+        numeric_keys = [key for key in controller_dict.keys() if any(char.isdigit() for char in key)]
+        numeric_values = [int(''.join(filter(str.isdigit, key))) for key in numeric_keys]
+
+        # sort from a small number
+        sorted_keys = [x for _, x in sorted(zip(numeric_values, numeric_keys))]
+
+        # find unexsisting number
+        min_missing_number = None
+        for i in range(1, len(sorted_keys) + 2):
+            if i not in numeric_values:
+                min_missing_number = i
+                break
+            
+        # new key
+        prefix = re.sub(r'\d+', '', numeric_keys[0])
+        new_key = prefix + str(min_missing_number)
+        return new_key
+    
+
+        
 
 """
 Repository
@@ -160,9 +120,8 @@ class RepositoryInterface(metaclass=ABCMeta):
     @abstractmethod
     def delete(self, key: str):
         raise NotImplementedError()
-        
-        
-    
+
+
 class ExperimentsRepository(RepositoryInterface):
     def __init__(self):
         self.__data = {}   # {key:entiry}
@@ -171,16 +130,20 @@ class ExperimentsRepository(RepositoryInterface):
         self.__data[key] = data
         
     def find_by_name(self, key: str):
-        return self.__data[key]
-    
+        entity = self.__data[key]
+        if entity is None:
+            raise Exception(f"There is no {key}")
+        print(f"Return the key = {key}" )
+        return entity
+
     def delete(self, key: str):
         del self.__data[key]
         
     @property
-    def data(self) -> dict:
+    def data(self):
         return self.__data
+
         
-    
 class UserControllerRepository(RepositoryInterface):
     def __init__(self):
         self.__data = {}   # {key:entiry}
@@ -189,15 +152,20 @@ class UserControllerRepository(RepositoryInterface):
         self.__data[key] = data
         
     def find_by_name(self, key: str):
-        return self.__data[key]
+        entity = self.__data[key]
+        if entity is None:
+            raise Exception(f"There is no {key}")
+        print(f"Return the key = {key}" )
+        return entity
     
     def delete(self, key: str):
         del self.__data[key]
         
     @property
-    def data(self) -> dict:
+    def data(self):
         return self.__data
-    
+
+
 class ModRepository(RepositoryInterface):
     def __init__(self):
         self.__data = {}   # {key:entiry}
@@ -206,13 +174,13 @@ class ModRepository(RepositoryInterface):
         self.__data[key] = data
         
     def find_by_name(self, key: str):
-        return self.__data[key]
+        entity = self.__data[key]
+        if entity is None:
+            raise Exception(f"There is no {key}")
+        print(f"Return the key = {key}" )
+        return entity
     
     def delete(self, key: str):
         del self.__data[key]
-        
-    @property
-    def data(self) -> dict:
-        return self.__data
-    
+
     

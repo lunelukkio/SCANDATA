@@ -19,16 +19,15 @@ class Experiments:   # entity
         builder_factory = self.__factory_selector(self.filename_obj)
         self.builder = builder_factory.create_builder(self.filename_obj)
 
-        txt_data = self.builder.get_infor()
-        frames_dict = self.builder.get_frame()   # {type:frames data}
-        image_dict = self.builder.get_image()
-        trace_dict = self.builder.get_trace()   # {type:Elec data}
-        self.data_dict = {"Txt":txt_data,
-                          "Frames":frames_dict,
-                          "Image":image_dict,
-                          "Trace":trace_dict}
+        self.__txt_data = self.builder.get_infor()
+        self.__frames_dict = self.builder.get_frame()  # {key:FramsData -> val_obj}
+        self.__image_dict = self.builder.get_image()   # {key:ImageData -> val_obj}
+        self.__trace_dict = self.builder.get_trace()  # {key:Trace_Data -> val_obj}
 
         self.__observer = ExperimentsObserver()
+        
+        print("----- Experiments: Successful data construction!!!")
+        print("")
         
     def __del__(self):  #make a message when this object is deleted.
         #print('.')
@@ -44,21 +43,45 @@ class Experiments:   # entity
         else:
             raise Exception("This file is an undefineded file!!!")
             
-    def get_data(self):
-        return self.data_dict
+    def print_infor(self):
+        print("Experiments information")
+        print(f"Data Time interval = {self.__txt_data}")
+        
+        if self.__frames_dict is None:
+            frames_key = "None"
+        else:
+            frames_key = list(self.__frames_dict.keys())
+        if self.__image_dict is None:
+            image_key = "None"
+        else:
+            image_key = list(self.__image_dict.keys())
+        if self.__trace_dict is None:
+            trace_key = "None"
+        else:
+            trace_key = list(self.__trace_dict.keys())
+        print(f"frames data = {frames_key}")
+        print(f"image data = {image_key}")
+        print(f"trace data = {trace_key}")
 
-            
-    def get_frames_list(self):   # dict_type = txt_data, frame_dict...
-        key_list = list(self.frames_dict.keys())
-        return key_list
+              
+        
+
+    @property
+    def txt_data(self):
+        return self.__txt_data
+
+    @property
+    def frames_dict(self):
+        return self.__frames_dict
     
-    def get_image_list(self):   # dict_type = txt_data, frame_dict...
-        key_list = list(self.image_dict.keys())
-        return key_list
+    @property
+    def image_dict(self):
+        return self.__image_dict
     
-    def get_trace_list(self):   # dict_type = txt_data, frame_dict...
-        key_list = list(self.trace_dict.keys())
-        return key_list
+    @property
+    def trace_dict(self):
+        return self.__trace_dict
+    
 
 
 # need refactoring(2023/09/13)
@@ -160,24 +183,28 @@ class TsmBuilder(Builder):
         file_io.print_data_infor()
         
         del file_io   # release the io object to allow file changes during recording.
+        print("----- TsmBulder: The .tsm file was imported and the file_io object was deleted.")
+        print("")
         
     def get_infor(self):
         return self.data_infor_dict
         
-    def get_frame(self):
-        return {"Full": FramesData(self.frames[0], 
+    def get_frame(self) -> dict:
+        
+        data = {"Full": FramesData(self.frames[0], 
                                    self.data_infor_dict["Full_interval"]),   # change to numpy to value obj
                 "Ch1": FramesData(self.frames[1], 
                                   self.data_infor_dict["Ch1_interval"]),    # change to numpy to value obj
                 "Ch2": FramesData(self.frames[2], 
                                   self.data_infor_dict["Ch2_interval"])}   # change to numpy to value obj
+        return data
 
     def get_image(self):
-        print("There is no image data")
+        print("----- There is no image data")
         return None
     
     def get_trace(self):       
-        return {"Elec_ch1": TraceData(self.elec_data[0], 
+        data = {"Elec_ch1": TraceData(self.elec_data[0], 
                                       self.data_infor_dict["Elec1_interval"]), 
                 "Elec_ch2": TraceData(self.elec_data[1], 
                                       self.data_infor_dict["Elec2_interval"]), 
@@ -193,4 +220,4 @@ class TsmBuilder(Builder):
                                       self.data_infor_dict["Elec7_interval"]),
                 "Elec_ch8": TraceData(self.elec_data[7], 
                                       self.data_infor_dict["Elec8_interval"])}
-    
+        return data
