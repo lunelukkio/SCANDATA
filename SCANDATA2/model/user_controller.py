@@ -5,7 +5,8 @@ concrete classes for User controllers
 lunelukkio@gmail.com
 """
 from abc import ABCMeta, abstractmethod
-from SCANDATA2.model.value_object import TraceData, RoiVal, FrameWindowVal, TimeWindowVal
+from SCANDATA2.model.value_object import TraceData, ImageData
+from SCANDATA2.model.value_object import RoiVal, TimeWindowVal
 import numpy as np
 
 """
@@ -21,12 +22,12 @@ class UserControllerFactory(metaclass=ABCMeta):
 contrete factory
 """
 class RoiFactory(UserControllerFactory):
-    def create_controller(self, data_service):
-        return Roi(data_service)
+    def create_controller(self, get_experiments_method):
+        return Roi(get_experiments_method)
         
-class FrameWindowFactory(UserControllerFactory):
-    def create_controller(self):
-        return FrameWindow()
+class ImageControllerFactory(UserControllerFactory):
+    def create_controller(self, get_experiments_method):
+        return ImageController(get_experiments_method)
     
 class FrameShiftFactory(UserControllerFactory):
     def create_controller(self):
@@ -88,7 +89,6 @@ class Roi(UserController):
         self.__roi_obj = RoiVal(x, y, x_width, y_width)  # replace the roi
         self.set_data()
         
-        
     def set_data(self):
         # repeat the number of experiments
         for filename_key in list(self.__data_dict.keys()):
@@ -119,10 +119,9 @@ class Roi(UserController):
         mean_data = np.mean(frames_obj.data[x:x+x_length, y:y+y_length, :], axis = 0)
         mean_data = np.mean(mean_data, axis = 0)
         # make a trace value object
-        trace_obj = TraceData(mean_data, frames_obj.interval)
-        return trace_obj
+        return TraceData(mean_data, frames_obj.interval)
         
-    def __check_val(self, frames_obj, roi_obj) -> None:
+    def __check_val(self, frames_obj, roi_obj) -> bool:
         # convert to raw values
         roi = roi_obj.data
         # check the value is correct. See RoiVal class.
@@ -135,6 +134,9 @@ class Roi(UserController):
             raise Exception("The roi length should be the same as 0 or more")
         else:
             return True
+    
+    def reset(self) -> None:
+        self.set_controller([40, 40, 2, 2])
     
     def print_infor(self) -> None:
         if not self.__data_dict:
@@ -155,90 +157,106 @@ class Roi(UserController):
     @property
     def data_dict(self):
         return self.__data_dict
-
-
-
-
-
-    def add_data(self, x: int, y: int, x_width=0, y_width=0) -> None:
-        check_bool = self.__check_val(self.__roi_obj.data[0] + x,
-                                    self.__roi_obj.data[1] + y,
-                                    self.__roi_obj.data[2] + x_width,
-                                    self.__roi_obj.data[3] + y_width)
-        if check_bool is True:
-            add_roi_obj = RoiVal(x, y, x_width, y_width)  # make new additional RoiVal
-            self.__roi_obj += add_roi_obj  # override of + in type:RoiVal
-            self.print_infor()
-            self.notify_observer()
-        elif check_bool is False:
-            pass
-    
-    def reset(self) -> None:
-        self.__roi_obj = RoiVal(40, 40, 2, 2)
-        self.print_infor()
-        print('----- Reset ROI and notified')
         
         
 
-class FrameWindow(UserController):
-    def __init__(self):
-        self.__frame_window_obj = FrameWindowVal(0, 0, 1, 1)
-        self.__observer = ControllerObserver()
-        self.object_num = 0
-        #print('Create FrameWindow{}.'.format(self.object_num))
-
-    def set_data(self, start: int, end: int, start_width=0, end_width=0) -> None:
-        # check data
-        print('Tip: Didnt test this check program.')
-        if start == self.__frame_window_obj.data[0] and \
-           end == self.__frame_window_obj.data[1] and \
-           start_width == self.__frame_window_obj.data[2] and \
-           end_width == self.__frame_window_obj.data[3]:
-               print('----- The new FrameWindow value is the same as previous.')
-               return
-        self.__frame_window_obj = FrameWindowVal(start, end, start_width, end_width)
-        self.print_infor()
-        self.notify_observer()
-        #print('Set FrameWindow-{} and notified'.format(self.object_num))
-
+class ImageController(UserController):
+    def __init__(self, get_experiments_method):
+        self.get_experiments = get_experiments_method
+        self.__time_window_obj = TimeWindowVal(0, 0, 0, 0)
+        self.__data_dict = {}  # data dict = {filename:frame_type{full:ImageData,ch1:ImageData,ch2:ImageData}}
+        self.__mod_list = []
         
-    def add_data(self, start: int, end: int, start_width=0, end_width=0) -> None:
-        add_frame_window_obj = FrameWindowVal(start, end, start_width, end_width)
-        self.__frame_window_obj += add_frame_window_obj
-        self.print_infor()
-        self.notify_observer()
-        #print('Add to FrameWindow{} and notified'.format(self.object_num))
+    def __del__(self):  #make a message when this object is deleted.
+        #print('.')
+        print('----- Deleted a FrameWindow object.' + '  myId={}'.format(id(self)))
+        #pass
 
-    def get_data(self) -> object:
-        return self.__frame_window_obj
-    
-    def reset(self) -> None:
-        self.__frame_window_obj = FrameWindowVal(0, 0, 0, 0)
-        self.print_infor()
-        self.notify_observer()
-        #print('Reset FrameWindow{} and notified'.format(self.object_num))
+        # make a new Roi value object
+    def set_controller(self, window_value_list: list):
+        start = window_value_list[0]
+        end = window_value_list[1]
+        start_width = window_value_list[2]
+        end_width = window_value_list[3]
+        self.__time_window_obj = TimeWindowVal(start, end, start_width, end_width)  # replace the roi
+        self.set_data()
 
-    def add_observer(self, observer: object) -> None:
-        self.__observer.add_observer(observer)
-        #self.notify_observer()  # this message come from a controller
-    
-    def notify_observer(self) -> None:
-        self.__observer.notify_observer(self.__frame_window_obj)
+    def set_data(self):
+        # repeat the number of experiments
+        for filename_key in list(self.__data_dict.keys()):
+            # get Experiments obj Data using a method in DataService
+            experiments_entity = self.get_experiments(filename_key)
+            # make a image data dict
+            new_dict = {}
+            for key in experiments_entity.frames_dict.keys():  # key = "Full", "Ch1", "Ch2"
+                dict_val = self.__image_culc(experiments_entity.frames_dict[key], self.__time_window_obj)
+                new_dict[key] = dict_val
+            self.__data_dict[filename_key] = new_dict
+        print(f"set ImageController: {self.__time_window_obj.data}")
+
+    def add_experiments(self, filename_str):
+        self.__data_dict[filename_str] = None
+        self.set_data()
+        self.print_infor()
             
-    @property
-    def observers(self) -> list:
-        return self.__observer.observers
-    
-    def get_infor(self):  # get names from observers
-        name_list = self.__observer.get_infor()
-        return name_list
+    # calculate a image from a single frames data with a time window value object
+    def __image_culc(self, frames_obj, time_window_obj):
+        # check value is correct
+        self.__check_val(frames_obj, time_window_obj)
+        # make raw trace data
+        start = time_window_obj.data[0]
+        end = time_window_obj.data[1]
+        start_width = time_window_obj.data[2]
+        end_width = time_window_obj.data[3]
+        
+        if end - start == 0:
+            val = frames_obj.data[:, :, start]
+            print(f'Cell image from a single frame# {start} : Succeeded')
+        elif end - start > 0: 
+            val = np.mean(frames_obj.data[:, :, start:end], axis = 2)
+            print(f'Cell image from an avaraged frame# {start} to {end}: Succeeded')
+        else:
+            #self._data = np.zeros((2, 2))
+            raise Exception('The end frame should be higher than the start frame.')
+        return ImageData(val)
+
+    def __check_val(self, frames_obj, time_window_obj) -> bool:
+        # convert to raw values
+        time_window = time_window_obj.data
+        # check the value is correct. See TimeWindowVal class.
+        frame_length = self._frames_obj.data.shape[2]
+        # check the start and end values
+        if time_window[0] > time_window[1]:
+            raise Exception('The end frame should be the same as the start or more.')
+        # compare the val to frame lentgh
+        elif time_window[0] > frame_length-1 or time_window[1] > frame_length-1: 
+            raise Exception('The end frame should be the same as the frames length or less.')
+        else:
+            return True
+
+    def reset(self) -> None:
+        self.set_controller([0, 0, 0, 0])
 
     def print_infor(self) -> None:
-        name_list = []
-        num = len(self.__observer.observers)
-        for i in range(num):
-            name_list.append(self.__observer.observers[i].name)
-        print(f'FrameWindow{self.object_num} observer list = {str(name_list)}, ROI = {self.get_data().data}')
+        if not self.__data_dict:
+            print("Data_dict is empty")
+            return
+        dict_key = list(self.__data_dict.keys())
+        if self.__data_dict[dict_key[0]] is None:
+            print("No data in the ImageController")
+            return
+        print("ImageController information ===================")
+        print(f"ImageController = {self.__time_window_obj.data}")
+        print("-- data_dict LIST -- ")
+        for experiments in dict_key:
+            key_list = list(self.__data_dict[experiments].keys())
+            print(f"{experiments} = {key_list}")
+        print("=============== ImageController information END")
+            
+    @property
+    def data_dict(self):
+        return self.__data_dict
+
 
 
 class FrameShift(UserController): 

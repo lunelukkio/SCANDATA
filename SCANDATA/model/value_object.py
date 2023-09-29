@@ -277,7 +277,7 @@ class TraceData:
 """
 Value object for controller
 """
-class RoiVal:
+class RoiVal:  # Shold be called by the same class for __add__ and __sub__
     def __init__(self, x: int, y: int, x_width: int, y_width: int):         
         if x < 0 or y < 0 or x_width < -1 or y_width < -1:  # width -1 is for small ROI subtraction
             raise Exception('ROI values should be 0 or more')
@@ -296,6 +296,14 @@ class RoiVal:
         if self.__data_type != other.data_type:
             raise Exception('Wrong data! Only RoiVal can be added!')
         new_val = self.__data + other.data
+        new_obj = RoiVal(*new_val)
+        new_obj.data_type = self.__data_type
+        return new_obj
+    
+    def __sub__(self, other: object)  -> object:
+        if self.__data_type != other.data_type:
+            raise Exception('Wrong data! Only RoiVal can be added!')
+        new_val = self.__data - other.data
         new_obj = RoiVal(*new_val)
         new_obj.data_type = self.__data_type
         return new_obj
@@ -318,8 +326,8 @@ class RoiVal:
     
     
 
-class FrameWindowVal:
-    def __init__(self, start: int, end: int, start_width: int, end_width: int):
+class TimeWindowVal:  # Shold be called by the same class for __add__ and __sub__
+    def __init__(self):
         if start > end: 
             raise Exception('FrameWindow the end values should be the same or larger than the start value')
 
@@ -341,6 +349,14 @@ class FrameWindowVal:
             raise Exception('Wrong FrameWindowVal data')
         self.__data += other.data
         return self
+    
+    def __sub__(self, other: object)  -> object:
+        if self.__data_type != other.data_type:
+            raise Exception('Wrong data! Only TimeWindowVal can be added!')
+        new_val = self.__data - other.data
+        new_obj = RoiVal(*new_val)
+        new_obj.data_type = self.__data_type
+        return new_obj
         
     @property
     def data(self) -> list:
@@ -354,7 +370,7 @@ class FrameWindowVal:
     def data_type(self) -> str:
         return self.__data_type
 
-
+"""
 class TimeWindowVal:
     def __init__(self, start: float = 0, end: float = 100):
         if start > end: 
@@ -388,3 +404,4 @@ class TimeWindowVal:
     @property
     def data_type(self) -> str:
         return self.__data_type
+"""

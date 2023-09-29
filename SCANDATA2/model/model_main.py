@@ -7,10 +7,7 @@ Created on Wed Sep 13 09:11:15 2023
 from abc import ABCMeta, abstractmethod
 from SCANDATA2.model.value_object import WholeFilename
 from SCANDATA2.model.experiments import Experiments
-from SCANDATA2.model.user_controller import RoiFactory, FrameWindow, FrameShift, Line
-#import inspect
-#from SCANDATA.model.mod_factory import ModClient
-#from weakref import WeakValueDictionary
+from SCANDATA2.model.user_controller import RoiFactory, ImageControllerFactory
 
 """
 Service
@@ -39,6 +36,10 @@ class ModelInterface(metaclass=ABCMeta):
     @abstractmethod
     def get_user_controller(self, key):
         raise NotImplementedError()
+        
+    @abstractmethod
+    def reset(self, controller_key):
+        raise NotImplementedError() 
         
         
 class DataService(ModelInterface):
@@ -95,22 +96,24 @@ class DataService(ModelInterface):
         controller_key = controller_key.upper()
         return self.__user_controller_repository.data[controller_key]
     
+    def reset(self, controller_key):
+        controller_key = controller_key.upper()
+        controller = self.__user_controller_repository.find_by_name(controller_key)
+        controller.reset()
+        print(f"Reset: {controller_key}")
+    
     def print_infor(self):
         print("DataService information ===========================")
         print(f"Current experiments data = {list(self.__experiments_repository.data.keys())}")
         print(f"Current user controllers = {list(self.__user_controller_repository.data.keys())}")
         print("======================= DataService information END")
-        
 
     def __check_controller_type(self, key):
         if key == "ROI":
             return RoiFactory()
-        elif key == "FRAMEWINDOW":
-            return FrameWindow()
-        elif key == "FRAMESSHIFT":
-            return FrameShift()
-        elif key == "LINE":
-            return Line()
+        elif key == "IMAGECONTROLLER":
+            return ImageControllerFactory()
+
         
     def __key_num_maker(self, controller_key):
         controller_key = controller_key.upper()
