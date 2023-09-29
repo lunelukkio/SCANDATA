@@ -15,16 +15,17 @@ class TestRoi(unittest.TestCase):
         #make controller
         data_service.create_user_controller("ImageController")
 
-        #get ROI
-        #roi1 = data_service.get_user_controller("ROI1")
+        #get IC
+        ic1 = data_service.get_user_controller("ImageController1")
         
-        #add filename to ROI1
-        #data_service.resister_filename2controller("20408B002.tsm", "Roi1")
+        #add filename to IC1
+        data_service.resister_filename2controller("20408B002.tsm", "imagecontroller1")
 
         
-        #roi1.data_dict["20408B002.tsm"]["CH1"].show_data()
+        #ic1.data_dict["20408B002.tsm"]["FULL"].show_data()
         
-        #data_service.set_controller("ROI1", [20,20,20,20])
+        data_service.set_controller("imagecontroller1", [1,1,0,0])
+        ic1.data_dict["20408B002.tsm"]["CH1"].show_data()
         #roi1.data_dict["20408B002.tsm"]["FULL"].show_data()
 
         

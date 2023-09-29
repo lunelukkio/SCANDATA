@@ -276,14 +276,13 @@ class TraceData:
         return plt.plot(self.__time, self.__data ,linewidth=0.7) 
 
     
+
 """
 Value object for controller
 """
-class RoiVal:
-    # x and y are data position. It should start from 0. ex.0~79
-    # x_width and y_width are number of additional length. It should start from 0.
+class RoiVal:  # Shold be called by the same class for __add__ and __sub__
     def __init__(self, x: int, y: int, x_width: int, y_width: int):         
-        if x < 0 or y < 0 or x_width < 0 or y_width < 0:
+        if x < 0 or y < 0 or x_width < -1 or y_width < -1:  # width -1 is for small ROI subtraction
             raise Exception('ROI values should be 0 or more')
         called_class = inspect.stack()[1].frame.f_locals['self']
         self.__data = np.array([x, y, x_width, y_width])  # self.__data should be np.array data.
@@ -304,12 +303,11 @@ class RoiVal:
         new_obj.data_type = self.__data_type
         return new_obj
     
-    # This is for making small ROI
     def __sub__(self, other: object)  -> object:
         if self.__data_type != other.data_type:
-            raise Exception('Wrong data! Only RoiVal can be substracted!')
+            raise Exception('Wrong data! Only RoiVal can be added!')
         new_val = self.__data - other.data
-        new_obj = RoiVal(*new_val)  # * is for unpack values
+        new_obj = RoiVal(*new_val)
         new_obj.data_type = self.__data_type
         return new_obj
         
@@ -331,14 +329,8 @@ class RoiVal:
     
     
 
-
-
-
-
-
-
-class FrameWindowVal:
-    def __init__(self, start: int, end: int, start_width: int, end_width: int):
+class TimeWindowVal:  # Shold be called by the same class for __add__ and __sub__
+    def __init__(self, start: int, end: int, start_width=0, end_width=0):
         if start > end: 
             raise Exception('FrameWindow the end values should be the same or larger than the start value')
 
@@ -360,6 +352,14 @@ class FrameWindowVal:
             raise Exception('Wrong FrameWindowVal data')
         self.__data += other.data
         return self
+    
+    def __sub__(self, other: object)  -> object:
+        if self.__data_type != other.data_type:
+            raise Exception('Wrong data! Only TimeWindowVal can be added!')
+        new_val = self.__data - other.data
+        new_obj = RoiVal(*new_val)
+        new_obj.data_type = self.__data_type
+        return new_obj
         
     @property
     def data(self) -> list:
@@ -373,7 +373,7 @@ class FrameWindowVal:
     def data_type(self) -> str:
         return self.__data_type
 
-
+"""
 class TimeWindowVal:
     def __init__(self, start: float = 0, end: float = 100):
         if start > end: 
@@ -407,3 +407,4 @@ class TimeWindowVal:
     @property
     def data_type(self) -> str:
         return self.__data_type
+"""

@@ -327,7 +327,7 @@ class RoiVal:  # Shold be called by the same class for __add__ and __sub__
     
 
 class TimeWindowVal:  # Shold be called by the same class for __add__ and __sub__
-    def __init__(self):
+    def __init__(self, start: int, end: int, start_width=0, end_width=0):
         if start > end: 
             raise Exception('FrameWindow the end values should be the same or larger than the start value')
 

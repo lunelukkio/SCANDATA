@@ -213,24 +213,24 @@ class ImageController(UserController):
             val = frames_obj.data[:, :, start]
             print(f'Cell image from a single frame# {start} : Succeeded')
         elif end - start > 0: 
-            val = np.mean(frames_obj.data[:, :, start:end], axis = 2)
+            val = np.mean(frames_obj.data[:, :, start:end+1], axis = 2)
             print(f'Cell image from an avaraged frame# {start} to {end}: Succeeded')
         else:
-            #self._data = np.zeros((2, 2))
-            raise Exception('The end frame should be higher than the start frame.')
+            self._data = np.zeros((2, 2))
+            #raise Exception('The end frame should be higher than the start frame.')
         return ImageData(val)
 
     def __check_val(self, frames_obj, time_window_obj) -> bool:
         # convert to raw values
         time_window = time_window_obj.data
         # check the value is correct. See TimeWindowVal class.
-        frame_length = self._frames_obj.data.shape[2]
+        frame_length = frames_obj.data.shape[2]
         # check the start and end values
         if time_window[0] > time_window[1]:
             raise Exception('The end frame should be the same as the start or more.')
         # compare the val to frame lentgh
         elif time_window[0] > frame_length-1 or time_window[1] > frame_length-1: 
-            raise Exception('The end frame should be the same as the frames length or less.')
+            raise Exception(f"The end frame should be less than {frame_length-1}.")
         else:
             return True
 
