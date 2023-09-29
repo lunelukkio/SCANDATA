@@ -48,7 +48,7 @@ abstract product
 """
 class UserController(metaclass=ABCMeta):
     @abstractmethod
-    def set_controller(self, x, y, x_width, y_width):
+    def set_controller(self, val_list:list):
         raise NotImplementedError()
     
     @abstractmethod
@@ -166,7 +166,7 @@ class Roi(UserController):
 class ImageController(UserController):
     def __init__(self, get_experiments_method):
         self.get_experiments = get_experiments_method
-        self.__time_window_obj = TimeWindowVal(0, 0, 1, 1)
+        self.__time_window_obj = TimeWindowVal(0, 1)
         self.__data_dict = {}  # data dict = {filename:frame_type{full:ImageData,ch1:ImageData,ch2:ImageData}}
         self.__mod_list = []
         
@@ -176,12 +176,11 @@ class ImageController(UserController):
         #pass
 
         # make a new Roi value object
-    def set_controller(self, window_value_list: list):
+    def set_controller(self, window_value_list: list):  #value_list = [start, width]
         start = window_value_list[0]
-        end = window_value_list[1]
-        start_width = window_value_list[2]
-        end_width = window_value_list[3]
-        self.__time_window_obj = TimeWindowVal(start, end, start_width, end_width)  # replace the roi
+        width = window_value_list[1]
+
+        self.__time_window_obj = TimeWindowVal(start, width)  # replace the roi
         self.set_data()
 
     def set_data(self):
@@ -208,19 +207,10 @@ class ImageController(UserController):
         self.__check_val(frames_obj, time_window_obj)
         # make raw trace data
         start = time_window_obj.data[0]
-        end = time_window_obj.data[1]
-        start_width = time_window_obj.data[2]
-        end_width = time_window_obj.data[3]
+        width = time_window_obj.data[1]
         
-        if end - start == 0:
-            val = frames_obj.data[:, :, start]
-            print(f'Cell image from a single frame# {start} : Succeeded')
-        elif end - start > 0: 
-            val = np.mean(frames_obj.data[:, :, start:end+1], axis = 2) # slice end is end+1
-            print(f'Cell image from an avaraged frame# {start} to {end}: Succeeded')
-        else:
-            self._data = np.zeros((2, 2))
-            #raise Exception('The end frame should be higher than the start frame.')
+        val = np.mean(frames_obj.data[:, :, start:start+width], axis = 2) # slice end is end+1
+        print(f'Cell image from an avaraged frame# {start} to {start+width-1}: Succeeded')
         return ImageData(val)
 
     def __check_val(self, frames_obj, time_window_obj) -> bool:
@@ -229,16 +219,18 @@ class ImageController(UserController):
         # check the value is correct. See TimeWindowVal class.
         frame_length = frames_obj.data.shape[2]
         # check the start and end values
-        if time_window[0] > time_window[1]:
-            raise Exception('The end frame should be the same as the start or more.')
+        if time_window[0] < 0:
+            raise Exception('The start frame should be 0 or more.')
+        if time_window[1] < 1:
+            raise Exception('The width should be 1 or more.')
         # compare the val to frame lentgh
-        elif time_window[0] > frame_length-1 or time_window[1] > frame_length-1: 
-            raise Exception(f"The end frame should be less than {frame_length-1}.")
+        if time_window[0] + time_window[1] > frame_length:
+            raise Exception(f"The total frame should be less than {frame_length-1}.")
         else:
             return True
 
     def reset(self) -> None:
-        self.set_controller([0, 0, 1, 1])
+        self.set_controller([0, 1])
 
     def print_infor(self) -> None:
         if not self.__data_dict:

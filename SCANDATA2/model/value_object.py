@@ -333,33 +333,33 @@ class RoiVal:  # Shold be called by the same class for __add__ and __sub__
 
 class TimeWindowVal:  # Shold be called by the same class for __add__ and __sub__
     # be careful about end_width. np.mean slice a value not include end.
-    def __init__(self, start: int, end: int, start_width=1, end_width=1):
-        if start > end: 
-            raise Exception('FrameWindow the end values should be the same or larger than the start value')
-        if start_width < 1 or end_width < 1:
+    def __init__(self, start: int, width=1):
+        if start < 0: 
+            raise Exception('TimeWindow start values should be 0 or more')
+        if width < 1:
             raise Exception('FrameWindow width values should be 1 or more')
         called_class = inspect.stack()[1].frame.f_locals['self']
-        self.__data = np.array([start, end, start_width, end_width])  # frame number ex.[10, 50, 5, 5]
+        self.__data = np.array([start, width])
         self.__data_type = called_class.__class__.__name__
-        #print(self.__data_type + ' made a FrameWindowVal' + '  myId= {}'.format(id(self)))
+        #print(self.__data_type + ' made a TimeWindowVal' + '  myId= {}'.format(id(self)))
         
     def __del__(self):
         #print('.')
-        #print('Deleted a FrameWindowVal object.' + '  myId={}'.format(id(self)))
+        #print('Deleted a TimeWindowVal object.' + '  myId={}'.format(id(self)))
         pass
         
     #override for "+"
     def __add__(self, other: object) -> object:
         if self.__data_type != other.data_type:
-            raise Exception('Wrong FrameWindowVal data')
+            raise Exception('Wrong data! Only TimeWindowVal can be added!')
         self.__data += other.data
         return self
     
     def __sub__(self, other: object)  -> object:
         if self.__data_type != other.data_type:
-            raise Exception('Wrong data! Only TimeWindowVal can be added!')
+            raise Exception('Wrong data! Only TimeWindowVal can be subtructed!')
         new_val = self.__data - other.data
-        new_obj = RoiVal(*new_val)
+        new_obj = TimeWindowVal(new_val)
         new_obj.data_type = self.__data_type
         return new_obj
         
@@ -368,8 +368,8 @@ class TimeWindowVal:  # Shold be called by the same class for __add__ and __sub_
         return self.__data
     
     @data.setter
-    def data(self, start, end, start_width=1, end_width=1):  
-        raise Exception('FrameWindowVal is a value object (Immutable).')
+    def data(self, start, width=1):  
+        raise Exception('TimeWindowVal is a value object (Immutable).')
     
     @property
     def data_type(self) -> str:
