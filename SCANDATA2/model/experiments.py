@@ -63,9 +63,6 @@ class Experiments:   # entity
         print(f"image data = {image_key}")
         print(f"trace data = {trace_key}")
 
-              
-        
-
     @property
     def txt_data(self):
         return self.__txt_data
@@ -191,11 +188,11 @@ class TsmBuilder(Builder):
         
     def get_frame(self) -> dict:
         
-        data = {"Full": FramesData(self.frames[0], 
+        data = {"FULL": FramesData(self.frames[0], 
                                    self.data_infor_dict["Full_interval"]),   # change to numpy to value obj
-                "Ch1": FramesData(self.frames[1], 
+                "CH1": FramesData(self.frames[1], 
                                   self.data_infor_dict["Ch1_interval"]),    # change to numpy to value obj
-                "Ch2": FramesData(self.frames[2], 
+                "CH2": FramesData(self.frames[2], 
                                   self.data_infor_dict["Ch2_interval"])}   # change to numpy to value obj
         return data
 
@@ -204,20 +201,20 @@ class TsmBuilder(Builder):
         return None
     
     def get_trace(self):       
-        data = {"Elec_ch1": TraceData(self.elec_data[0], 
+        data = {"ELEC_CH1": TraceData(self.elec_data[0], 
                                       self.data_infor_dict["Elec1_interval"]), 
-                "Elec_ch2": TraceData(self.elec_data[1], 
+                "ELEC_CH2": TraceData(self.elec_data[1], 
                                       self.data_infor_dict["Elec2_interval"]), 
-                "Elec_ch3": TraceData(self.elec_data[2], 
+                "ELEC_CH3": TraceData(self.elec_data[2], 
                                       self.data_infor_dict["Elec3_interval"]),
-                "Elec_ch4": TraceData(self.elec_data[3], 
+                "ELEC_CH4": TraceData(self.elec_data[3], 
                                       self.data_infor_dict["Elec4_interval"]),
-                "Elec_ch5": TraceData(self.elec_data[4], 
+                "ELEC_CH5": TraceData(self.elec_data[4], 
                                       self.data_infor_dict["Elec5_interval"]),
-                "Elec_ch6": TraceData(self.elec_data[5], 
+                "ELEC_CH6": TraceData(self.elec_data[5], 
                                       self.data_infor_dict["Elec6_interval"]),
-                "Elec_ch7": TraceData(self.elec_data[6], 
+                "ELEC_CH7": TraceData(self.elec_data[6], 
                                       self.data_infor_dict["Elec7_interval"]),
-                "Elec_ch8": TraceData(self.elec_data[7], 
+                "ELEC_CH8": TraceData(self.elec_data[7], 
                                       self.data_infor_dict["Elec8_interval"])}
         return data

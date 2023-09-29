@@ -90,9 +90,8 @@ class FramesData:
         if val.ndim != 3: 
             raise Exception('The argument of FrameData should be numpy 3D data(x, y, t)')
         self.__data = val
-        size = val.shape
-        self.__frames_size = size  # the number of pixels and frames [pixel, pixel, frame]
-        self.__interval = interval  # frame interbal (ms)
+        self.__shape = val.shape  # the number of pixels and frames [pixel, pixel, frame]
+        self.__interval = interval  # frame interval (ms)
         self.__pixel_size = pixel_size  #actual length (um)
         #print(self.__data_type + ' made a FramesData' + '  myId= {}'.format(id(self)))
         
@@ -114,8 +113,12 @@ class FramesData:
         raise Exception('FrameData is a value object (Immutable).')
         
     @property
-    def frame_size(self) -> int:
-        return self.__frame_size
+    def interval(self):
+        return self.__interval
+        
+    @property
+    def shape(self) -> int:
+        return self.__shape
     
     @property
     def data_type(self) -> str:
@@ -129,9 +132,8 @@ class ImageData:
     def __init__(self, val: np.ndarray, pixel_size = [0, 0]):  # need *args, **kwargs for constracting
         if val.ndim != 2: 
             raise Exception('The argument of ImageData should be numpy 2D data(x, y)')
-        size = val.shape
         self.__data = val
-        self.__image_size = size  # the number of pixels
+        self.__shape = val.shape  # the number of pixels
         self.__pixel_size = pixel_size
         #print(self.__data_type + ' made a ImageData' + '  myId= {}'.format(id(self)))
         
@@ -153,8 +155,8 @@ class ImageData:
         raise Exception('ImageData is a value object (Immutable).')
         
     @property
-    def image_size(self) -> int:
-        return self.__image_size
+    def shape(self) -> int:
+        return self.__shape
     
     @property
     def data_type(self) -> str:
@@ -177,8 +179,7 @@ class TraceData:
 
         self.__data = val
         self.__time = self.__create_time_data(val, interval)
-        length = val.shape[0]
-        self.__length = length  # the number of data points
+        self.__length = val.shape[0]  # the number of data points
         self.__interval = interval  # data interval
         #print(self.__data_type + ' made a TraceData' + '  myId= {}'.format(id(self)))
 

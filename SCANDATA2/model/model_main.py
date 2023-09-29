@@ -60,22 +60,24 @@ class DataService(ModelInterface):
         # make a data entity
         experiments = Experiments(filename_obj)
         # save entity to the repository
-        self.__experiments_repository.save(filename_obj.name,
-                                                        experiments)
-        print(f"Current experiments data = {list(self.__experiments_repository.data.keys())}")
+        self.__experiments_repository.save(filename_obj.name, experiments)
+        self.print_infor()
  
     def create_user_controller(self, controller_key):  # controller_key = "Roi", "TimeWindow"
-        controller_factory = self.__check_controller_type(controller_key)   # get a controller factory 
-        new_controller = controller_factory.create_controller(self.get_experiments)  # make a new controller
-
+        # get a controller factory 
+        controller_factory = self.__check_controller_type(controller_key)
+        # make a new controller with the method in DataService
+        new_controller = controller_factory.create_controller(self.get_experiments)
         # save to the repository
-        new_key = self.__key_num_checker(self.__user_controller_repository.data)
-        if new_key is None:
-            new_key = controller_key.upper() + "1"
+        new_key = self.__key_num_maker(controller_key)
         self.__user_controller_repository.save(new_key, new_controller)
+        self.print_infor()
         
-    def resister_filename2controller(self, controller_key, filename_str):
-        self.__user_controller_repository.data[controller_key.upper()].add_experiments(filename_str)
+    def resister_filename2controller(self, filename_str, controller_key):
+        controller = self.__user_controller_repository.find_by_name(controller_key.upper())
+        print(f"Add {filename_str} to {controller_key}")
+        controller.add_experiments(filename_str)
+
     
     def get_experiments(self, key):  # return whole data_dict in experiments
         return self.__experiments_repository.data[key]
@@ -90,8 +92,10 @@ class DataService(ModelInterface):
         self.__user_controller_repository.delete(key.upper())
     
     def print_infor(self):
+        print("DataService information ===========================")
         print(f"Current experiments data = {list(self.__experiments_repository.data.keys())}")
         print(f"Current user controllers = {list(self.__user_controller_repository.data.keys())}")
+        print("======================= DataService information END")
         
 
     def __check_controller_type(self, key):
@@ -104,26 +108,22 @@ class DataService(ModelInterface):
         elif key.upper() == "LINE":
             return Line()
         
-    def __key_num_checker(self, controller_dict):
-        if not bool(controller_dict):
-            print("dict is empty.")
-            return None
-        numeric_keys = [key for key in controller_dict.keys() if any(char.isdigit() for char in key)]
-        numeric_values = [int(''.join(filter(str.isdigit, key))) for key in numeric_keys]
-
-        # sort from a small number
-        sorted_keys = [x for _, x in sorted(zip(numeric_values, numeric_keys))]
-
-        # find unexsisting number
-        min_missing_number = None
-        for i in range(1, len(sorted_keys) + 2):
-            if i not in numeric_values:
-                min_missing_number = i
-                break
-            
-        # new key
-        prefix = re.sub(r'\d+', '', numeric_keys[0])
-        new_key = prefix + str(min_missing_number)
+    def __key_num_maker(self, controller_key):
+        controler_dict = self.__user_controller_repository.data
+        if not bool(controler_dict):
+            new_key = controller_key.upper() + "1"
+        else:
+            numeric_keys = [key for key in controler_dict.keys() if any(char.isdigit() for char in key)]
+            numeric_values = [int(''.join(filter(str.isdigit, key))) for key in numeric_keys]
+            # sort from a small number
+            sorted_keys = [x for _, x in sorted(zip(numeric_values, numeric_keys))]
+            # find unexsisting number
+            min_missing_number = None
+            for i in range(1, len(sorted_keys) + 2):
+                if i not in numeric_values:
+                    min_missing_number = i
+                    break
+            new_key = controller_key.upper() + str(min_missing_number)
         return new_key
 
 
@@ -156,7 +156,6 @@ class ExperimentsRepository(RepositoryInterface):
         entity = self.__data[key]
         if entity is None:
             raise Exception(f"There is no {key}")
-        print(f"Return the key = {key}" )
         return entity
 
     def delete(self, key: str):
@@ -178,7 +177,6 @@ class UserControllerRepository(RepositoryInterface):
         entity = self.__data[key]
         if entity is None:
             raise Exception(f"There is no {key}")
-        print(f"Return the key = {key}" )
         return entity
     
     def delete(self, key: str):

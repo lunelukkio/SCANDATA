@@ -47,7 +47,7 @@ abstract product
 """
 class UserController(metaclass=ABCMeta):
     @abstractmethod
-    def set_data(self, x, y, x_width, y_width):
+    def set_controller(self, x, y, x_width, y_width):
         raise NotImplementedError()
     
     @abstractmethod
@@ -74,47 +74,54 @@ class Roi(UserController):
         self.__data_dict = {}  # data dict = {filename:frame_type{full:TraceData,ch1:TraceData,ch2:TraceData}}
         self.__mod_list = []
         
-        #self.__experiments_list = []
-        
-        self.print_infor()
-        
     def __del__(self):  #make a message when this object is deleted.
         #print('.')
         print('----- Deleted a Roi object.' + '  myId={}'.format(id(self)))
         #pass
         
-    def set_data(self, roi_value_list):
+        # make a new Roi value object
+    def set_controller(self, roi_value_list):
         x = roi_value_list[0]
         y = roi_value_list[1]
         x_width = roi_value_list[2]
-        x_width = roi_value_list[3]
-        self.__new_roi_obj()
-        pass
+        y_width = roi_value_list[3]
+        self.__roi_obj = RoiVal(x, y, x_width, y_width)  # replace the roi
         
-    # make a new Roi value object
-    def __new_roi_obj(self, x = None, y = None, x_width = None, y_width = None) -> None:
-        check_bool = self.__check_val(x, y, x_width, y_width)
-        if check_bool is True:
-            self.__roi_obj = RoiVal(x, y, x_width, y_width)  # replace the roi
-        elif check_bool is False:
-            print('Failed to make a new ROI value object')
-            
-    def set_dict_data(self, experiments_list):
-            for key in experiments_list:
-                # get Experiments obj Data using a method in DataService
-                frames_dict = self.get_experiments(key).frames_dict
-                # make a traces data dict
-                for key in frames_dict:  # key = "Full", "Ch1", "Ch2"
-                    self.__data_dict[key] = self.__trace_culc(frames_dict[key], self.__roi_obj)
-            self.print_infor()
+        
+    def set_data(self):
+        # repeat the number of experiments
+        for filename_key in list(self.__data_dict.keys()):
+            # get Experiments obj Data using a method in DataService
+            experiments_entity = self.get_experiments(filename_key)
+            # make a traces data dict
+            new_dict = {}
+            for key in experiments_entity.frames_dict.keys():  # key = "Full", "Ch1", "Ch2"
+                dict_val = self.__trace_culc(experiments_entity.frames_dict[key], self.__roi_obj)
+                new_dict[key] = dict_val
+            self.__data_dict[filename_key] = new_dict
+        print(f"set ROI: {self.__roi_obj.data}")
             
     def add_experiments(self, filename_str):
         self.__data_dict[filename_str] = None
-        #self.set_dict_data(self.experiments_list)
-        print(f"Added {filename_str} to ROI")
+        self.set_data()
+        self.print_infor()
             
     # calculate a trace from a single frames data with a roi value object
     def __trace_culc(self, frames_obj, roi_obj):
+        # check value is correct
+        self.__check_val(frames_obj, roi_obj)
+        # make raw trace data
+        x = roi_obj.data[0]
+        y = roi_obj.data[1]
+        x_length = roi_obj.data[2]
+        y_length = roi_obj.data[3]
+        mean_data = np.mean(frames_obj.data[x:x+x_length, y:y+y_length, :], axis = 0)
+        mean_data = np.mean(mean_data, axis = 0)
+        # make a trace value object
+        trace_obj = TraceData(mean_data, frames_obj.interval)
+        return trace_obj
+        
+    def __check_val(self, frames_obj, roi_obj) -> None:
         # convert to raw values
         roi = roi_obj.data
         # check the value is correct. See RoiVal class.
@@ -125,54 +132,28 @@ class Roi(UserController):
             raise Exception("The roi should be the same as 0 or more")
         if roi[2] < 0 or roi[3] < 0: 
             raise Exception("The roi length should be the same as 0 or more")
-        # make raw trace data
-        raw_trace_val = self.__create_row_fluotrace(frames_obj, roi)
-        # make a trace value object
-        self.__trace_obj = TraceData(raw_trace_val, frames_obj.__interval)
-        
-    # calculate raw numpy value of a trace
-    def __create_row_fluotrace(frames_obj, roi) -> np.ndarray:
-        x = roi[0]
-        y = roi[1]
-        x_length = roi[2]
-        y_length = roi[3]
-        mean_data = np.mean(frames_obj.data[x:x+x_length, y:y+y_length, :], axis = 0)
-        mean_data = np.mean(mean_data, axis = 0)
-        return mean_data
-        
-    def __check_val(self, x = None, y = None, x_width = None, y_width = None) -> None:
-        # check the val for existance
-        if x is None:
-            x = self.__roi_obj.data[0]
-        if y is None:
-            y = self.__roi_obj.data[1]
-        if x_width is None:
-            x_width = self.__roi_obj.data[2]
-        if y_width is None:
-            y_width = self.__roi_obj.data[3]
-            
-        # check the val as the same or not
-        if x == self.__roi_obj.data[0] and \
-           y == self.__roi_obj.data[1] and \
-           x_width == self.__roi_obj.data[2] and \
-           y_width == self.__roi_obj.data[3]:
-               print('----- The new ROI value is the same as previous.')
-               return False
-        # check the val for limit
         else:
-            if x < 0 or \
-               y < 0 or \
-               x_width < 1 or \
-               y_width < 1:
-                print('ROI value shold be more than 1')
-                return False
-            else:
-                return True
+            return True
     
     def print_infor(self) -> None:
+        if not self.__data_dict:
+            print("Data_dict is empty")
+            return
         dict_key = list(self.__data_dict.keys())
-        print("")
-        print(f"ROI = {self.__roi_obj.data}, data_dict_key = {dict_key}")
+        if self.__data_dict[dict_key[0]] is None:
+            print("No data in the ROI")
+            return
+        print("ROI information ===================")
+        print(f"ROI = {self.__roi_obj.data}")
+        print("-- data_dict LIST -- ")
+        for experiments in dict_key:
+            key_list = list(self.__data_dict[experiments].keys())
+            print(f"{experiments} = {key_list}")
+        print("=============== ROI information END")
+            
+    @property
+    def data_dict(self):
+        return self.__data_dict
 
 
 
