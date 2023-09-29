@@ -22,6 +22,14 @@ class ModelInterface(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
+    def create_user_controller(self, controller_key):
+        raise NotImplementedError()
+     
+    @abstractmethod
+    def resister_filename2controller(self, controller_key, filename_str):
+        raise NotImplementedError()
+        
+    @abstractmethod
     def get_experiments(self, key):  # return whole data_dict in experiments
         raise NotImplementedError()
     
@@ -65,6 +73,9 @@ class DataService(ModelInterface):
         if new_key is None:
             new_key = controller_key.upper() + "1"
         self.__user_controller_repository.save(new_key, new_controller)
+        
+    def resister_filename2controller(self, controller_key, filename_str):
+        self.__user_controller_repository.data[controller_key.upper()].add_experiments(filename_str)
     
     def get_experiments(self, key):  # return whole data_dict in experiments
         return self.__experiments_repository.data[key]
@@ -114,9 +125,8 @@ class DataService(ModelInterface):
         prefix = re.sub(r'\d+', '', numeric_keys[0])
         new_key = prefix + str(min_missing_number)
         return new_key
-    
 
-        
+
 
 """
 Repository
@@ -183,17 +193,6 @@ class ModRepository(RepositoryInterface):
     def __init__(self):
         self.__data = {}   # {key:entiry}
     
-    def save(self, key: str, data):
-        self.__data[key] = data
-        
-    def find_by_name(self, key: str):
-        entity = self.__data[key]
-        if entity is None:
-            raise Exception(f"There is no {key}")
-        print(f"Return the key = {key}" )
-        return entity
-    
-    def delete(self, key: str):
-        del self.__data[key]
+
 
     

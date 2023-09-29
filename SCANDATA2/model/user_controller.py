@@ -47,11 +47,11 @@ abstract product
 """
 class UserController(metaclass=ABCMeta):
     @abstractmethod
-    def set_data(self):
+    def set_data(self, x, y, x_width, y_width):
         raise NotImplementedError()
-        
+    
     @abstractmethod
-    def get_infor(self):
+    def add_experiments(self, filename_str):
         raise NotImplementedError()
 
     @abstractmethod
@@ -74,7 +74,7 @@ class Roi(UserController):
         self.__data_dict = {}  # data dict = {filename:frame_type{full:TraceData,ch1:TraceData,ch2:TraceData}}
         self.__mod_list = []
         
-        self.__experiments_list = []
+        #self.__experiments_list = []
         
         self.print_infor()
         
@@ -83,35 +83,55 @@ class Roi(UserController):
         print('----- Deleted a Roi object.' + '  myId={}'.format(id(self)))
         #pass
         
-    def set_data(self, x = None, y = None, x_width = None, y_width = None) -> None:
-        check_bool = self.check_val(x, y, x_width, y_width)
+    def set_data(self, roi_value_list):
+        x = roi_value_list[0]
+        y = roi_value_list[1]
+        x_width = roi_value_list[2]
+        x_width = roi_value_list[3]
+        self.__new_roi_obj()
+        pass
+        
+    # make a new Roi value object
+    def __new_roi_obj(self, x = None, y = None, x_width = None, y_width = None) -> None:
+        check_bool = self.__check_val(x, y, x_width, y_width)
         if check_bool is True:
-            # make a new Roi value object
             self.__roi_obj = RoiVal(x, y, x_width, y_width)  # replace the roi
-            for key in self.__experiments_list:
+        elif check_bool is False:
+            print('Failed to make a new ROI value object')
+            
+    def set_dict_data(self, experiments_list):
+            for key in experiments_list:
                 # get Experiments obj Data using a method in DataService
                 frames_dict = self.get_experiments(key).frames_dict
                 # make a traces data dict
                 for key in frames_dict:  # key = "Full", "Ch1", "Ch2"
-                    self.__data_dict[key] = self.trace_culc(frames_dict[key], self.__roi_obj)
+                    self.__data_dict[key] = self.__trace_culc(frames_dict[key], self.__roi_obj)
             self.print_infor()
-        elif check_bool is False:
-            print('Failed to make a new ROI value')
             
-    # calculation from a frame data
-    def trace_culc(self, frames, roi_val):
-        roi = roi_val.data
-        if roi[0] + roi[2] > self.x_size - 1 or roi[1] + roi[3] > self.y_size - 1: 
+    def add_experiments(self, filename_str):
+        self.__data_dict[filename_str] = None
+        #self.set_dict_data(self.experiments_list)
+        print(f"Added {filename_str} to ROI")
+            
+    # calculate a trace from a single frames data with a roi value object
+    def __trace_culc(self, frames_obj, roi_obj):
+        # convert to raw values
+        roi = roi_obj.data
+        # check the value is correct. See RoiVal class.
+        frames_size = frames_obj.shape
+        if roi[0] + roi[2] > frames_size[0] or roi[1] + roi[3] > frames_size[1]: 
             raise Exception("The roi size should be the same as the image size or less")
         if roi[0] < 0 or roi[1] < 0: 
             raise Exception("The roi should be the same as 0 or more")
-        if roi[2] < 1 or roi[3] < 1: 
-           print("Warning!!!!!! The roi length is 0 or less")
-
-        trace_val = self.__create_fluo_trace(self.__frames_obj, roi)
-        self.__trace_obj = TraceData(trace_val, self.__interval)
+        if roi[2] < 0 or roi[3] < 0: 
+            raise Exception("The roi length should be the same as 0 or more")
+        # make raw trace data
+        raw_trace_val = self.__create_row_fluotrace(frames_obj, roi)
+        # make a trace value object
+        self.__trace_obj = TraceData(raw_trace_val, frames_obj.__interval)
         
-    def __create_fluo_trace(frames_obj, roi) -> np.ndarray:
+    # calculate raw numpy value of a trace
+    def __create_row_fluotrace(frames_obj, roi) -> np.ndarray:
         x = roi[0]
         y = roi[1]
         x_length = roi[2]
@@ -119,13 +139,8 @@ class Roi(UserController):
         mean_data = np.mean(frames_obj.data[x:x+x_length, y:y+y_length, :], axis = 0)
         mean_data = np.mean(mean_data, axis = 0)
         return mean_data
-            
-    def __create_time_data(self, trace, interval) -> np.ndarray:
-        num_data_point = interval * np.shape(trace)[0]
-        time_val = np.linspace(interval, num_data_point, np.shape(trace)[0])
-        return time_val
         
-    def check_val(self, x = None, y = None, x_width = None, y_width = None) -> None:
+    def __check_val(self, x = None, y = None, x_width = None, y_width = None) -> None:
         # check the val for existance
         if x is None:
             x = self.__roi_obj.data[0]
@@ -153,9 +168,18 @@ class Roi(UserController):
                 return False
             else:
                 return True
+    
+    def print_infor(self) -> None:
+        dict_key = list(self.__data_dict.keys())
+        print("")
+        print(f"ROI = {self.__roi_obj.data}, data_dict_key = {dict_key}")
+
+
+
+
 
     def add_data(self, x: int, y: int, x_width=0, y_width=0) -> None:
-        check_bool = self.check_val(self.__roi_obj.data[0] + x,
+        check_bool = self.__check_val(self.__roi_obj.data[0] + x,
                                     self.__roi_obj.data[1] + y,
                                     self.__roi_obj.data[2] + x_width,
                                     self.__roi_obj.data[3] + y_width)
@@ -171,17 +195,8 @@ class Roi(UserController):
         self.__roi_obj = RoiVal(40, 40, 2, 2)
         self.print_infor()
         print('----- Reset ROI and notified')
-
-    @property   
-    def get_infor(self):  # get names from observers
-        name_list = self.__observer.get_infor()
-        return name_list
-    
-    def print_infor(self) -> None:
-        dict_key = list(self.__data_dict.keys())
-        print("")
-        print(f"ROI = {self.__roi_obj.data}, data_dict_key = {dict_key}")
-
+        
+        
 
 class FrameWindow(UserController):
     def __init__(self):
