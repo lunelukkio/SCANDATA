@@ -26,8 +26,8 @@ class Test(unittest.TestCase):
         roi3 = data_service.get_user_controller("ROI3")
         
         #delete ROI
-        data_service.delete_user_controller("Roi2")
-
+        data_service.create_user_controller("Roi2")
+        data_service.print_infor()
         
         #add filename to ROI1
         data_service.resister_filename2controller("20408B002.tsm", "Roi1")
@@ -40,6 +40,7 @@ class Test(unittest.TestCase):
         
         data_service.set_controller("ROI1", [20,20,20,20])
         roi1.data_dict["20408B002.tsm"]["FULL"].show_data()
+        
         
 
         

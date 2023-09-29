@@ -40,13 +40,6 @@ class ModelInterface(metaclass=ABCMeta):
     def get_user_controller(self, key):
         raise NotImplementedError()
         
-    @abstractmethod
-    def delete_experiments(self, key):
-        raise NotImplementedError()
-
-    @abstractmethod
-    def delete_user_controller(self, key):
-        raise NotImplementedError()
         
 class DataService(ModelInterface):
     def __init__(self):
@@ -57,45 +50,50 @@ class DataService(ModelInterface):
         filename_obj = WholeFilename(fullname)
         return filename_obj
         
-    def create_model(self, fullname):
+    def create_model(self, fullname): #Use the same name to delete a model
         # make a filename value obj from fullname
         filename_obj = self.__create_filename_obj(fullname)
-        # make a data entity
-        experiments = Experiments(filename_obj)
-        # save entity to the repository
-        self.__experiments_repository.save(filename_obj.name, experiments)
-        self.print_infor()
+        if self.__experiments_repository.find_by_name(filename_obj.name) is None:
+            # make a data entity
+            experiments = Experiments(filename_obj)
+            # save entity to the repository
+            self.__experiments_repository.save(filename_obj.name, experiments)
+            self.print_infor()
+        else:
+            # delete a model
+            self.__experiments_repository.delete(filename_obj.name)
  
-    def create_user_controller(self, controller_key):  # controller_key = "Roi", "TimeWindow"
-        # get a controller factory 
-        controller_factory = self.__check_controller_type(controller_key)
-        # make a new controller with the method in DataService
-        new_controller = controller_factory.create_controller(self.get_experiments)
-        # save to the repository
-        new_key = self.__key_num_maker(controller_key)
-        self.__user_controller_repository.save(new_key, new_controller)
-        self.print_infor()
+    def create_user_controller(self, controller_key):  # controller_key = "Roi", "TimeWindow". Use the same name to delete like "ROI1"
+        controller_key = controller_key.upper()
+        if self.__user_controller_repository.find_by_name(controller_key) is None:
+            # get a controller factory 
+            controller_factory = self.__check_controller_type(controller_key)
+            # make a new controller with the method in DataService
+            new_controller = controller_factory.create_controller(self.get_experiments)
+            # save to the repository
+            new_key = self.__key_num_maker(controller_key)
+            self.__user_controller_repository.save(new_key, new_controller)
+            self.print_infor()
+        else:
+            self.__user_controller_repository.delete(controller_key)
         
     def resister_filename2controller(self, filename_key, controller_key):
-        controller = self.__user_controller_repository.find_by_name(controller_key.upper())
+        controller_key = controller_key.upper()
+        controller = self.__user_controller_repository.find_by_name(controller_key)
         print(f"Add {filename_key} to {controller_key}")
         controller.add_experiments(filename_key)
 
     def set_controller(self, controller_key: str, val: list):
-        controller = self.__user_controller_repository.find_by_name(controller_key.upper())
+        controller_key = controller_key.upper()
+        controller = self.__user_controller_repository.find_by_name(controller_key)
         controller.set_controller(val)
     
     def get_experiments(self, key):  # return whole data_dict in experiments
         return self.__experiments_repository.data[key]
 
-    def get_user_controller(self, key):
-        return self.__user_controller_repository.data[key.upper()]
-    
-    def delete_experiments(self, key):
-        self.__experiments_repository.delete(key.upper())
-        
-    def delete_user_controller(self, key):
-        self.__user_controller_repository.delete(key.upper())
+    def get_user_controller(self, controller_key):
+        controller_key = controller_key.upper()
+        return self.__user_controller_repository.data[controller_key]
     
     def print_infor(self):
         print("DataService information ===========================")
@@ -105,19 +103,20 @@ class DataService(ModelInterface):
         
 
     def __check_controller_type(self, key):
-        if key.upper() == "ROI":
+        if key == "ROI":
             return RoiFactory()
-        elif key.upper() == "FRAMEWINDOW":
+        elif key == "FRAMEWINDOW":
             return FrameWindow()
-        elif key.upper() == "FRAMESSHIFT":
+        elif key == "FRAMESSHIFT":
             return FrameShift()
-        elif key.upper() == "LINE":
+        elif key == "LINE":
             return Line()
         
     def __key_num_maker(self, controller_key):
+        controller_key = controller_key.upper()
         controler_dict = self.__user_controller_repository.data
         if not bool(controler_dict):
-            new_key = controller_key.upper() + "1"
+            new_key = controller_key + "1"
         else:
             numeric_keys = [key for key in controler_dict.keys() if any(char.isdigit() for char in key)]
             numeric_values = [int(''.join(filter(str.isdigit, key))) for key in numeric_keys]
@@ -129,7 +128,7 @@ class DataService(ModelInterface):
                 if i not in numeric_values:
                     min_missing_number = i
                     break
-            new_key = controller_key.upper() + str(min_missing_number)
+            new_key = controller_key + str(min_missing_number)
         return new_key
 
 
@@ -159,10 +158,11 @@ class ExperimentsRepository(RepositoryInterface):
         self.__data[key] = data
         
     def find_by_name(self, key: str):
-        entity = self.__data[key]
-        if entity is None:
-            raise Exception(f"There is no {key}")
-        return entity
+        if key in self.__data:
+            return self.__data[key]
+        else:
+            print(f"There is no {key}")
+            return None
 
     def delete(self, key: str):
         self.__data.pop(key)
@@ -180,10 +180,11 @@ class UserControllerRepository(RepositoryInterface):
         self.__data[key] = data
         
     def find_by_name(self, key: str):
-        entity = self.__data[key]
-        if entity is None:
-            raise Exception(f"There is no {key}")
-        return entity
+        if key in self.__data:
+            return self.__data[key]
+        else:
+            print(f"There is no {key}")
+            return None
     
     def delete(self, key: str):
         self.__data.pop(key)
