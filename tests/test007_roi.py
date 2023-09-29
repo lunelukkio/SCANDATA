@@ -7,6 +7,7 @@ lunelukkio@gmail.com
 
 import unittest
 from SCANDATA2.model.model_main import DataService
+import matplotlib.pyplot as plt
 
 class TestRoi(unittest.TestCase):
         data_service = DataService()      
@@ -22,10 +23,13 @@ class TestRoi(unittest.TestCase):
         data_service.resister_filename2controller("20408B002.tsm", "Roi1")
 
         
-        roi1.data_dict["20408B002.tsm"]["CH1"].show_data()
+        #roi1.data_dict["20408B002.tsm"]["CH1"].show_data()
         
-        data_service.set_controller("ROI1", [20,20,0,0])
-        roi1.data_dict["20408B002.tsm"]["FULL"].show_data()
+        data_service.set_controller("ROI1", [78,1,1,1])
+        roi1.data_dict["20408B002.tsm"]["CH1"].show_data()
+        #plt.figure()
+        #data_service.set_controller("ROI1", [78,78,3,1])
+        #roi1.data_dict["20408B002.tsm"]["CH1"].show_data()
 
         
 

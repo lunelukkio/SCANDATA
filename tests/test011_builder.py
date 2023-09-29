@@ -6,18 +6,16 @@ Created on Sat May  6 00:05:42 2023
 """
 
 import unittest
-from SCANDATA.model.data_factory import FullFramesFactory, ChFramesFactory, FullFrames, ChFrames
-from SCANDATA.model.value_object import Filename
-from SCANDATA.model.builder import Builder
+
 import numpy as np
 
-filename = Filename('..\\220408\\20408B002.tsm')  # this isa a value object
 
-class TestBuilder(unittest.TestCase):
-    def test_builder(self):
-        builder = Builder()
-        builder.read_file()
+l = list(range(10))
+print(l)
+# [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
+print(l[0:8])
+# [4, 5, 6, 7]
 
 if __name__ == '__main__':
     unittest.main()

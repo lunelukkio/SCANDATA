@@ -7,6 +7,7 @@ Created on Fri Sep 15 08:38:14 2023
 
 import unittest
 from SCANDATA2.model.model_main import DataService
+import matplotlib.pyplot as plt
 
 class Test(unittest.TestCase):
     def test(self):
@@ -40,6 +41,7 @@ class Test(unittest.TestCase):
         
         data_service.set_controller("ROI1", [20,20,20,20])
         roi1.data_dict["20408B002.tsm"]["CH1"].show_data()
+        plt.figure()
         data_service.reset("ROI1")
         roi1.data_dict["20408B002.tsm"]["CH1"].show_data()
         

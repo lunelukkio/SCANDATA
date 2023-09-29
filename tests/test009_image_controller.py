@@ -7,6 +7,7 @@ lunelukkio@gmail.com
 
 import unittest
 from SCANDATA2.model.model_main import DataService
+import matplotlib.pyplot as plt
 
 class TestRoi(unittest.TestCase):
         data_service = DataService()      
@@ -23,8 +24,10 @@ class TestRoi(unittest.TestCase):
 
         
         #ic1.data_dict["20408B002.tsm"]["FULL"].show_data()
-        
-        data_service.set_controller("imagecontroller1", [1,1,0,0])
+        exp = data_service.get_experiments("20408B002.tsm")
+        exp.frames_dict["CH1"].show_data()
+        plt.figure()
+        data_service.set_controller("imagecontroller1", [0,99,1,1])
         ic1.data_dict["20408B002.tsm"]["CH1"].show_data()
         #roi1.data_dict["20408B002.tsm"]["FULL"].show_data()
 

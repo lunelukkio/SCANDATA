@@ -110,13 +110,14 @@ class Roi(UserController):
     # calculate a trace from a single frames data with a roi value object
     def __trace_culc(self, frames_obj, roi_obj):
         # check value is correct
-        self.__check_val(frames_obj, roi_obj)
+        #self.__check_val(frames_obj, roi_obj)
         # make raw trace data
         x = roi_obj.data[0]
         y = roi_obj.data[1]
-        x_length = roi_obj.data[2]
-        y_length = roi_obj.data[3]
-        mean_data = np.mean(frames_obj.data[x:x+x_length, y:y+y_length, :], axis = 0)
+        x_width = roi_obj.data[2]
+        y_width = roi_obj.data[3]
+            
+        mean_data = np.mean(frames_obj.data[x:x+x_width, y:y+y_width, :], axis = 0) #slice end doesn't include to slice
         mean_data = np.mean(mean_data, axis = 0)
         # make a trace value object
         return TraceData(mean_data, frames_obj.interval)
@@ -126,12 +127,14 @@ class Roi(UserController):
         roi = roi_obj.data
         # check the value is correct. See RoiVal class.
         frames_size = frames_obj.shape
-        if roi[0] + roi[2] > frames_size[0] or roi[1] + roi[3] > frames_size[1]: 
+        print(roi[0])
+        print(roi[2])
+        if roi[0] + roi[2]-1 > frames_size[0] or roi[1] + roi[3] -1> frames_size[1]:  #width is always 1 or more.
             raise Exception("The roi size should be the same as the image size or less")
         if roi[0] < 0 or roi[1] < 0: 
             raise Exception("The roi should be the same as 0 or more")
-        if roi[2] < 0 or roi[3] < 0: 
-            raise Exception("The roi length should be the same as 0 or more")
+        if roi[2] < 1 or roi[3] < 1: 
+            raise Exception("The roi width should be the same as 1 or more")
         else:
             return True
     
@@ -163,7 +166,7 @@ class Roi(UserController):
 class ImageController(UserController):
     def __init__(self, get_experiments_method):
         self.get_experiments = get_experiments_method
-        self.__time_window_obj = TimeWindowVal(0, 0, 0, 0)
+        self.__time_window_obj = TimeWindowVal(0, 0, 1, 1)
         self.__data_dict = {}  # data dict = {filename:frame_type{full:ImageData,ch1:ImageData,ch2:ImageData}}
         self.__mod_list = []
         
@@ -213,7 +216,7 @@ class ImageController(UserController):
             val = frames_obj.data[:, :, start]
             print(f'Cell image from a single frame# {start} : Succeeded')
         elif end - start > 0: 
-            val = np.mean(frames_obj.data[:, :, start:end+1], axis = 2)
+            val = np.mean(frames_obj.data[:, :, start:end+1], axis = 2) # slice end is end+1
             print(f'Cell image from an avaraged frame# {start} to {end}: Succeeded')
         else:
             self._data = np.zeros((2, 2))
@@ -235,7 +238,7 @@ class ImageController(UserController):
             return True
 
     def reset(self) -> None:
-        self.set_controller([0, 0, 0, 0])
+        self.set_controller([0, 0, 1, 1])
 
     def print_infor(self) -> None:
         if not self.__data_dict:
