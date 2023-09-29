@@ -30,6 +30,10 @@ class ModelInterface(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
+    def set_controller(self, controller_key: str, val: list):
+        raise NotImplementedError()
+        
+    @abstractmethod
     def get_experiments(self, key):  # return whole data_dict in experiments
         raise NotImplementedError()
     
@@ -78,6 +82,9 @@ class DataService(ModelInterface):
         print(f"Add {filename_str} to {controller_key}")
         controller.add_experiments(filename_str)
 
+    def set_controller(self, controller_key: str, val: list):
+        controller = self.__user_controller_repository.find_by_name(controller_key.upper())
+        controller.set_controller(val)
     
     def get_experiments(self, key):  # return whole data_dict in experiments
         return self.__experiments_repository.data[key]
