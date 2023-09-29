@@ -177,7 +177,7 @@ class TsmBuilder(Builder):
         self.frames = file_io.get_3d()
         self.elec_data = file_io.get_1d()
         
-        file_io.print_data_infor()
+        #file_io.print_data_infor()
         
         del file_io   # release the io object to allow file changes during recording.
         print("----- TsmBulder: The .tsm file was imported and the file_io object was deleted.")

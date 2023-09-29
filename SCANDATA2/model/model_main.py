@@ -8,7 +8,6 @@ from abc import ABCMeta, abstractmethod
 from SCANDATA2.model.value_object import WholeFilename
 from SCANDATA2.model.experiments import Experiments
 from SCANDATA2.model.user_controller import RoiFactory, FrameWindow, FrameShift, Line
-import re
 #import inspect
 #from SCANDATA.model.mod_factory import ModClient
 #from weakref import WeakValueDictionary
@@ -26,7 +25,7 @@ class ModelInterface(metaclass=ABCMeta):
         raise NotImplementedError()
      
     @abstractmethod
-    def resister_filename2controller(self, controller_key, filename_str):
+    def resister_filename2controller(self, filename_key, controller_key):
         raise NotImplementedError()
         
     @abstractmethod
@@ -77,10 +76,10 @@ class DataService(ModelInterface):
         self.__user_controller_repository.save(new_key, new_controller)
         self.print_infor()
         
-    def resister_filename2controller(self, filename_str, controller_key):
+    def resister_filename2controller(self, filename_key, controller_key):
         controller = self.__user_controller_repository.find_by_name(controller_key.upper())
-        print(f"Add {filename_str} to {controller_key}")
-        controller.add_experiments(filename_str)
+        print(f"Add {filename_key} to {controller_key}")
+        controller.add_experiments(filename_key)
 
     def set_controller(self, controller_key: str, val: list):
         controller = self.__user_controller_repository.find_by_name(controller_key.upper())
