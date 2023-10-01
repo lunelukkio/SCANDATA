@@ -15,7 +15,6 @@ import glob
 """
 Value object
 """
-
 class WholeFilename:  # Use it only in a view and controller
     def __init__(self, fullname: str):
         self.__fullname = os.path.join(fullname)  # replace separater for each OS
@@ -334,7 +333,7 @@ class RoiVal:  # Shold be called by the same class for __add__ and __sub__
 class TimeWindowVal:  # Shold be called by the same class for __add__ and __sub__
     # be careful about end_width. np.mean slice a value not include end.
     def __init__(self, start: int, width=1):
-        if start < 0: 
+        if start < 0:
             raise Exception('TimeWindow start values should be 0 or more')
         if width < 1:
             raise Exception('FrameWindow width values should be 1 or more')
