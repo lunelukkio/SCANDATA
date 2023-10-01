@@ -27,7 +27,7 @@ class TestRoi(unittest.TestCase):
         exp = data_service.get_experiments("20408B002.tsm")
         exp.frames_dict["CH1"].show_data()
         plt.figure()
-        data_service.set_controller("imagecontroller1", [0,100])
+        data_service.set_controller("imagecontroller1", [99,1])
         ic1.data_dict["20408B002.tsm"]["CH1"].show_data()
         #roi1.data_dict["20408B002.tsm"]["FULL"].show_data()
 

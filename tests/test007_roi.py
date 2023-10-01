@@ -25,7 +25,7 @@ class TestRoi(unittest.TestCase):
         
         #roi1.data_dict["20408B002.tsm"]["CH1"].show_data()
         
-        data_service.set_controller("ROI1", [78,1,1,1])
+        data_service.set_controller("ROI1", [78,0,2,1])
         roi1.data_dict["20408B002.tsm"]["CH1"].show_data()
         #plt.figure()
         #data_service.set_controller("ROI1", [78,78,3,1])
