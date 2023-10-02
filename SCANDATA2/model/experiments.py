@@ -43,8 +43,8 @@ class Experiments:   # entity
         else:
             raise Exception("This file is an undefineded file!!!")
             
-    def find_controller(self):
-        return self.builder.find_controller()
+    def get_default(self):
+        return self.builder.default()
             
     def print_infor(self):
         print("Experiments information")
@@ -123,8 +123,6 @@ class ExperimentsObserver:
         return self.__observers
 
 
-
-
     
 """
 Builder
@@ -158,25 +156,23 @@ class Builder(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
-    def find_controller(self):
-        raise NotImplementedError()
-
+    def default(self, filename_obj):
+        raise NotImplementedError()   
+        
 
 class TsmBuilder(Builder):
     def __init__(self, filename_obj):
-        num_ch = 2   # this is for Na+ and Ca2+ recording.
-        infor_keys = ["Full_interval",
-                     "Ch1_interval",
-                     "Ch2_interval",
-                     "Elec1_interval",
-                     "Elec2_interval",
-                     "Elec3_interval",
-                     "Elec4_interval",
-                     "Elec5_interval",
-                     "Elec6_interval",
-                     "Elec7_interval",
-                     "Elec8_interval"]
-        file_io = TsmFileIo(filename_obj, num_ch)
+        self.num_ch = 2   # this is for Na+ and Ca2+ recording.
+        self.num_elec_ch = 8
+        self.default_controller = {"ROI": 2, "IMAGECONTROLLER": 1} 
+        
+        infor_keys = ["FULL_INTERVAL"]
+        for idx in range(self.num_ch):
+            infor_keys.append(f"CH{idx + 1}_INTERVAL")
+        for idx in range(self.num_elec_ch):
+           infor_keys.append(f"ELEC{idx + 1}_INTERVAL")
+
+        file_io = TsmFileIo(filename_obj, self.num_ch)
         
         # get and set data from files
         data_infor = file_io.get_infor()   # get interval infor from the io
@@ -193,35 +189,26 @@ class TsmBuilder(Builder):
     def get_infor(self):
         return self.data_infor_dict
         
-    def get_frame(self) -> dict:
+    # make data_dict {data_key: FrameData}  {"FULL": data, "CH1": data ......}
+    def get_frame(self) -> dict:  # change to numpy to value obj
         data = {"FULL": FramesData(self.frames[0], 
-                                   self.data_infor_dict["Full_interval"]),   # change to numpy to value obj
-                "CH1": FramesData(self.frames[1], 
-                                  self.data_infor_dict["Ch1_interval"]),    # change to numpy to value obj
-                "CH2": FramesData(self.frames[2], 
-                                  self.data_infor_dict["Ch2_interval"])}   # change to numpy to value obj
-        
+                                   self.data_infor_dict["FULL_INTERVAL"])}
+        for idx in range(self.num_ch):
+            data[f"CH{idx + 1}"] = FramesData(self.frames[idx + 1], 
+                                   self.data_infor_dict[f"CH{idx + 1}_INTERVAL"])    # change to numpy to value obj
         return data
 
     def get_image(self):
         print("----- There is no image data")
         return None
     
-    def get_trace(self):       
-        data = {"ELEC_CH1": TraceData(self.elec_data[0], 
-                                      self.data_infor_dict["Elec1_interval"]), 
-                "ELEC_CH2": TraceData(self.elec_data[1], 
-                                      self.data_infor_dict["Elec2_interval"]), 
-                "ELEC_CH3": TraceData(self.elec_data[2], 
-                                      self.data_infor_dict["Elec3_interval"]),
-                "ELEC_CH4": TraceData(self.elec_data[3], 
-                                      self.data_infor_dict["Elec4_interval"]),
-                "ELEC_CH5": TraceData(self.elec_data[4], 
-                                      self.data_infor_dict["Elec5_interval"]),
-                "ELEC_CH6": TraceData(self.elec_data[5], 
-                                      self.data_infor_dict["Elec6_interval"]),
-                "ELEC_CH7": TraceData(self.elec_data[6], 
-                                      self.data_infor_dict["Elec7_interval"]),
-                "ELEC_CH8": TraceData(self.elec_data[7], 
-                                      self.data_infor_dict["Elec8_interval"])}
+    # make data_dict {data_key: TraceData}  {"ELEC_CH1": data, ""ELEC_CH2": data ......}
+    def get_trace(self):
+        data = {}
+        for idx in range(self.num_elec_ch):
+            data[f"ELEC_CH{idx + 1}"] = TraceData(self.elec_data[idx], 
+                                          self.data_infor_dict[f"ELEC{idx + 1}_INTERVAL"])    # change to numpy to value obj
         return data
+    
+    def default(self):
+        return self.default_controller

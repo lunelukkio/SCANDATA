@@ -30,11 +30,11 @@ class ModelInterface(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
-    def get_experiments(self, key):  # return whole data_dict in experiments
+    def get_experiments(self, key) -> object:  # return whole data_dict in experiments
         raise NotImplementedError()
     
     @abstractmethod
-    def get_user_controller(self, key):
+    def get_user_controller(self, key) -> object:
         raise NotImplementedError()
         
     @abstractmethod
@@ -116,14 +116,19 @@ class DataService(ModelInterface):
         elif key == "IMAGECONTROLLER":
             return ImageControllerFactory()
 
-        
+        # To make a number for controller key.
     def __key_num_maker(self, controller_key):
         controller_key = controller_key.upper()
-        controler_dict = self.__user_controller_repository.data
-        if not bool(controler_dict):
+        controller_dict = self.__user_controller_repository.data
+        count = 0
+        for key in controller_dict.keys():
+            if controller_key in key:
+                count += 1
+        
+        if count == 0:
             new_key = controller_key + "1"
         else:
-            numeric_keys = [key for key in controler_dict.keys() if any(char.isdigit() for char in key)]
+            numeric_keys = [key for key in controller_dict.keys() if any(char.isdigit() for char in key)]
             numeric_values = [int(''.join(filter(str.isdigit, key))) for key in numeric_keys]
             # sort from a small number
             sorted_keys = [x for _, x in sorted(zip(numeric_values, numeric_keys))]

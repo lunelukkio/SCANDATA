@@ -333,6 +333,7 @@ class DataWindow(tk.Frame):
                                      'Data5': True,  # ch6
                                      'Data6': True,  # ch7
                                      'Data7': True}  # ch8
+        print("Reset data.")
             
 
         

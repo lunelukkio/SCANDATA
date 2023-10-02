@@ -19,10 +19,10 @@ class TestFullFrames(unittest.TestCase):
                 
         root = tk.Tk()
         root.title("SCANDATA")
-        
         view = DataWindow(root, filename_obj)
-        
         root.mainloop()
+        
+        
 
 
 if __name__ == '__main__':

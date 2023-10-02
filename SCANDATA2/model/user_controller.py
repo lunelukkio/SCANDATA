@@ -123,7 +123,7 @@ class Roi(UserController):
         y = roi_obj.data[1]
         x_width = roi_obj.data[2]
         y_width = roi_obj.data[3]
-            
+        
         mean_data = np.mean(frames_obj.data[x:x+x_width, y:y+y_width, :], axis = 0) #slice end doesn't include to slice
         mean_data = np.mean(mean_data, axis = 0)
         # make a trace value object
@@ -207,6 +207,9 @@ class ImageController(UserController):
         self.__data_dict[filename_str] = None
         self.set_data()
         self.print_infor()
+        
+    def show_data(self, filename_key, data_key):
+        self.__data_dict[filename_key][data_key.upper()].show_data()
             
     # calculate a image from a single frames data with a time window value object
     def __image_culc(self, frames_obj, time_window_obj):

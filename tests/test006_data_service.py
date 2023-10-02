@@ -30,6 +30,7 @@ class Test(unittest.TestCase):
         data_service.create_user_controller("Roi2")
         data_service.print_infor()
         
+
         #add filename to ROI1
         data_service.bind_filename2controller("20408B002.tsm", "Roi1")
         data_service.bind_filename2controller("20408B001.tsm", "Roi1")

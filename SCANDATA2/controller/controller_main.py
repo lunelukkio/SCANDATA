@@ -64,12 +64,31 @@ class ViewController:
 
 
 
+
+
+
+
+
+
     def file_open(self):
         filename_obj = self.file_service.file_open()
         self.__filename_obj_list.append(filename_obj.name)
         self.view.reset()        
         self.create_model(filename_obj)
-
+        
+        default_controller = self.model.get_experiments(filename_obj.name).get_default()
+        print(default_controller)
+        for controller_key in default_controller.keys():
+            print(controller_key)
+            for num in range(default_controller[controller_key]):
+                print(default_controller[controller_key])
+                self.model.create_user_controller(controller_key)
+        
+        
+        
+        
+        
+        
 
 
     def set_roi_position(self, event, roi_num=1):
