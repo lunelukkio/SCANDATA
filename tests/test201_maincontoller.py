@@ -9,13 +9,12 @@ import unittest
 from SCANDATA.view.view_main import View
 from SCANDATA.controller.controller_main import Controller
 
-fullname = '..\\220408\\20408B002.tsm'
 
 class TestController(unittest.TestCase):
     def test_controller(self):
         
         controller = Controller()
-        filename_obj = controller.create_filename_obj(fullname)
+        model = 
         filename_obj.print_infor()
         
         
