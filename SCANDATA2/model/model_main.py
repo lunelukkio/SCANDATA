@@ -5,7 +5,7 @@ Created on Wed Sep 13 09:11:15 2023
 @author: lunelukkio@gmail.com
 """
 from abc import ABCMeta, abstractmethod
-from SCANDATA2.model.value_object import WholeFilename
+from SCANDATA2.common_class import WholeFilename
 from SCANDATA2.model.experiments import Experiments
 from SCANDATA2.model.user_controller import RoiFactory, ImageControllerFactory
 
