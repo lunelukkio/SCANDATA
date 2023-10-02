@@ -6,7 +6,10 @@ lunelukkio@gmail.com
 main for controller
 """
 
-from SCANDATA2.model.model_main import ModelInterface
+from SCANDATA2.model.model_main import DataService
+from SCANDATA2.common_class import WholeFilename
+import tkinter as tk
+from tkinter import ttk
 import os
 import math
 import glob
@@ -26,27 +29,48 @@ class MainController:
         return memory_infor, maximum_memory, available_memory
     
 
-class ImagingController:
-    def __init__(self, view, filename_obj):
-        self.__filename = filename_obj
+class ViewController:
+    def __init__(self, view=None):
+        self.model = DataService()
         self.view = view
-        self.model = None
-        self.current_roi_num = None
-        self.view_data_repository = None
+        self.file_service = FileService()
+        self.__filename_obj_list = []  # list of filename keys
+        
+        
+        self.current_roi = None
+        self.current_image_time_window = None
+        self.current_trace_time_window = None
         
     def create_model(self, filename_obj: object):  
-        self.model = DataSet(filename_obj.fullname)  # send filename str
+        self.model.create_model(filename_obj.fullname)
         if self.model == None:
             raise Exception('Failed to create a model.')
         else:
-            print('============================== Suceeded to read data from data files. ============================== (from ImagingController)')
+            print('============================== Controller: Suceeded to read data from data files.')
             print('')
         return self.model
     
-    def create_filename_obj(self, filename: str):
-        filename_obj = WholeFilename(filename)  # Convert from str to value object.
-        self.__filename = filename_obj
-        return filename_obj
+    def create_controller(self, controller_key:str):
+        self.model.create_user_controller(controller_key)
+        
+    def bind_filename2controller(self, filename_key, controller_key):
+        self.model.bind_filename2controller(filename_key, controller_key)
+        
+    def set_controller(self, controller_key: str, val: list):
+        self.model.set_controller(controller_key, val)
+        
+    def get_data(self, controller_key):
+        return self.model.get_user_controller(controller_key)
+
+
+
+    def file_open(self):
+        filename_obj = self.file_service.file_open()
+        self.__filename_obj_list.append(filename_obj.name)
+        self.view.reset()        
+        self.create_model(filename_obj)
+
+
 
     def set_roi_position(self, event, roi_num=1):
         self.current_roi_num = roi_num
@@ -96,10 +120,30 @@ class ImagingController:
     def update_data(self, key):
         self.model.update_data(key)
         
-        
-"Value object"
 
-
+class FileService:
+    def file_open(self, *filename):  # it can catch variable num of filenames.
+        if filename == ():
+            fullname = self.get_fullname()  # This is str filename
+            if fullname == None:
+                print("There is no such a filename.")
+                return
+            return WholeFilename(fullname)
+    
+    
+    @staticmethod
+    def get_fullname(event=None):
+        # open file dialog
+        fullname = tk.filedialog.askopenfilename(
+            initialdir = os.getcwd(), # current dir
+            filetypes=(('Tsm files', '*.tsm'),
+                       ('Da files', '*.da'), 
+                       ('Axon files', '*.abf'),
+                       ('WinCP files', '*.wcp'),
+                       ('All files', '*.*'))
+                      )
+        return fullname
+    
 
 
 

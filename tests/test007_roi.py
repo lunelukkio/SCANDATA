@@ -20,7 +20,7 @@ class TestRoi(unittest.TestCase):
         roi1 = data_service.get_user_controller("ROI1")
         
         #add filename to ROI1
-        data_service.resister_filename2controller("20408B002.tsm", "Roi1")
+        data_service.bind_filename2controller("20408B002.tsm", "Roi1")
 
         
         #roi1.data_dict["20408B002.tsm"]["CH1"].show_data()

@@ -43,6 +43,9 @@ class Experiments:   # entity
         else:
             raise Exception("This file is an undefineded file!!!")
             
+    def find_controller(self):
+        return self.builder.find_controller()
+            
     def print_infor(self):
         print("Experiments information")
         print(f"Data Time interval = {self.__txt_data}")
@@ -153,6 +156,10 @@ class Builder(metaclass=ABCMeta):
     @abstractmethod
     def get_trace(self, filename_obj):
         raise NotImplementedError()
+        
+    @abstractmethod
+    def find_controller(self):
+        raise NotImplementedError()
 
 
 class TsmBuilder(Builder):
@@ -187,13 +194,13 @@ class TsmBuilder(Builder):
         return self.data_infor_dict
         
     def get_frame(self) -> dict:
-        
         data = {"FULL": FramesData(self.frames[0], 
                                    self.data_infor_dict["Full_interval"]),   # change to numpy to value obj
                 "CH1": FramesData(self.frames[1], 
                                   self.data_infor_dict["Ch1_interval"]),    # change to numpy to value obj
                 "CH2": FramesData(self.frames[2], 
                                   self.data_infor_dict["Ch2_interval"])}   # change to numpy to value obj
+        
         return data
 
     def get_image(self):

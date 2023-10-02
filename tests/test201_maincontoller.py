@@ -6,17 +6,25 @@ lunelukkio@gmail.com
 """
 
 import unittest
-from SCANDATA.view.view_main import View
-from SCANDATA.controller.controller_main import Controller
+from SCANDATA2.controller.controller_main import ViewController
+from SCANDATA2.common_class import WholeFilename
 
+filename_obj = WholeFilename('..\\220408\\20408B002.tsm')
 
 class TestController(unittest.TestCase):
     def test_controller(self):
         
-        controller = Controller()
-        model = 
-        filename_obj.print_infor()
+        controller = ViewController()
+        controller.create_model(filename_obj)
+        controller.create_controller("ROI")
+        controller.bind_filename2controller("20408B002.tsm", "Roi1")
+        controller.model.help()
+        roi1 = controller.get_data("ROI1")
         
+        roi1.show_data("20408B002.tsm", "Ch1")
+        controller.set_controller("ROI1", [7,0,40,40])
+        roi1.show_data("20408B002.tsm", "Ch1")
+
         
 if __name__ == '__main__':
     unittest.main()

@@ -31,9 +31,9 @@ class Test(unittest.TestCase):
         data_service.print_infor()
         
         #add filename to ROI1
-        data_service.resister_filename2controller("20408B002.tsm", "Roi1")
-        data_service.resister_filename2controller("20408B001.tsm", "Roi1")
-        data_service.resister_filename2controller("20408B001.tsm", "Roi3")
+        data_service.bind_filename2controller("20408B002.tsm", "Roi1")
+        data_service.bind_filename2controller("20408B001.tsm", "Roi1")
+        data_service.bind_filename2controller("20408B001.tsm", "Roi3")
         
         #roi1.data_dict["20408B002.tsm"]["CH1"].show_data()
         #roi1.data_dict["20408B001.tsm"]["FULL"].show_data()
@@ -43,7 +43,7 @@ class Test(unittest.TestCase):
         roi1.data_dict["20408B002.tsm"]["CH1"].show_data()
         #plt.figure()
         data_service.reset("ROI1")
-        roi1.data_dict["20408B002.tsm"]["CH1"].show_data()
+        roi1.show_data("20408B002.tsm","CH1")
         
         
         

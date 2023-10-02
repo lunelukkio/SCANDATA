@@ -20,7 +20,7 @@ class TestRoi(unittest.TestCase):
         ic1 = data_service.get_user_controller("ImageController1")
         
         #add filename to IC1
-        data_service.resister_filename2controller("20408B002.tsm", "imagecontroller1")
+        data_service.bind_filename2controller("20408B002.tsm", "imagecontroller1")
 
         
         #ic1.data_dict["20408B002.tsm"]["FULL"].show_data()

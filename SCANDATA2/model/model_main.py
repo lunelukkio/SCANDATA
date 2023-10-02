@@ -22,7 +22,7 @@ class ModelInterface(metaclass=ABCMeta):
         raise NotImplementedError()
      
     @abstractmethod
-    def resister_filename2controller(self, filename_key, controller_key):
+    def bind_filename2controller(self, filename_key, controller_key):
         raise NotImplementedError()
         
     @abstractmethod
@@ -58,6 +58,7 @@ class DataService(ModelInterface):
             # make a data entity
             experiments = Experiments(filename_obj)
             # save entity to the repository
+            print("====================Created the new expriments!!!")
             self.__experiments_repository.save(filename_obj.name, experiments)
             self.print_infor()
         else:
@@ -73,12 +74,13 @@ class DataService(ModelInterface):
             new_controller = controller_factory.create_controller(self.get_experiments)
             # save to the repository
             new_key = self.__key_num_maker(controller_key)
+            print(f"====================Created the new controller {controller_key}")
             self.__user_controller_repository.save(new_key, new_controller)
             self.print_infor()
         else:
             self.__user_controller_repository.delete(controller_key)
         
-    def resister_filename2controller(self, filename_key, controller_key):
+    def bind_filename2controller(self, filename_key, controller_key):
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
         print(f"Add {filename_key} to {controller_key}")
@@ -133,6 +135,15 @@ class DataService(ModelInterface):
                     break
             new_key = controller_key + str(min_missing_number)
         return new_key
+    
+    def help(self):
+        
+        print("==================== Help ======================")
+        print("The first step: make a experiments model. ex.model.create_model(filename_obj.fullname)")
+        print("The second step: make a user_controller. ex.model.create_controller(\"ROI\")")
+        print("The third step: bind experiments to user_controller. ex.model.bind_filename2controller(\"20408B002.tsm\", \"Roi1\")")
+        print("The last step: get data from a user_controller. ex. roi1 = model.get_user_controller(\"20408B002.tsm\", \"ROI1\")")
+        
 
 
 
@@ -159,16 +170,19 @@ class ExperimentsRepository(RepositoryInterface):
     
     def save(self, key: str, data):
         self.__data[key] = data
+        print(f"Saved {key} experiments in the experiments repository.")
         
     def find_by_name(self, key: str):
         if key in self.__data:
+            print(f"Found {key} experiments in the experiments repository.")
             return self.__data[key]
         else:
-            print(f"There is no {key}")
+            print(f"There is no {key} experiments in the experiments repository.")
             return None
 
     def delete(self, key: str):
         self.__data.pop(key)
+        print(f"Deleted {key} experiments from the experiments repository.")
         
     @property
     def data(self):
@@ -181,16 +195,18 @@ class UserControllerRepository(RepositoryInterface):
     
     def save(self, key: str, data):
         self.__data[key] = data
+        print(f"Saved {key} controller in the user controller repository.")
         
     def find_by_name(self, key: str):
         if key in self.__data:
             return self.__data[key]
         else:
-            print(f"There is no {key}")
+            print(f"There is no {key} controller in the user repository")
             return None
     
     def delete(self, key: str):
         self.__data.pop(key)
+        print(f"Deleted {key} controller from the user controller repository.")
         
     @property
     def data(self):

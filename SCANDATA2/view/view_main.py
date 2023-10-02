@@ -17,7 +17,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from SCANDATA2.common_class import WholeFilename
 
 
-from SCANDATA2.controller.controller_main import MainController, ImagingController
+from SCANDATA2.controller.controller_main import MainController, ViewController
 
 
 
@@ -25,7 +25,6 @@ class MainView(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.controller = MainController()
-        self.file_service = FileService()
         
         self.__filename_obj_list = []
         self.window = []
@@ -140,33 +139,7 @@ class MainView(tk.Frame):
         
 
 
-class FileService:
-    def file_open(self, *filename):
-        if filename == ():
-            fullname = FileService.get_fullname()  # This is str filename
-            if fullname == None:
-                return
-            self.__filename = WholeFilename(fullname)
 
-        self.reset()        
-        gc.collect()
-        #self.view_data_repository = ViewDataRepository()
-        self.controller = ImagingController(self, self.__filename)
-        self.create_model()
-    
-    
-    @staticmethod
-    def get_fullname(event=None):
-        # open file dialog
-        fullname = tk.filedialog.askopenfilename(
-            initialdir = os.getcwd(), # current dir
-            filetypes=(('Tsm files', '*.tsm'),
-                       ('Da files', '*.da'), 
-                       ('Axon files', '*.abf'),
-                       ('WinCP files', '*.wcp'),
-                       ('All files', '*.*'))
-                      )
-        return fullname
     
         
 
@@ -174,7 +147,7 @@ class DataWindow(tk.Frame):
     def __init__(self, master=None, filename_obj=None):
         super().__init__(master)
         self.pack()
-        self.__filename = []  # filename_obj
+        self.controller = ViewController(self)
         self.ax_list = []  # [0] = main cell image ax (ImageAxsis class), [1] = fluoresent trace ax (TraceAx class), [2] = elec trace ax
         self.my_color = '#BCD2EE'
         
@@ -189,7 +162,7 @@ class DataWindow(tk.Frame):
         Top Buttons
         """
         frame_top = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=2, bg = 'white')
-        tk.Button(frame_top, text='Open',command=self.file_open).pack(side=tk.LEFT)
+        tk.Button(frame_top, text='Open',command=self.controller.file_open).pack(side=tk.LEFT)
         tk.Button(frame_top, text='Close').pack(side=tk.LEFT, padx=5)
         frame_top.pack(fill=tk.X)
         
@@ -321,10 +294,10 @@ class DataWindow(tk.Frame):
         self.canvas_trace.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         trace_fig.subplots_adjust(left=0.06, right=0.97, bottom=0.05, top=0.9)
         
-        if filename_obj is not None:
-            master.title(filename_obj.name)
-            self.__filename = filename_obj
-            self.file_open(self.__filename)
+        #if filename_obj is not None:
+        #    master.title(filename_obj.name)
+        #    self.__filename = filename_obj
+        #    self.contoller.file_open(self.__filename)
         
     def reset(self):
         self.model = None  # in self.file_open()
@@ -678,6 +651,7 @@ if __name__ == '__main__':
         root = tk.Tk()
         root.title("SCANDATA")
         
-        view = MainView(root)
+        #view = MainView(root)
+        view = DataWindow(root)
         
         root.mainloop()

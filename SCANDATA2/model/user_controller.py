@@ -54,6 +54,10 @@ class UserController(metaclass=ABCMeta):
     @abstractmethod
     def add_experiments(self, filename_str):
         raise NotImplementedError()
+        
+    @abstractmethod
+    def show_data(self, data_key):
+        raise NotImplementedError()
 
     @abstractmethod
     def print_infor(self):
@@ -106,6 +110,9 @@ class Roi(UserController):
         self.__data_dict[filename_str] = None
         self.set_data()
         self.print_infor()
+        
+    def show_data(self, filename_key, data_key):
+        self.__data_dict[filename_key][data_key.upper()].show_data()
             
     # calculate a trace from a single frames data with a roi value object
     def __trace_culc(self, frames_obj, roi_obj):
