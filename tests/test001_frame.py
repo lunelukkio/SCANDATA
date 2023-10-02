@@ -6,7 +6,8 @@ lunelukkio@gmail.com
 """
 
 import unittest
-from SCANDATA2.model.value_object import WholeFilename, FramesData
+from SCANDATA2.common_class import WholeFilename
+from SCANDATA2.model.value_object import FramesData
 from SCANDATA2.model.file_io import TsmFileIo
 
 

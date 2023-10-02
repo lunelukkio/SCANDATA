@@ -6,7 +6,7 @@ lunelukkio@gmail.com
 """
 
 import unittest
-from SCANDATA2.model.value_object import WholeFilename
+from SCANDATA2.common_class import WholeFilename
 
 filename = WholeFilename('..\\220408\\20408B002.tsm')
 

@@ -7,7 +7,8 @@ Created on Sat Dec 24 11:25:49 2022
 
 
 import unittest
-from SCANDATA2.model.value_object import WholeFilename, ImageData
+from SCANDATA2.common_class import WholeFilename
+from SCANDATA2.model.value_object import ImageData
 from SCANDATA2.model.file_io import TsmFileIo
 
 
