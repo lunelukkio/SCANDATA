@@ -35,12 +35,27 @@ class ViewController:
         self.view = view
         self.file_service = FileService()
         self.__filename_obj_list = []  # list of filename keys
-        
-        
+
         self.current_roi = None
         self.current_image_time_window = None
         self.current_trace_time_window = None
         
+    def __del__(self):
+        print('.................................................................................................................................ViewController')
+        print('Deleted a ViewController.' + '  myId= {}'.format(id(self)))
+
+    def open_file(self):
+        filename_obj = self.file_service.open_file()
+        self.__filename_obj_list.append(filename_obj.name)       
+        self.create_model(filename_obj)
+        
+        default_controller = self.model.get_experiments(filename_obj.name).get_default()
+        for controller_key in default_controller.keys():
+            for num in range(default_controller[controller_key]):
+                new_key = self.model.create_user_controller(controller_key)
+                self.model.bind_filename2controller(filename_obj.name, new_key)
+        return default_controller
+
     def create_model(self, filename_obj: object):  
         self.model.create_model(filename_obj.fullname)
         if self.model == None:
@@ -48,9 +63,8 @@ class ViewController:
         else:
             print('============================== Controller: Suceeded to read data from data files.')
             print('')
-        return self.model
     
-    def create_controller(self, controller_key:str):
+    def create_user_controller(self, controller_key:str):
         self.model.create_user_controller(controller_key)
         
     def bind_filename2controller(self, filename_key, controller_key):
@@ -70,25 +84,6 @@ class ViewController:
 
 
 
-    def file_open(self):
-        filename_obj = self.file_service.file_open()
-        self.__filename_obj_list.append(filename_obj.name)
-        self.view.reset()        
-        self.create_model(filename_obj)
-        
-        default_controller = self.model.get_experiments(filename_obj.name).get_default()
-        print(default_controller)
-        for controller_key in default_controller.keys():
-            print(controller_key)
-            for num in range(default_controller[controller_key]):
-                print(default_controller[controller_key])
-                self.model.create_user_controller(controller_key)
-        
-        
-        
-        
-        
-        
 
 
     def set_roi_position(self, event, roi_num=1):
@@ -141,7 +136,7 @@ class ViewController:
         
 
 class FileService:
-    def file_open(self, *filename):  # it can catch variable num of filenames.
+    def open_file(self, *filename):  # it can catch variable num of filenames.
         if filename == ():
             fullname = self.get_fullname()  # This is str filename
             if fullname == None:

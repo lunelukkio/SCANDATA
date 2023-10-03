@@ -18,7 +18,7 @@ class ModelInterface(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
-    def create_user_controller(self, controller_key):
+    def create_user_controller(self, controller_key) -> str:
         raise NotImplementedError()
      
     @abstractmethod
@@ -65,7 +65,7 @@ class DataService(ModelInterface):
             # delete a model
             self.__experiments_repository.delete(filename_obj.name)
  
-    def create_user_controller(self, controller_key):  # controller_key = "Roi", "TimeWindow". Use the same name to delete like "ROI1"
+    def create_user_controller(self, controller_key) -> str:  # controller_key = "Roi", "TimeWindow". Use the same name to delete like "ROI1"
         controller_key = controller_key.upper()
         if self.__user_controller_repository.find_by_name(controller_key) is None:
             # get a controller factory 
@@ -77,6 +77,7 @@ class DataService(ModelInterface):
             print(f"====================Created the new controller {controller_key}")
             self.__user_controller_repository.save(new_key, new_controller)
             self.print_infor()
+            return new_key  # This is to tell the key name to ViewController
         else:
             self.__user_controller_repository.delete(controller_key)
         
@@ -120,15 +121,16 @@ class DataService(ModelInterface):
     def __key_num_maker(self, controller_key):
         controller_key = controller_key.upper()
         controller_dict = self.__user_controller_repository.data
+        # Count exsisting key
         count = 0
         for key in controller_dict.keys():
             if controller_key in key:
                 count += 1
-        
         if count == 0:
             new_key = controller_key + "1"
         else:
-            numeric_keys = [key for key in controller_dict.keys() if any(char.isdigit() for char in key)]
+            # from chatGTP. Take keys with number
+            numeric_keys = [key for key in controller_dict.keys() if controller_key in key and any(char.isdigit() for char in key)]
             numeric_values = [int(''.join(filter(str.isdigit, key))) for key in numeric_keys]
             # sort from a small number
             sorted_keys = [x for _, x in sorted(zip(numeric_values, numeric_keys))]

@@ -45,6 +45,10 @@ class Test(unittest.TestCase):
         #plt.figure()
         data_service.reset("ROI1")
         roi1.show_data("20408B002.tsm","CH1")
+        data_service.print_infor()
+        data_service.create_user_controller("Roi")
+        data_service.print_infor()
+        
         
         
         

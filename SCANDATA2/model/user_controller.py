@@ -111,8 +111,11 @@ class Roi(UserController):
         self.set_data()
         self.print_infor()
         
-    def show_data(self, filename_key, data_key):
-        self.__data_dict[filename_key][data_key.upper()].show_data()
+    def show_data(self, filename_key, data_key, axis=None):  # axis = MatplotLib axis
+        if axis is None:
+            self.__data_dict[filename_key][data_key.upper()].show_data()
+        else:
+            self.__data_dict[filename_key][data_key.upper()].show_data(axis)
             
     # calculate a trace from a single frames data with a roi value object
     def __trace_culc(self, frames_obj, roi_obj):
@@ -134,6 +137,7 @@ class Roi(UserController):
         roi = roi_obj.data
         # check the value is correct. See RoiVal class.
         frames_size = frames_obj.shape
+        print("ttttttttttttttttttttttttttttttttttt ROI.__check_val")
         print(roi[0])
         print(roi[2])
         if roi[0] + roi[2]-1 > frames_size[0] or roi[1] + roi[3] -1> frames_size[1]:  #width is always 1 or more.
@@ -208,8 +212,11 @@ class ImageController(UserController):
         self.set_data()
         self.print_infor()
         
-    def show_data(self, filename_key, data_key):
-        self.__data_dict[filename_key][data_key.upper()].show_data()
+    def show_data(self, filename_key, data_key, axis=None):  # axis = MatplotLib axis
+        if axis is None:
+            self.__data_dict[filename_key][data_key.upper()].show_data()
+        else:
+            self.__data_dict[filename_key][data_key.upper()].show_data(axis)
             
     # calculate a image from a single frames data with a time window value object
     def __image_culc(self, frames_obj, time_window_obj):
@@ -335,57 +342,6 @@ class Line(UserController):
             name_list.append(self.__observers[i].name)
         return name_list
     
-    
-class ElecController(UserController):
-    def __init__(self):
-        self.__time_window_obj = TimeWindowVal(0, 100)
-        self.__observer = ControllerObserver()
-        self.object_num = 0
-        #print('Create TimeController{}.'.format(self.object_num))
-
-    def set_data(self, start: int, end: int) -> None:
-        self.__time_window_obj = TimeWindowVal(start, end)
-        self.print_infor()
-        self.notify_observer()
-        #print('Set TimeWindow{} and notified'.format(self.object_num))
-
-    def add_data(self, start: int, end: int) -> None:
-        add_time_window_obj = TimeWindowVal(start, end)
-        self.__time_window_obj += add_time_window_obj
-        self.print_infor()
-        self.notify_observer()
-        #print('Add to TimeWindow{} and notified'.format(self.object_num))
-
-    def get_data(self) -> object:
-        return self.__time_window_obj
-    
-    def reset(self) -> None:
-        self.__time_window_obj = FrameWindowVal(0, 100)
-        self.print_infor()
-        self.notify_observer()
-        #print('Reset FrameWindow{} and notified'.format(self.object_num))
-    
-    def add_observer(self, observer: object) -> None:
-        self.__observer.add_observer(observer)
-        #self.notify_observer()  # this message come from a controller
-    
-    def notify_observer(self) -> None:
-        self.__observer.notify_observer(self.__time_window_obj)
-            
-    @property
-    def observers(self) -> list:
-        return self.__observer.observers
-    
-    def get_infor(self):  # get names from observers
-        name_list = self.__observer.get_infor()
-        return name_list
-
-    def print_infor(self) -> None:
-        name_list = []
-        num = len(self.__observer.observers)
-        for i in range(num):
-            name_list.append(self.__observer.observers[i].name)
-        print(f'ElecController{self.object_num} observer list = {str(name_list)}, ROI = {self.get_data().data}')
         
 class ControllerObserver:
     def __init__(self):

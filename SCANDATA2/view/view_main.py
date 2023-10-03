@@ -162,7 +162,7 @@ class DataWindow(tk.Frame):
         Top Buttons
         """
         frame_top = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=2, bg = 'white')
-        tk.Button(frame_top, text='Open',command=self.controller.file_open).pack(side=tk.LEFT)
+        tk.Button(frame_top, text='Open',command=self.open_file).pack(side=tk.LEFT)
         tk.Button(frame_top, text='Close').pack(side=tk.LEFT, padx=5)
         frame_top.pack(fill=tk.X)
         
@@ -298,6 +298,25 @@ class DataWindow(tk.Frame):
         #    master.title(filename_obj.name)
         #    self.__filename = filename_obj
         #    self.contoller.file_open(self.__filename)
+        
+        
+    def open_file(self):
+        default_controller = self.controller.open_file()
+
+        self.controller.get_data("ROI1").show_data("20408B001.tsm", "CH1", self.ax_list[1].ax_obj)
+        self.controller.get_data("IMAGECONTROLLER1").show_data("20408B001.tsm", "CH1", self.ax_list[0].ax_obj)
+        self.draw_ax(3)
+        
+    def draw_ax(self, ax_num):
+        if ax_num == 0:
+            self.ax_list[0].draw_ax()
+        elif ax_num == 1:
+            self.ax_list[1].draw_ax()
+        elif ax_num == 2:
+            self.ax_list[2].draw_ax()
+        elif ax_num == 3:
+            for ax_num in range(3):
+                self.ax_list[ax_num].draw_ax()
         
     def reset(self):
         self.model = None  # in self.file_open()
