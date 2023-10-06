@@ -84,7 +84,7 @@ class DataService(ModelInterface):
     def bind_filename2controller(self, filename_key, controller_key):
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
-        print(f"Add {filename_key} to {controller_key}")
+        print(f"Bind {filename_key} to {controller_key}")
         controller.add_experiments(filename_key)
 
     def set_controller(self, controller_key: str, val: list):
@@ -114,7 +114,7 @@ class DataService(ModelInterface):
     def __check_controller_type(self, key):
         if key == "ROI":
             return RoiFactory()
-        elif key == "IMAGECONTROLLER":
+        elif key == "IMAGE_CONTROLLER":
             return ImageControllerFactory()
 
         # To make a number for controller key.

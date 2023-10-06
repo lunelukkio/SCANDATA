@@ -76,7 +76,7 @@ class Roi(UserController):
     def __init__(self, get_experiments_method):
         self.get_experiments = get_experiments_method
         self.__roi_obj = RoiVal(40, 40, 2, 2)
-        self.__data_dict = {}  # data dict = {filename:frame_type{full:TraceData,ch1:TraceData,ch2:TraceData}}
+        self.__data_dict = {}  # data dict = {filename:frame_type{full:TraceData_value obj,ch1:TraceData,ch2:TraceData}}
         self.__mod_list = []
         
     def __del__(self):  #make a message when this object is deleted.

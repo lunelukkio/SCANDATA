@@ -164,7 +164,10 @@ class TsmBuilder(Builder):
     def __init__(self, filename_obj):
         self.num_ch = 2   # this is for Na+ and Ca2+ recording.
         self.num_elec_ch = 8
-        self.default_controller = {"ROI": 2, "IMAGECONTROLLER": 1} 
+        self.default_controller = ["ROI", "ROI", "IMAGE_CONTROLLER"] 
+        self.default_data = ["FULL"]
+        for num in range(self.num_ch):
+            self.default_data.append("CH" + str(num+1))
         
         infor_keys = ["FULL_INTERVAL"]
         for idx in range(self.num_ch):
@@ -211,4 +214,4 @@ class TsmBuilder(Builder):
         return data
     
     def default(self):
-        return self.default_controller
+        return self.default_controller, self.default_data

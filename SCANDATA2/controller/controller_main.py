@@ -13,7 +13,8 @@ from tkinter import ttk
 import os
 import math
 import glob
-import psutil
+import psutil  # for memory check
+import re   # Regular expression
 
 
 class MainController:
@@ -31,56 +32,80 @@ class MainController:
 
 class ViewController:
     def __init__(self, view=None):
-        self.model = DataService()
-        self.view = view
-        self.file_service = FileService()
-        self.__filename_obj_list = []  # list of filename keys
+        self.__model = DataService()
+        self.__view = view
+        self.__file_service = FileService()
+        
+        self.__controller_list = []  # "ROI1" "ROI2" "IMGAE_CONTROLLER1" "ELEC_CONTROLLER1"
+        self.__filename_list = []  # "20408B001.tsm" "20408B002.tsm"
+        self.__data_list = []  # "Full" "CH1" "CH2"
+        
 
-        self.current_roi = None
-        self.current_image_time_window = None
-        self.current_trace_time_window = None
+        
+        # filename []    roi []    data[]    20408B002.tsm ROI1 CH1
+        # for filename in self.current_filename:
+        #    for roi in current_controller:
+        #        for data in current_data:
+        #            send to view
+                
         
     def __del__(self):
-        print('.................................................................................................................................ViewController')
         print('Deleted a ViewController.' + '  myId= {}'.format(id(self)))
 
     def open_file(self):
-        filename_obj = self.file_service.open_file()
-        self.__filename_obj_list.append(filename_obj.name)       
+        filename_obj = self.__file_service.open_file()
+        self.__filename_list.append(filename_obj.name)       
         self.create_model(filename_obj)
         
-        default_controller = self.model.get_experiments(filename_obj.name).get_default()
-        for controller_key in default_controller.keys():
-            for num in range(default_controller[controller_key]):
-                new_key = self.model.create_user_controller(controller_key)
-                self.model.bind_filename2controller(filename_obj.name, new_key)
-        return default_controller
+        default_controller_key, default_data_key = self.__model.get_experiments(filename_obj.name).get_default()
+        self.__data_list = default_data_key
+        # make default controllers. "ROI1" "ROI2" "IMAGE_CONTROLLER1"
+        if not self.__controller_list:
+            for controller_key in default_controller_key:
+                new_key = self.__model.create_user_controller(controller_key) # new_key is str
+                self.__model.bind_filename2controller(filename_obj.name, new_key)
+                self.__controller_list.append(new_key)
+        # need refactoring
+        # This is for the second opening file.
+        else:
+            i = 0
+            for controller_key in default_controller_key:
+                if controller_key == re.sub(r'\d+', '', self.__controller_list[i]):
+                    self.__model.bind_filename2controller(filename_obj.name, self.__controller_list[i])
+                    i += 1
+
+        self.__view.draw_ax(3)  # 3 = draw whole ax
+        
 
     def create_model(self, filename_obj: object):  
-        self.model.create_model(filename_obj.fullname)
-        if self.model == None:
+        self.__model.create_model(filename_obj.fullname)
+        if self.__model == None:
             raise Exception('Failed to create a model.')
         else:
             print('============================== Controller: Suceeded to read data from data files.')
             print('')
     
     def create_user_controller(self, controller_key:str):
-        self.model.create_user_controller(controller_key)
+        self.__model.create_user_controller(controller_key)
         
     def bind_filename2controller(self, filename_key, controller_key):
-        self.model.bind_filename2controller(filename_key, controller_key)
+        self.__model.bind_filename2controller(filename_key, controller_key)
         
     def set_controller(self, controller_key: str, val: list):
-        self.model.set_controller(controller_key, val)
+        self.__model.set_controller(controller_key, val)
         
-    def get_data(self, controller_key):
-        return self.model.get_user_controller(controller_key)
+    def get_data(self, filename_key, controller_key, data_key):
+        user_controller_obj = self.get_user_controller(controller_key)
+        return user_controller_obj.data_dict[filename_key][data_key]
+        
+    def get_user_controller(self, controller_key):
+        return self.__model.get_user_controller(controller_key.upper())
+    
+    def get_view_list(self):
+        return self.__controller_list, self.__filename_list, self.__data_list
 
 
-
-
-
-
+        
 
 
 
@@ -91,7 +116,7 @@ class ViewController:
         key = 'Roi' + str(roi_num)
         print(key + ':')
         print(event.button, event.x, event.y, event.xdata, event.ydata)
-        roi_val = self.model.get_data(key)
+        roi_val = self.__model.get_data(key)
         
         # Set roi center to click poist.
         roi_x = math.floor(event.xdata) - round(roi_val.data[2]/2) + 1
@@ -102,37 +127,37 @@ class ViewController:
     def change_roi_size(self, roi_num, val): #val = [x,y,x_length,y_length]
         self.current_roi_num = roi_num
         key = 'Roi' + str(roi_num)
-        self.model.add_data(key, val)
+        self.__model.add_data(key, val)
         
     def set_frame_window_position(self, event):
         pass
         
     def send_update_message(self, key, val):
-        self.model.set_data(key, val)
+        self.__model.set_data(key, val)
         
     def bind_keys(self, controller_key, data_key):
-        self.model.bind_data(controller_key, data_key)
-        self.model.update_data(controller_key)
+        self.__model.bind_data(controller_key, data_key)
+        self.__model.update_data(controller_key)
     
     def add_mod(self, data_key: str, mod_key: str):
-        self.model.add_mod(data_key, mod_key)
+        self.__model.add_mod(data_key, mod_key)
         if self.current_roi_num is None:
             return
         key = 'Roi' + str(self.current_roi_num)
         self.send_update_message(key, [])
         
     def remove_mod(self, data_key: str, mod_key: str):
-        self.model.remove_mod(data_key, mod_key)
+        self.__model.remove_mod(data_key, mod_key)
         if self.current_roi_num is None:
             return
         key = 'Roi' + str(self.current_roi_num)
         self.send_update_message(key, [])
     
     def count_data(self, filename, key):
-        return self.model.count_data(filename, key)
+        return self.__model.count_data(filename, key)
     
     def update_data(self, key):
-        self.model.update_data(key)
+        self.__model.update_data(key)
         
 
 class FileService:
