@@ -20,7 +20,7 @@ class Test(unittest.TestCase):
         plt.figure()
         experiments.frames_dict["FULL"].show_data()
         plt.figure()
-        experiments.trace_dict["ELEC_CH1"].show_data()
+        experiments.trace_dict["ELEC1"].show_data()
         experiments.print_infor()
         del(experiments)
 
