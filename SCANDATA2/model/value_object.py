@@ -168,7 +168,8 @@ class TraceData:
     def __create_time_data(self, trace, interval) -> np.ndarray:
         num_data_point = interval * np.shape(trace)[0]
         time_val = np.linspace(interval, num_data_point, np.shape(trace)[0])
-        return time_val
+        shifted_time_val = time_val - time_val[0]  # This is for shifting the first data to 0ms.
+        return shifted_time_val
         
     @property
     def data(self) -> np.ndarray:

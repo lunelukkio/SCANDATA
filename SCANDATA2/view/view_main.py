@@ -305,7 +305,25 @@ class DataWindow(tk.Frame):
         
         
     def open_file(self):
-        self.controller.open_file()
+        filename_key, controller_list, data_list = self.controller.open_file()
+        for i in range(3):
+            self.ax_list[i].set_filename_key(filename_key)
+            for controller_key in controller_list:
+                self.ax_list[i].set_controller_key(controller_key)
+            for data_key in data_list:
+                self.ax_list[i].set_data_key(data_key)
+        self.default_view_data(filename_key)
+        self.draw_ax(3)  # 3 = draw whole ax
+        
+    def default_view_data(self, filename_key):
+        self.ax_list[0].set_data_key("FULL")  # to remove FULL image data
+        self.ax_list[0].set_data_key("CH2")  # to remove CH2 data image data
+        self.ax_list[0].remove_specific_controller("ELEC_CONTROLLER")  # to remove ELEC_CONTROLLER from ax
+        self.ax_list[0].remove_specific_controller("ROI")  # to remove ROI from ax
+        self.ax_list[1].remove_specific_controller("ELEC_CONTROLLER")  # to remove ELEC_CONTROLLER from ax
+        self.ax_list[1].remove_specific_controller("IMAGE_CONTROLLER")  # to remove IMAGE_CONTROLLER from ax
+        self.ax_list[2].remove_specific_controller("ROI")  # to remove ROI from ax
+        self.ax_list[2].remove_specific_controller("IMAGE_CONTROLLER")  # to remove IMAGE_CONTROLLER from ax
         
     def draw_ax(self, ax_num):
         if ax_num == 0:
@@ -401,7 +419,6 @@ class DataWindow(tk.Frame):
         self.ax_list[1].draw_ax()
         print('')
     
-        
     def update_trace(self):
         self.controller.update_data('Roi' + str(self.current_roi_num))
         
@@ -417,41 +434,63 @@ class TraceAx:
         self.controller = controller
         self.color_selection = ['black', 'red', 'blue', 'orange', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
         
-        self.__current_filename_key = []  # ["20408B002.tsm"]
-        self.__current_controller_key = []  # ["ROI1", "ROI2", "IMAGE_CONTROLLER2"]
-        self.__current_data_key = []  # ["FULL", "CH1"]
+        self.__current_controller_list = []  # ["ROI1", "ROI2", "IMAGE_CONTROLLER2"]
+        self.__current_filename_list = []  # ["20408B002.tsm"]
+        self.__current_data_list = []  # ["FULL", "CH1"]
+            
+    def set_controller_key(self, controller_key):
+        if controller_key in self.__current_controller_list:
+            self.__current_controller_list.remove(controller_key) 
+        else:
+            self.__current_controller_list.append(controller_key) 
+            
+    def set_filename_key(self, filename_key):
+        if filename_key in self.__current_filename_list:
+            self.__current_filename_list.remove(filename_key)  
+        else:
+            self.__current_filename_list.append(filename_key)         
         
+    def set_data_key(self, data_key):
+        if data_key in self.__current_data_list:
+            self.__current_data_list.remove(data_key)  
+        else:
+            self.__current_data_list.append(data_key)
+            
+    def remove_specific_controller(self, specific_controller_key):
+        filtered_list = [item for item in self.__current_controller_list if specific_controller_key not in item]
+        print(f"Removed {specific_controller_key} from {self.__current_controller_list} = {filtered_list}")
+        self.__current_controller_list = filtered_list
+            
+    def draw_ax(self):
+        self.set_data(self.__current_controller_list, 
+                      self.__current_filename_list, 
+                      self.__current_data_list)
+        
+        self.ax_obj.relim()
+        self.ax_obj.autoscale_view()
+        self.canvas_trace.draw()
         
     def set_data(self, current_controller, current_filename, current_data):
+        print("")
         print("Trace_ax set keys = ")
         i = 0
-        roi_list = [key for key in current_controller if "ROI" in key]
-        for controller_key in roi_list:
+        for controller_key in current_controller:
             print(f"{controller_key}, ")
             for filename_key in current_filename:
                 print(f"     {filename_key} ")
                 print("          ", end='')
                 for data_key in current_data:
+                    print(f"{data_key} ", end='')
                     view_data = self.controller.get_data(filename_key, controller_key, data_key)
                     line_2d_plot_obj, =view_data.show_data(self.ax_obj)  # Show_data return (tuple). line"," means the first element of a list (convert from list to objet). Don't remove it.
                     # check the number of colors
                     if i > len(self.color_selection)-1:
                         i = 0
                     line_2d_plot_obj.set_color(self.color_selection[i])
-                    print(f"{data_key} ", end='')
                     i += 1
                 print()
             print()
         
-    def draw_ax(self):
-        [current_controller, current_filename, current_data] = self.controller.get_view_list()
-        self.set_data(current_controller, current_filename, current_data)
-        
-        self.ax_obj.relim()
-        self.ax_obj.autoscale_view()
-        self.canvas_trace.draw()
-
-
 
 class ImageAx:
     def __init__(self, canvas, ax, controller):
@@ -460,45 +499,54 @@ class ImageAx:
         self.controller = controller
         self.ax_obj = ax
         
-        self.__displayed_key = []
-        self.__current_imagecontroller_ch = 1
-        
-        
-    def add_displayed_key(self, key:str):
-        if key in self.__displayed_key:
-            self.__displayed_key.remove(key)
+        self.__current_controller_list = []  # ["ROI1", "ROI2", "IMAGE_CONTROLLER2"]
+        self.__current_filename_list = []  # ["20408B002.tsm"]
+        self.__current_data_list = []  # ["FULL", "CH1"]
+
+    def set_controller_key(self, controller_key):
+        if controller_key in self.__current_controller_list:
+            self.__current_controller_list.remove(controller_key) 
         else:
-            if "IMAGE_CONTROLLER" in key.upper():
-                self.__displayed_key.append(key)
-        
-    def update(self, view_data):
-        if 'Image' in view_data.name:  # for cell images
-            self.data_dict = view_data.get_data()  # get data from view data
-            self.show_data()
-        elif 'Roi' in view_data.name:  # for RoiBoxs
-            self.roi_box = view_data.roi_box
-            self.show_roi()
+            self.__current_controller_list.append(controller_key) 
             
-    def select_ch(self, key):
-        self.flag_dict[key] = not self.flag_dict[key]
-        self.show_data()
+    def set_filename_key(self, filename_key):
+        if filename_key in self.__current_filename_list:
+            self.__current_filename_list.remove(filename_key)  
+        else:
+            self.__current_filename_list.append(filename_key)         
         
-    def show_data(self):  # self.data_dict = {key: value obj} Delete old images, and make new images
-        if self.update_pass_switch is True:
-            return
-        image_num = len(self.ax_obj.images)
-        if image_num == 0:
-            for key in self.data_dict:
-                image = self.data_dict[key].show_data(self.ax_obj)  # add image to self.ax_obj.images
-                self.image_dict[key] = image  # bind key and image data. the key is the same name as value data dict
-                
-        elif image_num > 0:
-            for key in self.data_dict:
-                if self.flag_dict[key] is True:
-                    self.image_dict[key].set_data(self.data_dict[key].data)  # for delete privious images
-                elif self.flag_dict[key] is False:
-                    self.image_dict[key].set_data([[],[]])
-        self.draw_ax()
+    def set_data_key(self, data_key):
+        if data_key in self.__current_data_list:
+            self.__current_data_list.remove(data_key)  
+        else:
+            self.__current_data_list.append(data_key)
+            
+    def remove_specific_controller(self, specific_controller_key):
+        filtered_list = [item for item in self.__current_controller_list if specific_controller_key not in item]
+        print(f"Removed {specific_controller_key} from {self.__current_controller_list} = {filtered_list}")
+        self.__current_controller_list = filtered_list
+
+    def draw_ax(self):
+        self.set_data(self.__current_controller_list, 
+                      self.__current_filename_list, 
+                      self.__current_data_list)
+        
+        self.ax_obj.relim()
+        self.ax_obj.autoscale_view()
+        self.canvas_image.draw()
+        
+    def set_data(self, current_controller, current_filename, current_data):
+        print("")
+        print("Image_ax set keys = ")
+        for controller_key in current_controller:
+            print(f"{controller_key}, ")
+            for filename_key in current_filename:
+                print(f"     {filename_key} ")
+                print("          ", end='')
+                for data_key in current_data:
+                    view_data = self.controller.get_data(filename_key, controller_key, data_key)
+                    view_data.show_data(self.ax_obj)  # add image to self.ax_obj.images
+                    print(f"{data_key} ", end='')
 
     def show_roi(self): 
         rectangles = self.tools.axes_patches_check(plt.Rectangle)
@@ -508,34 +556,7 @@ class ImageAx:
             pass
         rectangles = self.tools.axes_patches_check(plt.Rectangle)
 
-        self.draw_ax()
-        
-    def remove_rectangles(self):
-        rectangles = self.tools.axes_patches_check(plt.Rectangle)
-        for rectangle in rectangles:
-            rectangle.remove()
-            
-            
-            
-            
-            
-            
-            
-            
-            
-    def set_data(self):
-        self.controller.get_data()
-        
-        
-    def draw_ax(self):
-        self.ax_obj.relim()
-        self.ax_obj.autoscale_view()
-        self.canvas_image.draw()
-        
-    def reset(self):
-        self.current_ch = 1
-        self.ax_obj.clear()
-        
+
 
 class NavigationToolbarMyTool(NavigationToolbar2Tk):
     def __init__(self, canvas=None, master=None, my_color=None):

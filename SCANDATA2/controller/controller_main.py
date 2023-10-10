@@ -35,48 +35,32 @@ class ViewController:
         self.__model = DataService()
         self.__view = view
         self.__file_service = FileService()
-        
-        self.__controller_list = []  # "ROI1" "ROI2" "IMGAE_CONTROLLER1" "ELEC_CONTROLLER1"
-        self.__filename_list = []  # "20408B001.tsm" "20408B002.tsm"
-        self.__data_list = []  # "Full" "CH1" "CH2"
-        
 
-        
-        # filename []    roi []    data[]    20408B002.tsm ROI1 CH1
-        # for filename in self.current_filename:
-        #    for roi in current_controller:
-        #        for data in current_data:
-        #            send to view
-                
-        
     def __del__(self):
         print('Deleted a ViewController.' + '  myId= {}'.format(id(self)))
 
-    def open_file(self):
+    def open_file(self) -> str:
         filename_obj = self.__file_service.open_file()
-        self.__filename_list.append(filename_obj.name)       
-        self.create_model(filename_obj)
+        self.create_model(filename_obj) 
+        default_controller_list, default_data_list = self.__model.get_experiments(filename_obj.name).get_default()
         
-        default_controller_key, default_data_key = self.__model.get_experiments(filename_obj.name).get_default()
-        self.__data_list = default_data_key
-        # make default controllers. "ROI1" "ROI2" "IMAGE_CONTROLLER1"
-        if not self.__controller_list:
-            for controller_key in default_controller_key:
-                new_key = self.__model.create_user_controller(controller_key) # new_key is str
-                self.__model.bind_filename2controller(filename_obj.name, new_key)
-                self.__controller_list.append(new_key)
-        # need refactoring
-        # This is for the second opening file.
-        else:
-            i = 0
-            for controller_key in default_controller_key:
-                if controller_key == re.sub(r'\d+', '', self.__controller_list[i]):
-                    self.__model.bind_filename2controller(filename_obj.name, self.__controller_list[i])
-                    i += 1
+        controller_list = []
+        data_list = default_data_list
+        for controller_key in default_controller_list:
+            new_key = self.__model.create_user_controller(controller_key)
+            controller_list.append(new_key)
+            self.__model.bind_filename2controller(filename_obj.name, new_key)
+        return filename_obj.name, controller_list, data_list
 
-        self.__view.draw_ax(3)  # 3 = draw whole ax
-        
-
+        # This is for the secondfile opening
+        #else:
+        #    i = 0
+        #    for controller_key in default_controller_key:
+        #        if controller_key == re.sub(r'\d+', '', self.__controller_list[i]):
+        #            self.__model.bind_filename2controller(filename_obj.name, self.__controller_list[i])
+        #            i += 1
+    
+    
     def create_model(self, filename_obj: object):  
         self.__model.create_model(filename_obj.fullname)
         if self.__model == None:
@@ -84,10 +68,7 @@ class ViewController:
         else:
             print('============================== Controller: Suceeded to read data from data files.')
             print('')
-    
-    def create_user_controller(self, controller_key:str):
-        self.__model.create_user_controller(controller_key)
-        
+
     def bind_filename2controller(self, filename_key, controller_key):
         self.__model.bind_filename2controller(filename_key, controller_key)
         
@@ -100,9 +81,7 @@ class ViewController:
         
     def get_user_controller(self, controller_key):
         return self.__model.get_user_controller(controller_key.upper())
-    
-    def get_view_list(self):
-        return self.__controller_list, self.__filename_list, self.__data_list
+
 
 
         
@@ -167,7 +146,10 @@ class FileService:
             if fullname == None:
                 print("There is no such a filename.")
                 return
-            return WholeFilename(fullname)
+            new_full_filename = fullname
+        else:
+            new_full_filename = filename
+        return WholeFilename(new_full_filename)
     
     
     @staticmethod
