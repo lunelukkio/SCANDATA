@@ -71,8 +71,6 @@ class DataService(ModelInterface):
         controller_key = controller_key.upper()
         if self.__user_controller_repository.find_by_name(controller_key) is None:
             # get a controller factory 
-            print("ddddddddddddddddddddddddddddddd")
-            print(controller_key)
             controller_factory = self.__check_controller_type(controller_key)
             # make a new controller with the method in DataService
             new_controller = controller_factory.create_controller(self.get_experiments)

@@ -349,6 +349,12 @@ class DataWindow(tk.Frame):
             for ax_num in range(3):
                 self.ax_list[ax_num].draw_ax()
 
+
+
+
+
+
+
     def onclick_image(self, event):
         if event.button == 1:  # left click
             self.controller.set_roi_position(event, self.current_roi_num)
@@ -488,9 +494,6 @@ class TraceAx:
         self.canvas_trace.draw()
         
     def set_data(self, current_controller, current_filename, current_data):
-        
-        print("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
-        print(current_data)
         print("")
         print("Trace_ax set keys = ")
         i = 0

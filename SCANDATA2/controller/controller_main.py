@@ -82,15 +82,9 @@ class ViewController:
     def get_user_controller(self, controller_key):
         return self.__model.get_user_controller(controller_key.upper())
 
-
-
-        
-
-
-
-
-
     def set_roi_position(self, event, roi_num=1):
+        print("dddddddddddddddddddddddddddddddddddd")
+        
         self.current_roi_num = roi_num
         key = 'Roi' + str(roi_num)
         print(key + ':')
@@ -102,6 +96,11 @@ class ViewController:
         roi_y = math.floor(event.ydata) - round(roi_val.data[3]/2) + 1
         roi = [roi_x, roi_y]
         self.send_update_message(key, roi)
+        
+        
+        
+        
+        
     
     def change_roi_size(self, roi_num, val): #val = [x,y,x_length,y_length]
         self.current_roi_num = roi_num
