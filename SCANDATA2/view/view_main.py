@@ -316,14 +316,27 @@ class DataWindow(tk.Frame):
         self.draw_ax(3)  # 3 = draw whole ax
         
     def default_view_data(self, filename_key):
-        self.ax_list[0].set_data_key("FULL")  # to remove FULL image data
-        self.ax_list[0].set_data_key("CH2")  # to remove CH2 data image data
-        self.ax_list[0].remove_specific_controller("ELEC_CONTROLLER")  # to remove ELEC_CONTROLLER from ax
+        self.ax_list[0].remove_specific_data("ELEC")
+        self.ax_list[1].remove_specific_data("ELEC")
+        self.ax_list[2].remove_specific_data("FULL")
+        self.ax_list[2].remove_specific_data("CH")
+
+        self.ax_list[0].remove_specific_controller("TRACE_CONTROLLER")  # to remove ELEC_CONTROLLER from ax
         self.ax_list[0].remove_specific_controller("ROI")  # to remove ROI from ax
-        self.ax_list[1].remove_specific_controller("ELEC_CONTROLLER")  # to remove ELEC_CONTROLLER from ax
+        self.ax_list[1].remove_specific_controller("TRACE_CONTROLLER")  # to remove ELEC_CONTROLLER from ax
         self.ax_list[1].remove_specific_controller("IMAGE_CONTROLLER")  # to remove IMAGE_CONTROLLER from ax
         self.ax_list[2].remove_specific_controller("ROI")  # to remove ROI from ax
         self.ax_list[2].remove_specific_controller("IMAGE_CONTROLLER")  # to remove IMAGE_CONTROLLER from ax
+        
+        self.ax_list[0].set_data_key("FULL")  # to remove FULL image data
+        self.ax_list[0].set_data_key("CH2")  # to remove CH2 data image data
+        self.ax_list[2].set_data_key("ELEC2")
+        self.ax_list[2].set_data_key("ELEC3")
+        self.ax_list[2].set_data_key("ELEC4")
+        self.ax_list[2].set_data_key("ELEC5")
+        self.ax_list[2].set_data_key("ELEC6")
+        self.ax_list[2].set_data_key("ELEC7")
+        self.ax_list[2].set_data_key("ELEC8")
         
     def draw_ax(self, ax_num):
         if ax_num == 0:
@@ -335,7 +348,6 @@ class DataWindow(tk.Frame):
         elif ax_num == 3:
             for ax_num in range(3):
                 self.ax_list[ax_num].draw_ax()
-
 
     def onclick_image(self, event):
         if event.button == 1:  # left click
@@ -458,8 +470,13 @@ class TraceAx:
             
     def remove_specific_controller(self, specific_controller_key):
         filtered_list = [item for item in self.__current_controller_list if specific_controller_key not in item]
-        print(f"Removed {specific_controller_key} from {self.__current_controller_list} = {filtered_list}")
+        print(f"Removed -{specific_controller_key}- from {self.__current_controller_list} = {filtered_list}")
         self.__current_controller_list = filtered_list
+        
+    def remove_specific_data(self, specific_data_key):
+        filtered_list = [item for item in self.__current_data_list if specific_data_key not in item]
+        print(f"Removed -{specific_data_key}- from {self.__current_data_list} = {filtered_list}")
+        self.__current_data_list = filtered_list
             
     def draw_ax(self):
         self.set_data(self.__current_controller_list, 
@@ -471,6 +488,9 @@ class TraceAx:
         self.canvas_trace.draw()
         
     def set_data(self, current_controller, current_filename, current_data):
+        
+        print("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+        print(current_data)
         print("")
         print("Trace_ax set keys = ")
         i = 0
@@ -523,8 +543,13 @@ class ImageAx:
             
     def remove_specific_controller(self, specific_controller_key):
         filtered_list = [item for item in self.__current_controller_list if specific_controller_key not in item]
-        print(f"Removed {specific_controller_key} from {self.__current_controller_list} = {filtered_list}")
+        print(f"Removed -{specific_controller_key}- from {self.__current_controller_list} = {filtered_list}")
         self.__current_controller_list = filtered_list
+        
+    def remove_specific_data(self, specific_data_key):
+        filtered_list = [item for item in self.__current_data_list if specific_data_key not in item]
+        print(f"Removed -{specific_data_key}- from {self.__current_data_list} = {filtered_list}")
+        self.__current_data_list = filtered_list
 
     def draw_ax(self):
         self.set_data(self.__current_controller_list, 

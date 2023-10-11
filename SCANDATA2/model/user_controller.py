@@ -29,6 +29,10 @@ class ImageControllerFactory(UserControllerFactory):
     def create_controller(self, get_experiments_method):
         return ImageController(get_experiments_method)
     
+class TraceControllerFactory(UserControllerFactory):
+    def create_controller(self, get_experiments_method):
+        return TraceController(get_experiments_method) 
+    
 class FrameShiftFactory(UserControllerFactory):
     def create_controller(self):
         return FrameShift()
@@ -37,9 +41,7 @@ class LineFactory(UserControllerFactory):
     def create_controller(self):
         return Line()
         
-class ElecControllerFactory(UserControllerFactory):
-    def create_controller(self):
-        return ElecController() 
+
     
 
 
@@ -183,7 +185,7 @@ class ImageController(UserController):
         
     def __del__(self):  #make a message when this object is deleted.
         #print('.')
-        print('----- Deleted a FrameWindow object.' + '  myId={}'.format(id(self)))
+        print('----- Deleted a ImageCOntroller object.' + '  myId={}'.format(id(self)))
         #pass
 
         # make a new Roi value object
@@ -201,11 +203,11 @@ class ImageController(UserController):
             experiments_entity = self.get_experiments(filename_key)
             # make a image data dict
             new_dict = {}
-            for key in experiments_entity.frames_dict.keys():  # key = "Full", "Ch1", "Ch2"
+            for key in experiments_entity.frames_dict.keys():  # key = "ELEC1", "ELEC2", "ELEC3"
                 dict_val = self.__image_culc(experiments_entity.frames_dict[key], self.__time_window_obj)
                 new_dict[key] = dict_val
             self.__data_dict[filename_key] = new_dict
-        print(f"set ImageController: {self.__time_window_obj.data}")
+        print(f"set TraceController: {self.__time_window_obj.data}")
 
     def add_experiments(self, filename_str):
         self.__data_dict[filename_str] = None
@@ -269,7 +271,104 @@ class ImageController(UserController):
     def data_dict(self):
         return self.__data_dict
 
+class TraceController(UserController):
+    def __init__(self, get_experiments_method):
+        self.get_experiments = get_experiments_method
+        self.__time_window_obj = TimeWindowVal(0, 100)
+        self.__data_dict = {}  # data dict = {filename:frame_type{ELEC1:ElecData,ELEC2:ElecData,ELEC3:ElecData}}
+        self.__mod_list = []
+        self.__inf_mode = True  # This is for no limit trace (whole trace)
+        
+    def __del__(self):  #make a message when this object is deleted.
+        #print('.')
+        print('----- Deleted a TraceController object.' + '  myId={}'.format(id(self)))
+        #pass
 
+        # make a new Roi value object
+    def set_controller(self, window_value_list: list):  #value_list = [start, width]
+        start = window_value_list[0]
+        width = window_value_list[1]
+
+        self.__time_window_obj = TimeWindowVal(start, width)  # replace the roi
+        self.set_data()
+
+    def set_data(self):
+        # repeat the number of experiments
+        for filename_key in list(self.__data_dict.keys()):
+            # get Experiments obj Data using a method in DataService
+            experiments_entity = self.get_experiments(filename_key)
+            # make a image data dict
+            new_dict = {}
+            for key in experiments_entity.trace_dict.keys():  # key = "ELEC1", "ELEC2", "ELEC3"
+                dict_val = self.__trace_culc(experiments_entity.trace_dict[key], self.__time_window_obj)
+                new_dict[key] = dict_val
+            self.__data_dict[filename_key] = new_dict
+        print(f"set TimeController: {self.__time_window_obj.data}")
+
+    def add_experiments(self, filename_str):
+        self.__data_dict[filename_str] = None
+        self.set_data()
+        self.print_infor()
+        
+    def show_data(self, filename_key, data_key, axis=None):  # axis = MatplotLib axis
+        if axis is None:
+            self.__data_dict[filename_key][data_key.upper()].show_data()
+        else:
+            self.__data_dict[filename_key][data_key.upper()].show_data(axis)
+            
+    # calculate a image from a single frames data with a time window value object
+    def __trace_culc(self, trace_obj, time_window_obj):
+
+        start = time_window_obj.data[0]
+        width = time_window_obj.data[1]
+        if self.__inf_mode is True:
+            return trace_obj
+        else:
+            # check value is correct
+            self.__check_val(trace_obj, time_window_obj)
+            # make raw trace data
+            val = np.mean(trace_obj.data[:, :, start:start+width])
+            print(f'Cell image from an avaraged frame# {start} to {start+width-1}: Succeeded')
+            return TraceData(val)
+
+    def __check_val(self, trace_obj, time_window_obj) -> bool:
+        # convert to raw values
+        time_window = time_window_obj.data
+        # check the value is correct. See TimeWindowVal class.
+        trace_length = trace_obj.data.shape[0]
+        # check the start and end values
+        if time_window[0] < 0:
+            raise Exception('The start frame should be 0 or more.')
+        if time_window[1] < 1:
+            raise Exception('The width should be 1 or more.')
+        # compare the val to frame lentgh
+        if time_window[0] + time_window[1] > trace_length:
+            raise Exception(f"The total data point should be less than {trace_length-1}.")
+        else:
+            return True
+
+    def reset(self) -> None:
+        self.set_controller([0, 1])
+
+    def print_infor(self) -> None:
+        if not self.__data_dict:
+            print("Data_dict is empty")
+            return
+        dict_key = list(self.__data_dict.keys())
+        if self.__data_dict[dict_key[0]] is None:
+            print("No data in the TraceController")
+            return
+        print("TraceController information ===================")
+        print(f"TraceController = {self.__time_window_obj.data}")
+        print("-- data_dict LIST -- ")
+        for experiments in dict_key:
+            key_list = list(self.__data_dict[experiments].keys())
+            print(f"{experiments} = {key_list}")
+        print("=============== TraceController information END")
+            
+    @property
+    def data_dict(self):
+        return self.__data_dict
 
 class FrameShift(UserController): 
     def __init__(self):

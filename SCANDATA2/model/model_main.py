@@ -3,11 +3,13 @@
 Created on Wed Sep 13 09:11:15 2023
 
 @author: lunelukkio@gmail.com
+When new controllers are added, import from "user controller" factory and __check_controller_type in DataService also should be modified.
+
 """
 from abc import ABCMeta, abstractmethod
 from SCANDATA2.common_class import WholeFilename
 from SCANDATA2.model.experiments import Experiments
-from SCANDATA2.model.user_controller import RoiFactory, ImageControllerFactory
+from SCANDATA2.model.user_controller import RoiFactory, ImageControllerFactory, TraceControllerFactory
 
 """
 Service
@@ -69,6 +71,8 @@ class DataService(ModelInterface):
         controller_key = controller_key.upper()
         if self.__user_controller_repository.find_by_name(controller_key) is None:
             # get a controller factory 
+            print("ddddddddddddddddddddddddddddddd")
+            print(controller_key)
             controller_factory = self.__check_controller_type(controller_key)
             # make a new controller with the method in DataService
             new_controller = controller_factory.create_controller(self.get_experiments)
@@ -114,8 +118,10 @@ class DataService(ModelInterface):
     def __check_controller_type(self, key):
         if key == "ROI":
             return RoiFactory()
-        elif key == "IMAGE_CONTROLLER":
+        if key == "IMAGE_CONTROLLER":
             return ImageControllerFactory()
+        if key == "TRACE_CONTROLLER":
+            return TraceControllerFactory()
 
         # To make a number for controller key.
     def __key_num_maker(self, controller_key):

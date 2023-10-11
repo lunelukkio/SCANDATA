@@ -160,14 +160,18 @@ class Builder(metaclass=ABCMeta):
         raise NotImplementedError()   
         
 
+# This class define the names of controllers and data
 class TsmBuilder(Builder):
     def __init__(self, filename_obj):
         self.num_ch = 2   # this is for Na+ and Ca2+ recording.
         self.num_elec_ch = 8
-        self.default_controller = ["ROI", "ROI", "IMAGE_CONTROLLER"] 
+        self.default_controller = ["ROI", "ROI", "IMAGE_CONTROLLER", "TRACE_CONTROLLER"] 
         self.default_data = ["FULL"]
         for num in range(self.num_ch):
             self.default_data.append("CH" + str(num+1))
+        for num in range(self.num_elec_ch):
+            self.default_data.append("ELEC" + str(num+1))  # see self.get_trace
+
         
         infor_keys = ["FULL_INTERVAL"]
         for idx in range(self.num_ch):
@@ -205,11 +209,11 @@ class TsmBuilder(Builder):
         print("----- There is no image data")
         return None
     
-    # make data_dict {data_key: TraceData}  {"ELEC_CH1": data, ""ELEC_CH2": data ......}
+    # make data_dict {data_key: TraceData}  {"ELEC1": data, ""ELEC2": data ......}
     def get_trace(self):
         data = {}
         for idx in range(self.num_elec_ch):
-            data[f"ELEC_CH{idx + 1}"] = TraceData(self.elec_data[idx], 
+            data[f"ELEC{idx + 1}"] = TraceData(self.elec_data[idx], 
                                           self.data_infor_dict[f"ELEC{idx + 1}_INTERVAL"])    # change to numpy to value obj
         return data
     
