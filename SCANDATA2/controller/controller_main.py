@@ -84,7 +84,7 @@ class ViewController:
 
     def set_roi_position(self, event, roi_num=1):
         print("dddddddddddddddddddddddddddddddddddd")
-        
+        print("checkthis")
         self.current_roi_num = roi_num
         key = 'Roi' + str(roi_num)
         print(key + ':')

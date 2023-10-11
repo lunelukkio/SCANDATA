@@ -476,12 +476,12 @@ class TraceAx:
             
     def remove_specific_controller(self, specific_controller_key):
         filtered_list = [item for item in self.__current_controller_list if specific_controller_key not in item]
-        print(f"Removed -{specific_controller_key}- from {self.__current_controller_list} = {filtered_list}")
+        print(f"Removed -{specific_controller_key}- from {self.__current_controller_list} -> {filtered_list}")
         self.__current_controller_list = filtered_list
         
     def remove_specific_data(self, specific_data_key):
         filtered_list = [item for item in self.__current_data_list if specific_data_key not in item]
-        print(f"Removed -{specific_data_key}- from {self.__current_data_list} = {filtered_list}")
+        print(f"Removed -{specific_data_key}- from {self.__current_data_list} -> {filtered_list}")
         self.__current_data_list = filtered_list
             
     def draw_ax(self):
