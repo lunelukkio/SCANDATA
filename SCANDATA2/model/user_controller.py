@@ -173,6 +173,10 @@ class Roi(UserController):
     @property
     def data_dict(self):
         return self.__data_dict
+    
+    @property
+    def roi_obj(self):
+        return self.__roi_obj
         
         
 

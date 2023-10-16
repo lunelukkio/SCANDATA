@@ -11,15 +11,12 @@ from SCANDATA2.common_class import WholeFilename
 
 import tkinter as tk
 
-fullname = '..\\220408\\20408B002.tsm'
-filename_obj = WholeFilename(fullname)
-
 class TestFullFrames(unittest.TestCase):
     def test_full_frame(self):
                 
         root = tk.Tk()
         root.title("SCANDATA")
-        view = DataWindow(root, filename_obj)
+        view = DataWindow(root)
         root.mainloop()
         
         

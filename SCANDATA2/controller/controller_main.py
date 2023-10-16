@@ -39,8 +39,9 @@ class ViewController:
     def __del__(self):
         print('Deleted a ViewController.' + '  myId= {}'.format(id(self)))
 
-    def open_file(self) -> str:
-        filename_obj = self.__file_service.open_file()
+    def open_file(self, filename_obj=None) -> str:
+        if filename_obj is None:
+            filename_obj = self.__file_service.open_file()
         self.create_model(filename_obj) 
         default_controller_list, default_data_list = self.__model.get_experiments(filename_obj.name).get_default()
         
@@ -50,16 +51,7 @@ class ViewController:
             new_key = self.__model.create_user_controller(controller_key)
             controller_list.append(new_key)
             self.__model.bind_filename2controller(filename_obj.name, new_key)
-        return filename_obj.name, controller_list, data_list
-
-        # This is for the secondfile opening
-        #else:
-        #    i = 0
-        #    for controller_key in default_controller_key:
-        #        if controller_key == re.sub(r'\d+', '', self.__controller_list[i]):
-        #            self.__model.bind_filename2controller(filename_obj.name, self.__controller_list[i])
-        #            i += 1
-    
+        return filename_obj.name, controller_list, data_list    
     
     def create_model(self, filename_obj: object):  
         self.__model.create_model(filename_obj.fullname)
@@ -82,25 +74,8 @@ class ViewController:
     def get_user_controller(self, controller_key):
         return self.__model.get_user_controller(controller_key.upper())
 
-    def set_roi_position(self, event, roi_num=1):
-        print("dddddddddddddddddddddddddddddddddddd")
-        print("checkthis")
-        self.current_roi_num = roi_num
-        key = 'Roi' + str(roi_num)
-        print(key + ':')
-        print(event.button, event.x, event.y, event.xdata, event.ydata)
-        roi_val = self.__model.get_data(key)
-        
-        # Set roi center to click poist.
-        roi_x = math.floor(event.xdata) - round(roi_val.data[2]/2) + 1
-        roi_y = math.floor(event.ydata) - round(roi_val.data[3]/2) + 1
-        roi = [roi_x, roi_y]
-        self.send_update_message(key, roi)
-        
-        
-        
-        
-        
+    def set_roi_position(self, controller_key, val):
+        self.__model.set_controller(controller_key, val)
     
     def change_roi_size(self, roi_num, val): #val = [x,y,x_length,y_length]
         self.current_roi_num = roi_num

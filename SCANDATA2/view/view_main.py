@@ -11,6 +11,7 @@ from tkinter import ttk
 import tkinter.filedialog
 import os
 import gc
+import math
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
@@ -298,14 +299,12 @@ class DataWindow(tk.Frame):
         self.canvas_trace.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         trace_fig.subplots_adjust(left=0.06, right=0.97, bottom=0.05, top=0.9)
         
-        #if filename_obj is not None:
-        #    master.title(filename_obj.name)
-        #    self.__filename = filename_obj
-        #    self.contoller.file_open(self.__filename)
+        if filename_obj is not None:
+            self.open_file(filename_obj)
         
         
-    def open_file(self):
-        filename_key, controller_list, data_list = self.controller.open_file()
+    def open_file(self, filename_obj=None):
+        filename_key, controller_list, data_list = self.controller.open_file(filename_obj)
         for i in range(3):
             self.ax_list[i].set_filename_key(filename_key)
             for controller_key in controller_list:
@@ -330,6 +329,7 @@ class DataWindow(tk.Frame):
         
         self.ax_list[0].set_data_key("FULL")  # to remove FULL image data
         self.ax_list[0].set_data_key("CH2")  # to remove CH2 data image data
+        self.ax_list[1].set_controller_key("ROI1")  # to remove baseline ROI
         self.ax_list[2].set_data_key("ELEC2")
         self.ax_list[2].set_data_key("ELEC3")
         self.ax_list[2].set_data_key("ELEC4")
@@ -337,6 +337,8 @@ class DataWindow(tk.Frame):
         self.ax_list[2].set_data_key("ELEC6")
         self.ax_list[2].set_data_key("ELEC7")
         self.ax_list[2].set_data_key("ELEC8")
+        for i in range(3):
+            self.ax_list[i].print_infor()
         
     def draw_ax(self, ax_num):
         if ax_num == 0:
@@ -357,7 +359,7 @@ class DataWindow(tk.Frame):
 
     def onclick_image(self, event):
         if event.button == 1:  # left click
-            self.controller.set_roi_position(event, self.current_roi_num)
+            self.ax_list[1].set_roi_position(event)
         elif event.button == 2:
             pass
         elif event.button == 3:
@@ -452,6 +454,10 @@ class TraceAx:
         self.controller = controller
         self.color_selection = ['black', 'red', 'blue', 'orange', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
         
+        self.__user_controller_list = []
+        self.__filename_list = []
+        self.__data_list = []
+        
         self.__current_controller_list = []  # ["ROI1", "ROI2", "IMAGE_CONTROLLER2"]
         self.__current_filename_list = []  # ["20408B002.tsm"]
         self.__current_data_list = []  # ["FULL", "CH1"]
@@ -460,19 +466,22 @@ class TraceAx:
         if controller_key in self.__current_controller_list:
             self.__current_controller_list.remove(controller_key) 
         else:
-            self.__current_controller_list.append(controller_key) 
+            self.__current_controller_list.append(controller_key)
+            self.__user_controller_list.append(controller_key) 
             
     def set_filename_key(self, filename_key):
         if filename_key in self.__current_filename_list:
             self.__current_filename_list.remove(filename_key)  
         else:
-            self.__current_filename_list.append(filename_key)         
+            self.__current_filename_list.append(filename_key)
+            self.__filename_list.append(filename_key) 
         
     def set_data_key(self, data_key):
         if data_key in self.__current_data_list:
             self.__current_data_list.remove(data_key)  
         else:
             self.__current_data_list.append(data_key)
+            self.__data_list.append(data_key)
             
     def remove_specific_controller(self, specific_controller_key):
         filtered_list = [item for item in self.__current_controller_list if specific_controller_key not in item]
@@ -513,6 +522,30 @@ class TraceAx:
                     i += 1
                 print()
             print()
+            
+    def set_roi_position(self, event):
+        print(self.__current_controller_list)
+        #print(event.button, event.x, event.y, event.xdata, event.ydata)
+        for controller_key in self.__current_controller_list:
+            roi_val = self.controller.get_user_controller(controller_key).roi_obj.data
+            # Set roi center to click poist.
+            roi_x = math.floor(event.xdata) - round(roi_val.data[2]/2) + 1
+            roi_y = math.floor(event.ydata) - round(roi_val.data[3]/2) + 1
+            roi = [roi_x, roi_y, roi_val.data[2], roi_val.data[3]]
+            self.controller.set_roi_position(controller_key, roi)
+            self.draw_ax()
+        
+        
+        
+    def print_infor(self):
+        print("")
+        print("Trace axis current data list = ")
+        print(self.__user_controller_list)
+        print(self.__filename_list)
+        print(self.__data_list)
+        print(self.__current_controller_list)
+        print(self.__current_filename_list)
+        print(self.__current_data_list)
         
 
 class ImageAx:
@@ -521,6 +554,10 @@ class ImageAx:
         self.canvas_image = canvas
         self.controller = controller
         self.ax_obj = ax
+        
+        self.__user_controller_list = []
+        self.__filename_list = []
+        self.__data_list = []
         
         self.__current_controller_list = []  # ["ROI1", "ROI2", "IMAGE_CONTROLLER2"]
         self.__current_filename_list = []  # ["20408B002.tsm"]
@@ -584,6 +621,15 @@ class ImageAx:
             pass
         rectangles = self.tools.axes_patches_check(plt.Rectangle)
 
+    def print_infor(self):
+        print("")
+        print("Image axis current data list = ")
+        print(self.__user_controller_list)
+        print(self.__filename_list)
+        print(self.__data_list)
+        print(self.__current_controller_list)
+        print(self.__current_filename_list)
+        print(self.__current_data_list)
 
 
 class NavigationToolbarMyTool(NavigationToolbar2Tk):
@@ -618,10 +664,10 @@ class AxesTools:
 
 
 if __name__ == '__main__':
-        root = tk.Tk()
-        root.title("SCANDATA")
-        
-        #view = MainView(root)
-        view = DataWindow(root)
-        
-        root.mainloop()
+    
+    fullname = '..\\..\\220408\\20408B002.tsm'
+    filename_obj = WholeFilename(fullname)
+    root = tk.Tk()
+    root.title("SCANDATA")
+    view = DataWindow(root, filename_obj)
+    root.mainloop()
