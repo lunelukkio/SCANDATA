@@ -93,6 +93,9 @@ class Roi(UserController):
         x_width = roi_value_list[2]
         y_width = roi_value_list[3]
         self.__roi_obj = RoiVal(x, y, x_width, y_width)  # replace the roi
+        
+        
+        
         self.set_data()
         
     def set_data(self):

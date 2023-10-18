@@ -68,8 +68,11 @@ class ViewController:
         self.__model.set_controller(controller_key, val)
         
     def get_data(self, filename_key, controller_key, data_key):
-        user_controller_obj = self.get_user_controller(controller_key)
-        return user_controller_obj.data_dict[filename_key][data_key]
+        data_dict = self.get_user_controller(controller_key).data_dict
+        if filename_key in data_dict and data_key in data_dict[filename_key]:
+            return data_dict[filename_key][data_key]
+        else:
+            pass
         
     def get_user_controller(self, controller_key):
         return self.__model.get_user_controller(controller_key.upper())

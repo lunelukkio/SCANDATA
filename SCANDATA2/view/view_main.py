@@ -10,16 +10,13 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.filedialog
 import os
-import gc
 import math
+import matplotlib.patches as patches
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from SCANDATA2.common_class import WholeFilename
-
-
 from SCANDATA2.controller.controller_main import MainController, ViewController
-
 
 
 class MainView(tk.Frame):
@@ -326,10 +323,12 @@ class DataWindow(tk.Frame):
         self.ax_list[1].remove_specific_controller("IMAGE_CONTROLLER")  # to remove IMAGE_CONTROLLER from ax
         self.ax_list[2].remove_specific_controller("ROI")  # to remove ROI from ax
         self.ax_list[2].remove_specific_controller("IMAGE_CONTROLLER")  # to remove IMAGE_CONTROLLER from ax
-        
+    
         self.ax_list[0].set_data_key("FULL")  # to remove FULL image data
         self.ax_list[0].set_data_key("CH2")  # to remove CH2 data image data
-        self.ax_list[1].set_controller_key("ROI1")  # to remove baseline ROI
+        #self.ax_list[1].set_controller_key("ROI1")  # to remove baseline ROI
+        self.ax_list[1].set_data_key("FULL")  # to remove FULL trace data
+        self.ax_list[1].set_data_key("CH2")  # to remove CH2 data trace data
         self.ax_list[2].set_data_key("ELEC2")
         self.ax_list[2].set_data_key("ELEC3")
         self.ax_list[2].set_data_key("ELEC4")
@@ -360,6 +359,7 @@ class DataWindow(tk.Frame):
     def onclick_image(self, event):
         if event.button == 1:  # left click
             self.ax_list[1].set_roi_position(event)
+            #self.ax_list[0].set_roi_position(event)
         elif event.button == 2:
             pass
         elif event.button == 3:
@@ -452,15 +452,15 @@ class TraceAx:
         self.canvas_trace = canvas
         self.ax_obj = ax
         self.controller = controller
-        self.color_selection = ['black', 'red', 'blue', 'orange', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
+        self.color_selection = ['black', 'red', 'blue', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan', 'orange']
         
-        self.__user_controller_list = []
-        self.__filename_list = []
-        self.__data_list = []
+        self.__user_controller_list = []  # ["ROI1", "ROI2", "IMAGE_CONTROLLER2"]
+        self.__filename_list = []  # ["20408B002.tsm"]
+        self.__data_list = []  # ["FULL", "CH1", "CH2"]
         
-        self.__current_controller_list = []  # ["ROI1", "ROI2", "IMAGE_CONTROLLER2"]
+        self.__current_controller_list = []  # ["ROI2]
         self.__current_filename_list = []  # ["20408B002.tsm"]
-        self.__current_data_list = []  # ["FULL", "CH1"]
+        self.__current_data_list = []  # ["CH1"]
             
     def set_controller_key(self, controller_key):
         if controller_key in self.__current_controller_list:
@@ -494,10 +494,10 @@ class TraceAx:
         self.__current_data_list = filtered_list
             
     def draw_ax(self):
+        self.ax_obj.clear()
         self.set_data(self.__current_controller_list, 
                       self.__current_filename_list, 
                       self.__current_data_list)
-        
         self.ax_obj.relim()
         self.ax_obj.autoscale_view()
         self.canvas_trace.draw()
@@ -505,7 +505,6 @@ class TraceAx:
     def set_data(self, current_controller, current_filename, current_data):
         print("")
         print("Trace_ax set keys = ")
-        i = 0
         for controller_key in current_controller:
             print(f"{controller_key}, ")
             for filename_key in current_filename:
@@ -514,19 +513,23 @@ class TraceAx:
                 for data_key in current_data:
                     print(f"{data_key} ", end='')
                     view_data = self.controller.get_data(filename_key, controller_key, data_key)
-                    line_2d_plot_obj, =view_data.show_data(self.ax_obj)  # Show_data return (tuple). line"," means the first element of a list (convert from list to objet). Don't remove it.
-                    # check the number of colors
-                    if i > len(self.color_selection)-1:
-                        i = 0
-                    line_2d_plot_obj.set_color(self.color_selection[i])
-                    i += 1
+                    if type(view_data).__name__ == "TraceData":
+                        line_2d_plot_obj, =view_data.show_data(self.ax_obj)  # Show_data return (tuple). line"," means the first element of a list (convert from list to objet). Don't remove it.
+                        # check the number of colors
+                        if data_key[-1].isdigit():
+                            line_2d_plot_obj.set_color(self.color_selection[int(data_key[-1])])
+                        else:
+                            line_2d_plot_obj.set_color(self.color_selection[0])
+                    else:
+                        break
                 print()
             print()
             
     def set_roi_position(self, event):
         print(self.__current_controller_list)
         #print(event.button, event.x, event.y, event.xdata, event.ydata)
-        for controller_key in self.__current_controller_list:
+        roi_controller_key = [controller_key for controller_key in self.__current_controller_list if "ROI" in controller_key]
+        for controller_key in roi_controller_key:
             roi_val = self.controller.get_user_controller(controller_key).roi_obj.data
             # Set roi center to click poist.
             roi_x = math.floor(event.xdata) - round(roi_val.data[2]/2) + 1
@@ -610,10 +613,26 @@ class ImageAx:
                 print("          ", end='')
                 for data_key in current_data:
                     view_data = self.controller.get_data(filename_key, controller_key, data_key)
-                    view_data.show_data(self.ax_obj)  # add image to self.ax_obj.images
+                    if type(view_data).__name__ == "ImageData":
+                        view_data.show_data(self.ax_obj)  # add image to self.ax_obj.images
+                    else:
+                        break
                     print(f"{data_key} ", end='')
 
-    def show_roi(self): 
+    def set_roi_position(self, event): 
+        roi_controller_key = [controller_key for controller_key in self.__current_controller_list if "ROI" in controller_key]
+        for controller_key in roi_controller_key:
+            roi_val = self.controller.get_user_controller(controller_key).roi_obj.data
+            # Set roi center to click poist.
+            roi_x = math.floor(event.xdata) - round(roi_val.data[2]/2) + 1
+            roi_y = math.floor(event.ydata) - round(roi_val.data[3]/2) + 1
+            roi = [roi_x, roi_y, roi_val.data[2], roi_val.data[3]]
+            roi_box_obj = RoiBox(roi)
+            self.draw_ax()
+        
+        
+        
+        
         rectangles = self.tools.axes_patches_check(plt.Rectangle)
         if len(rectangles) < self.current_roi_num:
             self.ax_obj.add_patch(self.roi_box.rectangle_obj)
@@ -630,6 +649,49 @@ class ImageAx:
         print(self.__current_controller_list)
         print(self.__current_filename_list)
         print(self.__current_data_list)
+        
+        
+        
+class RoiBox():
+    """ class method """
+    roi_num = 0
+    color_selection = ['white', 'red', 'blue', 'orange', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
+    
+    @classmethod
+    def get_roi_num(cls):
+        return cls.roi_num
+    
+    @classmethod
+    def increase_roi_num(cls):
+        cls.roi_num += 1
+    
+    @classmethod
+    def reset(cls):
+        cls.roi_num = 0
+    
+    """ instance method """
+    def __init__(self, controller_key):
+        self.__key = controller_key
+        self.color_num = RoiBox.get_roi_num()
+        self.__rectangle_obj = patches.Rectangle(xy=(40, 40), 
+                                                 width=1, 
+                                                 height=1,
+                                                 linewidth=0.7,
+                                                 ec=RoiBox.color_selection[self.color_num], 
+                                                 fill=False)
+
+    def set_roi(self):
+        roi_obj = self.__model.get_data(self.__key)
+        self.__rectangle_obj.set_xy([roi_obj.data[0], roi_obj.data[1]])
+        self.__rectangle_obj.set_width(roi_obj.data[2])
+        self.__rectangle_obj.set_height(roi_obj.data[3])
+        
+    def delete(self):
+        raise NotImplementedError()
+
+    @property
+    def rectangle_obj(self):
+        return self.__rectangle_obj
 
 
 class NavigationToolbarMyTool(NavigationToolbar2Tk):
