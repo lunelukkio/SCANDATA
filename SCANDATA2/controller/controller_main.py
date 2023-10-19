@@ -69,11 +69,8 @@ class ViewController:
             return data_dict[filename_key][data_key]
         else:
             pass
-        
-    def get_user_controller(self, controller_key):
-        return self.__model.get_user_controller(controller_key.upper())
 
-    def set_roi_position(self, controller_key, val):
+    def set_position(self, controller_key, val):
         self.__model.set_controller(controller_key, val)
     
     def change_roi_size(self, roi_num, val): #val = [x,y,x_length,y_length]

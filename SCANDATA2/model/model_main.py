@@ -40,11 +40,11 @@ class ModelInterface(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
-    def get_experiments(self, key) -> object:  # return whole data_dict in experiments
+    def get_controller_data(self, controller_key: str):
         raise NotImplementedError()
-    
+        
     @abstractmethod
-    def get_user_controller(self, key) -> object:
+    def get_experiments(self, key) -> object:  # return whole data_dict in experiments
         raise NotImplementedError()
         
     @abstractmethod
@@ -114,10 +114,6 @@ class DataService(ModelInterface):
     
     def get_experiments(self, key):  # return whole data_dict in experiments
         return self.__experiments_repository.data[key]
-
-    def get_user_controller(self, controller_key):
-        controller_key = controller_key.upper()
-        return self.__user_controller_repository.data[controller_key]
     
     def reset(self, controller_key):
         controller_key = controller_key.upper()
@@ -171,7 +167,7 @@ class DataService(ModelInterface):
         print("The first step: make a experiments model. ex.model.create_model(filename_obj.fullname)")
         print("The second step: make a user_controller. ex.model.create_controller(\"ROI\")")
         print("The third step: bind experiments to user_controller. ex.model.bind_filename2controller(\"20408B002.tsm\", \"Roi1\")")
-        print("The last step: get data from a user_controller. ex. roi1 = model.get_user_controller(\"20408B002.tsm\", \"ROI1\")")
+        print("The last step: ")
         
 
 

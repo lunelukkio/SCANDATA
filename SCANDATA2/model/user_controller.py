@@ -60,10 +60,6 @@ class UserController(metaclass=ABCMeta):
     @abstractmethod
     def add_data(self, filename_key, data_key):
         raise NotImplementedError()
-        
-    @abstractmethod
-    def show_data(self, data_key):
-        raise NotImplementedError()
 
     @abstractmethod
     def print_infor(self):
@@ -92,6 +88,9 @@ class Roi(UserController):
         
         # make a new Roi value object
     def set_controller(self, roi_value_list: list):
+        for i in range(4):
+            if roi_value_list[i] == None:
+                roi_value_list[i] = self.__roi_obj.data[i]
         x = roi_value_list[0]
         y = roi_value_list[1]
         x_width = roi_value_list[2]
@@ -111,6 +110,9 @@ class Roi(UserController):
                 self.__data_dict[filename_key][key] = dict_val
         print(f"set ROI: {self.__roi_obj.data}")
             
+    def get_data(self):
+        return self.__data_dict
+        
     def add_experiments(self, filename_key):
         if filename_key in self.__data_dict.keys():
             del self.__data_dict[filename_key]  
@@ -133,17 +135,6 @@ class Roi(UserController):
             print(f"No {filename_key} in this ROI")
         self.set_data()
         self.print_infor()
-
-    def show_data(self, filename_key, data_key, axis=None):  # axis = MatplotLib axis
-        if axis is None:
-            self.__data_dict[filename_key][data_key.upper()].show_data()
-        else:
-            self.__data_dict[filename_key][data_key.upper()].show_data(axis)
-            
-    def show_all(self, axis=None):
-        for filename_key in self.__data_dict.keys():
-            for data_key in self.__data_dict[filename_key].keys():
-                self.show_data(filename_key, data_key, axis)
             
     # calculate a trace from a single frames data with a roi value object
     def __trace_culc(self, frames_obj, roi_obj):
@@ -165,7 +156,7 @@ class Roi(UserController):
         roi = roi_obj.data
         # check the value is correct. See RoiVal class.
         frames_size = frames_obj.shape
-        print("ttttttttttttttttttttttttttttttttttt ROI.__check_val")
+        print("t      tttttttttttttttttttttttttttttttttt ROI.__check_val")
         print(roi[0])
         print(roi[2])
         if roi[0] + roi[2]-1 > frames_size[0] or roi[1] + roi[3] -1> frames_size[1]:  #width is always 1 or more.

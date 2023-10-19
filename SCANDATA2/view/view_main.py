@@ -358,8 +358,8 @@ class DataWindow(tk.Frame):
 
     def onclick_image(self, event):
         if event.button == 1:  # left click
-            self.ax_list[1].set_roi_position(event)
-            #self.ax_list[0].set_roi_position(event)
+            self.ax_list[1].set_position(event)
+            #self.ax_list[0].set_position(event)
         elif event.button == 2:
             pass
         elif event.button == 3:
@@ -457,19 +457,20 @@ class TraceAx:
         self.__user_controller_list = []  # ["ROI1", "ROI2", "IMAGE_CONTROLLER2"]
         self.__filename_list = []  # ["20408B002.tsm"]
         self.__data_list = []  # ["FULL", "CH1", "CH2"]
+        
+        self.__active_user_controller = []  # ["ROI1"]
             
     def set_controller_key(self, controller_key):
         if controller_key in self.__current_controller_list:
             self.__current_controller_list.remove(controller_key) 
         else:
-            self.__current_controller_list.append(controller_key)
             self.__user_controller_list.append(controller_key) 
             
     def remove_specific_controller(self, specific_controller_key):
         filtered_list = [item for item in self.__current_controller_list if specific_controller_key not in item]
         print(f"Removed -{specific_controller_key}- from {self.__current_controller_list} -> {filtered_list}")
         self.__current_controller_list = filtered_list
-            
+
     def draw_ax(self):
         self.ax_obj.clear()
         self.set_data(self.__current_controller_list, 
@@ -481,9 +482,8 @@ class TraceAx:
         
     def set_data(self, current_controller, current_filename, current_data):
         for user_controller_key in self.__user_controller_list:
-            user_controller = self.controller.get_user_controller(user_controller_key)
+            data_dict = self.controller.get_data(user_controller_key)
             line_2d_plot_obj, = user_controller.show_all(self.ax_obj)
-            print(line_2d_plot_obj,)
         
         print("")
         print("Trace_ax set keys = ")
@@ -507,17 +507,16 @@ class TraceAx:
                 print()
             print()
             
-    def set_roi_position(self, event):
-        print(self.__current_controller_list)
+    def set_position(self, event):
         #print(event.button, event.x, event.y, event.xdata, event.ydata)
-        roi_controller_key = [controller_key for controller_key in self.__current_controller_list if "ROI" in controller_key]
+        roi_controller_key = [controller_key for controller_key in self.__active_user_controller if "ROI" in controller_key]
         for controller_key in roi_controller_key:
-            roi_val = self.controller.get_user_controller(controller_key).roi_obj.data
             # Set roi center to click poist.
-            roi_x = math.floor(event.xdata) - round(roi_val.data[2]/2) + 1
-            roi_y = math.floor(event.ydata) - round(roi_val.data[3]/2) + 1
-            roi = [roi_x, roi_y, roi_val.data[2], roi_val.data[3]]
-            self.controller.set_roi_position(controller_key, roi)
+            # Check roi width from controller RoiVal.
+            roi_x = math.floor(event.xdata)
+            roi_y = math.floor(event.ydata)
+            roi = [roi_x, roi_y, None, None]
+            self.controller.set_position(controller_key, roi)
             self.draw_ax()
         
         
@@ -601,16 +600,8 @@ class ImageAx:
                         break
                     print(f"{data_key} ", end='')
 
-    def set_roi_position(self, event): 
-        roi_controller_key = [controller_key for controller_key in self.__current_controller_list if "ROI" in controller_key]
-        for controller_key in roi_controller_key:
-            roi_val = self.controller.get_user_controller(controller_key).roi_obj.data
-            # Set roi center to click poist.
-            roi_x = math.floor(event.xdata) - round(roi_val.data[2]/2) + 1
-            roi_y = math.floor(event.ydata) - round(roi_val.data[3]/2) + 1
-            roi = [roi_x, roi_y, roi_val.data[2], roi_val.data[3]]
-            roi_box_obj = RoiBox(roi)
-            self.draw_ax()
+    def set_position(self, event): 
+        pass
         
         
         
