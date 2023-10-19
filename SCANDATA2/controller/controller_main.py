@@ -90,6 +90,12 @@ class ViewController:
     def bind_keys(self, controller_key, data_key):
         self.__model.bind_data(controller_key, data_key)
         self.__model.update_data(controller_key)
+        
+    def add_experiments(self, controller_key:str, filename_key:str):
+        self.__model.add_experiments(controller_key, filename_key)
+
+    def add_data(self, controller_key:str, filename_key: str, data_key: str):
+        self.__model.add_data(controller_key, filename_key, data_key)
     
     def add_mod(self, data_key: str, mod_key: str):
         self.__model.add_mod(data_key, mod_key)

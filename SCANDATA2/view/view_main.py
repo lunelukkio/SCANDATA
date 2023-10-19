@@ -326,7 +326,7 @@ class DataWindow(tk.Frame):
     
         self.ax_list[0].set_data_key("FULL")  # to remove FULL image data
         self.ax_list[0].set_data_key("CH2")  # to remove CH2 data image data
-        #self.ax_list[1].set_controller_key("ROI1")  # to remove baseline ROI
+        self.ax_list[1].set_controller_key("ROI1")  # to remove baseline ROI
         self.ax_list[1].set_data_key("FULL")  # to remove FULL trace data
         self.ax_list[1].set_data_key("CH2")  # to remove CH2 data trace data
         self.ax_list[2].set_data_key("ELEC2")
@@ -457,10 +457,6 @@ class TraceAx:
         self.__user_controller_list = []  # ["ROI1", "ROI2", "IMAGE_CONTROLLER2"]
         self.__filename_list = []  # ["20408B002.tsm"]
         self.__data_list = []  # ["FULL", "CH1", "CH2"]
-        
-        self.__current_controller_list = []  # ["ROI2]
-        self.__current_filename_list = []  # ["20408B002.tsm"]
-        self.__current_data_list = []  # ["CH1"]
             
     def set_controller_key(self, controller_key):
         if controller_key in self.__current_controller_list:
@@ -469,29 +465,10 @@ class TraceAx:
             self.__current_controller_list.append(controller_key)
             self.__user_controller_list.append(controller_key) 
             
-    def set_filename_key(self, filename_key):
-        if filename_key in self.__current_filename_list:
-            self.__current_filename_list.remove(filename_key)  
-        else:
-            self.__current_filename_list.append(filename_key)
-            self.__filename_list.append(filename_key) 
-        
-    def set_data_key(self, data_key):
-        if data_key in self.__current_data_list:
-            self.__current_data_list.remove(data_key)  
-        else:
-            self.__current_data_list.append(data_key)
-            self.__data_list.append(data_key)
-            
     def remove_specific_controller(self, specific_controller_key):
         filtered_list = [item for item in self.__current_controller_list if specific_controller_key not in item]
         print(f"Removed -{specific_controller_key}- from {self.__current_controller_list} -> {filtered_list}")
         self.__current_controller_list = filtered_list
-        
-    def remove_specific_data(self, specific_data_key):
-        filtered_list = [item for item in self.__current_data_list if specific_data_key not in item]
-        print(f"Removed -{specific_data_key}- from {self.__current_data_list} -> {filtered_list}")
-        self.__current_data_list = filtered_list
             
     def draw_ax(self):
         self.ax_obj.clear()
@@ -503,6 +480,11 @@ class TraceAx:
         self.canvas_trace.draw()
         
     def set_data(self, current_controller, current_filename, current_data):
+        for user_controller_key in self.__user_controller_list:
+            user_controller = self.controller.get_user_controller(user_controller_key)
+            line_2d_plot_obj, = user_controller.show_all(self.ax_obj)
+            print(line_2d_plot_obj,)
+        
         print("")
         print("Trace_ax set keys = ")
         for controller_key in current_controller:

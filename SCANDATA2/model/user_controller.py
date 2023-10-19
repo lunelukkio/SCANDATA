@@ -54,7 +54,11 @@ class UserController(metaclass=ABCMeta):
         raise NotImplementedError()
     
     @abstractmethod
-    def add_experiments(self, filename_str):
+    def add_experiments(self, filename_key):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def add_data(self, filename_key, data_key):
         raise NotImplementedError()
         
     @abstractmethod
@@ -93,34 +97,53 @@ class Roi(UserController):
         x_width = roi_value_list[2]
         y_width = roi_value_list[3]
         self.__roi_obj = RoiVal(x, y, x_width, y_width)  # replace the roi
-        
-        
-        
         self.set_data()
-        
+
     def set_data(self):
         # repeat the number of experiments
         for filename_key in list(self.__data_dict.keys()):
             # get Experiments obj Data using a method in DataService
             experiments_entity = self.get_experiments(filename_key)
             # make a traces data dict
-            new_dict = {}
-            for key in experiments_entity.frames_dict.keys():  # key = "Full", "Ch1", "Ch2"
+            filtered_keys = [key for key in experiments_entity.frames_dict.keys() if key in self.__data_dict[filename_key].keys()]
+            for key in filtered_keys:  # key = "Full", "Ch1", "Ch2"
                 dict_val = self.__trace_culc(experiments_entity.frames_dict[key], self.__roi_obj)
-                new_dict[key] = dict_val
-            self.__data_dict[filename_key] = new_dict
+                self.__data_dict[filename_key][key] = dict_val
         print(f"set ROI: {self.__roi_obj.data}")
             
-    def add_experiments(self, filename_str):
-        self.__data_dict[filename_str] = None
+    def add_experiments(self, filename_key):
+        if filename_key in self.__data_dict.keys():
+            del self.__data_dict[filename_key]  
+        else:
+            self.__data_dict[filename_key] = {}
+            experiments_entity = self.get_experiments(filename_key)
+            original_data_list = experiments_entity.frames_dict.keys()
+            for data_key in original_data_list:
+                self.__data_dict[filename_key][data_key] = None
         self.set_data()
         self.print_infor()
         
+    def add_data(self, filename_key, data_key):
+        if filename_key in self.__data_dict.keys():
+            if data_key in self.__data_dict[filename_key].keys():
+                del self.__data_dict[filename_key][data_key]
+            else:
+                self.__data_dict[filename_key][data_key] = None
+        else:
+            print(f"No {filename_key} in this ROI")
+        self.set_data()
+        self.print_infor()
+
     def show_data(self, filename_key, data_key, axis=None):  # axis = MatplotLib axis
         if axis is None:
             self.__data_dict[filename_key][data_key.upper()].show_data()
         else:
             self.__data_dict[filename_key][data_key.upper()].show_data(axis)
+            
+    def show_all(self, axis=None):
+        for filename_key in self.__data_dict.keys():
+            for data_key in self.__data_dict[filename_key].keys():
+                self.show_data(filename_key, data_key, axis)
             
     # calculate a trace from a single frames data with a roi value object
     def __trace_culc(self, frames_obj, roi_obj):
@@ -221,6 +244,9 @@ class ImageController(UserController):
         self.set_data()
         self.print_infor()
         
+    def add_data(self, filename_key, data_key):
+        pass
+        
     def show_data(self, filename_key, data_key, axis=None):  # axis = MatplotLib axis
         if axis is None:
             self.__data_dict[filename_key][data_key.upper()].show_data()
@@ -316,6 +342,9 @@ class TraceController(UserController):
         self.__data_dict[filename_str] = None
         self.set_data()
         self.print_infor()
+        
+    def add_data(self, filename_key, data_key):
+        pass
         
     def show_data(self, filename_key, data_key, axis=None):  # axis = MatplotLib axis
         if axis is None:

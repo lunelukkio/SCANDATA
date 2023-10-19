@@ -26,6 +26,14 @@ class ModelInterface(metaclass=ABCMeta):
     @abstractmethod
     def bind_filename2controller(self, filename_key, controller_key):
         raise NotImplementedError()
+
+    @abstractmethod
+    def add_experiments(self, controller_key:str, filename_key:str):
+        raise NotImplementedError()
+        
+    @abstractmethod
+    def add_data(self, controller_key:str, filename_key: str, data_key: str):
+        raise NotImplementedError()
         
     @abstractmethod
     def set_controller(self, controller_key: str, val: list):
@@ -88,6 +96,16 @@ class DataService(ModelInterface):
         controller = self.__user_controller_repository.find_by_name(controller_key)
         print(f"Bind {filename_key} to {controller_key}")
         controller.add_experiments(filename_key)
+        
+    def add_experiments(self, controller_key:str, filename_key:str):
+        controller_key = controller_key.upper()
+        controller = self.__user_controller_repository.find_by_name(controller_key)
+        controller.add_experiments(filename_key)
+
+    def add_data(self, controller_key:str, filename_key: str, data_key: str):
+        controller_key = controller_key.upper()
+        controller = self.__user_controller_repository.find_by_name(controller_key)
+        controller.add_data(filename_key, data_key)
 
     def set_controller(self, controller_key: str, val: list):
         controller_key = controller_key.upper()
