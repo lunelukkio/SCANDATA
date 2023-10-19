@@ -6,8 +6,8 @@ lunelukkio@gmail.com
 """
 
 import unittest
-from SCANDATA2.controller.controller_main import ViewController
-from SCANDATA2.common_class import WholeFilename
+from SCANDATA.controller.controller_main import ViewController
+from SCANDATA.common_class import WholeFilename
 
 filename_obj = WholeFilename('..\\220408\\20408B002.tsm')
 

@@ -5,8 +5,8 @@ concrete classes for User controllers
 lunelukkio@gmail.com
 """
 from abc import ABCMeta, abstractmethod
-from SCANDATA2.model.value_object import TraceData, ImageData
-from SCANDATA2.model.value_object import RoiVal, TimeWindowVal
+from SCANDATA.model.value_object import TraceData, ImageData
+from SCANDATA.model.value_object import RoiVal, TimeWindowVal
 import numpy as np
 
 """

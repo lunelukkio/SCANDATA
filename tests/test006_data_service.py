@@ -6,7 +6,7 @@ Created on Fri Sep 15 08:38:14 2023
 """
 
 import unittest
-from SCANDATA2.model.model_main import DataService
+from SCANDATA.model.model_main import DataService
 import matplotlib.pyplot as plt
 
 class Test(unittest.TestCase):

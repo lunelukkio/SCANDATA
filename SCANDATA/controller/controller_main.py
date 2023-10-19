@@ -6,8 +6,8 @@ lunelukkio@gmail.com
 main for controller
 """
 
-from SCANDATA2.model.model_main import DataService
-from SCANDATA2.common_class import WholeFilename
+from SCANDATA.model.model_main import DataService
+from SCANDATA.common_class import WholeFilename
 import tkinter as tk
 import os
 import psutil  # for memory check

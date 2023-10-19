@@ -15,8 +15,8 @@ import matplotlib.patches as patches
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-from SCANDATA2.common_class import WholeFilename
-from SCANDATA2.controller.controller_main import MainController, ViewController
+from SCANDATA.common_class import WholeFilename
+from SCANDATA.controller.controller_main import MainController, ViewController
 
 
 class MainView(tk.Frame):

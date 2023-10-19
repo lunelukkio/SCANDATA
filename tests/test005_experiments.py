@@ -6,8 +6,8 @@ Created on Thu Sep 14 17:48:55 2023
 """
 
 import unittest
-from SCANDATA2.common_class import WholeFilename
-from SCANDATA2.model.model_main import Experiments
+from SCANDATA.common_class import WholeFilename
+from SCANDATA.model.model_main import Experiments
 import matplotlib.pyplot as plt
 
 

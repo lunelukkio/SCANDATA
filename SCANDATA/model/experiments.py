@@ -6,8 +6,8 @@ Created on Wed Sep 27 11:47:25 2023
 """
 
 from abc import ABCMeta, abstractmethod
-from SCANDATA2.model.value_object import FramesData, ImageData, TraceData
-from SCANDATA2.model.file_io import TsmFileIo
+from SCANDATA.model.value_object import FramesData, ImageData, TraceData
+from SCANDATA.model.file_io import TsmFileIo
 
 """
 Entity

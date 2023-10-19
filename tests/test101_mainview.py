@@ -5,8 +5,8 @@ Created on Thu Dec 29 22:31:27 2022
 @author: lulul
 """
 import unittest
-from SCANDATA2.view.view_main import MainView
-from SCANDATA2.controller.controller_main import ViewController
+from SCANDATA.view.view_main import MainView
+from SCANDATA.controller.controller_main import ViewController
 import tkinter as tk
 
 class TestFullFrames(unittest.TestCase):

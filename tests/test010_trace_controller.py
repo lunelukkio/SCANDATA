@@ -6,7 +6,7 @@ Created on Sun Jan  8 15:03:01 2023
 """
 
 import unittest
-from SCANDATA2.model.model_main import DataService
+from SCANDATA.model.model_main import DataService
 import matplotlib.pyplot as plt
 
 class Test_elec_controller(unittest.TestCase):

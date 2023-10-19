@@ -6,7 +6,7 @@ lunelukkio@gmail.com
 """
 
 import unittest
-from SCANDATA2.model.model_main import DataService
+from SCANDATA.model.model_main import DataService
 import matplotlib.pyplot as plt
 
 class TestRoi(unittest.TestCase):

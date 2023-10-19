@@ -6,8 +6,8 @@ lunelukkio@gmail.com
 """
 
 import unittest
-from  SCANDATA2.view.view_main import DataWindow
-from SCANDATA2.common_class import WholeFilename
+from  SCANDATA.view.view_main import DataWindow
+from SCANDATA.common_class import WholeFilename
 
 import tkinter as tk
 

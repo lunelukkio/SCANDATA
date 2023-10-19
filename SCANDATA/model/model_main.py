@@ -7,9 +7,9 @@ When new controllers are added, import from "user controller" factory and __chec
 
 """
 from abc import ABCMeta, abstractmethod
-from SCANDATA2.common_class import WholeFilename
-from SCANDATA2.model.experiments import Experiments
-from SCANDATA2.model.user_controller import RoiFactory, ImageControllerFactory, TraceControllerFactory
+from SCANDATA.common_class import WholeFilename
+from SCANDATA.model.experiments import Experiments
+from SCANDATA.model.user_controller import RoiFactory, ImageControllerFactory, TraceControllerFactory
 
 """
 Service

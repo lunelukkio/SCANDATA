@@ -5,9 +5,9 @@ Created on Sun Dec 25 13:33:19 2022
 @author: lulul
 """     
 import unittest
-from SCANDATA2.common_class import WholeFilename
-from SCANDATA2.model.value_object import TraceData
-from SCANDATA2.model.file_io import TsmFileIo
+from SCANDATA.common_class import WholeFilename
+from SCANDATA.model.value_object import TraceData
+from SCANDATA.model.file_io import TsmFileIo
 
 
 filename_obj = WholeFilename('..\\220408\\20408B002.tsm')  # this isa a value object
