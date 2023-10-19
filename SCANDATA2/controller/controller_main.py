@@ -9,12 +9,8 @@ main for controller
 from SCANDATA2.model.model_main import DataService
 from SCANDATA2.common_class import WholeFilename
 import tkinter as tk
-from tkinter import ttk
 import os
-import math
-import glob
 import psutil  # for memory check
-import re   # Regular expression
 
 
 class MainController:
