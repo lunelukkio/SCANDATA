@@ -28,11 +28,11 @@ class ModelInterface(metaclass=ABCMeta):
         raise NotImplementedError()
 
     @abstractmethod
-    def add_experiments(self, controller_key:str, filename_key:str):
+    def set_experiments(self, controller_key:str, filename_key:str):
         raise NotImplementedError()
         
     @abstractmethod
-    def add_data(self, controller_key:str, filename_key: str, data_key: str):
+    def set_data(self, controller_key:str, filename_key: str, data_key: str):
         raise NotImplementedError()
         
     @abstractmethod
@@ -49,6 +49,10 @@ class ModelInterface(metaclass=ABCMeta):
         
     @abstractmethod
     def reset(self, controller_key):
+        raise NotImplementedError() 
+        
+    @abstractmethod
+    def help(self):
         raise NotImplementedError() 
         
         
@@ -95,22 +99,27 @@ class DataService(ModelInterface):
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
         print(f"Bind {filename_key} to {controller_key}")
-        controller.add_experiments(filename_key)
+        controller.set_experiments(filename_key)
         
-    def add_experiments(self, controller_key:str, filename_key:str):
+    def set_experiments(self, controller_key:str, filename_key:str):
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
-        controller.add_experiments(filename_key)
+        controller.set_experiments(filename_key)
 
-    def add_data(self, controller_key:str, filename_key: str, data_key: str):
+    def set_data(self, controller_key:str, data_key: str, filename_key=None):
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
-        controller.add_data(filename_key, data_key)
+        controller.set_data(data_key, filename_key)
 
     def set_controller(self, controller_key: str, val: list):
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
         controller.set_controller(val)
+        
+    def get_controller_data(self, controller_key: str):
+        controller_key = controller_key.upper()
+        controller = self.__user_controller_repository.find_by_name(controller_key)
+        return controller.get_controller_data()
     
     def get_experiments(self, key):  # return whole data_dict in experiments
         return self.__experiments_repository.data[key]

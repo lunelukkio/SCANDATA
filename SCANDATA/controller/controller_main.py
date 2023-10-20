@@ -63,12 +63,12 @@ class ViewController:
     def set_controller(self, controller_key: str, val: list):
         self.__model.set_controller(controller_key, val)
         
-    def get_data(self, filename_key, controller_key, data_key):
-        data_dict = self.get_user_controller(controller_key).data_dict
-        if filename_key in data_dict and data_key in data_dict[filename_key]:
-            return data_dict[filename_key][data_key]
+    def get_data(self, controller_key):
+        data_dict = self.__model.get_controller_data(controller_key)
+        if data_dict is None:
+            print(f"Can't find data_dict in {controller_key}")
         else:
-            pass
+            return data_dict
 
     def set_position(self, controller_key, val):
         self.__model.set_controller(controller_key, val)
@@ -88,11 +88,11 @@ class ViewController:
         self.__model.bind_data(controller_key, data_key)
         self.__model.update_data(controller_key)
         
-    def add_experiments(self, controller_key:str, filename_key:str):
-        self.__model.add_experiments(controller_key, filename_key)
+    def set_experiments(self, controller_key:str, filename_key:str):
+        self.__model.set_experiments(controller_key, filename_key)
 
-    def add_data(self, controller_key:str, filename_key: str, data_key: str):
-        self.__model.add_data(controller_key, filename_key, data_key)
+    def set_data(self, controller_key:str, data_key: str):
+        self.__model.set_data(controller_key, data_key)
     
     def add_mod(self, data_key: str, mod_key: str):
         self.__model.add_mod(data_key, mod_key)
