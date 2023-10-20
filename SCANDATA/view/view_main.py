@@ -304,12 +304,15 @@ class DataWindow(tk.Frame):
         filename_key, controller_list, data_list = self.controller.open_file(filename_obj)
         for i in range(3):
             for controller_key in controller_list:
-                self.ax_list[i].set_controller_key(controller_key)
+                self.ax_list[i].set_active_controller_key(controller_key)
+        print(f"   !!! Open {filename_obj.name}: suceeded!!!")
+        self.controller.print_model_infor()
+        print("")
         self.default_view_data(filename_key)
-        self.draw_ax(1)  # 3 = draw whole ax
+        self.draw_ax(3)  # 3 = draw whole ax
         
     def default_view_data(self, filename_key):
-
+        print("Default setting")
 
 
         self.ax_list[0].remove_specific_controller("TRACE_CONTROLLER")  # to remove ELEC_CONTROLLER from ax
@@ -319,10 +322,21 @@ class DataWindow(tk.Frame):
         self.ax_list[2].remove_specific_controller("ROI")  # to remove ROI from ax
         self.ax_list[2].remove_specific_controller("IMAGE_CONTROLLER")  # to remove IMAGE_CONTROLLER from ax
         
-        self.ax_list[1].set_controller_key("ROI1")  # to remove FULL image data
-    
+        self.ax_list[1].set_active_controller_key("ROI1")  # to remove background roi
+        
+        self.ax_list[0].set_data_key("FULL")  # to remove FULL image data
+        """
+        self.ax_list[0].set_data_key("CH2")  # to remove FULL image data
         self.ax_list[1].set_data_key("FULL")  # to remove FULL image data
-
+        self.ax_list[1].set_data_key("CH2")  # to remove FULL image data
+        self.ax_list[2].set_data_key("ELEC2")  
+        self.ax_list[2].set_data_key("ELEC3")
+        self.ax_list[2].set_data_key("ELEC4")
+        self.ax_list[2].set_data_key("ELEC5")
+        self.ax_list[2].set_data_key("ELEC6")
+        self.ax_list[2].set_data_key("ELEC7")
+        self.ax_list[2].set_data_key("ELEC8")
+        """
 
 
 
@@ -448,27 +462,29 @@ class TraceAx:
         self.__view_data_dict = {}  # {"20408B002.tsm: {"FULL": plot_data, "CH1": plot_data, "CH2": plot_data}
         
         self.__active_user_controller_list = []  # ["ROI1"]
-            
-    def set_controller_key(self, controller_key):
+
+    # This doesn't affect to user controller in the model.
+    def set_active_controller_key(self, controller_key):
         if controller_key in self.__active_user_controller_list:
-            self.__active_user_controller_list.remove(controller_key) 
+            self.__active_user_controller_list.remove(controller_key)
         else:
             self.__active_user_controller_list.append(controller_key) 
             self.__user_controller_list.append(controller_key)
 
-            
+    # This doesn't affect to user controller in the model.
     def remove_specific_controller(self, specific_controller_key):
-        filtered_list = [item for item in self.__active_user_controller_list if specific_controller_key not in item]
-        print(f"Removed -{specific_controller_key}- from {self.__active_user_controller_list} -> {filtered_list}")
-        self.__active_user_controller_list = filtered_list
-        
-            
+        # remove specific_controller_key from self.__active_user_controller_list
+        filtered_list = [item for item in self.__active_user_controller_list if specific_controller_key in item]
+        for controller_key in filtered_list:
+            self.set_active_controller_key(controller_key)
+        print(self.__class__.__name__)
+        print(f"Removed {specific_controller_key}--- from {self.__user_controller_list} = {self.__active_user_controller_list}")
+
     def set_data_key(self, data_key):
         for user_controller in self.__user_controller_list:
             self.controller.set_data(user_controller, data_key)
 
     def draw_ax(self):
-        self.ax_obj.clear()
         self.set_data(self.__active_user_controller_list)
         self.ax_obj.relim()
         self.ax_obj.autoscale_view()
@@ -536,60 +552,60 @@ class ImageAx:
         self.controller = controller
         self.ax_obj = ax
         
-        self.__user_controller_list = []
-        self.__filename_list = []
-        self.__data_list = []
+        self.__user_controller_list = []  # ["ROI1", "ROI2", "IMAGE_CONTROLLER2"]
+        self.__view_data_dict = {}  # {"20408B002.tsm: {"FULL": plot_data, "CH1": plot_data, "CH2": plot_data}
+        self.__active_user_controller_list = []  # ["ROI1"]
         
-        self.__active_user_controller_list = []  # ["ROI1", "ROI2", "IMAGE_CONTROLLER2"]
-        self.__current_filename_list = []  # ["20408B002.tsm"]
-        self.__current_data_list = []  # ["FULL", "CH1"]
-
-    def set_controller_key(self, controller_key):
+    def set_active_controller_key(self, controller_key):
         if controller_key in self.__active_user_controller_list:
             self.__active_user_controller_list.remove(controller_key) 
         else:
             self.__active_user_controller_list.append(controller_key) 
-        
-    def set_data_key(self, data_key):
-        if data_key in self.__current_data_list:
-            self.__current_data_list.remove(data_key)  
-        else:
-            self.__current_data_list.append(data_key)
-            
-    def remove_specific_controller(self, specific_controller_key):
-        filtered_list = [item for item in self.__active_user_controller_list if specific_controller_key not in item]
-        print(f"Removed -{specific_controller_key}- from {self.__active_user_controller_list} = {filtered_list}")
-        self.__active_user_controller_list = filtered_list
-        
-    def remove_specific_data(self, specific_data_key):
-        filtered_list = [item for item in self.__current_data_list if specific_data_key not in item]
-        print(f"Removed -{specific_data_key}- from {self.__current_data_list} = {filtered_list}")
-        self.__current_data_list = filtered_list
+            self.__user_controller_list.append(controller_key)
 
-    def draw_ax(self):
-        self.set_data(self.__active_user_controller_list, 
-                      self.__current_filename_list, 
-                      self.__current_data_list)
+    def remove_specific_controller(self, specific_controller_key):
+        filtered_list = [item for item in self.__active_user_controller_list if specific_controller_key in item]
+        for controller_key in filtered_list:
+            self.set_active_controller_key(controller_key)
+        print(self.__class__.__name__)
+        print(f"Removed {specific_controller_key}--- from {self.__user_controller_list} = {self.__active_user_controller_list}")
+            
+    def set_data_key(self, data_key):
+        for user_controller in self.__user_controller_list:
+            self.controller.set_data(user_controller, data_key)
         
+    def draw_ax(self):
+        self.set_data(self.__active_user_controller_list)
         self.ax_obj.relim()
         self.ax_obj.autoscale_view()
         self.canvas_image.draw()
         
-    def set_data(self, current_controller, current_filename, current_data):
-        print("")
-        print("Image_ax set keys = ")
-        for controller_key in current_controller:
-            print(f"{controller_key}, ")
-            for filename_key in current_filename:
-                print(f"     {filename_key} ")
-                print("          ", end='')
-                for data_key in current_data:
-                    view_data = self.controller.get_data(filename_key, controller_key, data_key)
-                    if type(view_data).__name__ == "ImageData":
-                        view_data.show_data(self.ax_obj)  # add image to self.ax_obj.images
-                    else:
-                        break
-                    print(f"{data_key} ", end='')
+    def set_data(self, current_controller):
+        for user_controller_key in self.__active_user_controller_list:
+            #get data from current user controller
+            data_dict = self.controller.get_data(user_controller_key)
+            print("")
+            print("Image_ax set keys = ", end='')
+            print(f"{user_controller_key}, ")
+            if data_dict:
+                for filename_key in data_dict:
+                    print(f"     {filename_key} ")
+                    print("          ", end='')
+                    #check exsistance of filename
+                    if filename_key not in self.__view_data_dict:
+                        self.__view_data_dict[filename_key] = {}
+                    if data_dict[filename_key]:
+                        for data_key in data_dict[filename_key]:
+                            if type(data_dict[filename_key][data_key]).__name__ == "ImageData":
+                                print(f"{data_key} ", end='')
+                                # check exsistance of data
+                                if data_key not in self.__view_data_dict[filename_key]:
+                                    self.__view_data_dict[filename_key][data_key] = data_dict[filename_key][data_key].show_data(self.ax_obj)
+                                else:
+                                    data = data_dict[filename_key][data_key].data
+                                    self.__view_data_dict[filename_key][data_key].set_data(data)
+                print("")
+        
 
     def set_position(self, event): 
         pass

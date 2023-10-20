@@ -20,7 +20,7 @@ class ModelInterface(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
-    def create_user_controller(self, controller_key) -> str:
+    def set_user_controller(self, controller_key) -> str:
         raise NotImplementedError()
      
     @abstractmethod
@@ -36,7 +36,7 @@ class ModelInterface(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
-    def set_controller(self, controller_key: str, val: list):
+    def set_controller_val(self, controller_key: str, val: list):
         raise NotImplementedError()
         
     @abstractmethod
@@ -79,7 +79,7 @@ class DataService(ModelInterface):
             # delete a model
             self.__experiments_repository.delete(filename_obj.name)
  
-    def create_user_controller(self, controller_key) -> str:  # controller_key = "Roi", "TimeWindow". Use the same name to delete like "ROI1"
+    def set_user_controller(self, controller_key) -> str:  # controller_key = "Roi", "TimeWindow". Use the same name to delete like "ROI1"
         controller_key = controller_key.upper()
         if self.__user_controller_repository.find_by_name(controller_key) is None:
             # get a controller factory 
@@ -106,15 +106,15 @@ class DataService(ModelInterface):
         controller = self.__user_controller_repository.find_by_name(controller_key)
         controller.set_experiments(filename_key)
 
-    def set_data(self, controller_key:str, data_key: str, filename_key=None):
+    def set_data(self, controller_key:str, filename_key, data_key: str):
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
-        controller.set_data(data_key, filename_key)
+        controller.set_data(filename_key, data_key)
 
-    def set_controller(self, controller_key: str, val: list):
+    def set_controller_val(self, controller_key: str, val: list):
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
-        controller.set_controller(val)
+        controller.set_controller_val(val)
         
     def get_controller_data(self, controller_key: str):
         controller_key = controller_key.upper()
@@ -135,6 +135,7 @@ class DataService(ModelInterface):
         print(f"Current experiments data = {list(self.__experiments_repository.data.keys())}")
         print(f"Current user controllers = {list(self.__user_controller_repository.data.keys())}")
         print("======================= DataService information END")
+        print("")
 
     def __check_controller_type(self, key):
         if key == "ROI":
@@ -211,6 +212,7 @@ class ExperimentsRepository(RepositoryInterface):
             print(f"Found {key} experiments in the experiments repository.")
             return self.__data[key]
         else:
+            print("ExperimentsRepository---")
             print(f"There is no {key} experiments in the experiments repository.")
             return None
 
@@ -235,6 +237,7 @@ class UserControllerRepository(RepositoryInterface):
         if key in self.__data:
             return self.__data[key]
         else:
+            print("UserControllerRepository---")
             print(f"There is no {key} controller in the user repository")
             return None
     

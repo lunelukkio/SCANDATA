@@ -44,7 +44,7 @@ class ViewController:
         controller_list = []
         data_list = default_data_list
         for controller_key in default_controller_list:
-            new_key = self.__model.create_user_controller(controller_key)
+            new_key = self.set_user_controller(controller_key)
             controller_list.append(new_key)
             self.__model.bind_filename2controller(filename_obj.name, new_key)
         return filename_obj.name, controller_list, data_list    
@@ -54,14 +54,18 @@ class ViewController:
         if self.__model == None:
             raise Exception('Failed to create a model.')
         else:
-            print('============================== Controller: Suceeded to read data from data files.')
+            print('============================== ViewController: Suceeded to read data from data files.')
             print('')
+            
+    def set_user_controller(self, controller_key):
+        new_key = self.__model.set_user_controller(controller_key)
+        return new_key
 
     def bind_filename2controller(self, filename_key, controller_key):
         self.__model.bind_filename2controller(filename_key, controller_key)
         
-    def set_controller(self, controller_key: str, val: list):
-        self.__model.set_controller(controller_key, val)
+    def set_controller_val(self, controller_key: str, val: list):
+        self.__model.set_controller_val(controller_key, val)
         
     def get_data(self, controller_key):
         data_dict = self.__model.get_controller_data(controller_key)
@@ -70,8 +74,9 @@ class ViewController:
         else:
             return data_dict
 
+    # overlap with set_controller_val???
     def set_position(self, controller_key, val):
-        self.__model.set_controller(controller_key, val)
+        self.__model.set_controller_val(controller_key, val)
     
     def change_roi_size(self, roi_num, val): #val = [x,y,x_length,y_length]
         self.current_roi_num = roi_num
@@ -81,6 +86,7 @@ class ViewController:
     def set_frame_window_position(self, event):
         pass
         
+    # no use?
     def send_update_message(self, key, val):
         self.__model.set_data(key, val)
         
@@ -107,12 +113,10 @@ class ViewController:
             return
         key = 'Roi' + str(self.current_roi_num)
         self.send_update_message(key, [])
+        
+    def print_model_infor(self):
+        self.__model.print_infor()
     
-    def count_data(self, filename, key):
-        return self.__model.count_data(filename, key)
-    
-    def update_data(self, key):
-        self.__model.update_data(key)
         
 
 class FileService:

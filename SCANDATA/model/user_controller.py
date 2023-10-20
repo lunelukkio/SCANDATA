@@ -50,7 +50,7 @@ abstract product
 """
 class UserController(metaclass=ABCMeta):
     @abstractmethod
-    def set_controller(self, val_list:list):
+    def set_controller_val(self, val_list:list):
         raise NotImplementedError()
         
     @abstractmethod
@@ -91,7 +91,7 @@ class Roi(UserController):
         #pass
         
         # make a new Roi value object
-    def set_controller(self, roi_value_list: list):
+    def set_controller_val(self, roi_value_list: list):
         for i in range(4):
             if roi_value_list[i] == None:
                 roi_value_list[i] = self.__val_obj.data[i]
@@ -100,12 +100,12 @@ class Roi(UserController):
         x_width = roi_value_list[2]
         y_width = roi_value_list[3]
         self.__val_obj = RoiVal(x, y, x_width, y_width)  # replace the roi
-        self.set_val()
+        self.__set_val()
         
     def get_controller_data(self):
         return self.__data_dict
 
-    def set_val(self):
+    def __set_val(self):
         # repeat the number of experiments
         for filename_key in list(self.__data_dict.keys()):
             # get Experiments obj Data using a method in DataService
@@ -117,8 +117,6 @@ class Roi(UserController):
                 self.__data_dict[filename_key][key] = dict_val
         print(f"set ROI: {self.__val_obj.data}")
             
-
-        
     def set_experiments(self, filename_key):
         if filename_key in self.__data_dict.keys():
             del self.__data_dict[filename_key]  
@@ -128,37 +126,23 @@ class Roi(UserController):
             original_data_list = experiments_entity.frames_dict.keys()
             for data_key in original_data_list:
                 self.__data_dict[filename_key][data_key] = None
-        self.set_val()
+        self.__set_val()
         self.print_infor()
         
-    def set_data(self, data_key, filename_key=None):
-        if filename_key == None:
-            for filename_key in self.__data_dict.keys():
-                if data_key in self.__data_dict[filename_key].keys():
-                    del self.__data_dict[filename_key][data_key]
-                    print(f"Deleteed {data_key}")
-                else:
-                    self.__data_dict[filename_key][data_key] = None
-                    print(f"Added {data_key}")
-        else:
-            if filename_key in self.__data_dict.keys():
-                if data_key in self.__data_dict[filename_key].keys():
-                    del self.__data_dict[filename_key][data_key]
-                    print(f"Deleteed {data_key}")
-                else:
-                    self.__data_dict[filename_key][data_key] = None
-                    print(f"Added {data_key}")
+    def set_data(self, filename_key, data_key):
+        if filename_key in self.__data_dict.keys():
+            if data_key in self.__data_dict[filename_key].keys():
+                del self.__data_dict[filename_key][data_key]
+                print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+                print(f"Deleteed {data_key}")
             else:
-                print(f"No {filename_key} in this ROI")
-        self.set_val()
-        self.print_infor()
-        
-    # currently no use
-    def show_data(self, data_key, filename_key, axis=None):  # axis = MatplotLib axis
-        if axis is None:
-            self.__data_dict[filename_key][data_key.upper()].show_data()
+                self.__data_dict[filename_key][data_key] = None
+                print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+                print(f"Added {data_key}")
         else:
-            self.__data_dict[filename_key][data_key.upper()].show_data(axis)
+                print(f"No {filename_key} in this ROI")
+        self.__set_val()
+        self.print_infor()
             
     # calculate a trace from a single frames data with a roi value object
     def __trace_culc(self, frames_obj, roi_obj):
@@ -193,7 +177,7 @@ class Roi(UserController):
             return True
     
     def reset(self) -> None:
-        self.set_controller([40, 40, 2, 2])
+        self.set_controller_val([40, 40, 2, 2])
     
     def print_infor(self) -> None:
         if not self.__data_dict:
@@ -210,21 +194,21 @@ class Roi(UserController):
             key_list = list(self.__data_dict[experiments].keys())
             print(f"{experiments} = {key_list}")
         print("=============== ROI information END")
+        print("")
             
     @property
     def data_dict(self):
         return self.__data_dict
     
     @property
-    def roi_obj(self):
+    def val_obj(self):
         return self.__val_obj
         
         
-
 class ImageController(UserController):
-    def __init__(self, get_experiments_method):
+    def __init__(self, get_experiments_method):       
         self.get_experiments = get_experiments_method
-        self.__time_window_obj = TimeWindowVal(0, 1)
+        self.__val_obj = TimeWindowVal(0, 1)
         self.__data_dict = {}  # data dict = {filename:frame_type{full:ImageData,ch1:ImageData,ch2:ImageData}}
         self.__mod_list = []
         
@@ -234,14 +218,16 @@ class ImageController(UserController):
         #pass
 
         # make a new Roi value object
-    def set_controller(self, window_value_list: list):  #value_list = [start, width]
+    def set_controller_val(self, window_value_list: list):  #value_list = [start, width]
         start = window_value_list[0]
         width = window_value_list[1]
+        self.__val_obj = TimeWindowVal(start, width)  # replace the roi
+        self.__set_val()
+        
+    def get_controller_data(self):
+        return self.__data_dict
 
-        self.__time_window_obj = TimeWindowVal(start, width)  # replace the roi
-        self.set_val()
-
-    def set_val(self):
+    def __set_val(self):
         # repeat the number of experiments
         for filename_key in list(self.__data_dict.keys()):
             # get Experiments obj Data using a method in DataService
@@ -249,28 +235,37 @@ class ImageController(UserController):
             # make a image data dict
             new_dict = {}
             for key in experiments_entity.frames_dict.keys():  # key = "ELEC1", "ELEC2", "ELEC3"
-                dict_val = self.__image_culc(experiments_entity.frames_dict[key], self.__time_window_obj)
+                dict_val = self.__image_culc(experiments_entity.frames_dict[key], self.__val_obj)
                 new_dict[key] = dict_val
             self.__data_dict[filename_key] = new_dict
-        print(f"set TraceController: {self.__time_window_obj.data}")
+        print(f"set ImageController: {self.__val_obj.data}")
         
-    def get_controller_data(self):
-        return self.__data_dict
-
-    def set_experiments(self, filename_str):
-        self.__data_dict[filename_str] = None
-        self.set_val()
+    def set_experiments(self, filename_key):
+        if filename_key in self.__data_dict.keys():
+            del self.__data_dict[filename_key]  
+        else:
+            self.__data_dict[filename_key] = {}
+            experiments_entity = self.get_experiments(filename_key)
+            original_data_list = experiments_entity.frames_dict.keys()
+            for data_key in original_data_list:
+                self.__data_dict[filename_key][data_key] = None
+        self.__set_val()
         self.print_infor()
         
     def set_data(self, filename_key, data_key):
-        pass
-        
-        
-    def show_data(self, filename_key, data_key, axis=None):  # axis = MatplotLib axis
-        if axis is None:
-            self.__data_dict[filename_key][data_key.upper()].show_data()
+        if filename_key in self.__data_dict.keys():
+            if data_key in self.__data_dict[filename_key].keys():
+                del self.__data_dict[filename_key][data_key]
+                print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+                print(f"Deleteed {data_key}")
+            else:
+                self.__data_dict[filename_key][data_key] = None
+                print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+                print(f"Added {data_key}")
         else:
-            self.__data_dict[filename_key][data_key.upper()].show_data(axis)
+            print(f"No {filename_key} in this ROI")
+        self.__set_val()
+        self.print_infor()   
             
     # calculate a image from a single frames data with a time window value object
     def __image_culc(self, frames_obj, time_window_obj):
@@ -301,7 +296,7 @@ class ImageController(UserController):
             return True
 
     def reset(self) -> None:
-        self.set_controller([0, 1])
+        self.set_controller_val([0, 1])
 
     def print_infor(self) -> None:
         if not self.__data_dict:
@@ -312,21 +307,27 @@ class ImageController(UserController):
             print("No data in the ImageController")
             return
         print("ImageController information ===================")
-        print(f"ImageController = {self.__time_window_obj.data}")
+        print(f"ImageController = {self.__val_obj.data}")
         print("-- data_dict LIST -- ")
         for experiments in dict_key:
             key_list = list(self.__data_dict[experiments].keys())
             print(f"{experiments} = {key_list}")
         print("=============== ImageController information END")
-            
+        print("")
+    
     @property
     def data_dict(self):
         return self.__data_dict
+    
+    @property
+    def val_obj(self):
+        return self.__val_obj
+
 
 class TraceController(UserController):
     def __init__(self, get_experiments_method):
         self.get_experiments = get_experiments_method
-        self.__time_window_obj = TimeWindowVal(0, 100)
+        self.__val_obj = TimeWindowVal(0, 100)
         self.__data_dict = {}  # data dict = {filename:frame_type{ELEC1:ElecData,ELEC2:ElecData,ELEC3:ElecData}}
         self.__mod_list = []
         self.__inf_mode = True  # This is for no limit trace (whole trace)
@@ -337,14 +338,16 @@ class TraceController(UserController):
         #pass
 
         # make a new Roi value object
-    def set_controller(self, window_value_list: list):  #value_list = [start, width]
+    def set_controller_val(self, window_value_list: list):  #value_list = [start, width]
         start = window_value_list[0]
         width = window_value_list[1]
+        self.__val_obj = TimeWindowVal(start, width)  # replace the roi
+        self.__set_val()
+        
+    def get_controller_data(self):
+        return self.__data_dict
 
-        self.__time_window_obj = TimeWindowVal(start, width)  # replace the roi
-        self.set_val()
-
-    def set_val(self):
+    def __set_val(self):
         # repeat the number of experiments
         for filename_key in list(self.__data_dict.keys()):
             # get Experiments obj Data using a method in DataService
@@ -352,31 +355,40 @@ class TraceController(UserController):
             # make a image data dict
             new_dict = {}
             for key in experiments_entity.trace_dict.keys():  # key = "ELEC1", "ELEC2", "ELEC3"
-                dict_val = self.__trace_culc(experiments_entity.trace_dict[key], self.__time_window_obj)
+                dict_val = self.__trace_culc(experiments_entity.trace_dict[key], self.__val_obj)
                 new_dict[key] = dict_val
             self.__data_dict[filename_key] = new_dict
-        print(f"set TimeController: {self.__time_window_obj.data}")
-
-    def get_controller_data(self):
-        return self.__data_dict
-
-    def set_experiments(self, filename_str):
-        self.__data_dict[filename_str] = None
-        self.set_val()
+        print(f"set TimeController: {self.__val_obj.data}")
+        
+    def set_experiments(self, filename_key):
+        if filename_key in self.__data_dict.keys():
+            del self.__data_dict[filename_key]  
+        else:
+            self.__data_dict[filename_key] = {}
+            experiments_entity = self.get_experiments(filename_key)
+            original_data_list = experiments_entity.frames_dict.keys()
+            for data_key in original_data_list:
+                self.__data_dict[filename_key][data_key] = None
+        self.__set_val()
         self.print_infor()
         
     def set_data(self, filename_key, data_key):
-        pass
-        
-    def show_data(self, filename_key, data_key, axis=None):  # axis = MatplotLib axis
-        if axis is None:
-            self.__data_dict[filename_key][data_key.upper()].show_data()
+        if filename_key in self.__data_dict.keys():
+            if data_key in self.__data_dict[filename_key].keys():
+                del self.__data_dict[filename_key][data_key]
+                print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+                print(f"Deleteed {data_key}")
+            else:
+                self.__data_dict[filename_key][data_key] = None
+                print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+                print(f"Added {data_key}")
         else:
-            self.__data_dict[filename_key][data_key.upper()].show_data(axis)
+            print(f"No {filename_key} in this ROI")
+        self.__set_val()
+        self.print_infor() 
             
     # calculate a image from a single frames data with a time window value object
     def __trace_culc(self, trace_obj, time_window_obj):
-
         start = time_window_obj.data[0]
         width = time_window_obj.data[1]
         if self.__inf_mode is True:
@@ -406,7 +418,7 @@ class TraceController(UserController):
             return True
 
     def reset(self) -> None:
-        self.set_controller([0, 1])
+        self.set_controller_val([0, 1])
 
     def print_infor(self) -> None:
         if not self.__data_dict:
@@ -417,22 +429,27 @@ class TraceController(UserController):
             print("No data in the TraceController")
             return
         print("TraceController information ===================")
-        print(f"TraceController = {self.__time_window_obj.data}")
+        print(f"TraceController = {self.__val_obj.data}")
         print("-- data_dict LIST -- ")
         for experiments in dict_key:
             key_list = list(self.__data_dict[experiments].keys())
             print(f"{experiments} = {key_list}")
         print("=============== TraceController information END")
-            
+        print("")
+    
     @property
     def data_dict(self):
         return self.__data_dict
+    
+    @property
+    def val_obj(self):
+        return self.__val_obj
 
 class FrameShift(UserController): 
     def __init__(self):
         self.__observers = []
     
-    def set_val(self, val):
+    def __set_val(self, val):
         pass
     
     def set_data(self, filename_key, data_key):
@@ -471,7 +488,7 @@ class Line(UserController):
     def __init__(self):
         self.__observers = []
     
-    def set_val(self, val):
+    def __set_val(self, val):
         pass
     def set_data(self, filename_key, data_key):
         pass
