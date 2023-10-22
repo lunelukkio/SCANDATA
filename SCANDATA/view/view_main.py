@@ -459,13 +459,11 @@ class TraceAx:
         self.color_selection = ['black', 'red', 'blue', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan', 'orange']
         
         self.__user_controller_list = []  # ["ROI1", "ROI2", "IMAGE_CONTROLLER2"]
-        self.__view_data_dict = {}  # {"20408B002.tsm: {"FULL": plot_data, "CH1": plot_data, "CH2": plot_data}
-        
         self.__active_user_controller_list = []  # ["ROI1"]
-
+        
     # This doesn't affect to user controller in the model.
-    def set_active_controller_key(self, controller_key):
-        if controller_key in self.__active_user_controller_list:
+    def set_controller_key(self, controller_key):
+        if controller_key in self.__user_controller_list:
             self.__active_user_controller_list.remove(controller_key)
         else:
             self.__active_user_controller_list.append(controller_key) 
@@ -481,7 +479,7 @@ class TraceAx:
         print(f"Removed {specific_controller_key}--- from {self.__user_controller_list} = {self.__active_user_controller_list}")
 
     def set_data_key(self, data_key):
-        for user_controller in self.__user_controller_list:
+        for user_controller in self.__active_user_controller_list:
             self.controller.set_data(user_controller, data_key)
 
     def draw_ax(self):
@@ -571,7 +569,11 @@ class ImageAx:
         print(f"Removed {specific_controller_key}--- from {self.__user_controller_list} = {self.__active_user_controller_list}")
             
     def set_data_key(self, data_key):
-        for user_controller in self.__user_controller_list:
+        for user_controller in self.__active_user_controller_list:
+            print("ttttttttttttttttttttttttttttttttttttttttttt")
+            print(self.__user_controller_list)
+            print(user_controller)
+            print(data_key)
             self.controller.set_data(user_controller, data_key)
         
     def draw_ax(self):

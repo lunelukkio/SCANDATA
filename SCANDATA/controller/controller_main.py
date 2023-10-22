@@ -31,6 +31,8 @@ class ViewController:
         self.__model = DataService()
         self.__view = view
         self.__file_service = FileService()
+        
+        self.filename_key_list = []
 
     def __del__(self):
         print('Deleted a ViewController.' + '  myId= {}'.format(id(self)))
@@ -39,6 +41,7 @@ class ViewController:
         if filename_obj is None:
             filename_obj = self.__file_service.open_file()
         self.create_model(filename_obj) 
+        self.filename_key_list.append(filename_obj.name)
         default_controller_list, default_data_list = self.__model.get_experiments(filename_obj.name).get_default()
         
         controller_list = []
@@ -98,7 +101,8 @@ class ViewController:
         self.__model.set_experiments(controller_key, filename_key)
 
     def set_data(self, controller_key:str, data_key: str):
-        self.__model.set_data(controller_key, data_key)
+        for filename_key in self.filename_key_list:
+            self.__model.set_data(controller_key, self.filename_key, data_key)
     
     def add_mod(self, data_key: str, mod_key: str):
         self.__model.add_mod(data_key, mod_key)
