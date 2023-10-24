@@ -15,7 +15,7 @@ class TestController(unittest.TestCase):
     def test_controller(self):
         
         controller = ViewController()
-        controller.create_model(filename_obj)
+        controller.create_experiments(filename_obj)
         controller.create_controller("ROI")
         controller.bind_filename2controller("20408B002.tsm", "Roi1")
         controller.model.help()

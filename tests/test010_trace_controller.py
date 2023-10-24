@@ -12,10 +12,10 @@ import matplotlib.pyplot as plt
 class Test_elec_controller(unittest.TestCase):
     def test_data_set(self):
         data_service = DataService()      
-        data_service.create_model('..\\220408\\20408B002.tsm')
+        data_service.create_experiments('..\\220408\\20408B002.tsm')
         
         #make controller
-        data_service.create_user_controller("TRACE_Controller")
+        data_service.set_user_controller("TRACE_Controller")
 
         #get IC
         ic1 = data_service.get_user_controller("Image_Controller1")

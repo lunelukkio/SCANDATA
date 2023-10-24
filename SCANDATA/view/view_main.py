@@ -138,8 +138,6 @@ class MainView(tk.Frame):
 
 
 
-    
-        
 
 class DataWindow(tk.Frame):
     def __init__(self, master=None, filename_obj=None):
@@ -301,7 +299,7 @@ class DataWindow(tk.Frame):
         
         
     def open_file(self, filename_obj=None):
-        filename_key, controller_list, data_list = self.controller.open_file(filename_obj)
+        controller_list, filename_key, data_list = self.controller.open_file(filename_obj)
         for i in range(3):
             for controller_key in controller_list:
                 self.ax_list[i].set_active_controller_key(controller_key)
@@ -313,7 +311,6 @@ class DataWindow(tk.Frame):
         
     def default_view_data(self, filename_key):
         print("Default setting")
-
 
         self.ax_list[0].remove_specific_controller("TRACE_CONTROLLER")  # to remove ELEC_CONTROLLER from ax
         self.ax_list[0].remove_specific_controller("ROI")  # to remove ROI from ax
@@ -337,9 +334,7 @@ class DataWindow(tk.Frame):
         self.ax_list[2].set_data_key("ELEC7")
         self.ax_list[2].set_data_key("ELEC8")
         """
-
-
-
+        
         for i in range(3):
             self.ax_list[i].print_infor()
         
@@ -353,12 +348,6 @@ class DataWindow(tk.Frame):
         elif ax_num == 3:
             for ax_num in range(3):
                 self.ax_list[ax_num].draw_ax()
-
-
-
-
-
-
 
     def onclick_image(self, event):
         if event.button == 1:  # left click
@@ -462,7 +451,7 @@ class TraceAx:
         self.__active_user_controller_list = []  # ["ROI1"]
         
     # This doesn't affect to user controller in the model.
-    def set_controller_key(self, controller_key):
+    def set_active_controller_key(self, controller_key):
         if controller_key in self.__user_controller_list:
             self.__active_user_controller_list.remove(controller_key)
         else:
@@ -519,9 +508,7 @@ class TraceAx:
                                     time = data_dict[filename_key][data_key].time
                                     self.__view_data_dict[filename_key][data_key].set_data(time,data)
                 print("")
-        
-        
-            
+    
     def set_position(self, event):
         #print(event.button, event.x, event.y, event.xdata, event.ydata)
         roi_controller_key = [controller_key for controller_key in self.__active_user_controller_list if "ROI" in controller_key]
@@ -533,8 +520,6 @@ class TraceAx:
             roi = [roi_x, roi_y, None, None]
             self.controller.set_position(controller_key, roi)
             self.draw_ax()
-        
-        
         
     def print_infor(self):
         print("")
@@ -705,6 +690,11 @@ class AxesTools:
 
 if __name__ == '__main__':
     
+    print("")
+    print("user controller,trace_axのリファクタリング。スーパークラスにまとめる")
+    print("controller_mainのいらないメソッド消す")
+    print("controllerにオブザーバー")
+    print("")
     fullname = '..\\..\\220408\\20408B002.tsm'
     filename_obj = WholeFilename(fullname)
     root = tk.Tk()

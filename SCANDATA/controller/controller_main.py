@@ -32,7 +32,9 @@ class ViewController:
         self.__view = view
         self.__file_service = FileService()
         
+        self.__user_controller_dic = {}
         self.filename_key_list = []
+        self.user_controller_key_list = []
 
     def __del__(self):
         print('Deleted a ViewController.' + '  myId= {}'.format(id(self)))
@@ -40,7 +42,7 @@ class ViewController:
     def open_file(self, filename_obj=None) -> str:
         if filename_obj is None:
             filename_obj = self.__file_service.open_file()
-        self.create_model(filename_obj) 
+        self.__user_controller_dict = self.create_experiments(filename_obj) 
         self.filename_key_list.append(filename_obj.name)
         default_controller_list, default_data_list = self.__model.get_experiments(filename_obj.name).get_default()
         
@@ -50,19 +52,27 @@ class ViewController:
             new_key = self.set_user_controller(controller_key)
             controller_list.append(new_key)
             self.__model.bind_filename2controller(filename_obj.name, new_key)
-        return filename_obj.name, controller_list, data_list    
+        return controller_list, filename_obj.name, data_list    
     
-    def create_model(self, filename_obj: object):  
-        self.__model.create_model(filename_obj.fullname)
+    def create_experiments(self, filename_obj: object):  
+        self.__user_controller_dict = self.__model.create_experiments(filename_obj.fullname)
         if self.__model == None:
             raise Exception('Failed to create a model.')
         else:
             print('============================== ViewController: Suceeded to read data from data files.')
             print('')
+            return self.__user_controller_dict
             
     def set_user_controller(self, controller_key):
         new_key = self.__model.set_user_controller(controller_key)
         return new_key
+        
+    def set_experiments(self, controller_key:str, filename_key:str):
+        self.__model.set_experiments(controller_key, filename_key)
+
+    def set_data(self, controller_key:str, data_key: str):
+        for filename_key in self.filename_key_list:
+            self.__model.set_data(controller_key, self.filename_key, data_key)
 
     def bind_filename2controller(self, filename_key, controller_key):
         self.__model.bind_filename2controller(filename_key, controller_key)
@@ -92,18 +102,7 @@ class ViewController:
     # no use?
     def send_update_message(self, key, val):
         self.__model.set_data(key, val)
-        
-    def bind_keys(self, controller_key, data_key):
-        self.__model.bind_data(controller_key, data_key)
-        self.__model.update_data(controller_key)
-        
-    def set_experiments(self, controller_key:str, filename_key:str):
-        self.__model.set_experiments(controller_key, filename_key)
-
-    def set_data(self, controller_key:str, data_key: str):
-        for filename_key in self.filename_key_list:
-            self.__model.set_data(controller_key, self.filename_key, data_key)
-    
+      
     def add_mod(self, data_key: str, mod_key: str):
         self.__model.add_mod(data_key, mod_key)
         if self.current_roi_num is None:

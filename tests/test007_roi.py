@@ -11,10 +11,10 @@ import matplotlib.pyplot as plt
 
 class TestRoi(unittest.TestCase):
         data_service = DataService()      
-        data_service.create_model('..\\220408\\20408B002.tsm')
+        data_service.create_experiments('..\\220408\\20408B002.tsm')
         
         #make controller
-        data_service.create_user_controller("Roi")
+        data_service.set_user_controller("Roi")
 
         #get ROI
         roi1 = data_service.get_user_controller("ROI1")
@@ -25,7 +25,7 @@ class TestRoi(unittest.TestCase):
         
         #roi1.data_dict["20408B002.tsm"]["CH1"].show_data()
         
-        data_service.set_controller("ROI1", [78,0,2,1])
+        data_service.set_controller_val("ROI1", [78,0,2,1])
         roi1.data_dict["20408B002.tsm"]["CH1"].show_data()
         #plt.figure()
         #data_service.set_controller("ROI1", [78,78,3,1])

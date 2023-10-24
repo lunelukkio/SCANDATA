@@ -16,7 +16,7 @@ Service
 """
 class ModelInterface(metaclass=ABCMeta):   
     @abstractmethod
-    def create_model(self, fullname):
+    def create_experiments(self, fullname):
         raise NotImplementedError()
         
     @abstractmethod
@@ -65,7 +65,7 @@ class DataService(ModelInterface):
         filename_obj = WholeFilename(fullname)
         return filename_obj
         
-    def create_model(self, fullname): #Use the same name to delete a model
+    def create_experiments(self, fullname): #Use the same name to delete a model
         # make a filename value obj from fullname
         filename_obj = self.__create_filename_obj(fullname)
         if self.__experiments_repository.find_by_name(filename_obj.name) is None:
@@ -95,12 +95,6 @@ class DataService(ModelInterface):
         else:
             self.__user_controller_repository.delete(controller_key)
         
-    def bind_filename2controller(self, filename_key, controller_key):
-        controller_key = controller_key.upper()
-        controller = self.__user_controller_repository.find_by_name(controller_key)
-        print(f"Bind {filename_key} to {controller_key}")
-        controller.set_experiments(filename_key)
-        
     def set_experiments(self, controller_key:str, filename_key:str):
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
@@ -110,6 +104,12 @@ class DataService(ModelInterface):
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
         controller.set_data(filename_key, data_key)
+        
+    def bind_filename2controller(self, filename_key, controller_key):
+        controller_key = controller_key.upper()
+        controller = self.__user_controller_repository.find_by_name(controller_key)
+        print(f"Bind {filename_key} to {controller_key}")
+        controller.set_experiments(filename_key)
 
     def set_controller_val(self, controller_key: str, val: list):
         controller_key = controller_key.upper()
@@ -121,6 +121,11 @@ class DataService(ModelInterface):
         controller = self.__user_controller_repository.find_by_name(controller_key)
         return controller.get_controller_data()
     
+    # Use this only for test
+    def get_user_controller(self, key):  # return whole data_dict in experiments
+        return self.__user_controller_repository.data[key]
+    
+    # Use this only for test
     def get_experiments(self, key):  # return whole data_dict in experiments
         return self.__experiments_repository.data[key]
     
@@ -174,7 +179,7 @@ class DataService(ModelInterface):
     def help(self):
         
         print("==================== Help ======================")
-        print("The first step: make a experiments model. ex.model.create_model(filename_obj.fullname)")
+        print("The first step: make a experiments model. ex.model.create_experiments(filename_obj.fullname)")
         print("The second step: make a user_controller. ex.model.create_controller(\"ROI\")")
         print("The third step: bind experiments to user_controller. ex.model.bind_filename2controller(\"20408B002.tsm\", \"Roi1\")")
         print("The last step: ")
