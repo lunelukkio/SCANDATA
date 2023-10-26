@@ -10,7 +10,6 @@ from SCANDATA.model.model_main import DataService
 from SCANDATA.common_class import WholeFilename
 import tkinter as tk
 import os
-import math
 import psutil  # for memory check
 
 
@@ -90,10 +89,9 @@ class ViewController:
         roi_controller_key = [controller_key for controller_key in controller_data_keys.keys() if "ROI" in controller_key]
         for controller_key in roi_controller_key:
             user_controller = self.__model.get_user_controller(controller_key)
-            # Set roi center to click poist.
-            # Check roi width from controller RoiVal.
-            roi_x = math.floor(event.xdata)
-            roi_y = math.floor(event.ydata)
+            # Cursor adjustment. the center of the pixel is 0. So it need 0.5 shift. 
+            roi_x = round(event.xdata)
+            roi_y = round(event.ydata)
             roi = [roi_x, roi_y, None, None]
             user_controller.set_controller_val(roi)
 

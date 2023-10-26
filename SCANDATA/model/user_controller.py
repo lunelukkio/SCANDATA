@@ -192,8 +192,6 @@ class Roi(UserController):
         roi = roi_obj.data
         # check the value is correct. See RoiVal class.
         frames_size = frames_obj.shape
-        print("ttttttttttttttttttttttttttttttttttt ROI.__check_val")
-        print(roi_obj.data)
         if roi[0] + roi[2]-1 > frames_size[0] or roi[1] + roi[3] -1> frames_size[1]:  #width is always 1 or more.
             raise Exception("The roi size should be the same as the image size or less")
         if roi[0] < 0 or roi[1] < 0: 
@@ -419,7 +417,7 @@ class ControllerObserver:
     def notify_observer(self):
         for observer_name in self.__observers:
             observer_name.update()
-        print("Observer notified")
+        print("Update Notification")
 
     @property
     def observers(self) -> list:

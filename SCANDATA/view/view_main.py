@@ -337,7 +337,7 @@ class DataWindow(tk.Frame):
             for ch in range(2, 9):
                 self.ax_list[2].set_active_data_key("TRACE_CONTROLLER1", filename_key, "ELEC" + str(ch))  # to remove FULL image data
 
-
+        #self.__controller.current
         
         #self.ax_list[1].set_active_data_key("FULL")  # to remove FULL image data
         #self.ax_list[1].set_active_data_key("CH2")  # to remove FULL image data
@@ -552,8 +552,6 @@ class ImageAx(ViewAx):
     def __init__(self, canvas, ax, controller):
         super().__init__(ax, controller)
         self.canvas = canvas
-        # override
-        self._color_selection = ['black', 'red', 'blue', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan', 'orange']
                 
     # There are three dict. active_controller_dict is to switching. self._ax_data_dict is to keep ax data. controller_data_dict is from user controller.
     def set_data(self, active_controller_dict):
@@ -579,7 +577,9 @@ class ImageAx(ViewAx):
         print("")
         
     def update(self):
-        pass
+        self._ax_obj.cla()
+        self.set_data(self._active_controller_dict)
+        self.canvas.draw()
                     
 
     def set_position(self, event): 
