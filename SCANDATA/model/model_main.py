@@ -230,7 +230,7 @@ class RepositoryInterface(metaclass=ABCMeta):
         
     def find_by_name(self, key: str):
         if key in self._data:
-            print(f"Found {key} in {self.__class__.__name__}.")
+            #print(f"Found {key} in {self.__class__.__name__}.")
             return self._data[key]
         else:
             print(f"{self.__class__.__name__}---")

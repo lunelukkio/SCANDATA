@@ -10,7 +10,9 @@ from SCANDATA.model.model_main import DataService
 from SCANDATA.common_class import WholeFilename
 import tkinter as tk
 import os
+import math
 import psutil  # for memory check
+
 
 
 class MainController:
@@ -40,8 +42,8 @@ class ViewController:
         if filename_obj is None:
             filename_obj = self.__file_service.open_file()
         # make experiments data
-        controller_dict_keys = self.create_experiments(filename_obj) 
-        return controller_dict_keys   
+        self.create_experiments(filename_obj) 
+        return filename_obj   
     
     def create_experiments(self, filename_obj: object):  
         controller_dict_keys = self.__model.create_experiments(filename_obj.fullname)
@@ -78,10 +80,23 @@ class ViewController:
             print(f"Can't find data_dict in {controller_key}")
         else:
             return data_dict
+        
+    def get_controller_infor(self):
+        return self.__model.get_infor()
 
-    # overlap with set_controller_val???
-    def set_position(self, controller_key, val):
-        self.__model.set_controller_val(controller_key, val)
+    def set_position_image_ax(self, event):
+        #print(event.button, event.x, event.y, event.xdata, event.ydata, event.dblclick, event.inaxes)
+        controller_data_keys = self.__model.get_infor()
+        roi_controller_key = [controller_key for controller_key in controller_data_keys.keys() if "ROI" in controller_key]
+        for controller_key in roi_controller_key:
+            user_controller = self.__model.get_user_controller(controller_key)
+            # Set roi center to click poist.
+            # Check roi width from controller RoiVal.
+            roi_x = math.floor(event.xdata)
+            roi_y = math.floor(event.ydata)
+            roi = [roi_x, roi_y, None, None]
+            user_controller.set_controller_val(roi)
+
     
     def change_roi_size(self, roi_num, val): #val = [x,y,x_length,y_length]
         self.current_roi_num = roi_num

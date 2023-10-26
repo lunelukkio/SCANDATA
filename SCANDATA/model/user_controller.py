@@ -157,6 +157,7 @@ class Roi(UserController):
         y_width = roi_value_list[3]
         self._val_obj = RoiVal(x, y, x_width, y_width)  # replace the roi
         self._get_val()
+        self.observer.notify_observer()
         
     # get new trace value object
     def _get_val(self):
@@ -191,9 +192,8 @@ class Roi(UserController):
         roi = roi_obj.data
         # check the value is correct. See RoiVal class.
         frames_size = frames_obj.shape
-        print("t      tttttttttttttttttttttttttttttttttt ROI.__check_val")
-        print(roi[0])
-        print(roi[2])
+        print("ttttttttttttttttttttttttttttttttttt ROI.__check_val")
+        print(roi_obj.data)
         if roi[0] + roi[2]-1 > frames_size[0] or roi[1] + roi[3] -1> frames_size[1]:  #width is always 1 or more.
             raise Exception("The roi size should be the same as the image size or less")
         if roi[0] < 0 or roi[1] < 0: 
@@ -207,7 +207,8 @@ class Roi(UserController):
         self.set_controller_val([40, 40, 2, 2])
         
 class ImageController(UserController):
-    def __init__(self, get_experiments_method):       
+    def __init__(self, get_experiments_method):
+        super().__init__(get_experiments_method)
         self.get_experiments = get_experiments_method
         self._val_obj = TimeWindowVal(0, 1)
         self._data_dict = {}  # data dict = {filename:frame_type{full:ImageData,ch1:ImageData,ch2:ImageData}}
@@ -224,6 +225,7 @@ class ImageController(UserController):
         width = window_value_list[1]
         self._val_obj = TimeWindowVal(start, width)  # replace the roi
         self._get_val()
+        self.observer.notify_observer()
 
     def _get_val(self):
         # repeat the number of experiments
@@ -272,6 +274,7 @@ class ImageController(UserController):
 
 class TraceController(UserController):
     def __init__(self, get_experiments_method):
+        super().__init__(get_experiments_method)
         self.get_experiments = get_experiments_method
         self._val_obj = TimeWindowVal(0, 100)
         self._data_dict = {}  # data dict = {filename:frame_type{ELEC1:ElecData,ELEC2:ElecData,ELEC3:ElecData}}
@@ -289,6 +292,7 @@ class TraceController(UserController):
         width = window_value_list[1]
         self._val_obj = TimeWindowVal(start, width)  # replace the roi
         self._get_val()
+        self.observer.notify_observer()
 
     def _get_val(self):
         # repeat the number of experiments
@@ -338,7 +342,8 @@ class TraceController(UserController):
 
 
 class FrameShift(UserController): 
-    def __init__(self):
+    def __init__(self, get_experiments_method):
+        super().__init__(get_experiments_method)
         self.__observers = []
     
     def _get_val(self, val):
@@ -369,7 +374,8 @@ class FrameShift(UserController):
 
 
 class Line(UserController): 
-    def __init__(self):
+    def __init__(self, get_experiments_method):
+        super().__init__(get_experiments_method)
         self.__observers = []
     
     def _get_val(self, val):
@@ -404,31 +410,16 @@ class ControllerObserver:
     def set_observer(self, observer):
         for check_observer in self.__observers:
             if check_observer == observer:
-                self.__remove_observer(observer)
+                self.__observers.remove(observer)
+                print(f"Observer removed {observer.__class__.__name__}")
                 return
-        self.__observers.append(observer)
-        self.__observers = sorted(self.__observers, key=lambda x: str(x.sort_num)+x.name)
-
-    def __remove_observer(self, observer):
-        self.__observers.remove(observer)
-        name_list = []
-        for i in self.__observers:
-            name_list.append(i.name)
+        self.__observers.append(observer)   
+        print(f"Observer added {observer.__class__.__name__}")
             
-    def notify_observer(self, controller_obj):
-        name_list = []
-        for observer in self.__observers:
-            name_list.append(observer.name)
-        print('----- Notify to observers: ' + str(name_list))
-        """ The order of ViewDatas should be after Data entiries """
+    def notify_observer(self):
         for observer_name in self.__observers:
-            observer_name.update(controller_obj.data)
-            
-    def get_infor(self):
-        name_list = []
-        for observer in self.__observers:
-            name_list.append(observer.name)
-        return name_list
+            observer_name.update()
+        print("Observer notified")
 
     @property
     def observers(self) -> list:
