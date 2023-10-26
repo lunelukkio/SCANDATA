@@ -24,14 +24,14 @@ class ObjectController:
         self.__entity_name_list = self.__model.create_data('Trace')
         
         for key in self.__entity_name_list:
-            self.__data_dict[key] = None
+            self._data_dict[key] = None
             
         self.__roi_box = RoiBox(self.__model, self.__key)
 
         print('Created ' + self.__key + ' view instance including Roi controller and traces.')
 
     def reset(self):
-        del self.__data_dict
+        del self._data_dict
         del self.__roi_box
 
     def update(self, *no_use):  # "no_use" is a RoiVal object. it need for FluoTrace observers.
@@ -42,7 +42,7 @@ class ObjectController:
                 observer_entity_list.append(key)
         # for traces
         for data_name in observer_entity_list:
-            self.__data_dict[data_name] = self.__model.get_data(data_name)
+            self._data_dict[data_name] = self.__model.get_data(data_name)
         #for roibox
         self.__roi_box.set_roi()
         self.notify_observer()
@@ -50,7 +50,7 @@ class ObjectController:
     def get_data(self) -> dict:
         i = 0
         for data in self.__entity_name_list:
-            self.__ax_data_dict['Data' + str(i)] = self.__data_dict[data]
+            self.__ax_data_dict['Data' + str(i)] = self._data_dict[data]
             i += 1
         return self.__ax_data_dict
             

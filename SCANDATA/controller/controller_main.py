@@ -32,36 +32,25 @@ class ViewController:
         self.__view = view
         self.__file_service = FileService()
         
-        self.__user_controller_dic = {}
-        self.filename_key_list = []
-        self.user_controller_key_list = []
-
     def __del__(self):
         print('Deleted a ViewController.' + '  myId= {}'.format(id(self)))
 
-    def open_file(self, filename_obj=None) -> str:
+    def open_file(self, filename_obj=None) -> dict:
+        # get filename object
         if filename_obj is None:
             filename_obj = self.__file_service.open_file()
-        self.__user_controller_dict = self.create_experiments(filename_obj) 
-        self.filename_key_list.append(filename_obj.name)
-        default_controller_list, default_data_list = self.__model.get_experiments(filename_obj.name).get_default()
-        
-        controller_list = []
-        data_list = default_data_list
-        for controller_key in default_controller_list:
-            new_key = self.set_user_controller(controller_key)
-            controller_list.append(new_key)
-            self.__model.bind_filename2controller(filename_obj.name, new_key)
-        return controller_list, filename_obj.name, data_list    
+        # make experiments data
+        controller_dict_keys = self.create_experiments(filename_obj) 
+        return controller_dict_keys   
     
     def create_experiments(self, filename_obj: object):  
-        self.__user_controller_dict = self.__model.create_experiments(filename_obj.fullname)
+        controller_dict_keys = self.__model.create_experiments(filename_obj.fullname)
         if self.__model == None:
             raise Exception('Failed to create a model.')
         else:
             print('============================== ViewController: Suceeded to read data from data files.')
             print('')
-            return self.__user_controller_dict
+            return controller_dict_keys
             
     def set_user_controller(self, controller_key):
         new_key = self.__model.set_user_controller(controller_key)
@@ -80,6 +69,9 @@ class ViewController:
     def set_controller_val(self, controller_key: str, val: list):
         self.__model.set_controller_val(controller_key, val)
         
+    def set_observer(self, controller_key, ax:object):
+        self.__model.set_observer(controller_key, ax)
+
     def get_data(self, controller_key):
         data_dict = self.__model.get_controller_data(controller_key)
         if data_dict is None:

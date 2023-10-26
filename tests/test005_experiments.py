@@ -22,7 +22,7 @@ class Test(unittest.TestCase):
         plt.figure()
         experiments.trace_dict["ELEC1"].show_data()
         experiments.print_infor()
-        del(experiments)
+        experiments.get_default()
 
 
 if __name__ == '__main__':

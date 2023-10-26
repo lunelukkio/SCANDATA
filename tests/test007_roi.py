@@ -13,16 +13,10 @@ class TestRoi(unittest.TestCase):
         data_service = DataService()      
         data_service.create_experiments('..\\220408\\20408B002.tsm')
         
-        #make controller
-        data_service.set_user_controller("Roi")
 
         #get ROI
         roi1 = data_service.get_user_controller("ROI1")
-        
-        #add filename to ROI1
-        data_service.bind_filename2controller("20408B002.tsm", "Roi1")
 
-        
         #roi1.data_dict["20408B002.tsm"]["CH1"].show_data()
         
         data_service.set_controller_val("ROI1", [78,0,2,1])
@@ -30,6 +24,9 @@ class TestRoi(unittest.TestCase):
         #plt.figure()
         #data_service.set_controller("ROI1", [78,78,3,1])
         #roi1.data_dict["20408B002.tsm"]["CH1"].show_data()
+        data_service.print_infor()
+        
+        print(data_service.get_infor("ROI1"))
 
         
 

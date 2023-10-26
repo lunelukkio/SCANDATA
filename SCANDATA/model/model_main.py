@@ -40,6 +40,10 @@ class ModelInterface(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
+    def set_observer(self, observer:object):
+        raise NotImplementedError()
+        
+    @abstractmethod
     def get_controller_data(self, controller_key: str):
         raise NotImplementedError()
         
@@ -74,7 +78,9 @@ class DataService(ModelInterface):
             # save entity to the repository
             print("====================Created the new expriments!!!")
             self.__experiments_repository.save(filename_obj.name, experiments)
+            self.make_default_controllers(filename_obj)
             self.print_infor()
+            return self.get_infor()
         else:
             # delete a model
             self.__experiments_repository.delete(filename_obj.name)
@@ -116,24 +122,50 @@ class DataService(ModelInterface):
         controller = self.__user_controller_repository.find_by_name(controller_key)
         controller.set_controller_val(val)
         
+    def set_observer(self, controller_key, observer:object):
+        controller_key = controller_key.upper()
+        controller = self.__user_controller_repository.find_by_name(controller_key)
+        controller.set_observer(observer)
+        
     def get_controller_data(self, controller_key: str):
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
         return controller.get_controller_data()
     
     # Use this only for test
-    def get_user_controller(self, key):  # return whole data_dict in experiments
-        return self.__user_controller_repository.data[key]
+    def get_user_controller(self, controller_key):  # return whole data_dict in experiments
+        controller_key = controller_key.upper()
+        return self.__user_controller_repository.data[controller_key]
     
     # Use this only for test
-    def get_experiments(self, key):  # return whole data_dict in experiments
-        return self.__experiments_repository.data[key]
+    def get_experiments(self, experiments_key):  # return whole data_dict in experiments
+        return self.__experiments_repository.data[experiments_key]
     
     def reset(self, controller_key):
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
         controller.reset()
         print(f"Reset: {controller_key}")
+        
+    def make_default_controllers(self, filename_obj):
+        default_controller_list, default_data_list = self.get_experiments(filename_obj.name).get_default()
+        for controller_key in default_controller_list:
+            new_key = self.set_user_controller(controller_key)
+            self.bind_filename2controller(filename_obj.name, new_key)
+        
+    def get_infor(self, controller_key=None) -> dict:
+        if controller_key is None:
+            controller_key_dict = {}
+            for controller_key in self.__user_controller_repository.data.keys():
+                controller = self.__user_controller_repository.find_by_name(controller_key)
+                controller_key_dict[controller_key] = controller.get_infor()
+        else:
+            controller_key = controller_key.upper()
+            controller = self.__user_controller_repository.find_by_name(controller_key)
+            controller_key_dict = {}
+            controller_key_dict[controller_key] = controller.get_infor()
+        return controller_key_dict
+            
     
     def print_infor(self):
         print("DataService information ===========================")
@@ -185,79 +217,48 @@ class DataService(ModelInterface):
         print("The last step: ")
         
 
-
-
 """
 Repository
 """
 class RepositoryInterface(metaclass=ABCMeta):
-    @abstractmethod
-    def save(self, key: str, data):
-        raise NotImplementedError()
+    def __init__(self):
+        self._data = {}   # {key:entiry}
         
-    @abstractmethod
+    def save(self, key: str, data):
+        self._data[key] = data
+        print(f"Saved {key} in {self.__class__.__name__}.")
+        
     def find_by_name(self, key: str):
-        raise NotImplementedError()
+        if key in self._data:
+            print(f"Found {key} in {self.__class__.__name__}.")
+            return self._data[key]
+        else:
+            print(f"{self.__class__.__name__}---")
+            print(f"There is no {key} in {self.__class__.__name__}.")
+            return None
     
-    @abstractmethod
     def delete(self, key: str):
-        raise NotImplementedError()
+        self._data.pop(key)
+        print(f"Deleted {key} from {self.__class__.__name__}.")
+        
+    @property
+    def data(self):
+        return self._data
 
 
 class ExperimentsRepository(RepositoryInterface):
     def __init__(self):
-        self.__data = {}   # {key:entiry}
-    
-    def save(self, key: str, data):
-        self.__data[key] = data
-        print(f"Saved {key} experiments in the experiments repository.")
-        
-    def find_by_name(self, key: str):
-        if key in self.__data:
-            print(f"Found {key} experiments in the experiments repository.")
-            return self.__data[key]
-        else:
-            print("ExperimentsRepository---")
-            print(f"There is no {key} experiments in the experiments repository.")
-            return None
-
-    def delete(self, key: str):
-        self.__data.pop(key)
-        print(f"Deleted {key} experiments from the experiments repository.")
-        
-    @property
-    def data(self):
-        return self.__data
+        super().__init__()
 
         
 class UserControllerRepository(RepositoryInterface):
     def __init__(self):
-        self.__data = {}   # {key:entiry}
-    
-    def save(self, key: str, data):
-        self.__data[key] = data
-        print(f"Saved {key} controller in the user controller repository.")
-        
-    def find_by_name(self, key: str):
-        if key in self.__data:
-            return self.__data[key]
-        else:
-            print("UserControllerRepository---")
-            print(f"There is no {key} controller in the user repository")
-            return None
-    
-    def delete(self, key: str):
-        self.__data.pop(key)
-        print(f"Deleted {key} controller from the user controller repository.")
-        
-    @property
-    def data(self):
-        return self.__data
+        super().__init__()
 
 
 class ModRepository(RepositoryInterface):
     def __init__(self):
-        self.__data = {}   # {key:entiry}
+        super().__init__()
     
 
 

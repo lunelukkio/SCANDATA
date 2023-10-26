@@ -23,8 +23,6 @@ class Experiments:   # entity
         self.__frames_dict = self.builder.get_frame()  # {key:FramsData -> val_obj}
         self.__image_dict = self.builder.get_image()   # {key:ImageData -> val_obj}
         self.__trace_dict = self.builder.get_trace()  # {key:Trace_Data -> val_obj}
-
-        self.__observer = ExperimentsObserver()
         
         print("----- Experiments: Successful data construction!!!")
         print("")
@@ -82,45 +80,6 @@ class Experiments:   # entity
     def trace_dict(self):
         return self.__trace_dict
     
-
-
-# need refactoring(2023/09/13)
-class ExperimentsObserver:
-    def __init__(self):
-        self.__observers = []
-        
-    def add_observer(self, observer):
-        for check_observer in self.__observers:
-            if check_observer == observer:
-                self.remove_observer(observer)
-                return
-        self.__observers.append(observer)
-        self.__observers = sorted(self.__observers, key=lambda x: str(x.sort_num)+x.name)
-
-    def remove_observer(self, observer):
-        self.__observers.remove(observer)
-        name_list = []
-        for i in self.__observers:
-            name_list.append(i.name)
-            
-    def notify_observer(self, controller_obj):
-        name_list = []
-        for observer in self.__observers:
-            name_list.append(observer.name)
-        print('----- Notify to observers: ' + str(name_list))
-        """ The order of ViewDatas should be after Data entiries """
-        for observer_name in self.__observers:
-            observer_name.update(controller_obj.data)
-            
-    def get_infor(self):
-        name_list = []
-        for observer in self.__observers:
-            name_list.append(observer.name)
-        return name_list
-
-    @property
-    def observers(self) -> list:
-        return self.__observers
 
 
     

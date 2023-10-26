@@ -5,12 +5,13 @@ Created on Thu Jul 21 11:43:13 2022
 lunelukkio@gmail.com
 main for view
 """
-
+from abc import ABCMeta, abstractmethod
 import tkinter as tk
 from tkinter import ttk
 import tkinter.filedialog
 import os
 import math
+import copy
 import matplotlib.patches as patches
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
@@ -282,7 +283,7 @@ class DataWindow(tk.Frame):
         self.ax_list.append(TraceAx(self.canvas_trace, trace_ax1, self.controller))  # ax_list[1]
         
         # matplotlib elec trace axes
-        trace_ax2 = trace_fig.add_subplot(gridspec_trace_fig[16:20], sharex=self.ax_list[1].ax_obj)
+        trace_ax2 = trace_fig.add_subplot(gridspec_trace_fig[16:20], sharex=self.ax_list[1]._ax_obj)
         self.ax_list.append(TraceAx(self.canvas_trace, trace_ax2, self.controller))  # ax_list[2]
         
         #canvas_trace.get_tk_widget().pack()
@@ -297,21 +298,21 @@ class DataWindow(tk.Frame):
         if filename_obj is not None:
             self.open_file(filename_obj)
         
-        
     def open_file(self, filename_obj=None):
-        controller_list, filename_key, data_list = self.controller.open_file(filename_obj)
+        controller_dict_keys = self.controller.open_file(filename_obj)
         for i in range(3):
-            for controller_key in controller_list:
-                self.ax_list[i].set_active_controller_key(controller_key)
-        print(f"   !!! Open {filename_obj.name}: suceeded!!!")
+            self.ax_list[i].set_initial_controller_key(controller_dict_keys)
         self.controller.print_model_infor()
+        print(f"   !!! Open {filename_obj.name}: suceeded!!!")
         print("")
-        self.default_view_data(filename_key)
+        self.default_view_data(controller_dict_keys)
         self.draw_ax(3)  # 3 = draw whole ax
         
-    def default_view_data(self, filename_key):
+    def default_view_data(self, controller_dict_keys):
         print("Default setting")
-
+        print("Whole controller keys = ", end='')
+        print(controller_dict_keys)
+        print(self.ax_list[0]._active_controller_dict)
         self.ax_list[0].remove_specific_controller("TRACE_CONTROLLER")  # to remove ELEC_CONTROLLER from ax
         self.ax_list[0].remove_specific_controller("ROI")  # to remove ROI from ax
         self.ax_list[1].remove_specific_controller("TRACE_CONTROLLER")  # to remove ELEC_CONTROLLER from ax
@@ -319,9 +320,10 @@ class DataWindow(tk.Frame):
         self.ax_list[2].remove_specific_controller("ROI")  # to remove ROI from ax
         self.ax_list[2].remove_specific_controller("IMAGE_CONTROLLER")  # to remove IMAGE_CONTROLLER from ax
         
-        self.ax_list[1].set_active_controller_key("ROI1")  # to remove background roi
-        
-        self.ax_list[0].set_data_key("FULL")  # to remove FULL image data
+        self.ax_list[1].set_active_controller_key("ROI1", False)  # to remove background roi
+        for filename_key in controller_dict_keys["IMAGE_CONTROLLER1"].keys():
+            self.ax_list[0].set_active_data_key("IMAGE_CONTROLLER1", filename_key, "FULL")  # to remove FULL image data
+            self.ax_list[0].set_active_data_key("IMAGE_CONTROLLER1", filename_key,  "CH2")  # to remove CH2 image data
         """
         self.ax_list[0].set_data_key("CH2")  # to remove FULL image data
         self.ax_list[1].set_data_key("FULL")  # to remove FULL image data
@@ -438,183 +440,153 @@ class DataWindow(tk.Frame):
     def update_pass_switch_function(self):
         self.ax_list[0].update_pass_switch = not self.ax_list[0].update_pass_switch
         
-
-class TraceAx:
-    def __init__(self, canvas, ax, controller):
-        self.tools = AxesTools(ax)
-        self.canvas_trace = canvas
-        self.ax_obj = ax
-        self.controller = controller
-        self.color_selection = ['black', 'red', 'blue', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan', 'orange']
-        
-        self.__user_controller_list = []  # ["ROI1", "ROI2", "IMAGE_CONTROLLER2"]
-        self.__active_user_controller_list = []  # ["ROI1"]
-        
-    # This doesn't affect to user controller in the model.
-    def set_active_controller_key(self, controller_key):
-        if controller_key in self.__user_controller_list:
-            self.__active_user_controller_list.remove(controller_key)
-        else:
-            self.__active_user_controller_list.append(controller_key) 
-            self.__user_controller_list.append(controller_key)
-
-    # This doesn't affect to user controller in the model.
+class ViewAx(metaclass=ABCMeta):
+    def __init__(self, ax, controller):
+        self._tools = AxesTools(ax)
+        self._ax_obj = ax
+        self._controller = controller
+        self._color_selection = ['black', 'red', 'blue', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan', 'orange']
+        self._ax_data_dict = {}
+        self._active_controller_dict = {}  # {"ROI1":{20501A001.tsm:{FULL:False,CH1:Ture}}}
+    
+    def set_initial_controller_key(self, controller_key_dict):
+        self._active_controller_dict = copy.deepcopy(controller_key_dict)
+        self._ax_data_dict = copy.deepcopy(controller_key_dict)
+    
     def remove_specific_controller(self, specific_controller_key):
-        # remove specific_controller_key from self.__active_user_controller_list
-        filtered_list = [item for item in self.__active_user_controller_list if specific_controller_key in item]
+        # remove specific_controller_key from self._active_controller_dict
+        filtered_list = [item for item in self._active_controller_dict.keys() if specific_controller_key in item]
         for controller_key in filtered_list:
-            self.set_active_controller_key(controller_key)
+            filenamse_key_list = self._active_controller_dict[controller_key].keys()
+            for filename_key in filenamse_key_list:
+                data_key_list = self._active_controller_dict[controller_key][filename_key].keys()
+                for data_key in data_key_list:
+                    self._active_controller_dict[controller_key][filename_key][data_key] = False
+                    
         print(self.__class__.__name__)
-        print(f"Removed {specific_controller_key}--- from {self.__user_controller_list} = {self.__active_user_controller_list}")
-
-    def set_data_key(self, data_key):
-        for user_controller in self.__active_user_controller_list:
-            self.controller.set_data(user_controller, data_key)
-
-    def draw_ax(self):
-        self.set_data(self.__active_user_controller_list)
-        self.ax_obj.relim()
-        self.ax_obj.autoscale_view()
-        self.canvas_trace.draw()
+        print(f"Removed {specific_controller_key}---> {self._active_controller_dict}")
+        print("")
         
+    # This doesn't affect to user controller in the model.
+    def set_active_controller_key(self, controller_key: str, view_switch: bool):
+        for filename_key in self._active_controller_dict[controller_key].keys():
+            for data_key in self._active_controller_dict[controller_key][filename_key].keys():
+                if view_switch == True:
+                    self._active_controller_dict[controller_key][filename_key][data_key] = True
+                elif view_switch == False:
+                    self._active_controller_dict[controller_key][filename_key][data_key] = False
+
+    def set_active_data_key(self, controller_key, filename_key, data_key):
+        if self._active_controller_dict[controller_key][filename_key][data_key] is True:
+            self._active_controller_dict[controller_key][filename_key][data_key] = False
+        elif self._active_controller_dict[controller_key][filename_key][data_key] is False:
+            self._active_controller_dict[controller_key][filename_key][data_key] = True
+        
+    @abstractmethod
     def set_data(self, current_controller):
-        for user_controller_key in self.__active_user_controller_list:
-            #get data from current user controller
-            data_dict = self.controller.get_data(user_controller_key)
-            print("")
-            print("Trace_ax set keys = ", end='')
-            print(f"{user_controller_key}, ")
-            if data_dict:
-                for filename_key in data_dict:
-                    print(f"     {filename_key} ")
-                    print("          ", end='')
-                    #check exsistance of filename
-                    if filename_key not in self.__view_data_dict:
-                        self.__view_data_dict[filename_key] = {}
-                    if data_dict[filename_key]:
-                        for data_key in data_dict[filename_key]:
-                            if type(data_dict[filename_key][data_key]).__name__ == "TraceData":
-                                print(f"{data_key} ", end='')
-                                # check exsistance of data
-                                if data_key not in self.__view_data_dict[filename_key]:
-                                    self.__view_data_dict[filename_key][data_key], = data_dict[filename_key][data_key].show_data(self.ax_obj)
-                                    # color setting
-                                    if data_key[-1].isdigit():
-                                        self.__view_data_dict[filename_key][data_key].set_color(self.color_selection[int(data_key[-1])])
-                                    else:
-                                        self.__view_data_dict[filename_key][data_key].set_color(self.color_selection[0])
+            raise NotImplementedError()
+        
+    def draw_ax(self):
+        self.set_data(self._active_controller_dict)
+        self._ax_obj.relim()
+        self._ax_obj.autoscale_view()
+        self.canvas.draw()
+    
+    def print_infor(self):
+        print("")
+        print(f"{self.__class__.__name__} current data list = ")
+        for controller_key in self._active_controller_dict.keys():
+            for filename_key in self._active_controller_dict[controller_key].keys():
+                for data_key in self._active_controller_dict[controller_key][filename_key].keys():
+                    if self._active_controller_dict[controller_key][filename_key][data_key] == True:
+                        print(f"{controller_key} - {filename_key} - {data_key}")
+    
+    
+class TraceAx(ViewAx):
+    def __init__(self, canvas, ax, controller):
+        super().__init__(ax, controller)
+        self.canvas = canvas
+     
+    def set_data(self, active_controller_dict):
+        for controller_key in active_controller_dict.keys():
+            for filename_key in active_controller_dict[controller_key].keys():
+                for data_key in active_controller_dict[controller_key][filename_key]:
+                    active_data = active_controller_dict[controller_key][filename_key][data_key]
+                    ax_data = self._ax_data_dict[controller_key][filename_key][data_key]
+                    if active_data is True:
+                        #get data from current user controller
+                        controller_data_dict = self._controller.get_data(controller_key)
+                        controller_data = controller_data_dict[filename_key][data_key]
+                        if type(controller_data).__name__ == "TraceData":
+                            if ax_data is None or isinstance(ax_data, bool):
+                                ax_data, = controller_data.show_data(self._ax_obj)
+                                # color setting
+                                if data_key[-1].isdigit():
+                                    ax_data.set_color(self._color_selection[int(data_key[-1])])
                                 else:
-                                    data = data_dict[filename_key][data_key].data
-                                    time = data_dict[filename_key][data_key].time
-                                    self.__view_data_dict[filename_key][data_key].set_data(time,data)
-                print("")
+                                    ax_data.set_color(self._color_selection[0])
+                            else:
+                                data = controller_data.data
+                                time = controller_data.time
+                                ax_data.set_data(time,data)
+                        else:
+                            ax_data = None
+                    elif active_controller_dict[controller_key][filename_key][data_key] is False:
+                        ax_data = None
+        print("")
     
     def set_position(self, event):
         #print(event.button, event.x, event.y, event.xdata, event.ydata)
-        roi_controller_key = [controller_key for controller_key in self.__active_user_controller_list if "ROI" in controller_key]
+        roi_controller_key = [controller_key for controller_key in self._active_controller_dict if "ROI" in controller_key]
         for controller_key in roi_controller_key:
             # Set roi center to click poist.
             # Check roi width from controller RoiVal.
             roi_x = math.floor(event.xdata)
             roi_y = math.floor(event.ydata)
             roi = [roi_x, roi_y, None, None]
-            self.controller.set_position(controller_key, roi)
+            self._controller.set_position(controller_key, roi)
             self.draw_ax()
-        
-    def print_infor(self):
-        print("")
-        print("Trace axis current data list = ")
-        print(self.__user_controller_list)
-        print(self.__active_user_controller_list)
-        
 
-class ImageAx:
+
+class ImageAx(ViewAx):
     def __init__(self, canvas, ax, controller):
-        self.tools = AxesTools(ax)
-        self.canvas_image = canvas
-        self.controller = controller
-        self.ax_obj = ax
-        
-        self.__user_controller_list = []  # ["ROI1", "ROI2", "IMAGE_CONTROLLER2"]
-        self.__view_data_dict = {}  # {"20408B002.tsm: {"FULL": plot_data, "CH1": plot_data, "CH2": plot_data}
-        self.__active_user_controller_list = []  # ["ROI1"]
-        
-    def set_active_controller_key(self, controller_key):
-        if controller_key in self.__active_user_controller_list:
-            self.__active_user_controller_list.remove(controller_key) 
-        else:
-            self.__active_user_controller_list.append(controller_key) 
-            self.__user_controller_list.append(controller_key)
-
-    def remove_specific_controller(self, specific_controller_key):
-        filtered_list = [item for item in self.__active_user_controller_list if specific_controller_key in item]
-        for controller_key in filtered_list:
-            self.set_active_controller_key(controller_key)
-        print(self.__class__.__name__)
-        print(f"Removed {specific_controller_key}--- from {self.__user_controller_list} = {self.__active_user_controller_list}")
-            
-    def set_data_key(self, data_key):
-        for user_controller in self.__active_user_controller_list:
-            print("ttttttttttttttttttttttttttttttttttttttttttt")
-            print(self.__user_controller_list)
-            print(user_controller)
-            print(data_key)
-            self.controller.set_data(user_controller, data_key)
-        
-    def draw_ax(self):
-        self.set_data(self.__active_user_controller_list)
-        self.ax_obj.relim()
-        self.ax_obj.autoscale_view()
-        self.canvas_image.draw()
-        
-    def set_data(self, current_controller):
-        for user_controller_key in self.__active_user_controller_list:
-            #get data from current user controller
-            data_dict = self.controller.get_data(user_controller_key)
-            print("")
-            print("Image_ax set keys = ", end='')
-            print(f"{user_controller_key}, ")
-            if data_dict:
-                for filename_key in data_dict:
-                    print(f"     {filename_key} ")
-                    print("          ", end='')
-                    #check exsistance of filename
-                    if filename_key not in self.__view_data_dict:
-                        self.__view_data_dict[filename_key] = {}
-                    if data_dict[filename_key]:
-                        for data_key in data_dict[filename_key]:
-                            if type(data_dict[filename_key][data_key]).__name__ == "ImageData":
-                                print(f"{data_key} ", end='')
-                                # check exsistance of data
-                                if data_key not in self.__view_data_dict[filename_key]:
-                                    self.__view_data_dict[filename_key][data_key] = data_dict[filename_key][data_key].show_data(self.ax_obj)
-                                else:
-                                    data = data_dict[filename_key][data_key].data
-                                    self.__view_data_dict[filename_key][data_key].set_data(data)
-                print("")
-        
+        super().__init__(ax, controller)
+        self.canvas = canvas
+                
+    # There are three dict. active_controller_dict is to switching. self._ax_data_dict is to keep ax data. controller_data_dict is from user controller.
+    def set_data(self, active_controller_dict):
+        for controller_key in active_controller_dict.keys():
+            for filename_key in active_controller_dict[controller_key].keys():
+                for data_key in active_controller_dict[controller_key][filename_key]:
+                    active_data = active_controller_dict[controller_key][filename_key][data_key]
+                    ax_data = self._ax_data_dict[controller_key][filename_key][data_key]
+                    if active_data is True:
+                        #get data from current user controller
+                        controller_data_dict = self._controller.get_data(controller_key)
+                        controller_data = controller_data_dict[filename_key][data_key]
+                        if type(controller_data).__name__ == "ImageData":
+                            if ax_data is None or isinstance(ax_data, bool):
+                                ax_data = controller_data.show_data(self._ax_obj)
+                            else:
+                                data = controller_data.data
+                                ax_data.set_data(data)
+                        else:
+                            ax_data = None
+                    elif active_data is False:
+                        ax_data = None
+        print("")
+                    
 
     def set_position(self, event): 
         pass
-        
-        
-        
-        
-        rectangles = self.tools.axes_patches_check(plt.Rectangle)
+
+        rectangles = self._tools.axes_patches_check(plt.Rectangle)
         if len(rectangles) < self.current_roi_num:
-            self.ax_obj.add_patch(self.roi_box.rectangle_obj)
+            self._ax_obj.add_patch(self.roi_box.rectangle_obj)
         else:
             pass
-        rectangles = self.tools.axes_patches_check(plt.Rectangle)
+        rectangles = self._tools.axes_patches_check(plt.Rectangle)
 
-    def print_infor(self):
-        print("")
-        print("Image axis current data list = ")
-        print(self.__user_controller_list)
-        print(self.__active_user_controller_list)
-        
-        
-        
 class RoiBox():
     """ class method """
     roi_num = 0
@@ -672,8 +644,6 @@ class NavigationToolbarMyTool(NavigationToolbar2Tk):
         pass
     
 
-    
-    
 class AxesTools:
     def __init__(self, axes):
         self.axes = axes
