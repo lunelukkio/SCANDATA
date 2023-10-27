@@ -16,7 +16,7 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from SCANDATA.common_class import WholeFilename
-from SCANDATA.controller.controller_main import MainController, ViewController
+from SCANDATA.controller.controller_main import ViewController
 
 
 class MainView(tk.Frame):
@@ -134,9 +134,6 @@ class MainView(tk.Frame):
         self.window.append(tk.Toplevel())
         self.data_window.append(DataWindow(self.window[len(self.window)-1], filename_obj))
         print('Open ' + str(fullname))
-        
-
-
 
 
 class DataWindow(tk.Frame):
@@ -337,7 +334,7 @@ class DataWindow(tk.Frame):
             for ch in range(2, 9):
                 self.ax_list[2].set_active_data_key("TRACE_CONTROLLER1", filename_key, "ELEC" + str(ch))  # to remove FULL image data
 
-        #self.__controller.current
+        self.__controller.operating_controller_list = ["ROI2"]
         
         #self.ax_list[1].set_active_data_key("FULL")  # to remove FULL image data
         #self.ax_list[1].set_active_data_key("CH2")  # to remove FULL image data
@@ -365,16 +362,30 @@ class DataWindow(tk.Frame):
             elif event.button == 2:
                 pass
             elif event.button == 3:
-                num = self.view_data_repository.count_data('RoiView')
-                self.current_roi_num += 1
-                if self.current_roi_num > num:  #if the number of roi is larger than current roi num
-                    self.current_roi_num = 1
-                else:
-                    pass
-                self.ax_list[0].current_roi_num = self.current_roi_num
-                self.view_data_repository.update('RoiView' + str(self.current_roi_num))
+                old_controller_list = self.__controller.operating_controller_list
+                filtered_list = [item for item in self.ax_list[1]._active_controller_dict.keys() if "ROI" in item]
+
+                new_active_controller = []
+                for old_controller in old_controller_list:
+                    if old_controller in filtered_list:
+                        index = filtered_list.index(old_controller)
+                        if index < len(filtered_list) - 1:
+                            next_controller =filtered_list[index + 1]
+                            new_active_controller.append(next_controller)
+                        else:
+                            next_controller =filtered_list[0]
+                            new_active_controller.append(next_controller)
+                    else:
+                        print("Not in the active controller list")
+                        
+                self.ax_list[1].set_active_controller_key(old_controller, False)
+                self.ax_list[1].set_active_controller_key(next_controller, True)
+                self.__controller.operating_controller_list = new_active_controller
+                print(f"Switch to {new_active_controller}")
+                self.ax_list[1].update_roi()
+                self.ax_list[0].update_roi()
         elif event.dblclick is True:
-            print("Double click is for changing ROI")
+            print("Double click is for ----")
         print('')
 
     def select_ch(self, key):
@@ -538,9 +549,8 @@ class TraceAx(ViewAx):
                             ax_data = None
                     elif active_controller_dict[controller_key][filename_key][data_key] is False:
                         ax_data = None
-        print("")
         
-    def update(self):
+    def update_roi(self):
         self._ax_obj.cla()
         self.set_data(self._active_controller_dict)
         self._ax_obj.relim()
@@ -574,16 +584,14 @@ class ImageAx(ViewAx):
                             ax_data = None
                     elif active_data is False:
                         ax_data = None
-        print("")
         
-    def update(self):
+    def update_roi(self):
         self._ax_obj.cla()
         self.set_data(self._active_controller_dict)
         self.canvas.draw()
                     
 
-    def set_position(self, event): 
-        pass
+    def set_roi(self, event): 
 
         rectangles = self._tools.axes_patches_check(plt.Rectangle)
         if len(rectangles) < self.current_roi_num:
