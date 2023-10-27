@@ -51,7 +51,6 @@ class UserController(metaclass=ABCMeta):
         self._data_dict = {}  # data dict = {filename:frame_type{full:TraceData_value obj,ch1:TraceData,ch2:TraceData}}
         self._mod_list = []
         self._val_obj = None
-        self.observer = ControllerObserver()
         
     def __del__(self):  #make a message when this object is deleted.
         #print('.')
@@ -144,6 +143,7 @@ concrete product
 class Roi(UserController):
     def __init__(self, get_experiments_method):
         super().__init__(get_experiments_method)
+        self.observer = RoiControllerObserver()
         self._val_obj = RoiVal(40, 40, 2, 2)
         
     # make a new Roi value object
@@ -208,6 +208,7 @@ class ImageController(UserController):
     def __init__(self, get_experiments_method):
         super().__init__(get_experiments_method)
         self.get_experiments = get_experiments_method
+        self.observer = ImageControllerObserver()
         self._val_obj = TimeWindowVal(0, 1)
         self._data_dict = {}  # data dict = {filename:frame_type{full:ImageData,ch1:ImageData,ch2:ImageData}}
         self._mod_list = []
@@ -274,6 +275,7 @@ class TraceController(UserController):
     def __init__(self, get_experiments_method):
         super().__init__(get_experiments_method)
         self.get_experiments = get_experiments_method
+        self.observer = TraceControllerObserver()
         self._val_obj = TimeWindowVal(0, 100)
         self._data_dict = {}  # data dict = {filename:frame_type{ELEC1:ElecData,ELEC2:ElecData,ELEC3:ElecData}}
         self._mod_list = []
@@ -342,7 +344,7 @@ class TraceController(UserController):
 class FrameShift(UserController): 
     def __init__(self, get_experiments_method):
         super().__init__(get_experiments_method)
-        self.__observers = []
+        self.observer = ControllerObserver()
     
     def _get_val(self, val):
         pass
@@ -374,7 +376,7 @@ class FrameShift(UserController):
 class Line(UserController): 
     def __init__(self, get_experiments_method):
         super().__init__(get_experiments_method)
-        self.__observers = []
+        self.observer = ControllerObserver()
     
     def _get_val(self, val):
         pass
@@ -403,23 +405,50 @@ class Line(UserController):
         
 class ControllerObserver:
     def __init__(self):
-        self.__observers = []
+        self._observers = []
         
     def set_observer(self, observer):
-        for check_observer in self.__observers:
+        for check_observer in self._observers:
             if check_observer == observer:
-                self.__observers.remove(observer)
+                self._observers.remove(observer)
                 print(f"Observer removed {observer.__class__.__name__}")
                 return
-        self.__observers.append(observer)   
+        self._observers.append(observer)   
         print(f"Observer added {observer.__class__.__name__}")
             
+    @abstractmethod
     def notify_observer(self):
-        for observer_name in self.__observers:
-            observer_name.update()
-        print("Update Notification")
+        raise NotImplementedError()
 
     @property
     def observers(self) -> list:
-        return self.__observers
+        return self._observers
+    
+class RoiControllerObserver(ControllerObserver):
+    def __init__(self):
+        super().__init__()
+        
+    def notify_observer(self):
+        for observer_name in self._observers:
+            observer_name.update_roi()
+        #print("Update Notification from Roi")
+        
+class ImageControllerObserver(ControllerObserver):
+    def __init__(self):
+        super().__init__()
+        
+    def notify_observer(self):
+        for observer_name in self._observers:
+            observer_name.update_image()
+        #print("Update Notification from image")
+        
+class TraceControllerObserver(ControllerObserver):
+    def __init__(self):
+        super().__init__()
+        
+    def notify_observer(self):
+        for observer_name in self._observers:
+            observer_name.update_trace()
+        #print("Update Notification from Trace")
+        
     

@@ -13,25 +13,12 @@ import os
 import psutil  # for memory check
 
 
-
-class MainController:
-    def __init__(self):
-        self.controller_list = []
-
-    def get_memory_infor(self):
-        pid = os.getpid()
-        process = psutil.Process(pid)
-        memory_infor = process.memory_info().rss
-        maximum_memory = psutil.virtual_memory().total
-        available_memory = psutil.virtual_memory().available
-        return memory_infor, maximum_memory, available_memory
-    
-
 class ViewController:
     def __init__(self, view=None):
         self.__model = DataService()
         self.__view = view
         self.__file_service = FileService()
+        self.operating_controller_list = []
         
     def __del__(self):
         print('Deleted a ViewController.' + '  myId= {}'.format(id(self)))
@@ -85,9 +72,8 @@ class ViewController:
 
     def set_position_image_ax(self, event):
         #print(event.button, event.x, event.y, event.xdata, event.ydata, event.dblclick, event.inaxes)
-        controller_data_keys = self.__model.get_infor()
-        roi_controller_key = [controller_key for controller_key in controller_data_keys.keys() if "ROI" in controller_key]
-        for controller_key in roi_controller_key:
+        for controller_key in self.operating_controller_list:
+            print(f"{self.operating_controller_list}: ", end='')
             user_controller = self.__model.get_user_controller(controller_key)
             # Cursor adjustment. the center of the pixel is 0. So it need 0.5 shift. 
             roi_x = round(event.xdata)
@@ -125,7 +111,13 @@ class ViewController:
     def print_model_infor(self):
         self.__model.print_infor()
     
-        
+    def get_memory_infor(self):
+        pid = os.getpid()
+        process = psutil.Process(pid)
+        memory_infor = process.memory_info().rss
+        maximum_memory = psutil.virtual_memory().total
+        available_memory = psutil.virtual_memory().available
+        return memory_infor, maximum_memory, available_memory
 
 class FileService:
     def open_file(self, *filename):  # it can catch variable num of filenames.
