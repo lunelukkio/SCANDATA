@@ -32,14 +32,6 @@ class ImageControllerFactory(UserControllerFactory):
 class TraceControllerFactory(UserControllerFactory):
     def create_controller(self, get_experiments_method):
         return TraceController(get_experiments_method) 
-    
-class FrameShiftFactory(UserControllerFactory):
-    def create_controller(self):
-        return FrameShift()
-        
-class LineFactory(UserControllerFactory):
-    def create_controller(self):
-        return Line()
         
 
 """
@@ -49,6 +41,7 @@ class UserController(metaclass=ABCMeta):
     def __init__(self, get_experiments_method):
         self.get_experiments = get_experiments_method
         self._data_dict = {}  # data dict = {filename:frame_type{full:TraceData_value obj,ch1:TraceData,ch2:TraceData}}
+        self.observer = ControllerObserver()
         self._mod_list = []
         self._val_obj = None
         
@@ -143,7 +136,6 @@ concrete product
 class Roi(UserController):
     def __init__(self, get_experiments_method):
         super().__init__(get_experiments_method)
-        self.observer = RoiControllerObserver()
         self._val_obj = RoiVal(40, 40, 2, 2)
         
     # make a new Roi value object
@@ -208,7 +200,6 @@ class ImageController(UserController):
     def __init__(self, get_experiments_method):
         super().__init__(get_experiments_method)
         self.get_experiments = get_experiments_method
-        self.observer = ImageControllerObserver()
         self._val_obj = TimeWindowVal(0, 1)
         self._data_dict = {}  # data dict = {filename:frame_type{full:ImageData,ch1:ImageData,ch2:ImageData}}
         self._mod_list = []
@@ -275,7 +266,6 @@ class TraceController(UserController):
     def __init__(self, get_experiments_method):
         super().__init__(get_experiments_method)
         self.get_experiments = get_experiments_method
-        self.observer = TraceControllerObserver()
         self._val_obj = TimeWindowVal(0, 100)
         self._data_dict = {}  # data dict = {filename:frame_type{ELEC1:ElecData,ELEC2:ElecData,ELEC3:ElecData}}
         self._mod_list = []
@@ -339,68 +329,6 @@ class TraceController(UserController):
 
     def reset(self) -> None:
         self.set_controller_val([0, 1])
-
-
-class FrameShift(UserController): 
-    def __init__(self, get_experiments_method):
-        super().__init__(get_experiments_method)
-        self.observer = ControllerObserver()
-    
-    def _get_val(self, val):
-        pass
-    
-    def set_data(self, filename_key, data_key):
-        pass
-
-    def get_data(self):
-        pass
-
-    def print_infor(self):
-        pass
-
-    def reset(self):
-        pass
-
-    def add_observer(self, observer):
-        pass
-
-    def remove_observer(self, observer):
-        pass
-
-    def notify_observer(self):
-        pass
-    
-
-
-
-class Line(UserController): 
-    def __init__(self, get_experiments_method):
-        super().__init__(get_experiments_method)
-        self.observer = ControllerObserver()
-    
-    def _get_val(self, val):
-        pass
-    def set_data(self, filename_key, data_key):
-        pass
-
-    def get_data(self):
-        pass
-
-    def print_infor(self):
-        pass
-
-    def reset(self):
-        pass
-
-    def add_observer(self, observer):
-        pass
-
-    def remove_observer(self, observer):
-        pass
-
-    def notify_observer(self):
-        pass
-    
     
         
 class ControllerObserver:
@@ -416,39 +344,12 @@ class ControllerObserver:
         self._observers.append(observer)   
         print(f"Observer added {observer.__class__.__name__}")
             
-    @abstractmethod
     def notify_observer(self):
-        raise NotImplementedError()
+        for observer_name in self._observers:
+            observer_name.update()
+        #print("Update Notification from Roi")
 
     @property
     def observers(self) -> list:
         return self._observers
-    
-class RoiControllerObserver(ControllerObserver):
-    def __init__(self):
-        super().__init__()
-        
-    def notify_observer(self):
-        for observer_name in self._observers:
-            observer_name.update_roi()
-        #print("Update Notification from Roi")
-        
-class ImageControllerObserver(ControllerObserver):
-    def __init__(self):
-        super().__init__()
-        
-    def notify_observer(self):
-        for observer_name in self._observers:
-            observer_name.update_image()
-        #print("Update Notification from image")
-        
-class TraceControllerObserver(ControllerObserver):
-    def __init__(self):
-        super().__init__()
-        
-    def notify_observer(self):
-        for observer_name in self._observers:
-            observer_name.update_trace()
-        #print("Update Notification from Trace")
-        
-    
+

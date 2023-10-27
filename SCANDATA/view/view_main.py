@@ -11,6 +11,7 @@ from tkinter import ttk
 import tkinter.filedialog
 import os
 import copy
+import re
 import matplotlib.patches as patches
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
@@ -311,9 +312,7 @@ class DataWindow(tk.Frame):
         #print("Whole controller keys = ", end='')
         #print(controller_dict_keys)
         #print(self.ax_list[0]._active_controller_dict)
-        self.__controller.set_observer("ROI1", self.ax_list[0])
         self.__controller.set_observer("ROI1", self.ax_list[1])
-        self.__controller.set_observer("ROI2", self.ax_list[0])
         self.__controller.set_observer("ROI2", self.ax_list[1])
         self.__controller.set_observer("IMAGE_CONTROLLER1", self.ax_list[0])
         self.__controller.set_observer("TRACE_CONTROLLER1", self.ax_list[2])
@@ -358,7 +357,8 @@ class DataWindow(tk.Frame):
         if event.dblclick is False:
             if event.button == 1:  # left click
                 self.__controller.set_position_image_ax(event)
-            #self.ax_list[0].set_position(event)
+                self.ax_list[0].set_roibox(event)
+                self.ax_list[0].update()
             elif event.button == 2:
                 pass
             elif event.button == 3:
@@ -382,8 +382,9 @@ class DataWindow(tk.Frame):
                 self.ax_list[1].set_active_controller_key(next_controller, True)
                 self.__controller.operating_controller_list = new_active_controller
                 print(f"Switch to {new_active_controller}")
-                self.ax_list[1].update_roi()
-                self.ax_list[0].update_roi()
+                self.ax_list[1].update()
+                self.ax_list[0].update()
+
         elif event.dblclick is True:
             print("Double click is for ----")
         print('')
@@ -474,8 +475,8 @@ class ViewAx(metaclass=ABCMeta):
             raise NotImplementedError()
     
     def set_initial_controller_key(self, controller_key_dict):
-        self._active_controller_dict = copy.deepcopy(controller_key_dict)
-        self._ax_data_dict = copy.deepcopy(controller_key_dict)
+        self._active_controller_dict = copy.deepcopy(controller_key_dict)  # for showing controllers
+        self._ax_data_dict = copy.deepcopy(controller_key_dict)  # make whole dict of controllers
     
     def remove_specific_controller(self, specific_controller_key):
         # remove specific_controller_key from self._active_controller_dict
@@ -503,6 +504,13 @@ class ViewAx(metaclass=ABCMeta):
             self._active_controller_dict[controller_key][filename_key][data_key] = True
         
     def draw_ax(self):
+        self.set_data(self._active_controller_dict)
+        self._ax_obj.relim()
+        self._ax_obj.autoscale_view()
+        self.canvas.draw()
+        
+    def update(self):
+        self._ax_obj.cla()
         self.set_data(self._active_controller_dict)
         self._ax_obj.relim()
         self._ax_obj.autoscale_view()
@@ -549,20 +557,27 @@ class TraceAx(ViewAx):
                             ax_data = None
                     elif active_controller_dict[controller_key][filename_key][data_key] is False:
                         ax_data = None
-        
-    def update_roi(self):
-        self._ax_obj.cla()
-        self.set_data(self._active_controller_dict)
-        self._ax_obj.relim()
-        self._ax_obj.autoscale_view()
-        self.canvas.draw()
-    
+
 
 class ImageAx(ViewAx):
     def __init__(self, canvas, ax, controller):
         super().__init__(ax, controller)
         self.canvas = canvas
+        self._roibox_data_dict = {}
                 
+    # override
+    def set_initial_controller_key(self, controller_key_dict):
+        super().set_initial_controller_key(controller_key_dict)
+        # make roi boxes
+        self._roibox_data_dict = copy.deepcopy(controller_key_dict)
+        roi_list = [item for item in self._roibox_data_dict if "ROI" in item]
+        not_roi_list = [item for item in self._roibox_data_dict if "ROI" not in item]
+        for roi in roi_list:
+            roi_num = re.sub(r'\D', '', roi)
+            self._roibox_data_dict[roi] = RoiBox(roi_num)
+        for not_roi in not_roi_list:
+            self._roibox_data_dict[not_roi] = None
+        
     # There are three dict. active_controller_dict is to switching. self._ax_data_dict is to keep ax data. controller_data_dict is from user controller.
     def set_data(self, active_controller_dict):
         for controller_key in active_controller_dict.keys():
@@ -584,55 +599,41 @@ class ImageAx(ViewAx):
                             ax_data = None
                     elif active_data is False:
                         ax_data = None
-        
-    def update_roi(self):
+    # override            
+    def update(self):
         self._ax_obj.cla()
         self.set_data(self._active_controller_dict)
-        self.canvas.draw()
-                    
-
-    def set_roi(self, event): 
-
-        rectangles = self._tools.axes_patches_check(plt.Rectangle)
-        if len(rectangles) < self.current_roi_num:
-            self._ax_obj.add_patch(self.roi_box.rectangle_obj)
-        else:
-            pass
-        rectangles = self._tools.axes_patches_check(plt.Rectangle)
+        for roi_box in self._roibox_data_dict.values():
+            if roi_box is not None:
+                self._ax_obj.add_patch(roi_box.rectangle_obj)
+        self._ax_obj.relim()
+        self._ax_obj.autoscale_view()
+        self.canvas.draw()   
+                 
+    def set_roibox(self, event): 
+        for roi in self._controller.operating_controller_list:
+            self._roibox_data_dict[roi].set_roi(event)
 
 class RoiBox():
-    """ class method """
-    roi_num = 0
-    color_selection = ['white', 'red', 'blue', 'orange', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
-    
-    @classmethod
-    def get_roi_num(cls):
-        return cls.roi_num
-    
-    @classmethod
-    def increase_roi_num(cls):
-        cls.roi_num += 1
-    
-    @classmethod
-    def reset(cls):
-        cls.roi_num = 0
-    
+    """ class variable """
+    color_selection = ['white', 'red', 'blue', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan', 'orange']
+
     """ instance method """
-    def __init__(self, controller_key):
-        self.__key = controller_key
-        self.color_num = RoiBox.get_roi_num()
+    def __init__(self, roi_num):
         self.__rectangle_obj = patches.Rectangle(xy=(40, 40), 
                                                  width=1, 
                                                  height=1,
                                                  linewidth=0.7,
-                                                 ec=RoiBox.color_selection[self.color_num], 
+                                                 ec=RoiBox.color_selection[int(roi_num)-1], 
                                                  fill=False)
 
-    def set_roi(self):
-        roi_obj = self.__model.get_data(self.__key)
-        self.__rectangle_obj.set_xy([roi_obj.data[0], roi_obj.data[1]])
-        self.__rectangle_obj.set_width(roi_obj.data[2])
-        self.__rectangle_obj.set_height(roi_obj.data[3])
+    def set_roi(self, event):
+        # adjust for image data pixels
+        x = round(event.xdata)-0.5
+        y = round(event.ydata)-0.5
+        self.__rectangle_obj.set_xy([x, y])
+        self.__rectangle_obj.set_width(1)
+        self.__rectangle_obj.set_height(1)
         
     def delete(self):
         raise NotImplementedError()
@@ -672,8 +673,7 @@ class AxesTools:
 if __name__ == '__main__':
     
     print("")
-    print("RoiBOxのアップデート")
-    print("controller_mainのいらないメソッド消す")
+
     print("")
     fullname = '..\\..\\220408\\20408B002.tsm'
     filename_obj = WholeFilename(fullname)

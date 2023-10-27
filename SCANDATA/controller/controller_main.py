@@ -81,18 +81,10 @@ class ViewController:
             roi = [roi_x, roi_y, None, None]
             user_controller.set_controller_val(roi)
 
-    
     def change_roi_size(self, roi_num, val): #val = [x,y,x_length,y_length]
         self.current_roi_num = roi_num
         key = 'Roi' + str(roi_num)
         self.__model.add_data(key, val)
-        
-    def set_frame_window_position(self, event):
-        pass
-        
-    # no use?
-    def send_update_message(self, key, val):
-        self.__model.set_data(key, val)
       
     def add_mod(self, data_key: str, mod_key: str):
         self.__model.add_mod(data_key, mod_key)
