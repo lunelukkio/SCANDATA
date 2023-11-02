@@ -393,21 +393,10 @@ class DataWindow(tk.Frame):
         print('')
 
     def select_ch(self, key):
-        num_roi = self.view_data_repository.view_data_counter['RoiView']
         # send flags to ax.
         self.ax_list[1].select_ch(key)  # This is for flag to showing traces.
         self.ax_list[0].select_ch(key)  # for changing images
-        
-        for i in range(1, num_roi+1):
-            if '0' in key:
-                entity_key = 'FullTrace' + str(i)
-            elif '1' in key:
-                entity_key = 'ChTrace' + str(i*2-1)
-            elif '2' in key:
-                entity_key = 'ChTrace' + str(i*2)
 
-            # for binding trace and controller
-            self.__controller.bind_keys('Roi' + str(i), entity_key)
         print('')
 
     def elec_ch_select(self, event):
@@ -437,14 +426,9 @@ class DataWindow(tk.Frame):
             return
         
     def add_roi(self):
-        self.view_data_repository.create_roi(self.ax_list)
         print('')
         
     def delete_roi(self):
-        self.view_data_repository.delete_roi(self.ax_list)
-        for i in range(len(self.ax_list)):
-            self.ax_list[i].draw_ax()
-        self.current_roi_num -= 1
         print('')
         
     def add_mod(self, data_key, mod_key):
