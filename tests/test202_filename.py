@@ -7,24 +7,31 @@ lunelukkio@gmail.com
 
 
 import unittest
-from SCANDATA.controller.controller_main import WholeFilename
+import serial
+import time
 
-import numpy as np
+ser=serial.Serial(
+    port='COM3',
+    baudrate =115200,
+    timeout=100,
+    parity=serial.PARITY_NONE
+)
 
-filename = '..\\220408\\20408B002.tsm'  # this isa  value object
+ser.close()
+ser.open()
 
-"""
-class TestFramesData(unittest.TestCase):
-    def test_val(self):
-        frames = FramesData(np.empty((1, 1, 1), dtype=float))
-        print(frames.frames_data)
-"""
 
-class TestWholeFileName(unittest.TestCase):
-    def test_whole_filename(self):
-        filename_obj = WholeFilename(filename)
-        filename_obj.print_infor()
 
+start_time = time.time()  # 現在の時刻を取得
+
+while time.time() - start_time < 10:  # 現在の時刻と開始時刻の差が5秒未満の間繰り返す
+    
+    data =  ser.read_all()
+    if data != b"":
+        print(f"Data is {data}")
+
+
+ser.close()
 
 if __name__ == '__main__':
     unittest.main()

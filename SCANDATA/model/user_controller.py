@@ -55,12 +55,13 @@ class UserController(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
-    def _get_val(self, val_list:list):
+    def _get_val(self, val_list:list):  # get controller values from experiments
         raise NotImplementedError()
         
     def get_controller_data(self):
         return self._data_dict
     
+    # put experiments to a controller object data dict.
     def set_experiments(self, filename_key):
         if filename_key in self._data_dict.keys():
             del self._data_dict[filename_key]  
@@ -73,15 +74,14 @@ class UserController(metaclass=ABCMeta):
         self._get_val()
         self.print_infor()
 
+    # put data to a controller object data dict
     def set_data(self, filename_key, data_key):
         if filename_key in self._data_dict.keys():
             if data_key in self._data_dict[filename_key].keys():
                 del self._data_dict[filename_key][data_key]
-                print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
                 print(f"Deleteed {data_key}")
             else:
                 self._data_dict[filename_key][data_key] = None
-                print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
                 print(f"Added {data_key}")
         else:
                 print(f"No {filename_key} in this ROI")
@@ -136,7 +136,7 @@ concrete product
 class Roi(UserController):
     def __init__(self, get_experiments_method):
         super().__init__(get_experiments_method)
-        self._val_obj = RoiVal(40, 40, 2, 2)
+        self._val_obj = RoiVal(40, 40, 1, 1)
         
     # make a new Roi value object
     def set_controller_val(self, roi_value_list: list):
@@ -194,7 +194,7 @@ class Roi(UserController):
             return True
     
     def reset(self) -> None:
-        self.set_controller_val([40, 40, 2, 2])
+        self.set_controller_val([40, 40, 1, 1])
         
 class ImageController(UserController):
     def __init__(self, get_experiments_method):

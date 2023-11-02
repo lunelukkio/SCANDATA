@@ -344,20 +344,23 @@ class DataWindow(tk.Frame):
         
     def draw_ax(self, ax_num):
         if ax_num == 0:
-            self.ax_list[0].draw_ax()
+            self.ax_list[0].update()
         elif ax_num == 1:
-            self.ax_list[1].draw_ax()
+            self.ax_list[1].update()
         elif ax_num == 2:
-            self.ax_list[2].draw_ax()
+            self.ax_list[2].update()
         elif ax_num == 3:
             for ax_num in range(3):
-                self.ax_list[ax_num].draw_ax()
+                self.ax_list[ax_num].update()
 
     def onclick_image(self, event):
         if event.dblclick is False:
             if event.button == 1:  # left click
                 self.__controller.set_position_image_ax(event)
-                self.ax_list[0].set_roibox(event)
+                # adjust for image data pixels
+                x = round(event.xdata)-0.5
+                y = round(event.ydata)-0.5
+                self.ax_list[0].set_roibox(x, y)
                 self.ax_list[0].update()
             elif event.button == 2:
                 pass
@@ -418,16 +421,21 @@ class DataWindow(tk.Frame):
 
     def large_roi(self):
         self.change_roi_size([0, 0, 1, 1])
-        print('')
 
     def small_roi(self):
         self.change_roi_size([0, 0, -1, -1])
-        print('')
 
+    # need refactoring. shold delete return from the roi values.
     def change_roi_size(self, val):
-        self.__controller.change_roi_size(self.current_roi_num, val)
-        print('')
-
+        new_roi = self.__controller.change_roi_size(val)
+        if new_roi is not None:
+            x = new_roi[0]
+            y = new_roi[1]
+            self.ax_list[0].set_roibox(x, y, val[2], val[3])
+            self.ax_list[0].update()
+        else:
+            return
+        
     def add_roi(self):
         self.view_data_repository.create_roi(self.ax_list)
         print('')
@@ -610,9 +618,16 @@ class ImageAx(ViewAx):
         self._ax_obj.autoscale_view()
         self.canvas.draw()   
                  
-    def set_roibox(self, event): 
+    def set_roibox(self, x, y, width=0, height=0):  # roi[x,y,width,height]
         for roi in self._controller.operating_controller_list:
-            self._roibox_data_dict[roi].set_roi(event)
+            old_width = self._roibox_data_dict[roi].rectangle_obj.get_width()
+            old_height = self._roibox_data_dict[roi].rectangle_obj.get_height()
+            new_width = old_width + width
+            new_height = old_height + height
+            if new_width > 0 and new_height >0:
+                self._roibox_data_dict[roi].set_roi([x, y, new_width, new_height])
+            else:
+                print("RoiBox: The ROI value is too small.")
 
 class RoiBox():
     """ class variable """
@@ -627,13 +642,14 @@ class RoiBox():
                                                  ec=RoiBox.color_selection[int(roi_num)-1], 
                                                  fill=False)
 
-    def set_roi(self, event):
-        # adjust for image data pixels
-        x = round(event.xdata)-0.5
-        y = round(event.ydata)-0.5
+    def set_roi(self, roi_val):
+        x = roi_val[0]
+        y = roi_val[1]
         self.__rectangle_obj.set_xy([x, y])
-        self.__rectangle_obj.set_width(1)
-        self.__rectangle_obj.set_height(1)
+        width = roi_val[2]
+        height = roi_val[3]
+        self.__rectangle_obj.set_width(width)
+        self.__rectangle_obj.set_height(height)
         
     def delete(self):
         raise NotImplementedError()

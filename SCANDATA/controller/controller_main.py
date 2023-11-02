@@ -44,9 +44,11 @@ class ViewController:
         new_key = self.__model.set_user_controller(controller_key)
         return new_key
         
+    # put experiments to user controller data dict.
     def set_experiments(self, controller_key:str, filename_key:str):
         self.__model.set_experiments(controller_key, filename_key)
 
+    # put data to user controller data dict.
     def set_data(self, controller_key:str, data_key: str):
         for filename_key in self.filename_key_list:
             self.__model.set_data(controller_key, self.filename_key, data_key)
@@ -81,10 +83,16 @@ class ViewController:
             roi = [roi_x, roi_y, None, None]
             user_controller.set_controller_val(roi)
 
-    def change_roi_size(self, roi_num, val): #val = [x,y,x_length,y_length]
-        self.current_roi_num = roi_num
-        key = 'Roi' + str(roi_num)
-        self.__model.add_data(key, val)
+    def change_roi_size(self, val): #val = [x,y,x_length,y_length]
+        for roi in self.operating_controller_list:        
+            roi_val = self.__model.get_controller_val(roi).data
+            new_roi_val = roi_val + val 
+            if new_roi_val[2] < 1 or new_roi_val[3] < 1:
+                print("ROI is too small")
+                return None
+            else:
+                self.__model.set_controller_val(roi, new_roi_val)
+                return new_roi_val
       
     def add_mod(self, data_key: str, mod_key: str):
         self.__model.add_mod(data_key, mod_key)

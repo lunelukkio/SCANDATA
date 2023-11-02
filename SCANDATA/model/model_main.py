@@ -52,6 +52,10 @@ class ModelInterface(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
+    def get_controller_val(self, key) -> object:  # value object wx RoiVal
+        raise NotImplementedError()
+        
+    @abstractmethod
     def reset(self, controller_key):
         raise NotImplementedError() 
         
@@ -85,6 +89,7 @@ class DataService(ModelInterface):
             # delete a model
             self.__experiments_repository.delete(filename_obj.name)
  
+    # make a new user controller
     def set_user_controller(self, controller_key) -> str:  # controller_key = "Roi", "TimeWindow". Use the same name to delete like "ROI1"
         controller_key = controller_key.upper()
         if self.__user_controller_repository.find_by_name(controller_key) is None:
@@ -100,7 +105,7 @@ class DataService(ModelInterface):
             return new_key  # This is to tell the key name to ViewController
         else:
             self.__user_controller_repository.delete(controller_key)
-        
+    
     def set_experiments(self, controller_key:str, filename_key:str):
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
@@ -127,13 +132,18 @@ class DataService(ModelInterface):
         controller = self.__user_controller_repository.find_by_name(controller_key)
         controller.set_observer(observer)
         
-    def get_controller_data(self, controller_key: str):
+    def get_controller_val(self, controller_key: str):  # This is for getting controller value ex.RoiVal
+        controller_key = controller_key.upper()
+        controller = self.__user_controller_repository.find_by_name(controller_key)
+        return controller.val_obj
+        
+    def get_controller_data(self, controller_key: str):  #This is for geting controller data dictionaly
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
         return controller.get_controller_data()
     
     # Use this only for test
-    def get_user_controller(self, controller_key):  # return whole data_dict in experiments
+    def get_user_controller(self, controller_key):  # return a controller object.
         controller_key = controller_key.upper()
         return self.__user_controller_repository.data[controller_key]
     
@@ -234,7 +244,7 @@ class RepositoryInterface(metaclass=ABCMeta):
             return self._data[key]
         else:
             print(f"{self.__class__.__name__}---")
-            print(f"There is no {key} in {self.__class__.__name__}.")
+            print(f"There is no {key} in {self.__class__.__name__}. Try to make a new {key}")
             return None
     
     def delete(self, key: str):

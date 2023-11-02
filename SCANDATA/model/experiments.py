@@ -162,6 +162,7 @@ class TsmBuilder(Builder):
         for idx in range(self.num_ch):
             data[f"CH{idx + 1}"] = FramesData(self.frames[idx + 1], 
                                    self.data_infor_dict[f"CH{idx + 1}_INTERVAL"])    # change to numpy to value obj
+        print(f"Frames data = {data.keys()}")
         return data
 
     def get_image(self):
@@ -174,6 +175,7 @@ class TsmBuilder(Builder):
         for idx in range(self.num_elec_ch):
             data[f"ELEC{idx + 1}"] = TraceData(self.elec_data[idx], 
                                           self.data_infor_dict[f"ELEC{idx + 1}_INTERVAL"])    # change to numpy to value obj
+        print(f"Trace data = {data.keys()}")
         return data
     
     def default(self):
