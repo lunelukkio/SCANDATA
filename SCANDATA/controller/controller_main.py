@@ -88,7 +88,7 @@ class ViewController:
             roi_val = self.__model.get_controller_val(roi).data
             new_roi_val = roi_val + val 
             if new_roi_val[2] < 1 or new_roi_val[3] < 1:
-                print("ROI is too small")
+                print("Cant't be smaller ROI size than 1")
                 return None
             else:
                 self.__model.set_controller_val(roi, new_roi_val)

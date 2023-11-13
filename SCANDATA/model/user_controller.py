@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Nov  2 15:11:48 2022
-concrete classes for User controllers
+classes for User controllers
 lunelukkio@gmail.com
 """
 from abc import ABCMeta, abstractmethod

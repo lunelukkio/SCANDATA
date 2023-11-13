@@ -14,7 +14,6 @@ import copy
 import re
 import matplotlib.patches as patches
 from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from SCANDATA.common_class import WholeFilename
 from SCANDATA.controller.controller_main import ViewController
@@ -23,7 +22,7 @@ from SCANDATA.controller.controller_main import ViewController
 class MainView(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
-        self.__controller = MainController()
+        self.__controller = ViewController()
         
         self.__filename_obj_list = []
         self.window = []
@@ -129,8 +128,7 @@ class MainView(tk.Frame):
         self.data_window.append(DataWindow(self.window[len(self.window)-1], filename_obj, self.__controller))
 
     def open_file(self, event=None):
-        fullname = FileService.get_fullname()  # This is str filename
-        filename_obj = WholeFilename(fullname)
+        filename_obj = self.__controller.open_file()
         self.__filename_obj_list.append(filename_obj)
         self.window.append(tk.Toplevel())
         self.data_window.append(DataWindow(self.window[len(self.window)-1], filename_obj))
@@ -325,20 +323,24 @@ class DataWindow(tk.Frame):
         self.ax_list[2].remove_specific_controller("ROI")  # to remove ROI from ax
         self.ax_list[2].remove_specific_controller("IMAGE_CONTROLLER")  # to remove IMAGE_CONTROLLER from ax
         
+        # hide background ROI from the image axis.
         self.ax_list[1].set_active_controller_key("ROI1", False)  # to remove background roi
+        # hide images from the image axis
         for filename_key in controller_dict_keys["IMAGE_CONTROLLER1"].keys():
-            self.ax_list[0].set_active_data_key("IMAGE_CONTROLLER1", filename_key, "FULL")  # to remove FULL image data
-            self.ax_list[0].set_active_data_key("IMAGE_CONTROLLER1", filename_key,  "CH2")  # to remove CH2 image data
+            self.ax_list[0].set_active_data_key("IMAGE_CONTROLLER1", filename_key, "FULL", False)  # to remove FULL image data
+            self.ax_list[0].set_active_data_key("IMAGE_CONTROLLER1", filename_key,  "CH2", False)  # to remove CH2 image data
+            
+        # hide elec traces from the elec axis
         for filename_key in controller_dict_keys["IMAGE_CONTROLLER1"].keys():
             for ch in range(2, 9):
-                self.ax_list[2].set_active_data_key("TRACE_CONTROLLER1", filename_key, "ELEC" + str(ch))  # to remove FULL image data
+                self.ax_list[2].set_active_data_key("TRACE_CONTROLLER1", filename_key, "ELEC" + str(ch), False)  # to remove FULL image data
 
+        # hide traces from the fluo trace axis
+        self.ax_list[1].set_active_data_key("ROI2", filename_key, "FULL", False)  # to remove FULL trace data
+        
+        # set current controller
         self.__controller.operating_controller_list = ["ROI2"]
-        
-        #self.ax_list[1].set_active_data_key("FULL")  # to remove FULL image data
-        #self.ax_list[1].set_active_data_key("CH2")  # to remove FULL image data
 
-        
         for i in range(3):
             self.ax_list[i].print_infor()
         
@@ -459,7 +461,7 @@ class ViewAx(metaclass=ABCMeta):
         self._ax_obj = ax
         self._controller = controller
         self._color_selection = ['black', 'red', 'blue', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan', 'orange']
-        self._ax_data_dict = {}
+        self._ax_data_dict = {}  # set of whole data key dict and values for showing traces. {"ROI1":{20501A001.tsm:{FULL:ax_trace_obj}}}
         self._active_controller_dict = {}  # {"ROI1":{20501A001.tsm:{FULL:False,CH1:Ture}}}
         
     @abstractmethod
@@ -489,11 +491,12 @@ class ViewAx(metaclass=ABCMeta):
                 elif view_switch == False:
                     self._active_controller_dict[controller_key][filename_key][data_key] = False
 
-    def set_active_data_key(self, controller_key, filename_key, data_key):
-        if self._active_controller_dict[controller_key][filename_key][data_key] is True:
-            self._active_controller_dict[controller_key][filename_key][data_key] = False
-        elif self._active_controller_dict[controller_key][filename_key][data_key] is False:
+    # This doesn't affect to user controller in the model.
+    def set_active_data_key(self, controller_key: str, filename_key: str, data_key: str, view_switch:bool):
+        if view_switch == True:
             self._active_controller_dict[controller_key][filename_key][data_key] = True
+        elif view_switch == False:
+            self._active_controller_dict[controller_key][filename_key][data_key] = False
         
     def draw_ax(self):
         self.set_data(self._active_controller_dict)
@@ -672,12 +675,15 @@ class AxesTools:
 
 if __name__ == '__main__':
     
-    print("")
 
-    print("")
     fullname = '..\\..\\220408\\20408B002.tsm'
     filename_obj = WholeFilename(fullname)
     root = tk.Tk()
     root.title("SCANDATA")
     view = DataWindow(root, filename_obj)
     root.mainloop()
+    
+    print("＝＝＝to do list＝＝＝")
+    print("")
+
+    print("")

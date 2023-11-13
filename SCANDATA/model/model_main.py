@@ -10,6 +10,7 @@ from abc import ABCMeta, abstractmethod
 from SCANDATA.common_class import WholeFilename
 from SCANDATA.model.experiments import Experiments
 from SCANDATA.model.user_controller import RoiFactory, ImageControllerFactory, TraceControllerFactory
+from SCANDATA.model.mod.mod_main import ModClient
 
 """
 Service
@@ -68,6 +69,7 @@ class DataService(ModelInterface):
     def __init__(self):
         self.__experiments_repository = ExperimentsRepository()
         self.__user_controller_repository = UserControllerRepository()
+        self.__mod_client = ModClient()
         
     def __create_filename_obj(self, fullname):
         filename_obj = WholeFilename(fullname)
@@ -265,10 +267,6 @@ class UserControllerRepository(RepositoryInterface):
     def __init__(self):
         super().__init__()
 
-
-class ModRepository(RepositoryInterface):
-    def __init__(self):
-        super().__init__()
     
 
 
