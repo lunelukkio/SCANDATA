@@ -26,6 +26,12 @@ class ModClient:  # Put every mods. Don't need to sepalate mods for each data ty
                               set_next(self.normalize). \
                               set_next(self.error_mod)
         
+    def set_dict_mod(self, mod_keys: list, data_dict: dict):
+        
+        
+        
+        return new_data_dict
+        
     def set_mod(self, mod_keys, original_data):
         if mod_keys == []:
             mod_data = original_data
@@ -71,15 +77,7 @@ class BgCompMod(ModHandler):
     
     def apply_mod(self, data_key, original_data, key):
         if key == 'BgComp':
-            
-            
-            
-            
-            
-            
-            
-            
-            
+
             
             bg_trace_entitiy = self.__get_bg_trace(data_key)
             bg_comp_trace_obj = self.trace_calc.create_bg_comp(original_data, bg_trace_entitiy.trace_obj)
