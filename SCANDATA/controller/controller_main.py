@@ -40,8 +40,8 @@ class ViewController:
             print('')
             return controller_dict_keys
             
-    def set_user_controller(self, controller_key):
-        new_key = self.__model.set_user_controller(controller_key)
+    def create_user_controller(self, controller_key):
+        new_key = self.__model.create_user_controller(controller_key)
         return new_key
         
     # put experiments to user controller data dict.

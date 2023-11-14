@@ -17,7 +17,7 @@ class Test(unittest.TestCase):
         data_service.create_experiments('..\\220408\\20408B001.tsm')
 
         #delete ROI
-        data_service.set_user_controller("Roi2")
+        data_service.create_user_controller("Roi2")
         data_service.print_infor()
         
         #roi1.data_dict["20408B002.tsm"]["CH1"].show_data()
