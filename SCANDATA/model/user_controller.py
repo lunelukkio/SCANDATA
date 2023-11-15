@@ -61,6 +61,9 @@ class UserController(metaclass=ABCMeta):
     def get_controller_data(self):
         return self._data_dict
     
+    def get_mod_list(self):
+        return self._mod_list
+    
     # put experiments to a controller object data dict.
     def set_experiments(self, filename_key):
         if filename_key in self._data_dict.keys():
@@ -90,6 +93,9 @@ class UserController(metaclass=ABCMeta):
         
     def set_observer(self, observer):
         self.observer.set_observer(observer)
+        
+    def set_mod_key(self, mod_key):
+        self._mod_list.append(mod_key)
 
     # return data dict keys with "True" without data. This is for view ax.
     def get_infor(self) -> dict:

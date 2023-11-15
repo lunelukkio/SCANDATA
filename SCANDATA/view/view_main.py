@@ -315,13 +315,18 @@ class DataWindow(tk.Frame):
         self.__controller.set_observer("IMAGE_CONTROLLER1", self.ax_list[0])
         self.__controller.set_observer("TRACE_CONTROLLER1", self.ax_list[2])
         
-        
         self.ax_list[0].remove_specific_controller("TRACE_CONTROLLER")  # to remove ELEC_CONTROLLER from ax
         self.ax_list[0].remove_specific_controller("ROI")  # to remove ROI from ax
         self.ax_list[1].remove_specific_controller("TRACE_CONTROLLER")  # to remove ELEC_CONTROLLER from ax
         self.ax_list[1].remove_specific_controller("IMAGE_CONTROLLER")  # to remove IMAGE_CONTROLLER from ax
         self.ax_list[2].remove_specific_controller("ROI")  # to remove ROI from ax
         self.ax_list[2].remove_specific_controller("IMAGE_CONTROLLER")  # to remove IMAGE_CONTROLLER from ax
+        
+        # set background roi to the mod class
+        self.__controller.set_mod_val("BgCompMod", "ROI1")
+        
+        # set mod
+        self.__controller.set_mod_key("ROI2", "BGCOMP")
         
         # hide background ROI from the image axis.
         self.ax_list[1].set_active_controller_key("ROI1", False)  # to remove background roi
@@ -528,6 +533,8 @@ class TraceAx(ViewAx):
      
     def set_data(self, active_controller_dict):
         for controller_key in active_controller_dict.keys():
+            print("11111111111111111111111111111111111111111111111111111111111111")
+            print(controller_key)
             for filename_key in active_controller_dict[controller_key].keys():
                 for data_key in active_controller_dict[controller_key][filename_key]:
                     active_data = active_controller_dict[controller_key][filename_key][data_key]

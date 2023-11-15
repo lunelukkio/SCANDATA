@@ -10,8 +10,8 @@ import unittest
 def suite():
     test_suite = unittest.TestSuite()
     
-    #test_classes = "test*.py"   # test*.py    for all tests
-    test_classes = "test0*.py"  #   for model
+    test_classes = "test*.py"   # test*.py    for all tests
+    #test_classes = "test0*.py"  #   for model
     #test_classes = "test1*.py"  # test1*py    for view
     #test_classes = "test2*.py"  # test2*.py    for controller
 
@@ -20,9 +20,10 @@ def suite():
     print(all_test_suite)
     for ts in all_test_suite:
         test_suite.addTest(ts)
+
     return test_suite
 
-    print('Need large refactoring: DataSet class shold not have data entities. model controller classes has entities.')
+
 
 
 
@@ -30,4 +31,3 @@ if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     test_suite = suite()
     runner.run(test_suite)
-

@@ -10,7 +10,7 @@ from abc import ABCMeta, abstractmethod
 from SCANDATA.common_class import WholeFilename
 from SCANDATA.model.experiments import Experiments
 from SCANDATA.model.user_controller import RoiFactory, ImageControllerFactory, TraceControllerFactory
-from SCANDATA.model.mod.mod_main import ModClient
+from SCANDATA.model.mod.mod_main import ModService
 
 """
 Service
@@ -51,6 +51,15 @@ class ModelInterface(metaclass=ABCMeta):
     @abstractmethod
     def get_experiments(self, key) -> object:  # return whole data_dict in experiments. It is used by user_controllers.
         raise NotImplementedError()
+        
+    @abstractmethod
+    def set_mod_val(self, key) -> None:  # set background controller to the mod class.
+        raise NotImplementedError()
+        
+    @abstractmethod
+    def set_mod_key(self, key) -> None:  # set background controller to the mod class.
+        raise NotImplementedError()    
+        
 
     @abstractmethod
     def reset(self, controller_key):
@@ -65,7 +74,10 @@ class DataService(ModelInterface):
     def __init__(self):
         self.__experiments_repository = ExperimentsRepository()
         self.__user_controller_repository = UserControllerRepository()
-        self.__mod_client = ModClient(self.get_controller_data)
+        self.__mod_service = ModService(self.get_controller_data)  # send it to enable to use this method from mod class
+        self.__mod_switch = True
+        print("DataService.current_filename: Need refactoring for removing filename from controller. filename should be selected by dataService.")
+        self.__current_filename = True
         
     def __create_filename_obj(self, fullname):
         filename_obj = WholeFilename(fullname)
@@ -81,6 +93,7 @@ class DataService(ModelInterface):
             print("====================Created the new expriments!!!")
             self.__experiments_repository.save(filename_obj.name, experiments)
             self.make_default_controllers(filename_obj)
+            self.__current_filename = filename_obj.name
             self.print_infor()
             return self.get_infor()
         else:
@@ -133,7 +146,12 @@ class DataService(ModelInterface):
     def get_controller_data(self, controller_key: str):  #This is for geting controller data dictionaly
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
-        return controller.get_controller_data()
+        data_dict = controller.get_controller_data()
+        if self.__mod_switch == True:
+            mod_keys = controller.get_mod_list()
+            print("DataService.get_controller_data: Need refactoring")
+            data_dict = self.__mod_service.set_dict_mod(mod_keys, data_dict, self.__current_filename)
+        return data_dict 
     
     # Use this only for a test
     def get_user_controller(self, controller_key):  # return a controller object.
@@ -142,6 +160,16 @@ class DataService(ModelInterface):
     
     def get_experiments(self, experiments_key):  # return whole data_dict in experiments
         return self.__experiments_repository.data[experiments_key]
+    
+    def set_mod_val(self, mod_key, controller_key):
+        print("DataService.set_mod_val: Need refactoring. Delete current_filneame")
+        self.__mod_service.set_mod_val(mod_key, controller_key, self.__current_filename)
+        
+    def set_mod_key(self, controller_key, mod_key) -> None:  # set background controller to the mod class.
+        print(f"Set mod: {mod_key} in {controller_key}")
+        controller_key = controller_key.upper()
+        controller = self.__user_controller_repository.find_by_name(controller_key)
+        controller.set_mod_key(mod_key)
     
     def reset(self, controller_key):
         controller_key = controller_key.upper()

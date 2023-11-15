@@ -110,6 +110,9 @@ class TraceData:
         self.__time = self.__create_time_data(val, interval)
         self.__length = val.shape[0]  # the number of data points
         self.__interval = interval  # data interval
+        
+        called_class = inspect.stack()[1].frame.f_locals['self']
+        self.__data_type = called_class.__class__.__name__
         #print(self.__data_type + ' made a TraceData' + '  myId= {}'.format(id(self)))
 
     def __del__(self):
