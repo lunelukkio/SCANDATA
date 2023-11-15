@@ -40,7 +40,7 @@ abstract product
 class UserController(metaclass=ABCMeta):
     def __init__(self, get_experiments_method):
         self.get_experiments = get_experiments_method
-        self._data_dict = {}  # data dict = {filename:frame_type{full:TraceData_value obj,ch1:TraceData,ch2:TraceData}}
+        self._data_dict = {}  # data dict = {full:TraceData_value obj,ch1:TraceData,ch2:TraceData}
         self.observer = ControllerObserver()
         self._mod_list = []
         self._val_obj = None
