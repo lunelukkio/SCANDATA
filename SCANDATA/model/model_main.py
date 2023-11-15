@@ -75,9 +75,9 @@ class DataService(ModelInterface):
         self.__experiments_repository = ExperimentsRepository()
         self.__user_controller_repository = UserControllerRepository()
         self.__mod_service = ModService(self.get_controller_data)  # send it to enable to use this method from mod class
-        self.__mod_switch = True
+        self.__mod_switch = False
         print("DataService.current_filename: Need refactoring for removing filename from controller. filename should be selected by dataService.")
-        self.__current_filename = True
+        self.__current_filename = None
         
     def __create_filename_obj(self, fullname):
         filename_obj = WholeFilename(fullname)
