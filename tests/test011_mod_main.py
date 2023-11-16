@@ -19,7 +19,7 @@ class ModTest(unittest.TestCase):
         
         #ic1.data_dict["20408B002.tsm"]["FULL"].show_data()
         data_service.set_controller_val("TRACE_Controller1", [1,10])
-        ic1.data_dict["20408B002.tsm"]["ELEC1"].show_data()
+        ic1.data_dict["ELEC1"].show_data()
         
         
         

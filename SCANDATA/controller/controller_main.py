@@ -43,18 +43,11 @@ class ViewController:
     def create_user_controller(self, controller_key):
         new_key = self.__model.create_user_controller(controller_key)
         return new_key
-        
-    # put experiments to user controller data dict.
-    def set_experiments(self, controller_key:str, filename_key:str):
-        self.__model.set_experiments(controller_key, filename_key)
 
     # put data to user controller data dict.
     def set_data(self, controller_key:str, data_key: str):
         for filename_key in self.filename_key_list:
             self.__model.set_data(controller_key, self.filename_key, data_key)
-
-    def bind_filename2controller(self, filename_key, controller_key):
-        self.__model.bind_filename2controller(filename_key, controller_key)
         
     def set_controller_val(self, controller_key: str, val: list):
         self.__model.set_controller_val(controller_key, val)
@@ -74,9 +67,13 @@ class ViewController:
             print(f"Can't find data_dict in {controller_key}")
         else:
             return data_dict
-        
-    def get_controller_infor(self):
-        return self.__model.get_infor()
+    
+    def get_controller_infor(self, controller_key=None) -> dict:
+        if controller_key is None:
+            data_infor = self.__model.get_infor()
+        else:
+            data_infor = self.__model.get_infor(controller_key)
+        return data_infor
 
     def set_position_image_ax(self, event):
         #print(event.button, event.x, event.y, event.xdata, event.ydata, event.dblclick, event.inaxes)

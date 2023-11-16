@@ -14,7 +14,7 @@ class Test(unittest.TestCase):
 
         data_service = DataService()      
         data_service.create_experiments('..\\220408\\20408B002.tsm')
-        data_service.create_experiments('..\\220408\\20408B001.tsm')
+        #data_service.create_experiments('..\\220408\\20408B001.tsm')
 
         #delete ROI
         data_service.create_user_controller("Roi2")
@@ -26,7 +26,7 @@ class Test(unittest.TestCase):
         roi1 = data_service.get_user_controller("ROI1")
         data_service.set_controller_val("ROI1", [20,20,1,1])
         roi1.print_infor()
-        roi1.data_dict["20408B002.tsm"]["CH1"].show_data()
+        roi1.data_dict["CH1"].show_data()
         
         data_service.print_infor()
         print(data_service.get_infor("ROI1"))

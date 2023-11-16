@@ -20,9 +20,9 @@ class Experiments:   # entity
         self.builder = builder_factory.create_builder(self.filename_obj)
 
         self.__txt_data = self.builder.get_infor()
-        self.__frames_dict = self.builder.get_frame()  # {key:FramsData -> val_obj}
-        self.__image_dict = self.builder.get_image()   # {key:ImageData -> val_obj}
-        self.__trace_dict = self.builder.get_trace()  # {key:Trace_Data -> val_obj}
+        self.__frames_dict = self.builder.get_frame()  # {FramsData:val_obj}
+        self.__image_dict = self.builder.get_image()   # ImageData:val_obj}
+        self.__trace_dict = self.builder.get_trace()  # {Trace_Data:val_obj}
         
         print("----- Experiments: Successful data construction!!!")
         print("")

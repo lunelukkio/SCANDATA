@@ -15,54 +15,69 @@ from SCANDATA.model.mod.mod_main import ModService
 """
 Service
 """
-class ModelInterface(metaclass=ABCMeta):   
+class ModelInterface(metaclass=ABCMeta):
+    # create epxeriments entity in the repository with filename.
     @abstractmethod
-    def create_experiments(self, fullname):  # create epxeriments entity in the repository with filename.
+    def create_experiments(self, fullname):
         raise NotImplementedError()
         
     @abstractmethod
-    def create_user_controller(self, controller_key) -> str:  # make a new value of data.
+    def change_current_filename(self, filename_obj):
         raise NotImplementedError()
-     
+        
+    # make a new value of data.
     @abstractmethod
-    def bind_filename2controller(self, filename_key, controller_key):  # connect between the controller and experiments entities.
+    def create_user_controller(self, controller_key) -> str:
+        raise NotImplementedError()
+        
+    # return whole data_dict in experiments. It is used by user_controllers.
+    @abstractmethod
+    def get_experiments(self, key) -> object:
+        raise NotImplementedError()
+        
+    # set a new controller value.
+    @abstractmethod
+    def set_controller_val(self, controller_key: str, val: list):
+        raise NotImplementedError()
+        
+    # value object ex RoiVal. It is used by controllers for chaning the size of ROI.
+    @abstractmethod
+    def get_controller_val(self, controller_key) -> object:
         raise NotImplementedError()
 
+    # make a new data from experiments entities into the controllers.
     @abstractmethod
-    def set_experiments(self, controller_key:str, filename_key:str):  # make a new data from experiments entities into the controllers.
+    def set_controller_data(self, controller_key:str):
         raise NotImplementedError()
         
+    # return a dict of controller including value objects.
     @abstractmethod
-    def set_controller_val(self, controller_key: str, val: list):  # set a new controller value.
+    def get_controller_data(self, controller_key: str):
         raise NotImplementedError()
-        
+
+    # set an axis observer of view into controller 
     @abstractmethod
-    def get_controller_val(self, key) -> object:  # value object ex RoiVal. It is used by controllers for chaning the size of ROI.
+    def set_observer(self, controller_key, observer:object):
         raise NotImplementedError()
-        
+
+    # set background controller to the mod class.
     @abstractmethod
-    def set_observer(self, observer:object):  # set an axis observer of view into controller 
+    def set_mod_val(self, key) -> None:
         raise NotImplementedError()
-        
+    
+    # set background controller to the mod class.
     @abstractmethod
-    def get_controller_data(self, controller_key: str):  # return a dict of controller including value objects.
-        raise NotImplementedError()
-        
-    @abstractmethod
-    def get_experiments(self, key) -> object:  # return whole data_dict in experiments. It is used by user_controllers.
-        raise NotImplementedError()
-        
-    @abstractmethod
-    def set_mod_val(self, key) -> None:  # set background controller to the mod class.
-        raise NotImplementedError()
-        
-    @abstractmethod
-    def set_mod_key(self, key) -> None:  # set background controller to the mod class.
+    def set_mod_key(self, key) -> None:
         raise NotImplementedError()    
         
-
+    # reset controller_val
     @abstractmethod
     def reset(self, controller_key):
+        raise NotImplementedError()
+        
+    # get infor of dict
+    @abstractmethod
+    def get_infor(self, controller_key):
         raise NotImplementedError() 
         
     @abstractmethod
@@ -74,10 +89,7 @@ class DataService(ModelInterface):
     def __init__(self):
         self.__experiments_repository = ExperimentsRepository()
         self.__user_controller_repository = UserControllerRepository()
-        self.__mod_service = ModService(self.get_controller_data)  # send it to enable to use this method from mod class
-        self.__mod_switch = False
-        print("DataService.current_filename: Need refactoring for removing filename from controller. filename should be selected by dataService.")
-        self.__current_filename = None
+        self.__current_filename_obj = None
         
     def __create_filename_obj(self, fullname):
         filename_obj = WholeFilename(fullname)
@@ -93,13 +105,19 @@ class DataService(ModelInterface):
             print("====================Created the new expriments!!!")
             self.__experiments_repository.save(filename_obj.name, experiments)
             self.make_default_controllers(filename_obj)
-            self.__current_filename = filename_obj.name
+            self.change_current_filename(filename_obj)
             self.print_infor()
             return self.get_infor()
         else:
             # delete a model
             self.__experiments_repository.delete(filename_obj.name)
- 
+            
+    def change_current_filename(self, filename_obj):
+        if filename_obj.name in self.__experiments_repository.data:
+            self.__current_filename_obj = filename_obj
+        else:
+            print(f"There is no experiments file in the model: {filename_obj.name}")
+        
     # make a new user controller
     def create_user_controller(self, controller_key) -> str:  # controller_key = "Roi", "TimeWindow". Use the same name to delete like "ROI1"
         controller_key = controller_key.upper()
@@ -107,7 +125,7 @@ class DataService(ModelInterface):
             # get a controller factory 
             controller_factory = self.__check_controller_type(controller_key)
             # make a new controller with the method in DataService
-            new_controller = controller_factory.create_controller(self.get_experiments)
+            new_controller = controller_factory.create_controller()
             # save to the repository
             new_key = self.__key_num_maker(controller_key)
             print(f"====================Created the new controller {controller_key}")
@@ -116,51 +134,51 @@ class DataService(ModelInterface):
             return new_key  # This is to tell the key name to ViewController
         else:
             self.__user_controller_repository.delete(controller_key)
-    
-    def set_experiments(self, controller_key:str, filename_key:str):
-        controller_key = controller_key.upper()
-        controller = self.__user_controller_repository.find_by_name(controller_key)
-        controller.set_experiments(filename_key)
-        
-    def bind_filename2controller(self, filename_key, controller_key):
-        controller_key = controller_key.upper()
-        controller = self.__user_controller_repository.find_by_name(controller_key)
-        print(f"Bind {filename_key} to {controller_key}")
-        controller.set_experiments(filename_key)
+            
+    def get_experiments(self, filename_key) -> object:  # return an experiments entity
+        experiments_entity = self.__experiments_repository.find_by_name(filename_key)
+        return experiments_entity
 
     def set_controller_val(self, controller_key: str, val: list):
+        # get the controller
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
+        # set the controller values
         controller.set_controller_val(val)
-        
-    def set_observer(self, controller_key, observer:object):
-        controller_key = controller_key.upper()
-        controller = self.__user_controller_repository.find_by_name(controller_key)
-        controller.set_observer(observer)
+        # get the experiments
+        experiments_obj = self.get_experiments(self.__current_filename_obj)
+        # get trace_obj from the exeriments
+        controller.set_controller_data(experiments_obj)
+        # notiry axis. then they will use "self.get_controller_data"
+        controller.observer.notify_observer()
         
     def get_controller_val(self, controller_key: str):  # This is for getting controller value ex.RoiVal
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
         return controller.val_obj
+    
+    def set_controller_data(self, controller_key:str):
+        controller_key = controller_key.upper()
+        controller = self.__user_controller_repository.find_by_name(controller_key)
+        experiments_obj = self.get_experiments(self.__current_filename_obj)
+        controller.set_controller_data(experiments_obj)
         
     def get_controller_data(self, controller_key: str):  #This is for geting controller data dictionaly
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
         data_dict = controller.get_controller_data()
-        if self.__mod_switch == True:
-            mod_keys = controller.get_mod_list()
-            print("DataService.get_controller_data: Need refactoring")
-            data_dict = self.__mod_service.set_dict_mod(mod_keys, data_dict, self.__current_filename)
         return data_dict 
-    
-    # Use this only for a test
-    def get_user_controller(self, controller_key):  # return a controller object.
+        
+    def set_observer(self, controller_key, observer:object):
+        controller_key = controller_key.upper()
+        controller = self.__user_controller_repository.find_by_name(controller_key)
+        controller.set_observer(observer)
+
+    # Use this only for a test. return a controller object.
+    def get_user_controller(self, controller_key):
         controller_key = controller_key.upper()
         return self.__user_controller_repository.data[controller_key]
-    
-    def get_experiments(self, experiments_key):  # return whole data_dict in experiments
-        return self.__experiments_repository.data[experiments_key]
-    
+
     def set_mod_val(self, mod_key, controller_key):
         print("DataService.set_mod_val: Need refactoring. Delete current_filneame")
         self.__mod_service.set_mod_val(mod_key, controller_key, self.__current_filename)
@@ -180,8 +198,7 @@ class DataService(ModelInterface):
     def make_default_controllers(self, filename_obj):
         default_controller_list, default_data_list = self.get_experiments(filename_obj.name).get_default()
         for controller_key in default_controller_list:
-            new_key = self.create_user_controller(controller_key)
-            self.bind_filename2controller(filename_obj.name, new_key)
+            self.create_user_controller(controller_key)
         
     def get_infor(self, controller_key=None) -> dict:
         if controller_key is None:
