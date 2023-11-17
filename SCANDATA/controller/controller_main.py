@@ -18,7 +18,7 @@ class ViewController:
         self.__model = DataService()
         self.__view = view
         self.__file_service = FileService()
-        self.operating_controller_list = []
+        self.__operating_controller_list = []
         
     def __del__(self):
         print('Deleted a ViewController.' + '  myId= {}'.format(id(self)))
@@ -80,9 +80,8 @@ class ViewController:
 
     def set_position_image_ax(self, event):
         #print(event.button, event.x, event.y, event.xdata, event.ydata, event.dblclick, event.inaxes)
-        for controller_key in self.operating_controller_list:
-            print("eeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
-            print(f"{self.operating_controller_list}: ", end='')
+        for controller_key in self.__operating_controller_list:
+            print(f"{self.__operating_controller_list}: ", end='')
             # Cursor adjustment. the center of the pixel is 0. So it need 0.5 shift. 
             roi_x = round(event.xdata)
             roi_y = round(event.ydata)
@@ -92,7 +91,7 @@ class ViewController:
 
 
     def change_roi_size(self, val): #val = [x,y,x_length,y_length]
-        for roi in self.operating_controller_list:        
+        for roi in self.__operating_controller_list:        
             roi_val = self.__model.get_controller_val(roi).data
             new_roi_val = roi_val + val 
             if new_roi_val[2] < 1 or new_roi_val[3] < 1:
@@ -115,6 +114,15 @@ class ViewController:
             return
         key = 'Roi' + str(self.current_roi_num)
         self.send_update_message(key, [])
+        
+    def get_operating_controller_list(self):
+        return self.__operating_controller_list
+    
+    def set_operating_controller_list(self, controller_key):
+        if controller_key in self.__operating_controller_list:
+            self.__operating_controller_list.remove(controller_key)
+        else:
+            self.__operating_controller_list.append(controller_key)
         
     def print_model_infor(self):
         self.__model.print_infor()

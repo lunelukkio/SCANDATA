@@ -135,7 +135,7 @@ class Roi(UserController):
         original_data_list = experiments_obj.frames_dict.keys()
         for data_key in original_data_list:
             self._data_dict[data_key] = self._get_val(experiments_obj, data_key)
-        self.print_infor()
+        #self.print_infor()
 
     # calculate a trace from a single frames data with a roi value object
     def _get_val(self, experiments_obj, data_key):

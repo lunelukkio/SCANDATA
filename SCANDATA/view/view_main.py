@@ -172,19 +172,21 @@ class DataWindow(tk.Frame):
         style = ttk.Style()
         style.configure('TCheckbutton', background=self.my_color)
         
-        self.checkbox_flag_dict = {'Data0': tk.BooleanVar(), 'Data1': tk.BooleanVar(), 'Data2': tk.BooleanVar()}  # Should be the same as the default of trace flags
+        self.checkbox_flag_dict = {'Data0': tk.BooleanVar(value=False), 
+                                   'Data1': tk.BooleanVar(value=True), 
+                                   'Data2': tk.BooleanVar(value=False)}  # Should be the same as the default of trace flags
         ttk.Checkbutton(frame_bottom,
                         text='Full',
                         variable=self.checkbox_flag_dict['Data0'],
-                        command=lambda: self.select_ch('Data0')).pack(side=tk.LEFT)
+                        command=lambda: self.select_ch('FULL')).pack(side=tk.LEFT)
         ttk.Checkbutton(frame_bottom,
                         text='Ch 1',
                         variable=self.checkbox_flag_dict['Data1'],
-                        command=lambda: self.select_ch('Data1')).pack(side=tk.LEFT)
+                        command=lambda: self.select_ch('CH1')).pack(side=tk.LEFT)
         ttk.Checkbutton(frame_bottom,
                         text='Ch 2',
                         variable=self.checkbox_flag_dict['Data2'],
-                        command=lambda: self.select_ch('Data2')).pack(side=tk.LEFT)
+                        command=lambda: self.select_ch('CH2')).pack(side=tk.LEFT)
         frame_bottom.pack(side=tk.BOTTOM, fill=tk.BOTH)
         
         # for the mod radio buttons
@@ -338,9 +340,13 @@ class DataWindow(tk.Frame):
 
         # hide traces from the fluo trace axis
         self.ax_list[1].set_active_data_key("ROI2", "FULL", False)  # to remove FULL trace data
+        self.ax_list[1].set_active_data_key("ROI2", "CH2", False)  # to remove FULL trace data
         
         # set current controller list
-        self.__controller.operating_controller_list = ["ROI2"]
+        self.__controller.set_operating_controller_list("ROI2")
+        
+        # set image view doesn't update
+        self.update_switch(0)
 
         for i in range(3):
             self.ax_list[i].print_infor()
@@ -369,26 +375,25 @@ class DataWindow(tk.Frame):
                 pass
             elif event.button == 3:
                 # get current controller
-                old_controller_list = self.__controller.operating_controller_list
+                old_controller_list = self.__controller.get_operating_controller_list()
                 # get whole ROI controller list 
                 filtered_list = [item for item in self.ax_list[1]._active_controller_dict.keys() if "ROI" in item]
-                new_active_controller = []
+
                 for old_controller in old_controller_list:
                     if old_controller in filtered_list:
                         index = filtered_list.index(old_controller)
                         if index < len(filtered_list) - 1:
                             next_controller =filtered_list[index + 1]
-                            new_active_controller.append(next_controller)
                         else:
                             next_controller =filtered_list[0]
-                            new_active_controller.append(next_controller)
                     else:
                         print("Not in the active controller list")
                         
                 self.ax_list[1].set_active_controller_key(old_controller, False)
+                self.__controller.set_operating_controller_list(old_controller)
                 self.ax_list[1].set_active_controller_key(next_controller, True)
-                self.__controller.operating_controller_list = new_active_controller
-                print(f"Switch to {new_active_controller}")
+                self.__controller.set_operating_controller_list(next_controller)
+                print(f"Switch to {next_controller}")
                 self.ax_list[1].update()
                 self.ax_list[0].update()
 
@@ -396,12 +401,14 @@ class DataWindow(tk.Frame):
             print("Double click is for ----")
         print('')
 
-    def select_ch(self, key):
+    def select_ch(self, data_key):
         # send flags to ax.
-        self.ax_list[1].select_ch(key)  # This is for flag to showing traces.
-        self.ax_list[0].select_ch(key)  # for changing images
-
+        for ax_num in range(2):
+            self.ax_list[ax_num].select_ch(data_key)  # doesn't change elec axis.
         print('')
+        
+    def update_switch(self, ax_num):
+        self.ax_list[ax_num].change_update_switch()
 
     def elec_ch_select(self, event):
         selected_value = self.combo_box_elec_ch.get()
@@ -463,8 +470,10 @@ class ViewAx(metaclass=ABCMeta):
         self._ax_obj = ax
         self._controller = controller
         self._color_selection = ['black', 'red', 'blue', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan', 'orange']
-        self._ax_data_dict = {}  # set of whole data key dict and values for showing traces. {"ROI1":{20501A001.tsm:{FULL:ax_trace_obj}}}
-        self._active_controller_dict = {}  # {"ROI1":{20501A001.tsm:{FULL:False,CH1:Ture, CH2:False}}}
+        self._ax_data_dict = {}  # set of whole data key dict and values for showing traces. {"ROI1":{FULL:ax_trace_obj}}
+        self._active_controller_dict = {}  # {"ROI1":{FULL:False,CH1:Ture, CH2:False}}
+        self.individual_switch = False
+        self.update_switch = True
         
     @abstractmethod
     def set_data(self, active_controller_dict):
@@ -491,11 +500,31 @@ class ViewAx(metaclass=ABCMeta):
                 self._active_controller_dict[controller_key][data_key] = False
 
     # This doesn't affect to user controller in the model.
-    def set_active_data_key(self, controller_key: str, data_key: str, view_switch:bool):
+    def set_active_data_key(self, controller_key: str, data_key: str, view_switch=None):
         if view_switch == True:
             self._active_controller_dict[controller_key][data_key] = True
         elif view_switch == False:
             self._active_controller_dict[controller_key][data_key] = False
+        else:
+            self._active_controller_dict[controller_key][data_key] = not self._active_controller_dict[controller_key][data_key]
+            
+    def select_ch(self, data_key):
+        print(data_key)
+        if self.individual_switch == True:  # this is for changing individual view. see the instance valiable.
+            raise NotImplementedError()
+        elif self.individual_switch == False:
+            for controller_key in self._active_controller_dict:
+                if data_key in self._active_controller_dict[controller_key]:
+                    self.set_active_data_key(controller_key, data_key)
+        self.update()
+        
+    def change_update_switch(self, val=None):
+        if val is True:
+            self.update_switch = True
+        elif val is False:
+            self.update_switch = False
+        else:
+            self.update_switch = not self.update_switch
         
     def draw_ax(self):
         self.set_data(self._active_controller_dict)
@@ -600,7 +629,7 @@ class ImageAx(ViewAx):
         self.canvas.draw()   
                  
     def set_roibox(self, x, y, width=0, height=0):  # roi[x,y,width,height]
-        for roi in self._controller.operating_controller_list:
+        for roi in self._controller.get_operating_controller_list():
             old_width = self._roibox_data_dict[roi].rectangle_obj.get_width()
             old_height = self._roibox_data_dict[roi].rectangle_obj.get_height()
             new_width = old_width + width
@@ -678,6 +707,6 @@ if __name__ == '__main__':
     root.mainloop()
     
     print("＝＝＝to do list＝＝＝")
-    print("")
-
+    print("second trace time shift ")
+    print("current problem is that missmatch of trace switch and image switch. sharing view active switch is also problem. ")
     print("")
