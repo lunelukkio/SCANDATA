@@ -295,12 +295,8 @@ class DataWindow(tk.Frame):
     def open_file(self, filename_obj=None):
         filename_obj = self.__controller.open_file(filename_obj)  # make a model and get filename obj
         controller_dict_keys = self.__controller.get_controller_infor()
-        
         for i in range(3):
             self.ax_list[i].set_initial_controller_key(controller_dict_keys)
-        self.__controller.print_model_infor()
-        print(f"   !!! Open {filename_obj.name}: suceeded!!!")
-        print("")
         self.default_view_data(controller_dict_keys)
         self.update_ax(3)  # 3 = draw whole ax
         
@@ -372,9 +368,10 @@ class DataWindow(tk.Frame):
             elif event.button == 2:
                 pass
             elif event.button == 3:
+                # get current controller
                 old_controller_list = self.__controller.operating_controller_list
+                # get whole ROI controller list 
                 filtered_list = [item for item in self.ax_list[1]._active_controller_dict.keys() if "ROI" in item]
-
                 new_active_controller = []
                 for old_controller in old_controller_list:
                     if old_controller in filtered_list:
@@ -470,12 +467,12 @@ class ViewAx(metaclass=ABCMeta):
         self._active_controller_dict = {}  # {"ROI1":{20501A001.tsm:{FULL:False,CH1:Ture, CH2:False}}}
         
     @abstractmethod
-    def set_data(self, current_controller):
+    def set_data(self, active_controller_dict):
             raise NotImplementedError()
     
     def set_initial_controller_key(self, controller_key_dict):
-        self._active_controller_dict = copy.deepcopy(controller_key_dict)  # for showing controllers. data is empty yet
-        self._ax_data_dict = copy.deepcopy(controller_key_dict)  # make whole dict of controllers. data is empty yet
+        self._active_controller_dict = copy.deepcopy(controller_key_dict)  # for showing controllers.
+        self._ax_data_dict = copy.deepcopy(controller_key_dict)  # make whole dict of controllers.
     
     def remove_specific_controller(self, specific_controller_key):
         # remove specific_controller_key from self._active_controller_dict
@@ -492,8 +489,6 @@ class ViewAx(metaclass=ABCMeta):
                 self._active_controller_dict[controller_key][data_key] = True
             elif view_switch == False:
                 self._active_controller_dict[controller_key][data_key] = False
-        print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
-        print(self._active_controller_dict)
 
     # This doesn't affect to user controller in the model.
     def set_active_data_key(self, controller_key: str, data_key: str, view_switch:bool):
@@ -510,7 +505,7 @@ class ViewAx(metaclass=ABCMeta):
         
     def update(self):
         self._ax_obj.cla()  # clear ax
-        self.draw_ax
+        self.draw_ax()
     
     def print_infor(self):
         print("")
@@ -575,11 +570,8 @@ class ImageAx(ViewAx):
     # There are three dict. active_controller_dict is to switching. self._ax_data_dict is to keep ax data. controller_data_dict is from user controller.
     def set_data(self, active_controller_dict):
         for controller_key in active_controller_dict.keys():
-            
             for data_key in active_controller_dict[controller_key]:
                 active_data = active_controller_dict[controller_key][data_key]
-                print("88888888888888888888888888888")
-                print(self._ax_data_dict)
                 ax_data = self._ax_data_dict[controller_key][data_key]
                 if active_data is True:
                     #get data from current user controller

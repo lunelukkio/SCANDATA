@@ -29,6 +29,9 @@ class ViewController:
             filename_obj = self.__file_service.open_file()
         # make experiments data
         self.create_experiments(filename_obj) 
+        self.print_model_infor()
+        print(f"   !!! Open {filename_obj.name}: suceeded!!!")
+        print("")
         return filename_obj   
     
     def create_experiments(self, filename_obj: object):  
@@ -78,13 +81,15 @@ class ViewController:
     def set_position_image_ax(self, event):
         #print(event.button, event.x, event.y, event.xdata, event.ydata, event.dblclick, event.inaxes)
         for controller_key in self.operating_controller_list:
+            print("eeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
             print(f"{self.operating_controller_list}: ", end='')
-            user_controller = self.__model.get_user_controller(controller_key)
             # Cursor adjustment. the center of the pixel is 0. So it need 0.5 shift. 
             roi_x = round(event.xdata)
             roi_y = round(event.ydata)
             roi = [roi_x, roi_y, None, None]
-            user_controller.set_controller_val(roi)
+            self.__model.set_controller_val(controller_key, roi)
+
+
 
     def change_roi_size(self, val): #val = [x,y,x_length,y_length]
         for roi in self.operating_controller_list:        

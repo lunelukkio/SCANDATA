@@ -102,12 +102,12 @@ class DataService(ModelInterface):
             # make a data entity
             experiments = Experiments(filename_obj)
             # save entity to the repository
-            print("====================Created the new expriments!!!")
             self.__experiments_repository.save(filename_obj.name, experiments)
-            self.make_default_controllers(filename_obj)
             self.change_current_filename(filename_obj)
+            print("====================Created a new expriments!!!")
+            # make controllers
+            self.make_default_controllers(filename_obj)
             self.print_infor()
-            return self.get_infor()
         else:
             # delete a model
             self.__experiments_repository.delete(filename_obj.name)
@@ -118,6 +118,11 @@ class DataService(ModelInterface):
         else:
             print(f"There is no experiments file in the model: {filename_obj.name}")
         
+    def make_default_controllers(self, filename_obj):
+        default_controller_list, default_data_list = self.get_experiments(filename_obj.name).get_default()
+        for controller_key in default_controller_list:  # controller_list doesn't have controller numbers
+            self.create_user_controller(controller_key)
+
     # make a new user controller
     def create_user_controller(self, controller_key) -> str:  # controller_key = "Roi", "TimeWindow". Use the same name to delete like "ROI1"
         controller_key = controller_key.upper()
@@ -126,14 +131,19 @@ class DataService(ModelInterface):
             controller_factory = self.__check_controller_type(controller_key)
             # make a new controller with the method in DataService
             new_controller = controller_factory.create_controller()
-            # save to the repository
+            # set data in controller
+            experiments_obj = self.get_experiments(self.__current_filename_obj.name)
+            new_controller.set_controller_data(experiments_obj)
+            # get a new controller key name
             new_key = self.__key_num_maker(controller_key)
-            print(f"====================Created the new controller {controller_key}")
+            # save the controller to repository
             self.__user_controller_repository.save(new_key, new_controller)
+            print(f"====================Created the new controller {controller_key}")
             self.print_infor()
-            return new_key  # This is to tell the key name to ViewController
+            return new_key  # This is to tell the key name to axtive_controller_dict in ViewController ax
         else:
             self.__user_controller_repository.delete(controller_key)
+
             
     def get_experiments(self, filename_key) -> object:  # return an experiments entity
         experiments_entity = self.__experiments_repository.find_by_name(filename_key)
@@ -146,7 +156,7 @@ class DataService(ModelInterface):
         # set the controller values
         controller.set_controller_val(val)
         # get the experiments
-        experiments_obj = self.get_experiments(self.__current_filename_obj)
+        experiments_obj = self.get_experiments(self.__current_filename_obj.name)
         # get trace_obj from the exeriments
         controller.set_controller_data(experiments_obj)
         # notiry axis. then they will use "self.get_controller_data"
@@ -160,7 +170,7 @@ class DataService(ModelInterface):
     def set_controller_data(self, controller_key:str):
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
-        experiments_obj = self.get_experiments(self.__current_filename_obj)
+        experiments_obj = self.get_experiments(self.__current_filename_obj.name)
         controller.set_controller_data(experiments_obj)
         
     def get_controller_data(self, controller_key: str):  #This is for geting controller data dictionaly
@@ -181,7 +191,7 @@ class DataService(ModelInterface):
 
     def set_mod_val(self, mod_key, controller_key):
         print("DataService.set_mod_val: Need refactoring. Delete current_filneame")
-        self.__mod_service.set_mod_val(mod_key, controller_key, self.__current_filename)
+        self.__mod_service.set_mod_val(mod_key, controller_key, self.__current_filename_obj.name)
         
     def set_mod_key(self, controller_key, mod_key) -> None:  # set background controller to the mod class.
         print(f"Set mod: {mod_key} in {controller_key}")
@@ -194,11 +204,7 @@ class DataService(ModelInterface):
         controller = self.__user_controller_repository.find_by_name(controller_key)
         controller.reset()
         print(f"Reset: {controller_key}")
-        
-    def make_default_controllers(self, filename_obj):
-        default_controller_list, default_data_list = self.get_experiments(filename_obj.name).get_default()
-        for controller_key in default_controller_list:
-            self.create_user_controller(controller_key)
+
         
     def get_infor(self, controller_key=None) -> dict:
         if controller_key is None:
@@ -235,6 +241,7 @@ class DataService(ModelInterface):
         controller_dict = self.__user_controller_repository.data
         # Count exsisting key
         count = 0
+        # count the number of identiried controller
         for key in controller_dict.keys():
             if controller_key in key:
                 count += 1

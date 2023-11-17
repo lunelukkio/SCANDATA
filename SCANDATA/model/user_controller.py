@@ -175,8 +175,6 @@ class ImageController(UserController):
     def __init__(self):
         super().__init__()
         self._val_obj = TimeWindowVal(0, 1)
-        self._data_dict = {}  # data dict = {full:ImageData,ch1:ImageData,ch2:ImageData}
-        self._mod_list = []
         
     def __del__(self):  #make a message when this object is deleted.
         #print('.')
@@ -235,8 +233,6 @@ class TraceController(UserController):
     def __init__(self):
         super().__init__()
         self._val_obj = TimeWindowVal(0, 100)
-        self._data_dict = {}  # data dict = {filename:frame_type{ELEC1:ElecData,ELEC2:ElecData,ELEC3:ElecData}}
-        self._mod_list = []
         self.__inf_mode = True  # This is for no limit trace (whole trace)
         
     def __del__(self):  #make a message when this object is deleted.
