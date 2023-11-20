@@ -258,7 +258,7 @@ class DataWindow(tk.Frame):
         ttk.Checkbutton(frame_left,
                         text='Pass update',
                         variable=self.checkbox_update_pass_switch,
-                        command=self.update_pass_switch_function).pack(side=tk.LEFT)
+                        command=self.image_update_pass).pack(side=tk.LEFT)
         
         """ 
         Trace Frames
@@ -302,22 +302,16 @@ class DataWindow(tk.Frame):
         self.default_view_data(controller_dict_keys)
         self.update_ax(3)  # 3 = draw whole ax
         
+        # set image view doesn't update
+        self.ax_list[0].change_update_switch(False)
+        self.ax_list[1].change_update_switch(True)
+        self.ax_list[2].change_update_switch(True)
+        
     def default_view_data(self, controller_dict_keys):
-        print("Default setting")
-        #print("Whole controller keys = ", end='')
-        #print(controller_dict_keys)
-        #print(self.ax_list[0]._active_controller_dict)
         self.__controller.set_observer("ROI1", self.ax_list[1])
         self.__controller.set_observer("ROI2", self.ax_list[1])
         self.__controller.set_observer("IMAGE_CONTROLLER1", self.ax_list[0])
         self.__controller.set_observer("TRACE_CONTROLLER1", self.ax_list[2])
-        
-        self.ax_list[0].remove_specific_controller("TRACE_CONTROLLER")  # to remove ELEC_CONTROLLER from ax
-        self.ax_list[0].remove_specific_controller("ROI")  # to remove ROI from ax
-        self.ax_list[1].remove_specific_controller("TRACE_CONTROLLER")  # to remove ELEC_CONTROLLER from ax
-        self.ax_list[1].remove_specific_controller("IMAGE_CONTROLLER")  # to remove IMAGE_CONTROLLER from ax
-        self.ax_list[2].remove_specific_controller("ROI")  # to remove ROI from ax
-        self.ax_list[2].remove_specific_controller("IMAGE_CONTROLLER")  # to remove IMAGE_CONTROLLER from ax
         
         """
         # set background roi to the mod class
@@ -330,23 +324,26 @@ class DataWindow(tk.Frame):
         # hide background ROI from the image axis.
         self.ax_list[1].set_active_controller_key("ROI1", False)  # to remove background roi
         # hide images from the image axis
-        self.ax_list[0].set_active_data_key("IMAGE_CONTROLLER1", "FULL", False)  # to remove FULL image data
-        self.ax_list[0].set_active_data_key("IMAGE_CONTROLLER1", "CH2", False)  # to remove CH2 image data
+        self.ax_list[0].select_ch("IMAGE_CONTROLLER1", "FULL", False)  # to remove FULL image data
+        self.ax_list[0].select_ch("IMAGE_CONTROLLER1", "CH2", False)  # to remove CH2 image data
+
+        #hide elec traces from the fluo axis
+        for ch in range(1, 9):
+            self.ax_list[1].select_ch("TRACE_CONTROLLER1", "ELEC" + str(ch), False)  # to remove FULL image data
             
-        # hide elec traces from the elec axis
-
+        # hide fluo trace from elec axis
+        self.ax_list[2].set_active_controller_key("ROI1", False)
+        self.ax_list[2].set_active_controller_key("ROI2", False)
+        # hide #2 ~ #8 elec traces from the elec axis
         for ch in range(2, 9):
-            self.ax_list[2].set_active_data_key("TRACE_CONTROLLER1", "ELEC" + str(ch), False)  # to remove FULL image data
-
+            self.ax_list[2].select_ch("TRACE_CONTROLLER1", "ELEC" + str(ch), False)  # to remove FULL image data
+        
         # hide traces from the fluo trace axis
-        self.ax_list[1].set_active_data_key("ROI2", "FULL", False)  # to remove FULL trace data
-        self.ax_list[1].set_active_data_key("ROI2", "CH2", False)  # to remove FULL trace data
+        self.ax_list[1].select_ch("ROI2", "FULL", False)  # to remove FULL trace data
+        self.ax_list[1].select_ch("ROI2", "CH2", False)  # to remove FULL trace data
         
         # set current controller list
         self.__controller.set_operating_controller_list("ROI2")
-        
-        # set image view doesn't update
-        self.update_switch(0)
 
         for i in range(3):
             self.ax_list[i].print_infor()
@@ -376,7 +373,7 @@ class DataWindow(tk.Frame):
             elif event.button == 3:
                 # get current controller
                 old_controller_list = self.__controller.get_operating_controller_list()
-                # get whole ROI controller list 
+                # get whole ROI controller list. Violation of scorpe range.  _activePcontoller_dict should not be used from the outside of the class.
                 filtered_list = [item for item in self.ax_list[1]._active_controller_dict.keys() if "ROI" in item]
 
                 for old_controller in old_controller_list:
@@ -389,27 +386,29 @@ class DataWindow(tk.Frame):
                     else:
                         print("Not in the active controller list")
                         
-                self.ax_list[1].set_active_controller_key(old_controller, False)
                 self.__controller.set_operating_controller_list(old_controller)
-                self.ax_list[1].set_active_controller_key(next_controller, True)
                 self.__controller.set_operating_controller_list(next_controller)
+                # Violation of scorpe range.  _activePcontoller_dict should not be used from the outside of the class.
+                # Need refactoring.
+                self.ax_list[1]._active_controller_dict[next_controller].update(self.ax_list[1]._active_controller_dict[old_controller])
+                self.ax_list[1].set_active_controller_key(old_controller, False)
                 print(f"Switch to {next_controller}")
                 self.ax_list[1].update()
                 self.ax_list[0].update()
-
         elif event.dblclick is True:
             print("Double click is for ----")
         print('')
 
     def select_ch(self, data_key):
         # send flags to ax.
+        operating_controller_list = self.__controller.get_operating_controller_list()
         for ax_num in range(2):
-            self.ax_list[ax_num].select_ch(data_key)  # doesn't change elec axis.
+            for operating_controller_key in operating_controller_list:
+                self.ax_list[ax_num].select_ch(operating_controller_key, data_key)
         print('')
+        # each axis window have own a dictionaly for drawing.
         
-    def update_switch(self, ax_num):
-        self.ax_list[ax_num].change_update_switch()
-
+        
     def elec_ch_select(self, event):
         selected_value = self.combo_box_elec_ch.get()
         self.set_elec_ch(selected_value)
@@ -457,12 +456,9 @@ class DataWindow(tk.Frame):
         self.update_trace()
         self.ax_list[1].update_ax()
         print('')
-    
-    def update(self):
-        self.__controller.update_data('Roi' + str(self.current_roi_num))
         
-    def update_pass_switch_function(self):
-        self.ax_list[0].update_pass_switch = not self.ax_list[0].update_pass_switch
+    def image_update_pass(self):
+        self.ax_list[0].change_update_switch()
         
 class ViewAx(metaclass=ABCMeta):
     def __init__(self, ax, controller):
@@ -472,8 +468,8 @@ class ViewAx(metaclass=ABCMeta):
         self._color_selection = ['black', 'red', 'blue', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan', 'orange']
         self._ax_data_dict = {}  # set of whole data key dict and values for showing traces. {"ROI1":{FULL:ax_trace_obj}}
         self._active_controller_dict = {}  # {"ROI1":{FULL:False,CH1:Ture, CH2:False}}
-        self.individual_switch = False
-        self.update_switch = True
+        self.sync_switch = False  # This switch is to show each data in each controllers.
+        self.update_switch = True  # This switch is for avoiding image view update. Ture or False or empty: flip switch.
         
     @abstractmethod
     def set_data(self, active_controller_dict):
@@ -482,42 +478,32 @@ class ViewAx(metaclass=ABCMeta):
     def set_initial_controller_key(self, controller_key_dict):
         self._active_controller_dict = copy.deepcopy(controller_key_dict)  # for showing controllers.
         self._ax_data_dict = copy.deepcopy(controller_key_dict)  # make whole dict of controllers.
-    
-    def remove_specific_controller(self, specific_controller_key):
-        # remove specific_controller_key from self._active_controller_dict
-        filtered_list = [item for item in self._active_controller_dict.keys() if specific_controller_key in item]
-        for controller_key in filtered_list:
-            data_key_list = self._active_controller_dict[controller_key].keys()
-            for data_key in data_key_list:
-                self._active_controller_dict[controller_key][data_key] = False
         
     # This doesn't affect to user controller in the model.
-    def set_active_controller_key(self, controller_key: str, view_switch: bool):
-        for data_key in self._active_controller_dict[controller_key].keys():
-            if view_switch == True:
-                self._active_controller_dict[controller_key][data_key] = True
-            elif view_switch == False:
-                self._active_controller_dict[controller_key][data_key] = False
-
-    # This doesn't affect to user controller in the model.
-    def set_active_data_key(self, controller_key: str, data_key: str, view_switch=None):
+    def __set_active_data_key(self, controller_key: str, data_key: str, view_switch=None):
         if view_switch == True:
             self._active_controller_dict[controller_key][data_key] = True
         elif view_switch == False:
             self._active_controller_dict[controller_key][data_key] = False
         else:
             self._active_controller_dict[controller_key][data_key] = not self._active_controller_dict[controller_key][data_key]
-            
-    def select_ch(self, data_key):
-        print(data_key)
-        if self.individual_switch == True:  # this is for changing individual view. see the instance valiable.
-            raise NotImplementedError()
-        elif self.individual_switch == False:
-            for controller_key in self._active_controller_dict:
-                if data_key in self._active_controller_dict[controller_key]:
-                    self.set_active_data_key(controller_key, data_key)
+
+    def select_ch(self, controller_key, data_key, view_switch=None):
+        self.__set_active_data_key(controller_key, data_key, view_switch)
+        if self.sync_switch is True:
+            for other_controller_key in self._active_controller_dict.keys():
+                if data_key in self._active_controller_dict[other_controller_key]:
+                    self._active_controller_dict[other_controller_key][data_key] = self._active_controller_dict[controller_key][data_key]  
         self.update()
-        
+
+    # This doesn't affect to user controller in the model.
+    def set_active_controller_key(self, controller_key: str, view_switch: bool):
+        for data_key in self._active_controller_dict[controller_key].keys():
+            if view_switch == True:
+                self.__set_active_data_key(controller_key, data_key, True)
+            elif view_switch == False:
+                self.__set_active_data_key(controller_key, data_key, False)        
+
     def change_update_switch(self, val=None):
         if val is True:
             self.update_switch = True
@@ -532,9 +518,10 @@ class ViewAx(metaclass=ABCMeta):
         self._ax_obj.autoscale_view()
         self.canvas.draw()
         
-    def update(self):
-        self._ax_obj.cla()  # clear ax
-        self.draw_ax()
+    def update(self):  # It is overrided by ImageAx
+        if self.update_switch == True:
+            self._ax_obj.cla()  # clear ax
+            self.draw_ax()
     
     def print_infor(self):
         print("")
@@ -619,13 +606,12 @@ class ImageAx(ViewAx):
                     
     # override            
     def update(self):
-        self._ax_obj.cla()
-        self.set_data(self._active_controller_dict)
+        if self.update_switch == True:
+            self._ax_obj.cla()
+            self.set_data(self._active_controller_dict)
         for roi_box in self._roibox_data_dict.values():
             if roi_box is not None:
                 self._ax_obj.add_patch(roi_box.rectangle_obj)
-        self._ax_obj.relim()
-        self._ax_obj.autoscale_view()
         self.canvas.draw()   
                  
     def set_roibox(self, x, y, width=0, height=0):  # roi[x,y,width,height]
@@ -709,4 +695,5 @@ if __name__ == '__main__':
     print("＝＝＝to do list＝＝＝")
     print("second trace time shift ")
     print("current problem is that missmatch of trace switch and image switch. sharing view active switch is also problem. ")
+    print("syc to every dict for a view. ")
     print("")
