@@ -7,7 +7,7 @@ Created on Wed Sep 27 11:47:25 2023
 
 from abc import ABCMeta, abstractmethod
 from SCANDATA.model.value_object import FramesData, ImageData, TraceData
-from SCANDATA.model.file_io import TsmFileIo
+from SCANDATA.model.file_io import TsmFileIo, DaFileIo
 
 """
 Entity
@@ -37,7 +37,7 @@ class Experiments:   # entity
         if filename_obj.extension == ".tsm":
             return TsmBuilderFactory()
         elif filename_obj.extension == ".da":
-            raise NotImplementedError()
+            return DaBuilderFactory()
         else:
             raise Exception("This file is an undefineded file!!!")
             
@@ -95,6 +95,10 @@ class BuilderFactory(metaclass=ABCMeta):
 class TsmBuilderFactory(BuilderFactory):
     def create_builder(self, filename_obj):
         return TsmBuilder(filename_obj)
+    
+class DaBuilderFactory(BuilderFactory):
+    def create_builder(self, filename_obj):
+        return DaBuilder(filename_obj)
 
 
 class Builder(metaclass=ABCMeta):
@@ -131,7 +135,6 @@ class TsmBuilder(Builder):
         for num in range(self.num_elec_ch):
             self.default_data.append("ELEC" + str(num+1))  # see self.get_trace
 
-        
         infor_keys = ["FULL_INTERVAL"]
         for idx in range(self.num_ch):
             infor_keys.append(f"CH{idx + 1}_INTERVAL")
@@ -150,6 +153,66 @@ class TsmBuilder(Builder):
         
         del file_io   # release the io object to allow file changes during recording.
         print("----- TsmBulder: The .tsm file was imported and the file_io object was deleted.")
+        print("")
+        
+    def get_infor(self):
+        return self.data_infor_dict
+        
+    # make data_dict {data_key: FrameData}  {"FULL": data, "CH1": data ......}
+    def get_frame(self) -> dict:  # change to numpy to value obj
+        data = {"FULL": FramesData(self.frames[0], 
+                                   self.data_infor_dict["FULL_INTERVAL"])}
+        for idx in range(self.num_ch):
+            data[f"CH{idx + 1}"] = FramesData(self.frames[idx + 1], 
+                                   self.data_infor_dict[f"CH{idx + 1}_INTERVAL"])    # change to numpy to value obj
+        print(f"Frames data = {data.keys()}")
+        return data
+
+    def get_image(self):
+        print("----- There is no image data")
+        return None
+    
+    # make data_dict {data_key: TraceData}  {"ELEC1": data, ""ELEC2": data ......}
+    def get_trace(self):
+        data = {}
+        for idx in range(self.num_elec_ch):
+            data[f"ELEC{idx + 1}"] = TraceData(self.elec_data[idx], 
+                                          self.data_infor_dict[f"ELEC{idx + 1}_INTERVAL"])    # change to numpy to value obj
+        print(f"Trace data = {data.keys()}")
+        return data
+    
+    def default(self):
+        return self.default_controller, self.default_data
+
+class DaBuilder(Builder):
+    def __init__(self, filename_obj):
+        self.num_ch = 2   # this is for Na+ and Ca2+ recording.
+        self.num_elec_ch = 8
+        self.default_controller = ["ROI", "ROI", "IMAGE_CONTROLLER", "TRACE_CONTROLLER"] 
+        self.default_data = ["FULL"]
+        for num in range(self.num_ch):
+            self.default_data.append("CH" + str(num+1))
+        for num in range(self.num_elec_ch):
+            self.default_data.append("ELEC" + str(num+1))  # see self.get_trace
+
+        infor_keys = ["FULL_INTERVAL"]
+        for idx in range(self.num_ch):
+            infor_keys.append(f"CH{idx + 1}_INTERVAL")
+        for idx in range(self.num_elec_ch):
+           infor_keys.append(f"ELEC{idx + 1}_INTERVAL")
+
+        file_io = DaFileIo(filename_obj, self.num_ch)
+        
+        # get and set data from files
+        data_infor = file_io.get_infor()   # get interval infor from the io
+        self.data_infor_dict = dict(zip(infor_keys, data_infor))   # make an interval dict
+        self.frames = file_io.get_3d()
+        self.elec_data = file_io.get_1d()
+        
+        #file_io.print_data_infor()
+        
+        del file_io   # release the io object to allow file changes during recording.
+        print("----- DaBulder: The .da file was imported and the file_io object was deleted.")
         print("")
         
     def get_infor(self):
