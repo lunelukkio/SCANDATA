@@ -175,9 +175,9 @@ class TsmBuilder(Builder):
     # make data_dict {data_key: TraceData}  {"ELEC1": data, ""ELEC2": data ......}
     def get_trace(self):
         data = {}
-        for idx in range(self.num_elec_ch):
-            data[f"ELEC{idx + 1}"] = TraceData(self.elec_data[idx], 
-                                          self.data_infor_dict[f"ELEC{idx + 1}_INTERVAL"])    # change to numpy to value obj
+        for ch in range(self.num_elec_ch):
+            data[f"ELEC{ch + 1}"] = TraceData(self.elec_data[:, ch], 
+                                          self.data_infor_dict[f"ELEC{ch + 1}_INTERVAL"])    # change to numpy to value obj
         print(f"Trace data = {data.keys()}")
         return data
     
@@ -192,24 +192,16 @@ class DaBuilder(Builder):
         self.default_data = ["FULL"]
         for num in range(self.num_ch):
             self.default_data.append("CH" + str(num+1))
-            
-            
-            
-            
-            
-        #for num in range(self.num_elec_ch):
-            #self.default_data.append("ELEC" + str(num+1))  # see self.get_trace
+
+        for num in range(self.num_elec_ch):
+            self.default_data.append("ELEC" + str(num+1))  # see self.get_trace
 
         infor_keys = ["FULL_INTERVAL"]
         for idx in range(self.num_ch):
             infor_keys.append(f"CH{idx + 1}_INTERVAL")
-            
-            
-            
-            
-            
-        #for idx in range(self.num_elec_ch):
-        #   infor_keys.append(f"ELEC{idx + 1}_INTERVAL")
+  
+        for idx in range(self.num_elec_ch):
+           infor_keys.append(f"ELEC{idx + 1}_INTERVAL")
 
         file_io = DaFileIo(filename_obj, self.num_ch)
         
@@ -218,6 +210,7 @@ class DaBuilder(Builder):
         self.data_infor_dict = dict(zip(infor_keys, data_infor))   # make an interval dict
         self.frames = file_io.get_3d()
         self.elec_data = file_io.get_1d()
+        print(self.data_infor_dict)
         
         #file_io.print_data_infor()
         
@@ -245,9 +238,9 @@ class DaBuilder(Builder):
     # make data_dict {data_key: TraceData}  {"ELEC1": data, ""ELEC2": data ......}
     def get_trace(self):
         data = {}
-        for idx in range(self.num_elec_ch):
-            data[f"ELEC{idx + 1}"] = TraceData(self.elec_data[idx], 
-                                          self.data_infor_dict[f"ELEC{idx + 1}_INTERVAL"])    # change to numpy to value obj
+        for ch in range(self.num_elec_ch):
+            data[f"ELEC{ch + 1}"] = TraceData(self.elec_data[:, ch], 
+                                          self.data_infor_dict[f"ELEC{ch + 1}_INTERVAL"])    # change to numpy to value obj
         print(f"Trace data = {data.keys()}")
         return data
     

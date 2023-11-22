@@ -110,6 +110,7 @@ class TsmFileIo:
             full_with_dark_frame = np.fliplr(full_with_dark_frame)
             self.full_frames = full_with_dark_frame[:, :, 0:-1]
             self.dark_frame = full_with_dark_frame[:, :, -1]
+            # subtract a dark frame from every full frames.
             self.full_frames = self.full_frames - self.dark_frame[:, :, np.newaxis]
 
             self.ch_frames = self.split_frames(self.full_frames, self.num_fluo_ch)
@@ -144,12 +145,14 @@ class TsmFileIo:
         return data_infor
     
     def get_3d(self) -> tuple:
+        print("0000000000000000000000")
+        print(type(self.full_frames))
         return self.full_frames, self.ch_frames[:,:,:,0], self.ch_frames[:,:,:,1]
     
     def get_2d(self):
         return []
     
-    def get_1d(self):
+    def get_1d(self) -> list:
         data_1d = self.elec_data_obj.get_data()
         return data_1d
         
@@ -233,11 +236,7 @@ class TbnFileIo:
         return self.elec_interval     
        
     def get_data(self):
-        elec_data = []
-        for i in range(0,8):
-            elec_data.append(self.elec_trace[:,i])  # [data, ch]
-        return elec_data 
-    
+        return self.elec_trace 
             
     def print_data_infor(self):
         print('elec_header = ' + str(self.elec_header))
@@ -291,8 +290,11 @@ class DaFileIo:
                 # redshirt data format
                 # http://www.redshirtimaging.com/support/dfo.html
                 
+                binary_data = f.read()
+                
                 """ read imaging infor """
-                self.header = np.frombuffer(f.read(2560), dtype=np.int16)  # header is first 5120 bytes (2560 integers)
+                self.header = np.frombuffer(binary_data[:5120], dtype=np.int16)  # header is first 5120 bytes (2560 integers)
+                read_data_byte = self.header.nbytes
                 #str_header = self.header.decode()
 
                 # x pixel.  97th Integer-6408 80*80+8?
@@ -317,37 +319,48 @@ class DaFileIo:
                                               self.num_full_frames//self.num_fluo_ch)
                 
                 """ read imaging data"""
-                file_dtype = np.int16
                 # data 80*80*100
                 pixel_count = (self.data_pixel[0] *
                                self.data_pixel[1] *
                                self.num_full_frames)
 
-                # read data from a file
-                full_frame = np.frombuffer(f.read(pixel_count*2), dtype=file_dtype)
+                # read data from a file. 5120=header byte. 
+                full_frame = np.frombuffer(binary_data[read_data_byte:pixel_count*2+read_data_byte], dtype=np.int16)
+                read_data_byte = read_data_byte + full_frame.nbytes
                 # container size
                 full_framesize = tuple(self.full_3D_size)  #without dark frame
-                # make a full and darkframe data.
-                full_frame = full_frame.reshape(full_framesize, order = 'F')
-                full_frame = np.rot90(full_frame, 3)
-                self.full_frames = np.fliplr(full_frame)
+                # make a full data.
+                self.full_frames = full_frame.reshape(full_framesize, order = 'F')
+                #self.full_frames = np.rot90(self.full_frames, 3)
+                #self.full_frames = np.fliplr(self.full_frames)
 
                 # spilit ch data
                 self.ch_frames = self.split_frames(self.full_frames, self.num_fluo_ch)
-                """
+
                 # read elec data
                 self.num_elec_ch = 8  # fixed
                 self.bnc_ratio = self.header[391]
                 self.elec_interval = self.full_frame_interval/self.bnc_ratio
                 self.num_elec_data = self.num_full_frames * self.bnc_ratio
                 self.elec_trace = np.empty([self.num_elec_data, 8])  # = [data, ch]
+
                 for ch in range(8):
-                    self.elec_trace[: ,ch] = np.frombuffer(f.read(self.num_elec_data), dtype=file_dtype)
-                    #print(elec)
-                    #self.elec_trace[:, ch] = elec*1000/32678  # convert AtoD values to mV
-                print("4444444444444444444444444444444444444")
-                print(self.elec_trace)
-                """
+                    data = np.frombuffer(binary_data[read_data_byte:read_data_byte+self.num_elec_data*2], dtype=np.int16)
+                    read_data_byte = read_data_byte + data.nbytes
+                    data = data/32678
+                    data = data*1000  # convert AtoD values to mV
+                    self.elec_trace[: ,ch] = data
+                    
+                # make dark frame
+                self.dark_frame = np.frombuffer(binary_data[read_data_byte:read_data_byte+self.data_pixel[0]*self.data_pixel[1]])
+                
+                # make full frames subtructed by a dark frame
+                print("dddddddddddddddddddddddddddddddddddddddddddddddddddddddd dark frame")
+                print(self.dark_frame)
+                problem   !!!!!!!!!!!!!!!!
+                self.full_frames = self.full_frames - self.dark_frame[:, :, np.newaxis]
+
+                
         except IndexError as da_error:
             print(da_error)
             print('------------------------------------')
@@ -371,17 +384,10 @@ class DaFileIo:
         data_infor = [self.full_frame_interval]
         for i in range(self.num_fluo_ch):
             data_infor.extend([self.ch_frame_interval])
-            
-            
-            
-            
-            
-        """
-        elec_interval = self.elec_data_obj.get_infor()
-        for i in range(self.elec_data_obj.num_elec_ch):
-            data_infor.extend([elec_interval])
+
+        for i in range(8):
+            data_infor.extend([self.elec_interval ])
         return data_infor
-        """
     
     def get_3d(self) -> tuple:
         return self.full_frames, self.ch_frames[:,:,:,0], self.ch_frames[:,:,:,1]
@@ -390,10 +396,7 @@ class DaFileIo:
         return []
     
     def get_1d(self):
-        elec_data = []
-        for i in range(0,8):
-            elec_data.append(self.elec_trace[:,i])  # [data, ch]
-        return elec_data 
+        return self.elec_trace 
         
     def print_data_infor(self):
         #print(self.header.decode())
@@ -408,56 +411,3 @@ class DaFileIo:
         print('data_pixel = ' + str(self.data_pixel))
     
 
-
-
-
-
-"""     
-            # read elec data
-            pre_raw_elec = np.fromfile(elec_full_filename, np.float64, offset=4)
-            self.elec_trace = pre_raw_elec.reshape(self.num_elec_data, 
-                                               self.num_elec_ch, 
-                                               order = 'F')
-            
-            # scale set
-            self.elec_trace[:, 0] = (self.elec_trace[:, 0]/10)*1000  # The amp output is Vm*10, and V to mV
-            self.elec_trace[:, 1] = (self.elec_trace[:, 1]*2)*1000  # Output of MaltiClamp700A is 0.5V/nA, and V to pA
-            self.elec_trace[:, 2] = (self.elec_trace[:, 2]/10)*1000
-            self.elec_trace[:, 3] = (self.elec_trace[:, 3]/10)*1000
-            self.elec_trace[:, 4] = (self.elec_trace[:, 4]/10)*1000
-            self.elec_trace[:, 5] = (self.elec_trace[:, 5]/10)*1000
-            self.elec_trace[:, 6] = (self.elec_trace[:, 6]/10)*1000
-            self.elec_trace[:, 7] = (self.elec_trace[:, 7]/10)*1000
-            
-        except OSError as e:
-            print(e)
-            print('----------------------------------')
-            print('Failed to import a .tbn (Tsm) file')
-            print('----------------------------------')
-            raise Exception('Failed to import a .tbn (Tsm) data.')
-            
-        else:
-            print('Imported a .tbn(.tsm) elec data file.')
-       
-    def get_infor(self):
-        return self.elec_interval     
-       
-    def get_data(self):
-        elec_data = []
-        for i in range(0,8):
-            elec_data.append(self.elec_trace[:,i])  # [data, ch]
-        return elec_data 
-    
-            
-    def print_data_infor(self):
-        print('elec_header = ' + str(self.elec_header))
-        print('filenmae = ' + self.full_filename)
-        print('bnc_ratio = ' + str(self.bnc_ratio))
-        print('num_elec_ch = ' + str(self.num_elec_ch))
-        print('elec_interval = ' + str(self.elec_interval))
-        print('num_elec_data = ' + str(self.num_elec_data))
-        
-    def dark_frame(self):
-        self.dark_frame = full_frame[:, :, -1]
-        
-"""
