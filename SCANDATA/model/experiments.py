@@ -192,14 +192,24 @@ class DaBuilder(Builder):
         self.default_data = ["FULL"]
         for num in range(self.num_ch):
             self.default_data.append("CH" + str(num+1))
-        for num in range(self.num_elec_ch):
-            self.default_data.append("ELEC" + str(num+1))  # see self.get_trace
+            
+            
+            
+            
+            
+        #for num in range(self.num_elec_ch):
+            #self.default_data.append("ELEC" + str(num+1))  # see self.get_trace
 
         infor_keys = ["FULL_INTERVAL"]
         for idx in range(self.num_ch):
             infor_keys.append(f"CH{idx + 1}_INTERVAL")
-        for idx in range(self.num_elec_ch):
-           infor_keys.append(f"ELEC{idx + 1}_INTERVAL")
+            
+            
+            
+            
+            
+        #for idx in range(self.num_elec_ch):
+        #   infor_keys.append(f"ELEC{idx + 1}_INTERVAL")
 
         file_io = DaFileIo(filename_obj, self.num_ch)
         

@@ -272,18 +272,26 @@ class DaFileIo:
         
         self.object_num = 0  # for counter
         
-        # read data
-        self.read_infor()
-        self.read_data()
-        self.elec_data_obj = DaElecFileIo(filename, 
-                                   self.full_frame_interval, 
-                                   self.num_full_frames)
+        # about elec
+        self.elec_header = 0
+        self.elec_trace = None
+        self.bnc_ratio = 0
+        self.num_elec_ch = 0
+        self.elec_interval = 0
+        self.num_elec_data = 0
         
-    def read_infor(self):
+        self.object_num = 0  # for counter
+        
+        # read data
+        self.read_data()
+            
+    def read_data(self):
         try:
             with open(self.full_filename, 'rb') as f:
                 # redshirt data format
                 # http://www.redshirtimaging.com/support/dfo.html
+                
+                """ read imaging infor """
                 self.header = np.frombuffer(f.read(2560), dtype=np.int16)  # header is first 5120 bytes (2560 integers)
                 #str_header = self.header.decode()
 
@@ -298,7 +306,7 @@ class DaFileIo:
                 self.num_full_frames = np.array(self.header[4])  # 5th Integer
                 self.num_ch_frames = self.num_full_frames // self.num_fluo_ch
                 #Frame Interval (msec per frame) (Number of Pixels*4th Integer)/20000.0 ???
-                self.full_frame_interval = self.header[388]/1000
+                self.full_frame_interval = self.header[388]/1000  # ms
                 
                 self.ch_frame_interval = self.full_frame_interval*self.num_fluo_ch
                 
@@ -307,48 +315,39 @@ class DaFileIo:
                                                 self.num_full_frames)
                 self.ch_3D_size = np.append(self.data_pixel, 
                                               self.num_full_frames//self.num_fluo_ch)
+                
+                """ read imaging data"""
+                file_dtype = np.int16
+                # data 80*80*100
+                pixel_count = (self.data_pixel[0] *
+                               self.data_pixel[1] *
+                               self.num_full_frames)
 
-        except OSError as file_infor_error:
-            print(file_infor_error)
-            print('----------------------------------')
-            print('Failed to import a NeuroPlex file infor.')
-            print('----------------------------------')
-            raise Exception('Failed to import a NeuroPlex infor.')
-            
-        else:
-            print('Imported a NeuroPlex file infor.')
-            
-    def read_data(self):
-        try:
-            # read shirt camera header information
-            # https://fits.gsfc.nasa.gov/fits_primer.html
-            file_dtype = np.int16
-            path = self.full_filename
-            # data 80*80*100 + darkframe 80*80
-            pixel_count = (self.data_pixel[0] *
-                           self.data_pixel[1] *
-                           self.num_full_frames) + (
-                           self.data_pixel[0] *
-                           self.data_pixel[1])
+                # read data from a file
+                full_frame = np.frombuffer(f.read(pixel_count*2), dtype=file_dtype)
+                # container size
+                full_framesize = tuple(self.full_3D_size)  #without dark frame
+                # make a full and darkframe data.
+                full_frame = full_frame.reshape(full_framesize, order = 'F')
+                full_frame = np.rot90(full_frame, 3)
+                self.full_frames = np.fliplr(full_frame)
 
-            # read data from a file
-            full_with_dark_frame = np.fromfile(path, dtype=file_dtype,
-                                          count=pixel_count,
-                                            offset=2560)
-            # container size
-            full_dark_framesize = tuple(self.full_3D_size + [0, 0, 1] )  #including dark frame
-            # make a full and darkframe data.
-            full_with_dark_frame = full_with_dark_frame.reshape(full_dark_framesize,
-                                                                order = 'F')
-            full_with_dark_frame = np.rot90(full_with_dark_frame, 3)
-            full_with_dark_frame = np.fliplr(full_with_dark_frame)
-            # get data and a darkframe
-            self.full_frames = full_with_dark_frame[:, :, 0:-1]
-            self.dark_frame = full_with_dark_frame[:, :, -1]
-            self.full_frames = self.full_frames - self.dark_frame[:, :, np.newaxis]
-            # spilit ch data
-            self.ch_frames = self.split_frames(self.full_frames, self.num_fluo_ch)
-
+                # spilit ch data
+                self.ch_frames = self.split_frames(self.full_frames, self.num_fluo_ch)
+                """
+                # read elec data
+                self.num_elec_ch = 8  # fixed
+                self.bnc_ratio = self.header[391]
+                self.elec_interval = self.full_frame_interval/self.bnc_ratio
+                self.num_elec_data = self.num_full_frames * self.bnc_ratio
+                self.elec_trace = np.empty([self.num_elec_data, 8])  # = [data, ch]
+                for ch in range(8):
+                    self.elec_trace[: ,ch] = np.frombuffer(f.read(self.num_elec_data), dtype=file_dtype)
+                    #print(elec)
+                    #self.elec_trace[:, ch] = elec*1000/32678  # convert AtoD values to mV
+                print("4444444444444444444444444444444444444")
+                print(self.elec_trace)
+                """
         except IndexError as da_error:
             print(da_error)
             print('------------------------------------')
@@ -358,7 +357,7 @@ class DaFileIo:
             
         else:
             print('Imported a NeuroPlex imaging data.')
-            
+           
     @staticmethod
     def split_frames(frames, num_ch):
         ch_frames = np.empty([frames.shape[0], frames.shape[1], frames.shape[2]//num_ch, num_ch])
@@ -372,10 +371,17 @@ class DaFileIo:
         data_infor = [self.full_frame_interval]
         for i in range(self.num_fluo_ch):
             data_infor.extend([self.ch_frame_interval])
+            
+            
+            
+            
+            
+        """
         elec_interval = self.elec_data_obj.get_infor()
         for i in range(self.elec_data_obj.num_elec_ch):
             data_infor.extend([elec_interval])
         return data_infor
+        """
     
     def get_3d(self) -> tuple:
         return self.full_frames, self.ch_frames[:,:,:,0], self.ch_frames[:,:,:,1]
@@ -384,8 +390,10 @@ class DaFileIo:
         return []
     
     def get_1d(self):
-        data_1d = self.elec_data_obj.get_data()
-        return data_1d
+        elec_data = []
+        for i in range(0,8):
+            elec_data.append(self.elec_trace[:,i])  # [data, ch]
+        return elec_data 
         
     def print_data_infor(self):
         #print(self.header.decode())
@@ -398,47 +406,13 @@ class DaFileIo:
         print('full_3D_size = ' + str(self.full_3D_size))
         print('ch_3D_size = ' + str(self.ch_3D_size))
         print('data_pixel = ' + str(self.data_pixel))
-
-        
-class DaElecFileIo:
-    def __init__(self, filename, full_frame_interval, num_full_frames):
-        # about file
-        self.filename = filename.name
-        self.file_path = filename.path
-        self.full_filename = filename.fullname
-        
-        # from a .da file
-        self.full_frame_interval = full_frame_interval
-        self.num_full_frames = num_full_frames
-        
-        # about elec
-        self.elec_header = 0
-        self.elec_trace = np.empty([0, 0])  # = [data, ch]
-        self.bnc_ratio = 0
-        self.num_elec_ch = 0
-        self.elec_interval = 0
-        self.num_elec_data = 0
-        
-        self.object_num = 0  # for counter
-        
-        # read data
-        self.read_data()
     
-    def read_data(self):  # from .tbn files
-        try:
-            with open(self.full_filename, 'rb') as f:
-                elec_full_filename = self.full_filename
-                # redshirt data format
-                # http://www.redshirtimaging.com/support/dfo.html
-                self.elec_header = np.frombuffer(f.read(2560), dtype=np.int16)  # header is first 5120 bytes (2560 integers)
-                with np.printoptions(threshold=np.inf):
-                    print(self.elec_header)
 
-            self.num_elec_ch = elec_header_list[0] * -1
-            self.bnc_ratio = elec_header_list[1]
-            self.elec_interval = self.full_frame_interval/self.bnc_ratio
-            self.num_elec_data = self.num_full_frames * self.bnc_ratio
-            
+
+
+
+
+"""     
             # read elec data
             pre_raw_elec = np.fromfile(elec_full_filename, np.float64, offset=4)
             self.elec_trace = pre_raw_elec.reshape(self.num_elec_data, 
@@ -483,4 +457,7 @@ class DaElecFileIo:
         print('elec_interval = ' + str(self.elec_interval))
         print('num_elec_data = ' + str(self.num_elec_data))
         
-
+    def dark_frame(self):
+        self.dark_frame = full_frame[:, :, -1]
+        
+"""
