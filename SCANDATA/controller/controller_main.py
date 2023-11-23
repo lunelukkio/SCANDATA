@@ -153,12 +153,12 @@ class FileService:
         # open file dialog
         fullname = tk.filedialog.askopenfilename(
             initialdir = os.getcwd(), # current dir
-            filetypes=(('Tsm files', '*.tsm'),
+            filetypes=(('All files', '*.*'), 
+                       ('Tsm files', '*.tsm'),
                        ('Da files', '*.da'), 
                        ('Axon files', '*.abf'),
-                       ('WinCP files', '*.wcp'),
-                       ('All files', '*.*'))
-                      )
+                       ('WinCP files', '*.wcp')
+                      ))
         return fullname
     
 

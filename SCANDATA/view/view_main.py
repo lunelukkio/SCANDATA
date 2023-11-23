@@ -303,7 +303,7 @@ class DataWindow(tk.Frame):
         self.update_ax(3)  # 3 = draw whole ax
         
         # set image view doesn't update
-        self.ax_list[0].change_update_switch(False)
+        self.ax_list[0].change_update_switch(True)
         self.ax_list[1].change_update_switch(True)
         self.ax_list[2].change_update_switch(True)
         
@@ -320,27 +320,26 @@ class DataWindow(tk.Frame):
         # set mod
         self.__controller.set_mod_key("ROI2", "BGCOMP")
         """
-        
-        # hide background ROI from the image axis.
-        self.ax_list[1].set_active_controller_key("ROI1", False)  # to remove background roi
-        # hide images from the image axis
-        self.ax_list[0].select_ch("IMAGE_CONTROLLER1", "FULL", False)  # to remove FULL image data
-        self.ax_list[0].select_ch("IMAGE_CONTROLLER1", "CH2", False)  # to remove CH2 image data
-
-        #hide elec traces from the fluo axis
-        for ch in range(1, 9):
-            self.ax_list[1].select_ch("TRACE_CONTROLLER1", "ELEC" + str(ch), False)  # to remove FULL image data
-            
+        # hide background ROI.
+        for ax in range(2):
+            self.ax_list[ax].set_active_controller_key("ROI1", False)  # to remove background roi
         # hide fluo trace from elec axis
         self.ax_list[2].set_active_controller_key("ROI1", False)
         self.ax_list[2].set_active_controller_key("ROI2", False)
-        # hide #2 ~ #8 elec traces from the elec axis
-        for ch in range(2, 9):
-            self.ax_list[2].select_ch("TRACE_CONTROLLER1", "ELEC" + str(ch), False)  # to remove FULL image data
-        
+        # hide images from the image axis
+        self.ax_list[0].select_ch("IMAGE_CONTROLLER1", "FULL", False)  # to remove FULL image data
+        self.ax_list[0].select_ch("IMAGE_CONTROLLER1", "CH2", False)  # to remove CH2 image data
         # hide traces from the fluo trace axis
         self.ax_list[1].select_ch("ROI2", "FULL", False)  # to remove FULL trace data
         self.ax_list[1].select_ch("ROI2", "CH2", False)  # to remove FULL trace data
+        #hide elec traces from the fluo axis
+        for ch in range(1, 9):
+            self.ax_list[0].select_ch("TRACE_CONTROLLER1", "ELEC" + str(ch), False)  # to remove FULL image data
+        for ch in range(1, 9):
+            self.ax_list[1].select_ch("TRACE_CONTROLLER1", "ELEC" + str(ch), False)  # to remove FULL image data
+        # hide #2 ~ #8 elec traces from the elec axis
+        for ch in range(2, 9):
+            self.ax_list[2].select_ch("TRACE_CONTROLLER1", "ELEC" + str(ch), False)  # to remove FULL image data
         
         # set current controller list
         self.__controller.set_operating_controller_list("ROI2")
@@ -405,6 +404,8 @@ class DataWindow(tk.Frame):
         for ax_num in range(2):
             for operating_controller_key in operating_controller_list:
                 self.ax_list[ax_num].select_ch(operating_controller_key, data_key)
+        # need refactoring. Each ax need operating_controller_list???
+        self.ax_list[0].select_ch("IMAGE_CONTROLLER1", data_key)
         print('')
         # each axis window have own a dictionaly for drawing.
         

@@ -5,6 +5,7 @@ Created on Tue Sep 12 17:20:25 2023
 @author: lunelukkio@gmail.com
 """
 import numpy as np
+import matplotlib.pyplot as plt
     
 class TsmFileIo:
     #load a .tsn file
@@ -145,8 +146,6 @@ class TsmFileIo:
         return data_infor
     
     def get_3d(self) -> tuple:
-        print("0000000000000000000000")
-        print(type(self.full_frames))
         return self.full_frames, self.ch_frames[:,:,:,0], self.ch_frames[:,:,:,1]
     
     def get_2d(self):
@@ -325,18 +324,16 @@ class DaFileIo:
                                self.num_full_frames)
 
                 # read data from a file. 5120=header byte. 
-                full_frame = np.frombuffer(binary_data[read_data_byte:pixel_count*2+read_data_byte], dtype=np.int16)
-                read_data_byte = read_data_byte + full_frame.nbytes
+                pre_frames = np.frombuffer(binary_data[read_data_byte:pixel_count*2+read_data_byte], dtype=np.int16)
+                read_data_byte = read_data_byte + pre_frames.nbytes
                 # container size
                 full_framesize = tuple(self.full_3D_size)  #without dark frame
                 # make a full data.
-                self.full_frames = full_frame.reshape(full_framesize, order = 'F')
-                #self.full_frames = np.rot90(self.full_frames, 3)
-                #self.full_frames = np.fliplr(self.full_frames)
+                pre_full_frames = pre_frames.reshape(full_framesize, order = 'C')
+                #pre_full_frames = np.rot90(self.full_frames, 3)
+                #pre_full_frames = np.fliplr(self.full_frames)
 
-                # spilit ch data
-                self.ch_frames = self.split_frames(self.full_frames, self.num_fluo_ch)
-
+                """ read elec data """
                 # read elec data
                 self.num_elec_ch = 8  # fixed
                 self.bnc_ratio = self.header[391]
@@ -351,14 +348,18 @@ class DaFileIo:
                     data = data*1000  # convert AtoD values to mV
                     self.elec_trace[: ,ch] = data
                     
+                """ read dark frame """
                 # make dark frame
-                self.dark_frame = np.frombuffer(binary_data[read_data_byte:read_data_byte+self.data_pixel[0]*self.data_pixel[1]])
+                pre_dark_frame = np.frombuffer(binary_data[read_data_byte:read_data_byte+self.data_pixel[0]*self.data_pixel[1]*2], dtype=np.int16)
+                # dark frame reshape
+                self.dark_frame = pre_dark_frame.reshape(self.data_pixel[0], self.data_pixel[1])
                 
                 # make full frames subtructed by a dark frame
-                print("dddddddddddddddddddddddddddddddddddddddddddddddddddddddd dark frame")
-                print(self.dark_frame)
-                problem   !!!!!!!!!!!!!!!!
-                self.full_frames = self.full_frames - self.dark_frame[:, :, np.newaxis]
+                self.full_frames = pre_full_frames - self.dark_frame[:, :, np.newaxis]
+                
+                # spilit ch data
+                self.ch_frames = self.split_frames(self.full_frames, self.num_fluo_ch)
+
 
                 
         except IndexError as da_error:
