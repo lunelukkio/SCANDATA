@@ -36,6 +36,9 @@ class Experiments:   # entity
     def __factory_selector(self, filename_obj):
         if filename_obj.extension == ".tsm":
             return TsmBuilderFactory()
+        elif filename_obj.extension == ".tbn":
+            
+            print("Select .tsm instead of .tbn")
         elif filename_obj.extension == ".da":
             return DaBuilderFactory()
         else:
