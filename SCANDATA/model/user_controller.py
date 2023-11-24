@@ -42,7 +42,7 @@ class UserController(metaclass=ABCMeta):
     def __init__(self):
         self._data_dict = {}  # data dict = {full:TraceData_value obj,ch1:TraceData,ch2:TraceData}
         self.observer = ControllerObserver()
-        self._mod_list = []
+        self.__mod_service = ModService()
         #self._mod_service = ModService()
         self._val_obj = None
         
@@ -52,28 +52,24 @@ class UserController(metaclass=ABCMeta):
         #pass
         
     @abstractmethod
-    def set_controller_val(self, val_list:list):
+    def set_controller_val(self, val_list:list):  # e.g. roi value
         raise NotImplementedError()
         
     @abstractmethod
-    def set_controller_data(self, experiments_obj): 
+    def set_controller_data(self, experiments_obj):  # get controller values from experiments
         raise NotImplementedError()
         
-    @abstractmethod
-    def _get_val(self, val_list:list):  # get controller values from experiments
-        raise NotImplementedError()
-        
-    def get_controller_data(self):
+    def get_controller_data(self):  # get a dictionary which has trace or image or etc data.
         return self._data_dict
-    
-    def get_mod_list(self):
-        return self._mod_list
 
     def set_observer(self, observer):
         self.observer.set_observer(observer)
-        
+    
+    def get_mod_list(self):
+        return self.__mod_service.get_mod_list()
+
     def set_mod_key(self, mod_key):
-        self._mod_list.append(mod_key)
+        self.__mod_servise.set_mod(mod_key)
 
     # return data dict keys with "True" without data. This is for view ax.
     def get_infor(self) -> dict:

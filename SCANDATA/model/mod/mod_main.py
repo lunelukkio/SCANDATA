@@ -12,10 +12,10 @@ Chain of responsibility client
 """
 
 class ModService:  # Put every mods. Don't need to sepalate mods for each data type..
-    def __init__(self, get_controller_data_method):
-        #self.mod_list = []
+    def __init__(self):
+        self.__mod_list = []
         
-        self.bg_comp = BgCompMod(get_controller_data_method) 
+        self.bg_comp = BgCompMod() 
         self.df_over_f = DFOverFMod()
         self.normalize = Normalize()
         self.error_mod = ErrorMod()
@@ -49,6 +49,12 @@ class ModService:  # Put every mods. Don't need to sepalate mods for each data t
         # This need refactoring. self,bg_comp shold be gotton by mod finding method.
         self.bg_comp.set_mod_val(controller_key, filename_key)
         
+    def get_mod_list(self):
+        return self.__mod_list
+    
+    def set_mod_list(self, mod_key):
+        self.__mod_list.append(mod_key)
+        
 """
 Handler
 """
@@ -71,10 +77,10 @@ ConcreteHandler
 """
 
 class BgCompMod(ModHandler):
-    def __init__(self, get_controller_data_method):
+    def __init__(self):
         super().__init__()
         self.trace_calc = TraceCalculation()
-        self.__get_controller_data = get_controller_data_method
+        self.bg_roi = None
         self.__bg_dict = None
         
     def apply_mod(self, mod_key, original_data, data_key):
@@ -94,6 +100,9 @@ class BgCompMod(ModHandler):
             bg_trace = None
         return bg_trace
     
+    def set_bg_roi(self, bg_roi):
+        self.bg_roi = bg_roi
+    
     def handle_request(self, request):
         if request < 10:
             print("Request {} is handled by ConcreteHandlerA".format(request))
@@ -101,9 +110,8 @@ class BgCompMod(ModHandler):
             self.next_handler.handle_request(request)
             
     def set_mod_val(self, controller_key: str, filename_key):
-         controller_dict = self.__get_controller_data(controller_key)
+         controller_dict =  self.bg_roi.get_controller_data()
          self.__bg_dict = controller_dict[filename_key]
-
 
 
 class DFOverFMod(ModHandler):

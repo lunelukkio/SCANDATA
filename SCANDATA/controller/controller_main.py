@@ -46,6 +46,13 @@ class ViewController:
     def create_user_controller(self, controller_key):
         new_key = self.__model.create_user_controller(controller_key)
         return new_key
+        
+    def get_data(self, controller_key):
+        data_dict = self.__model.get_controller_data(controller_key)
+        if data_dict is None:
+            print(f"Can't find data_dict in {controller_key}")
+        else:
+            return data_dict
 
     # put data to user controller data dict.
     def set_data(self, controller_key:str, data_key: str):
@@ -63,14 +70,7 @@ class ViewController:
         
     def set_mod_key(self, controller_key, mod_key):
         self.__model.set_mod_key(controller_key, mod_key)
-        
-    def get_data(self, controller_key):
-        data_dict = self.__model.get_controller_data(controller_key)
-        if data_dict is None:
-            print(f"Can't find data_dict in {controller_key}")
-        else:
-            return data_dict
-    
+
     def get_controller_infor(self, controller_key=None) -> dict:
         if controller_key is None:
             data_infor = self.__model.get_infor()
