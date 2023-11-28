@@ -10,7 +10,6 @@ from abc import ABCMeta, abstractmethod
 from SCANDATA.common_class import WholeFilename
 from SCANDATA.model.experiments import Experiments
 from SCANDATA.model.user_controller import RoiFactory, ImageControllerFactory, TraceControllerFactory
-from SCANDATA.model.mod.mod_main import ModService
 
 """
 Service
@@ -62,12 +61,12 @@ class ModelInterface(metaclass=ABCMeta):
 
     # set background controller to the mod class.
     @abstractmethod
-    def set_mod_val(self, key) -> None:
+    def set_mod_val(self, controller_key, mod_key) -> None:
         raise NotImplementedError()
     
     # set background controller to the mod class.
     @abstractmethod
-    def set_mod_key(self, key) -> None:
+    def set_mod_key(self, controller_key, mod_key) -> None:
         raise NotImplementedError()    
         
     # reset controller_val
@@ -188,16 +187,16 @@ class DataService(ModelInterface):
     def get_user_controller(self, controller_key):
         controller_key = controller_key.upper()
         return self.__user_controller_repository.data[controller_key]
-
-    def set_mod_val(self, mod_key, controller_key):
-        print("DataService.set_mod_val: Need refactoring. Delete current_filneame")
-        self.__mod_service.set_mod_val(mod_key, controller_key, self.__current_filename_obj.name)
         
-    def set_mod_key(self, controller_key, mod_key) -> None:  # set background controller to the mod class.
+    def set_mod_key(self,controller_key, mod_key) -> None:
         print(f"Set mod: {mod_key} in {controller_key}")
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
         controller.set_mod_key(mod_key)
+
+    def set_mod_val(self, controller_key, mod_key):
+        print("DataService.set_mod_val: Need refactoring. Delete current_filneame")
+        self.__mod_service.set_mod_val(mod_key, controller_key, self.__current_filename_obj.name)
     
     def reset(self, controller_key):
         controller_key = controller_key.upper()

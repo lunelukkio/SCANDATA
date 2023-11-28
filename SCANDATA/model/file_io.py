@@ -136,14 +136,9 @@ class TsmFileIo:
                ch_frames[:, :, j//num_ch, i] = frames[:, :, j]
         return ch_frames  # = [:,:,:,ch]
     
-    def get_infor(self) -> tuple:
-        data_infor = [self.full_frame_interval]
-        for i in range(self.num_fluo_ch):
-            data_infor.extend([self.ch_frame_interval])
+    def get_infor(self) -> list:
         elec_interval = self.elec_data_obj.get_infor()
-        for i in range(self.elec_data_obj.num_elec_ch):
-            data_infor.extend([elec_interval])
-        return data_infor
+        return [self.full_frame_interval]+[self.ch_frame_interval]*self.num_fluo_ch+[elec_interval]*self.elec_data_obj.num_elec_ch
     
     def get_3d(self) -> tuple:
         return self.full_frames, self.ch_frames[:,:,:,0], self.ch_frames[:,:,:,1]
@@ -381,14 +376,8 @@ class DaFileIo:
                ch_frames[:, :, j//num_ch, i] = frames[:, :, j]
         return ch_frames  # = [:,:,:,ch]
     
-    def get_infor(self) -> tuple:
-        data_infor = [self.full_frame_interval]
-        for i in range(self.num_fluo_ch):
-            data_infor.extend([self.ch_frame_interval])
-
-        for i in range(8):
-            data_infor.extend([self.elec_interval ])
-        return data_infor
+    def get_infor(self) -> list:
+         return [self.full_frame_interval]+[self.ch_frame_interval]*self.num_fluo_ch+[self.elec_interval]*8
     
     def get_3d(self) -> tuple:
         return self.full_frames, self.ch_frames[:,:,:,0], self.ch_frames[:,:,:,1]

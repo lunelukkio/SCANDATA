@@ -128,6 +128,7 @@ class MainView(tk.Frame):
 
     def open_file(self, event=None):
         filename_obj = self.__controller.open_file()
+        fullname = filename_obj.fullname
         self.__filename_obj_list.append(filename_obj)
         self.window.append(tk.Toplevel())
         self.data_window.append(DataWindow(self.window[len(self.window)-1], filename_obj))
@@ -315,7 +316,7 @@ class DataWindow(tk.Frame):
         
         """
         # set background roi to the mod class
-        self.__controller.set_mod_val("BgCompMod", "ROI1")
+        self.__controller.set_mod_val("ROI1", "BgCompMod")
         
         # set mod
         self.__controller.set_mod_key("ROI2", "BGCOMP")

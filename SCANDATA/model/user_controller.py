@@ -45,6 +45,7 @@ class UserController(metaclass=ABCMeta):
         self.__mod_service = ModService()
         #self._mod_service = ModService()
         self._val_obj = None
+        self.__mod_switch = True
         
     def __del__(self):  #make a message when this object is deleted.
         #print('.')
@@ -60,16 +61,18 @@ class UserController(metaclass=ABCMeta):
         raise NotImplementedError()
         
     def get_controller_data(self):  # get a dictionary which has trace or image or etc data.
-        return self._data_dict
+        if self.mod_switch is True:
+            # apply mod to data_dict
+            new_data_dict = {self.__mod_service.apply_mod(original_data) for original_data in self._data_dict }
+        else:
+            new_data_dict = self._data_dict
+        return new_data_dict
 
     def set_observer(self, observer):
         self.observer.set_observer(observer)
-    
-    def get_mod_list(self):
-        return self.__mod_service.get_mod_list()
 
     def set_mod_key(self, mod_key):
-        self.__mod_servise.set_mod(mod_key)
+        self.__mod_servise.set_mod_key(mod_key)
 
     # return data dict keys with "True" without data. This is for view ax.
     def get_infor(self) -> dict:
@@ -119,11 +122,8 @@ class Roi(UserController):
         for i in range(4):
             if roi_value_list[i] == None:
                 roi_value_list[i] = self._val_obj.data[i]
-        x = roi_value_list[0]
-        y = roi_value_list[1]
-        x_width = roi_value_list[2]
-        y_width = roi_value_list[3]
-        self._val_obj = RoiVal(x, y, x_width, y_width)  # replace the roi
+        self._val_obj = RoiVal(*roi_value_list[:4])  # replace the roi
+         
         print(f"set ROI: {self._val_obj.data}")
         
     def set_controller_data(self, experiments_obj): 
@@ -139,14 +139,10 @@ class Roi(UserController):
         roi_obj = self._val_obj
         # check value is correct
         self.__check_val(frames_obj, roi_obj)
-        # make raw trace data
-        x = roi_obj.data[0]
-        y = roi_obj.data[1]
-        x_width = roi_obj.data[2]
-        y_width = roi_obj.data[3]
+        # make raw trace data       
+        x, y, x_width, y_width = roi_obj.data[:4]
         
-        mean_data = np.mean(frames_obj.data[x:x+x_width, y:y+y_width, :], axis = 0) #slice end doesn't include to slice
-        mean_data = np.mean(mean_data, axis = 0)
+        mean_data = np.mean(frames_obj.data[x:x+x_width, y:y+y_width, :], axis = (0, 1)) #slice end doesn't include to slice
         # make a trace value object
         return TraceData(mean_data, frames_obj.interval)
         

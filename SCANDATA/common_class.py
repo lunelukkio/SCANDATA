@@ -24,17 +24,13 @@ class WholeFilename:  # Use it only in a view and controller
         
         self.__filename_list = self.__make_filename_list()
         
-    
     # List need A000-Z999 in the last of filenames
     def __make_filename_list(self) -> list:
-        find = '*' + str(self.__extension)
-        fullname_list = glob.glob(find)
-        filename_list = []
-        for i in range(len(fullname_list)):
-            filename_list.append(os.path.basename(fullname_list[i]))
+        
+        find = os.path.join(os.path.dirname(self.__abspath), '*' + str(self.__extension))
+        filename_list = [os.path.basename(f) for f in glob.glob(find)]
         return  filename_list
     
-
     def __del__(self):
         #print('.')
         #print('Deleted a ImageData object.' + '  myId= {}'.format(id(self)))

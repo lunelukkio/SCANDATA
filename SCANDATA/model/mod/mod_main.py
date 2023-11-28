@@ -25,35 +25,24 @@ class ModService:  # Put every mods. Don't need to sepalate mods for each data t
                               set_next(self.df_over_f). \
                               set_next(self.normalize). \
                               set_next(self.error_mod)
-                              
-    def set_dict_mod(self, mod_keys: list, data_dict: dict, filename_key):
-        print("ModService.set_dict_mod: Need refactoring. delete filename_key")
-        mod_data_dict = {filename_key:{}}
-        for data_key in data_dict[filename_key].keys():
-            mod_data = self.set_mod(mod_keys, data_dict[filename_key][data_key], data_key)
-            mod_data_dict[filename_key][data_key] = mod_data
-            print("yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy")
-            print(data_key)
-            print(mod_data_dict)
-        return mod_data_dict
         
-    def set_mod(self, mod_keys, original_data, data_key):
-        if mod_keys == []:
+    def apply_mod(self, original_data):
+        if self.__mod_list == []:
             mod_data = original_data
         else:
-            for mod_key in mod_keys:
-                mod_data = self.bg_comp.apply_mod(mod_key, original_data, data_key)
+            for mod_key in self.__mod_list:
+                mod_data = self.bg_comp.apply_mod(mod_key, original_data)
         return mod_data
-
-    def set_mod_val(self, mod_key, controller_key, filename_key):
-        # This need refactoring. self,bg_comp shold be gotton by mod finding method.
-        self.bg_comp.set_mod_val(controller_key, filename_key)
-        
-    def get_mod_list(self):
-        return self.__mod_list
     
-    def set_mod_list(self, mod_key):
-        self.__mod_list.append(mod_key)
+    def set_mod_key(self, mod_key):
+        if mod_key in self.__mod_list:
+            self.__mod_list.remove(mod_key)
+        elif mod_key not in self.__mod_list:
+            self.__mod_list.append(mod_key)
+            
+    def set_mod_val(self, mod_key, val):      
+        self.bg_comp.set_mod_val(mod_key, val)
+        
         
 """
 Handler
@@ -83,7 +72,7 @@ class BgCompMod(ModHandler):
         self.bg_roi = None
         self.__bg_dict = None
         
-    def apply_mod(self, mod_key, original_data, data_key):
+    def apply_mod(self, mod_key, original_data):
         mod_key = mod_key.upper()
         if mod_key == 'BGCOMP':
             bg_trace = self.__get_bg_trace(data_key)
@@ -92,6 +81,15 @@ class BgCompMod(ModHandler):
         else:
             return super().handle_request(mod_key, original_data, data_key,)
         
+    def set_mod_val(self, mod_key, val):
+        mod_key = mod_key.upper()
+        if mod_key == 'BGCOMP':
+            bg_trace = self.__get_bg_trace(data_key)
+            bg_comp_trace_obj = self.trace_calc.create_bg_comp(original_data, bg_trace)
+            return bg_comp_trace_obj
+        else:
+            return super().handle_request(mod_key, original_data, data_key,)
+
     def __get_bg_trace(self, data_key):
         if data_key in self.__bg_dict:
             bg_trace = self.__bg_dict[data_key]
