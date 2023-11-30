@@ -65,11 +65,11 @@ class ViewController:
     def set_observer(self, controller_key, ax:object):
         self.__model.set_observer(controller_key, ax)
         
-    def set_mod_val(self, controller_key, mod_key):
-        self.__model.set_mod_val(controller_key, mod_key)
-        
     def set_mod_key(self, controller_key, mod_key):
         self.__model.set_mod_key(controller_key, mod_key)
+        
+    def set_mod_val(self, controller_key, mod_key, val):
+        self.__model.set_mod_val(controller_key, mod_key, val)
 
     def get_controller_infor(self, controller_key=None) -> dict:
         if controller_key is None:

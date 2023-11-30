@@ -59,15 +59,15 @@ class ModelInterface(metaclass=ABCMeta):
     def set_observer(self, controller_key, observer:object):
         raise NotImplementedError()
 
-    # set background controller to the mod class.
-    @abstractmethod
-    def set_mod_val(self, controller_key, mod_key) -> None:
-        raise NotImplementedError()
-    
-    # set background controller to the mod class.
+    # set a mod key to the mod list
     @abstractmethod
     def set_mod_key(self, controller_key, mod_key) -> None:
-        raise NotImplementedError()    
+        raise NotImplementedError()
+        
+    # set background controller to the mod class.
+    @abstractmethod
+    def set_mod_val(self, controller_key, mod_key, val) -> None:
+        raise NotImplementedError()
         
     # reset controller_val
     @abstractmethod
@@ -194,9 +194,11 @@ class DataService(ModelInterface):
         controller = self.__user_controller_repository.find_by_name(controller_key)
         controller.set_mod_key(mod_key)
 
-    def set_mod_val(self, controller_key, mod_key):
-        print("DataService.set_mod_val: Need refactoring. Delete current_filneame")
-        self.__mod_service.set_mod_val(mod_key, controller_key, self.__current_filename_obj.name)
+    def set_mod_val(self, controller_key, mod_key, val):
+        print(f"Set mod value: Set {type(val)} to {mod_key} in {controller_key}")
+        controller_key = controller_key.upper()
+        controller = self.__user_controller_repository.find_by_name(controller_key)
+        controller.set_mod_val(mod_key, val)
     
     def reset(self, controller_key):
         controller_key = controller_key.upper()

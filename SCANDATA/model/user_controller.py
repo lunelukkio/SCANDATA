@@ -45,7 +45,7 @@ class UserController(metaclass=ABCMeta):
         self.__mod_service = ModService()
         #self._mod_service = ModService()
         self._val_obj = None
-        self.__mod_switch = True
+        self.__mod_switch = True  # This is for test.
         
     def __del__(self):  #make a message when this object is deleted.
         #print('.')
@@ -61,9 +61,9 @@ class UserController(metaclass=ABCMeta):
         raise NotImplementedError()
         
     def get_controller_data(self):  # get a dictionary which has trace or image or etc data.
-        if self.mod_switch is True:
-            # apply mod to data_dict
-            new_data_dict = {self.__mod_service.apply_mod(original_data) for original_data in self._data_dict }
+        if self.__mod_switch is True:
+            # apply mod 
+            new_data_dict = self.__mod_service.apply_mod(self._data_dict)
         else:
             new_data_dict = self._data_dict
         return new_data_dict
@@ -72,7 +72,10 @@ class UserController(metaclass=ABCMeta):
         self.observer.set_observer(observer)
 
     def set_mod_key(self, mod_key):
-        self.__mod_servise.set_mod_key(mod_key)
+        self.__mod_service.set_mod_key(mod_key)
+        
+    def set_mod_val(self, mod_key, val):
+        self.__mod_service.set_mod_val(mod_key, val)
 
     # return data dict keys with "True" without data. This is for view ax.
     def get_infor(self) -> dict:

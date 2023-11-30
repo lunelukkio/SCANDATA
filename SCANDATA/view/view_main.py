@@ -221,7 +221,6 @@ class DataWindow(tk.Frame):
         self.combo_box_elec_ch.pack(side=tk.LEFT)
         self.combo_box_elec_ch.bind('<<ComboboxSelected>>', self.elec_ch_select)
         
-        
         """
         Image Frame
         """
@@ -347,6 +346,14 @@ class DataWindow(tk.Frame):
 
         for i in range(3):
             self.ax_list[i].print_infor()
+            
+        """ about mod"""
+        # Set ROI1 as background in ROI2 controller
+        # send background ROI. but it done outside of the model.
+        background_dict = self.__controller.get_data("ROI1")
+        self.__controller.set_mod_val("ROI2", "BGCOMP", background_dict)
+        # Turn on the switch of BGCOMP for ROI1.
+        self.__controller.set_mod_key("ROI2", "BGCOMP")
         
     def update_ax(self, ax_num):
         if ax_num == 0:
