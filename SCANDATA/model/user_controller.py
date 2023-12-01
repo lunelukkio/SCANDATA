@@ -45,7 +45,7 @@ class UserController(metaclass=ABCMeta):
         self.__mod_service = ModService()
         self._data_dict = {}  # data dict = {full:TraceData_value obj,ch1:TraceData,ch2:TraceData}
         self._val_obj = None
-        self.__mod_switch = True  # This is for test.
+        self.__mod_switch = False  # This is for test.
         
     def __del__(self):  #make a message when this object is deleted.
         #print('.')
@@ -57,7 +57,12 @@ class UserController(metaclass=ABCMeta):
         raise NotImplementedError()
         
     def set_controller_data(self, experiments_obj, ch_key_list):   # get controller values from experiments
+        
         self._data_dict = {ch_key: self._get_val(experiments_obj, ch_key) for ch_key in ch_key_list}
+        
+        self._get_val(experiments.........)がNoneのときを除く
+        print("333333333333333333333333333333333333")
+        print(self._data_dict)
         self.print_infor()
         
     def get_controller_data(self):  # get a dictionary which has trace or image or etc data.
@@ -73,26 +78,27 @@ class UserController(metaclass=ABCMeta):
         self.observer.set_observer(observer)
 
     def set_mod_key(self, mod_key):
-        self.__mod_service.set_mod_key(mod_key)
+        if self.__mod_switch is True:
+            self.__mod_service.set_mod_key(mod_key)
+        else:
+            pass
         
     def set_mod_val(self, mod_key, val):
-        self.__mod_service.set_mod_val(mod_key, val)
+        if self.__mod_switch is True:
+            self.__mod_service.set_mod_val(mod_key, val)
+        else:
+            pass
 
     # return data dict keys with "True" without data. This is for view ax.
-    def get_infor(self) -> dict:
-        keys = {}
-        for ch_key in self.data_dict.keys():
-            keys[ch_key] = True            
-        return keys
+    def get_infor(self) -> dict:          
+        return self.data_dict.keys()
     
     def print_infor(self) -> None:
         if not self._data_dict:
             print("Data_dict is empty")
-            return
         dict_key = list(self._data_dict.keys())
         if self._data_dict[dict_key[0]] is None:
             print("No data in the ROI")
-            return
         print(f"{self.__class__.__name__} information ===================")
         print(f"{self.__class__.__name__} = {self._val_obj.data}")
         print("-- data_dict LIST -- ")

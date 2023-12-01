@@ -5,15 +5,15 @@
         "CH2": "blue"
     },
     "controller_color": {
-        "ROI1": "black",
-        "ROI2": "red",
-        "ROI3": "blue",
-        "ROI4": "green",
-        "ROI5": "purple",
-        "ROI6": "brown",
-        "ROI7": "pink",
-        "ROI8": "olive",
-        "ROI9": "cyan",
-        "ROI10": "orange"
+        "ROI0": "white",
+        "ROI1": "red",
+        "ROI2": "blue",
+        "ROI3": "green",
+        "ROI4": "purple",
+        "ROI5": "brown",
+        "ROI6": "pink",
+        "ROI7": "olive",
+        "ROI8": "cyan",
+        "ROI9": "orange"
     }
 }

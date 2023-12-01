@@ -298,9 +298,9 @@ class DataWindow(tk.Frame):
     def open_file(self, filename_obj=None):
         filename_obj = self.__controller.open_file(filename_obj)  # make a model and get filename obj
         controller_dict_keys = self.__controller.get_controller_infor()
-        for i in range(3):
-            self.ax_list[i].set_initial_controller_key(controller_dict_keys)
-        self.default_view_data(controller_dict_keys)
+        print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+        print(controller_dict_keys)
+        self.default_view_data(filename_obj)
         self.update_ax(3)  # 3 = draw whole ax
         
         # set image view doesn't update
@@ -309,9 +309,11 @@ class DataWindow(tk.Frame):
         self.ax_list[2].change_update_switch(True)
         
     def default_view_data(self, controller_dict_keys):
+        self.__controller.set_observer("ROI0", self.ax_list[1])   #background for bg_comp
         self.__controller.set_observer("ROI1", self.ax_list[1])
-        self.__controller.set_observer("ROI2", self.ax_list[1])
+        self.__controller.set_observer("IMAGE_CONTROLLER0", self.ax_list[0])  # base image for difference image
         self.__controller.set_observer("IMAGE_CONTROLLER1", self.ax_list[0])
+        self.__controller.set_observer("TRACE_CONTROLLER0", self.ax_list[2])  # no use
         self.__controller.set_observer("TRACE_CONTROLLER1", self.ax_list[2])
         
         """
@@ -321,40 +323,25 @@ class DataWindow(tk.Frame):
         # set mod
         self.__controller.set_mod_key("ROI2", "BGCOMP")
         """
-        # hide background ROI.
-        for ax in range(2):
-            self.ax_list[ax].set_active_controller_key("ROI1", False)  # to remove background roi
-        # hide fluo trace from elec axis
-        self.ax_list[2].set_active_controller_key("ROI1", False)
-        self.ax_list[2].set_active_controller_key("ROI2", False)
-        # hide images from the image axis
-        self.ax_list[0].select_ch("IMAGE_CONTROLLER1", "CH0", False)  # to remove CH0 image data
-        self.ax_list[0].select_ch("IMAGE_CONTROLLER1", "CH2", False)  # to remove CH2 image data
-        # hide traces from the fluo trace axis
-        self.ax_list[1].select_ch("ROI2", "CH0", False)  # to remove CH0 trace data
-        self.ax_list[1].select_ch("ROI2", "CH2", False)  # to remove CH0 trace data
-        #hide elec traces from the fluo axis
-        for ch in range(1, 9):
-            self.ax_list[0].select_ch("TRACE_CONTROLLER1", "ELEC" + str(ch), False)  # to remove CH0 image data
-        for ch in range(1, 9):
-            self.ax_list[1].select_ch("TRACE_CONTROLLER1", "ELEC" + str(ch), False)  # to remove CH0 image data
-        # hide #2 ~ #8 elec traces from the elec axis
-        for ch in range(2, 9):
-            self.ax_list[2].select_ch("TRACE_CONTROLLER1", "ELEC" + str(ch), False)  # to remove CH0 image data
-        
-        # set current controller list
-        self.__controller.set_operating_controller_list("ROI2")
 
+        self.ax_list[0].set_user_controller_list("ROI0")
+        self.ax_list[0].set_user_controller_list("ROI1")
+        self.ax_list[0].set_operating_user_controller_list("ROI1")
+        self.ax_list[0].set_operating_filename_list("ROI1")
+        
+        self.ax_list[1].set_user_controller_list("ROI0")
+
+
+        """ about mod"""
+        # Set ROI0 as background in ROI1 controller
+        # send background ROI. but it done outside of the model.
+        background_dict = self.__controller.get_data("ROI0")
+        self.__controller.set_mod_val("ROI1", "BGCOMP", background_dict)
+        # Turn on the switch of BGCOMP for ROI1.
+        self.__controller.set_mod_key("ROI1", "BGCOMP")
+        
         for i in range(3):
             self.ax_list[i].print_infor()
-            
-        """ about mod"""
-        # Set ROI1 as background in ROI2 controller
-        # send background ROI. but it done outside of the model.
-        background_dict = self.__controller.get_data("ROI1")
-        self.__controller.set_mod_val("ROI2", "BGCOMP", background_dict)
-        # Turn on the switch of BGCOMP for ROI1.
-        self.__controller.set_mod_key("ROI2", "BGCOMP")
         
     def update_ax(self, ax_num):
         if ax_num == 0:
@@ -406,18 +393,6 @@ class DataWindow(tk.Frame):
         elif event.dblclick is True:
             print("Double click is for ----")
         print('')
-
-    def select_ch(self, ch_key):
-        # send flags to ax.
-        operating_controller_list = self.__controller.get_operating_controller_list()
-        for ax_num in range(2):
-            for operating_controller_key in operating_controller_list:
-                self.ax_list[ax_num].select_ch(operating_controller_key, ch_key)
-        # need refactoring. Each ax need operating_controller_list???
-        self.ax_list[0].select_ch("IMAGE_CONTROLLER1", ch_key)
-        print('')
-        # each axis window have own a dictionaly for drawing.
-        
         
     def elec_ch_select(self, event):
         selected_value = self.combo_box_elec_ch.get()
@@ -496,58 +471,41 @@ class ViewAx(metaclass=ABCMeta):
         self.__ch_color = setting.get("ch_color")
         self.__controller_color = setting.get("controller_color")
 
-    @property
-    def operating_user_controller_list(self):
-        return self.__operating_user_controller_list
-    
-    @operating_user_controller_list.setter
-    def operating_user_controller_list(self, user_controller_key_list):
-        self.__operating_user_controller_list = user_controller_key_list
-        
-    @property
-    def operating_filename_list(self):
-        return self.__operating_filename_list
-    
-    @operating_filename_list.setter
-    def operating_filename_list(self, filename_key_list):
-        self.__operating_filename_list = filename_key_list
-        
-    @property
-    def operating_ch_list(self):
-        return self.__operating_ch_list
-    
-    @operating_ch_list.setter
-    def operating_ch_list(self, ch_list):
-        self.__operating_ch_list = ch_list
-
     @abstractmethod
     def set_view_data(self, active_controller_dict):
             raise NotImplementedError()
-        
-    # This doesn't affect to user controller in the model.
-    def __set_active_ch_key(self, controller_key: str, ch_key: str, view_switch=None):
-        if view_switch == True:
-            self._active_controller_dict[controller_key][ch_key] = True
-        elif view_switch == False:
-            self._active_controller_dict[controller_key][ch_key] = False
+    
+    def set_user_controller_list(self, controller_key):
+        if controller_key not in self.__user_controller_list:
+            self.__user_controller_list.append(controller_key)
+            print(f"Added {controller_key} to {self.__user_controller_list} of {self.__class__.__name__}")
         else:
-            self._active_controller_dict[controller_key][ch_key] = not self._active_controller_dict[controller_key][ch_key]
-
-    def select_ch(self, controller_key, ch_key, view_switch=None):
-        self.__set_active_ch_key(controller_key, ch_key, view_switch)
-        if self.sync_switch is True:
-            for other_controller_key in self._active_controller_dict.keys():
-                if ch_key in self._active_controller_dict[other_controller_key]:
-                    self._active_controller_dict[other_controller_key][ch_key] = self._active_controller_dict[controller_key][ch_key]  
-        self.update()
-
-    # This doesn't affect to user controller in the model.
-    def set_active_controller_key(self, controller_key: str, view_switch: bool):
-        for ch_key in self._active_controller_dict[controller_key].keys():
-            if view_switch == True:
-                self.__set_active_ch_key(controller_key, ch_key, True)
-            elif view_switch == False:
-                self.__set_active_ch_key(controller_key, ch_key, False)        
+            self.__user_controller_list.remove(controller_key)
+            print(f"Removed {controller_key} from {self.__user_controller_list} of {self.__class__.__name__}")
+            
+    def set_operating_user_controller_list(self, controller_key):
+        if controller_key not in self.__operating_user_controller_list:
+            self.__operating_user_controller_list.append(controller_key)
+            print(f"Added {controller_key} to {self.__operating_user_controller_list} of {self.__class__.__name__}")
+        else:
+            self.__operating_user_controller_list.remove(controller_key)
+            print(f"Removed {controller_key} from {self.__operating_user_controller_list} of {self.__class__.__name__}")
+            
+    def set_operating_filename_list(self, filename_key):
+        if filename_key not in self.__operating_filename_list:
+            self.__operating_filename_list.append(filename_key)
+            print(f"Added {filename_key} to {self.__operating_filename_list} of {self.__class__.__name__}")
+        else:
+            self.__operating_filename_list.remove(filename_key)
+            print(f"Removed {filename_key} from {self.__operating_filename_list} of {self.__class__.__name__}")
+            
+    def set_operating_ch_list(self, ch_key):
+        if ch_key not in self.__operating_ch_list:
+            self.__operating_ch_list.append(ch_key)
+            print(f"Added {ch_key} to {self.__operating_ch_list} of {self.__class__.__name__}")
+        else:
+            self.__operating_ch_list.remove(ch_key)
+            print(f"Removed {ch_key} from {self.__operating_ch_list} of {self.__class__.__name__}")
 
     def change_update_switch(self, val=None):
         if val is True:
@@ -620,19 +578,8 @@ class ImageAx(ViewAx):
                     if type(data).__name__ == "ImageData":
                         # get a graph
                         data.show_data(self._ax_obj)  # ax_data can use for image setting.
-                        RoiBox(roi_num)
-                        
-                        
         else:
             pass
-                    
-                    
-
-
-
-            self._roibox_data_dict[roi] = RoiBox(roi_num)
-        for not_roi in not_roi_list:
-            self._roibox_data_dict[not_roi] = None
                     
     # override            
     def update(self):
@@ -656,12 +603,16 @@ class ImageAx(ViewAx):
                 print("RoiBox: The ROI value is too small.")
 
 class RoiBox():
-    def __init__(self, roi_num, color):
+    """ class variable """
+    color_selection = ['white', 'red', 'blue', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan', 'orange']
+
+    """ instance method """
+    def __init__(self, roi_num):
         self.__rectangle_obj = patches.Rectangle(xy=(40, 40), 
                                                  width=1, 
                                                  height=1,
                                                  linewidth=0.7,
-                                                 ec=color, 
+                                                 ec=RoiBox.color_selection[int(roi_num)-1], 
                                                  fill=False)
 
     def set_roi(self, roi_val):
