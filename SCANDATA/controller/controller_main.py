@@ -18,7 +18,6 @@ class ViewController:
         self.__model = DataService()
         self.__view = view
         self.__file_service = FileService()
-        self.__operating_controller_list = []
         
     def __del__(self):
         print('Deleted a ViewController.' + '  myId= {}'.format(id(self)))
@@ -55,9 +54,8 @@ class ViewController:
             return data_dict
 
     # put data to user controller data dict.
-    def set_data(self, controller_key:str, data_key: str):
-        for filename_key in self.filename_key_list:
-            self.__model.set_data(controller_key, self.filename_key, data_key)
+    def set_controller_data(self):
+        self.__model.set_data(self.__operating_user_controller, self.__operating_user_controller, self.__operating_ch_list)
         
     def set_controller_val(self, controller_key: str, val: list):
         self.__model.set_controller_val(controller_key, val)
@@ -101,15 +99,15 @@ class ViewController:
                 self.__model.set_controller_val(roi, new_roi_val)
                 return new_roi_val
       
-    def add_mod(self, data_key: str, mod_key: str):
-        self.__model.add_mod(data_key, mod_key)
+    def add_mod(self, ch_key: str, mod_key: str):
+        self.__model.add_mod(ch_key, mod_key)
         if self.current_roi_num is None:
             return
         key = 'Roi' + str(self.current_roi_num)
         self.send_update_message(key, [])
         
-    def remove_mod(self, data_key: str, mod_key: str):
-        self.__model.remove_mod(data_key, mod_key)
+    def remove_mod(self, ch_key: str, mod_key: str):
+        self.__model.remove_mod(ch_key, mod_key)
         if self.current_roi_num is None:
             return
         key = 'Roi' + str(self.current_roi_num)

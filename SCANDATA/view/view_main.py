@@ -406,14 +406,14 @@ class DataWindow(tk.Frame):
             print("Double click is for ----")
         print('')
 
-    def select_ch(self, data_key):
+    def select_ch(self, ch_key):
         # send flags to ax.
         operating_controller_list = self.__controller.get_operating_controller_list()
         for ax_num in range(2):
             for operating_controller_key in operating_controller_list:
-                self.ax_list[ax_num].select_ch(operating_controller_key, data_key)
+                self.ax_list[ax_num].select_ch(operating_controller_key, ch_key)
         # need refactoring. Each ax need operating_controller_list???
-        self.ax_list[0].select_ch("IMAGE_CONTROLLER1", data_key)
+        self.ax_list[0].select_ch("IMAGE_CONTROLLER1", ch_key)
         print('')
         # each axis window have own a dictionaly for drawing.
         
@@ -450,18 +450,18 @@ class DataWindow(tk.Frame):
     def delete_roi(self):
         print('')
         
-    def add_mod(self, data_key, mod_key):
+    def add_mod(self, ch_key, mod_key):
         if mod_key == 'DFoverF':
             try:
-                self.remove_mod(data_key, 'Normalize')
+                self.remove_mod(ch_key, 'Normalize')
             except:
                 print('No normalize mod.')
         elif mod_key == 'Normalize':
             try:
-                self.remove_mod(data_key, 'DFoverF')
+                self.remove_mod(ch_key, 'DFoverF')
             except:
                 print('No DFoverF mod.')
-        self.__controller.add_mod(data_key, mod_key)
+        self.__controller.add_mod(ch_key, mod_key)
         self.update_trace()
         self.ax_list[1].update_ax()
         print('')
@@ -474,44 +474,73 @@ class ViewAx(metaclass=ABCMeta):
         self._tools = AxesTools(ax)
         self._ax_obj = ax
         self._controller = controller
-        self._color_selection = ['black', 'red', 'blue', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan', 'orange']
-        self._ax_data_dict = {}  # set of whole data key dict and values for showing traces. {"ROI1":{FULL:ax_trace_obj}}
+        
+        self.__user_controller_list = None  # the list for showing RoiBox including the background ROI.
+        self.__operating_user_controller_list = None
+        
+        self.__operating_filename_list = None
+        self.__operating_ch_list = None
         self._active_controller_dict = {}  # {"ROI1":{FULL:False,CH1:Ture, CH2:False}}
         self.sync_switch = False  # This switch is to show each data in each controllers.
         self.update_switch = True  # This switch is for avoiding image view update. Ture or False or empty: flip switch.
         
-    @abstractmethod
-    def set_data(self, active_controller_dict):
-            raise NotImplementedError()
+        with open("axis_data_setting.json", "r") as json_file:
+            setting = json.load(json_file)
+        self.__ch_color = setting.get(ch_color)
+        self.__controller_color = setting.get(controller_color)
+
+    @property
+    def operating_user_controller_list(self):
+        return self.__operating_user_controller_list
     
-    def set_initial_controller_key(self, controller_key_dict):
-        self._active_controller_dict = copy.deepcopy(controller_key_dict)  # for showing controllers.
-        self._ax_data_dict = copy.deepcopy(controller_key_dict)  # make whole dict of controllers.
+    @operating_user_controller_list.setter
+    def operating_user_controller_list(self, user_controller_key_list):
+        self.__operating_user_controller_list = user_controller_key_list
+        
+    @property
+    def operating_filename_list(self):
+        return self.__operating_filename_list
+    
+    @operating_filename_list.setter
+    def operating_filename_list(self, filename_key_list):
+        self.__operating_filename_list = filename_key_list
+        
+    @property
+    def operating_ch_list(self):
+        return self.__operating_ch_list
+    
+    @operating_ch_list.setter
+    def operating_ch_list(self, ch_list):
+        self.__operating_ch_list = ch_list
+
+    @abstractmethod
+    def set_view_data(self, active_controller_dict):
+            raise NotImplementedError()
         
     # This doesn't affect to user controller in the model.
-    def __set_active_data_key(self, controller_key: str, data_key: str, view_switch=None):
+    def __set_active_ch_key(self, controller_key: str, ch_key: str, view_switch=None):
         if view_switch == True:
-            self._active_controller_dict[controller_key][data_key] = True
+            self._active_controller_dict[controller_key][ch_key] = True
         elif view_switch == False:
-            self._active_controller_dict[controller_key][data_key] = False
+            self._active_controller_dict[controller_key][ch_key] = False
         else:
-            self._active_controller_dict[controller_key][data_key] = not self._active_controller_dict[controller_key][data_key]
+            self._active_controller_dict[controller_key][ch_key] = not self._active_controller_dict[controller_key][ch_key]
 
-    def select_ch(self, controller_key, data_key, view_switch=None):
-        self.__set_active_data_key(controller_key, data_key, view_switch)
+    def select_ch(self, controller_key, ch_key, view_switch=None):
+        self.__set_active_ch_key(controller_key, ch_key, view_switch)
         if self.sync_switch is True:
             for other_controller_key in self._active_controller_dict.keys():
-                if data_key in self._active_controller_dict[other_controller_key]:
-                    self._active_controller_dict[other_controller_key][data_key] = self._active_controller_dict[controller_key][data_key]  
+                if ch_key in self._active_controller_dict[other_controller_key]:
+                    self._active_controller_dict[other_controller_key][ch_key] = self._active_controller_dict[controller_key][ch_key]  
         self.update()
 
     # This doesn't affect to user controller in the model.
     def set_active_controller_key(self, controller_key: str, view_switch: bool):
-        for data_key in self._active_controller_dict[controller_key].keys():
+        for ch_key in self._active_controller_dict[controller_key].keys():
             if view_switch == True:
-                self.__set_active_data_key(controller_key, data_key, True)
+                self.__set_active_ch_key(controller_key, ch_key, True)
             elif view_switch == False:
-                self.__set_active_data_key(controller_key, data_key, False)        
+                self.__set_active_ch_key(controller_key, ch_key, False)        
 
     def change_update_switch(self, val=None):
         if val is True:
@@ -522,7 +551,7 @@ class ViewAx(metaclass=ABCMeta):
             self.update_switch = not self.update_switch
         
     def draw_ax(self):
-        self.set_data(self._active_controller_dict)
+        self.set_view_data(self._active_controller_dict)
         self._ax_obj.relim()
         self._ax_obj.autoscale_view()
         self.canvas.draw()
@@ -536,46 +565,35 @@ class ViewAx(metaclass=ABCMeta):
         print("")
         print(f"{self.__class__.__name__} current data list = ")
         for controller_key in self._active_controller_dict.keys():
-            for data_key in self._active_controller_dict[controller_key].keys():
-                if self._active_controller_dict[controller_key][data_key] == True:
-                    print(f"{controller_key} - {data_key}")
+            for ch_key in self._active_controller_dict[controller_key].keys():
+                if self._active_controller_dict[controller_key][ch_key] == True:
+                    print(f"{controller_key} - {ch_key}")
     
     
 class TraceAx(ViewAx):
-    def __init__(self, canvas, ax, controller):
-        super().__init__(ax, controller)
+    def __init__(self, canvas, ax, view_controller):
+        super().__init__(ax, view_controller)
         self.canvas = canvas
+        self.mode = "CH_MODE"  # or "ROI MODE" for showing sigle ch of several ROIs.
      
-    def set_data(self, active_controller_dict):
-        for controller_key in active_controller_dict.keys():
-            for data_key in active_controller_dict[controller_key]:
-                active_data = active_controller_dict[controller_key][data_key]
-                if active_data is True:
-                    #get data from current user controller
-                    controller_data_dict = self._controller.get_data(controller_key)
-                    controller_data = controller_data_dict[data_key]
-                    if type(controller_data).__name__ == "TraceData":
-                        ax_data = self._ax_data_dict[controller_key][data_key]
-                        if ax_data is None or isinstance(ax_data, bool):
-                            ax_data, = controller_data.show_data(self._ax_obj)
-                            # color setting
-                            if data_key[-1].isdigit():
-                                ax_data.set_color(self._color_selection[int(data_key[-1])])
-                            else:
-                                ax_data.set_color(self._color_selection[0])
-                        else:
-                            data = controller_data.data
-                            time = controller_data.time
-                            ax_data.set_data(time,data)
-                    else:
-                        ax_data = None
-                elif active_controller_dict[controller_key][data_key] is False:
-                    ax_data = None
+    def set_view_data(self):
+        for controller_key in self.__operating_user_controller_list:
+            #get data from current user controller
+            data_dict = self._controller.get_data(controller_key)
+                    for data in data_dict.
+                    if type(data).__name__ == "TraceData":
+                        # get a graph
+                        ax_data, = controller_data.show_data(self._ax_obj)
+                        # color setting
+                        if self.mode == "CH_MODE":
+                            ax_data.set_color(self.__ch_color[ch_key])
+                        elif self.mode == "ROI_MODE":
+                            ax_data.set_color(self.__controller_color[conroller_key])
 
 
 class ImageAx(ViewAx):
-    def __init__(self, canvas, ax, controller):
-        super().__init__(ax, controller)
+    def __init__(self, canvas, ax, view_controller):
+        super().__init__(ax, view_controller)
         self.canvas = canvas
         self._roibox_data_dict = {}
                 
@@ -593,15 +611,15 @@ class ImageAx(ViewAx):
             self._roibox_data_dict[not_roi] = None
         
     # There are three dict. active_controller_dict is to switching. self._ax_data_dict is to keep ax data. controller_data_dict is from user controller.
-    def set_data(self, active_controller_dict):
+    def set_view_data(self, active_controller_dict):
         for controller_key in active_controller_dict.keys():
-            for data_key in active_controller_dict[controller_key]:
-                active_data = active_controller_dict[controller_key][data_key]
-                ax_data = self._ax_data_dict[controller_key][data_key]
+            for ch_key in active_controller_dict[controller_key]:
+                active_data = active_controller_dict[controller_key][ch_key]
+                ax_data = self._ax_data_dict[controller_key][ch_key]
                 if active_data is True:
                     #get data from current user controller
                     controller_data_dict = self._controller.get_data(controller_key)
-                    controller_data = controller_data_dict[data_key]
+                    controller_data = controller_data_dict[ch_key]
                     if type(controller_data).__name__ == "ImageData":
                         if ax_data is None or isinstance(ax_data, bool):
                             ax_data = controller_data.show_data(self._ax_obj)
@@ -617,7 +635,7 @@ class ImageAx(ViewAx):
     def update(self):
         if self.update_switch == True:
             self._ax_obj.cla()
-            self.set_data(self._active_controller_dict)
+            self.set_view_data(self._active_controller_dict)
         for roi_box in self._roibox_data_dict.values():
             if roi_box is not None:
                 self._ax_obj.add_patch(roi_box.rectangle_obj)

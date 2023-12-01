@@ -160,7 +160,7 @@ class TsmBuilder(Builder):
     def get_infor(self):
         return self.data_infor_dict
         
-    # make data_dict {data_key: FrameData}  {"FULL": data, "CH1": data ......}
+    # make data_dict {ch_key: FrameData}  {"FULL": data, "CH1": data ......}
     def get_frame(self) -> dict:  # change to numpy to value obj
         data = {"FULL": FramesData(self.frames[0], 
                                    self.data_infor_dict["FULL_INTERVAL"])}
@@ -174,7 +174,7 @@ class TsmBuilder(Builder):
         print("----- There is no image data")
         return None
     
-    # make data_dict {data_key: TraceData}  {"ELEC1": data, ""ELEC2": data ......}
+    # make data_dict {ch_key: TraceData}  {"ELEC1": data, ""ELEC2": data ......}
     def get_trace(self):
         data = {}
         for ch in range(self.num_elec_ch):
@@ -190,7 +190,7 @@ class DaBuilder(Builder):
     def __init__(self, filename_obj):
         self.num_ch = 2   # this is for Na+ and Ca2+ recording.
         self.num_elec_ch = 8
-        self.default_controller = ["ROI", "ROI", "IMAGE_CONTROLLER", "TRACE_CONTROLLER"] 
+        self.default_controller = ["ROI", "ROI", "IMAGE_CONTROLLER", "IMAGE_CONTROLLER", "TRACE_CONTROLLER", "TRACE_CONTROLLER"] 
         self.default_data = ["FULL"]
         for num in range(self.num_ch):
             self.default_data.append("CH" + str(num+1))
@@ -223,7 +223,7 @@ class DaBuilder(Builder):
     def get_infor(self):
         return self.data_infor_dict
         
-    # make data_dict {data_key: FrameData}  {"FULL": data, "CH1": data ......}
+    # make data_dict {ch_key: FrameData}  {"FULL": data, "CH1": data ......}
     def get_frame(self) -> dict:  # change to numpy to value obj
         data = {"FULL": FramesData(self.frames[0], 
                                    self.data_infor_dict["FULL_INTERVAL"])}
@@ -237,7 +237,7 @@ class DaBuilder(Builder):
         print("----- There is no image data")
         return None
     
-    # make data_dict {data_key: TraceData}  {"ELEC1": data, ""ELEC2": data ......}
+    # make data_dict {ch_key: TraceData}  {"ELEC1": data, ""ELEC2": data ......}
     def get_trace(self):
         data = {}
         for ch in range(self.num_elec_ch):

@@ -2,6 +2,7 @@
 """
 Created on Wed Nov  2 15:11:48 2022
 classes for User controllers
+user controllers always have only one experiments, but several chs.
 lunelukkio@gmail.com
 """
 from abc import ABCMeta, abstractmethod
@@ -40,10 +41,9 @@ abstract product
 """
 class UserController(metaclass=ABCMeta):
     def __init__(self):
-        self._data_dict = {}  # data dict = {full:TraceData_value obj,ch1:TraceData,ch2:TraceData}
         self.observer = ControllerObserver()
         self.__mod_service = ModService()
-        #self._mod_service = ModService()
+        self._data_dict = {}  # data dict = {full:TraceData_value obj,ch1:TraceData,ch2:TraceData}
         self._val_obj = None
         self.__mod_switch = True  # This is for test.
         
@@ -64,6 +64,7 @@ class UserController(metaclass=ABCMeta):
         if self.__mod_switch is True:
             # apply mod 
             new_data_dict = self.__mod_service.apply_mod(self._data_dict)
+            print("mod data is not correct!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!need bug fix")
         else:
             new_data_dict = self._data_dict
         return new_data_dict
@@ -80,8 +81,8 @@ class UserController(metaclass=ABCMeta):
     # return data dict keys with "True" without data. This is for view ax.
     def get_infor(self) -> dict:
         keys = {}
-        for data_key in self.data_dict.keys():
-            keys[data_key] = True            
+        for ch_key in self.data_dict.keys():
+            keys[ch_key] = True            
         return keys
     
     def print_infor(self) -> None:
@@ -129,16 +130,14 @@ class Roi(UserController):
          
         print(f"set ROI: {self._val_obj.data}")
         
-    def set_controller_data(self, experiments_obj): 
-        self._data_dict = {}
-        original_data_list = experiments_obj.frames_dict.keys()
-        for data_key in original_data_list:
-            self._data_dict[data_key] = self._get_val(experiments_obj, data_key)
-        #self.print_infor()
+    def set_controller_data(self, experiments_obj, ch_key_list): 
+        self._data_dict = {ch_key: self._get_val(experiments_obj, ch_key) for ch_key in ch_key_list}
 
     # calculate a trace from a single frames data with a roi value object
-    def _get_val(self, experiments_obj, data_key):
-        frames_obj = experiments_obj.frames_dict[data_key]
+    def _get_val(self, experiments_obj, ch_key):
+        frames_obj = experiments_obj.frames_dict[ch_key]
+        if frames_obj is None:
+            raise Exception(f'The controller can not find the key:{ch_key} in experiments entity {experiments_obj}.')
         roi_obj = self._val_obj
         # check value is correct
         self.__check_val(frames_obj, roi_obj)
@@ -186,13 +185,13 @@ class ImageController(UserController):
     def set_controller_data(self, experiments_obj): 
         self._data_dict = {}
         original_data_list = experiments_obj.frames_dict.keys()
-        for data_key in original_data_list:
-            self._data_dict[data_key] = self._get_val(experiments_obj, data_key)
+        for ch_key in original_data_list:
+            self._data_dict[ch_key] = self._get_val(experiments_obj, ch_key)
         self.print_infor()
 
     # calculate a image from a single frames data with a timewindow value object
-    def _get_val(self, experiments_obj, data_key):
-        frames_obj = experiments_obj.frames_dict[data_key]
+    def _get_val(self, experiments_obj, ch_key):
+        frames_obj = experiments_obj.frames_dict[ch_key]
         time_window_obj = self._val_obj
         # check value is correct
         self.__check_val(frames_obj, time_window_obj)
@@ -245,13 +244,13 @@ class TraceController(UserController):
     def set_controller_data(self, experiments_obj): 
         self._data_dict = {}
         original_data_list = experiments_obj.trace_dict.keys()
-        for data_key in original_data_list:
-            self._data_dict[data_key] = self._get_val(experiments_obj, data_key)
+        for ch_key in original_data_list:
+            self._data_dict[ch_key] = self._get_val(experiments_obj, ch_key)
         self.print_infor()
 
     # calculate a trace from a single trace data in experiments dict with a time window value object
-    def _get_val(self, experiments_obj, data_key):
-        trace_obj = experiments_obj.trace_dict[data_key]
+    def _get_val(self, experiments_obj, ch_key):
+        trace_obj = experiments_obj.trace_dict[ch_key]
         time_window_obj = self._val_obj
         start = time_window_obj.data[0]
         width = time_window_obj.data[1]

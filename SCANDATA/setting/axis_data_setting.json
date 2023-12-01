@@ -1,0 +1,19 @@
+{
+    "ch_color": {
+        "FULL": "black",
+        "CH1": "red",
+        "CH2": "blue"
+    },
+    "controller_color": {
+        "ROI1": "black",
+        "ROI2": "red",
+        "ROI3": "blue",
+        "ROI4": "green",
+        "ROI5": "purple",
+        "ROI6": "brown",
+        "ROI7": "pink",
+        "ROI8": "olive",
+        "ROI9": "cyan",
+        "ROI10": "orange"
+    }
+}

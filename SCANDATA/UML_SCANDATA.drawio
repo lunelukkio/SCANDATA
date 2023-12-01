@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2023-11-29T01:07:14.873Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" etag="hRBcTwMEBmQJjpAlmBBZ" version="22.1.4" type="device" pages="10">
+<mxfile host="app.diagrams.net" modified="2023-12-01T01:49:45.614Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" etag="latxPzN0kK_usqyI3A1T" version="22.1.5" type="device" pages="10">
   <diagram id="cKamBB-SNn25kszP2A9I" name="Model Diagram">
-    <mxGraphModel dx="5886" dy="3135" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="0" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="none" math="0" shadow="0">
+    <mxGraphModel dx="6398" dy="3602" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="0" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="none" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -2691,7 +2691,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="EcEe8JPouNlGRoy23Tk6" name="view_controller">
-    <mxGraphModel dx="5054" dy="2510" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="3982" dy="2035" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -2959,7 +2959,7 @@
         <mxCell id="EXcdcigESLaWXNmOz3pm-17" value="+ set_roi()" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="EXcdcigESLaWXNmOz3pm-11" vertex="1">
           <mxGeometry y="138" width="160" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="gbid3ryl6pueGWEJJQJ4-1" value="RoiView" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;" parent="1" vertex="1">
+        <mxCell id="gbid3ryl6pueGWEJJQJ4-1" value="RoiView(axis)" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;" parent="1" vertex="1">
           <mxGeometry x="-1320" y="1440" width="160" height="216" as="geometry" />
         </mxCell>
         <mxCell id="IVhqgWC94W4I1uAd46rc-11" value="- __key" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="gbid3ryl6pueGWEJJQJ4-1" vertex="1">
@@ -3201,7 +3201,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="8OM6TzzMpqaxSPzItio0-27" value="ImageView" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;" parent="1" vertex="1">
+        <mxCell id="8OM6TzzMpqaxSPzItio0-27" value="ImageView(axis)" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;" parent="1" vertex="1">
           <mxGeometry x="-680" y="1439" width="160" height="294" as="geometry" />
         </mxCell>
         <mxCell id="8OM6TzzMpqaxSPzItio0-28" value="- __filename" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="8OM6TzzMpqaxSPzItio0-27" vertex="1">
@@ -3435,7 +3435,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="UQhDi0lhYvEDU0ObIz2e-1" value="ElecView" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;" parent="1" vertex="1">
+        <mxCell id="UQhDi0lhYvEDU0ObIz2e-1" value="ElecView(axis)" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;" parent="1" vertex="1">
           <mxGeometry x="-1840" y="1440" width="160" height="294" as="geometry" />
         </mxCell>
         <mxCell id="UQhDi0lhYvEDU0ObIz2e-2" value="- __roi_num" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="UQhDi0lhYvEDU0ObIz2e-1" vertex="1">
