@@ -107,12 +107,12 @@ class DataService(ModelInterface):
         
     def make_default_controllers(self, filename_obj):
         experiments_data = self.get_experiments(filename_obj.name)
-        default_controller_list, default_data_list = experiments_data.get_default()
+        default_controller_list, ch_key_list = experiments_data.get_default()
         for controller_key in default_controller_list:  # controller_list doesn't have controller numbers
-            self.create_user_controller(controller_key, filename_obj)
+            self.create_user_controller(controller_key, filename_obj, ch_key_list)
 
     # make a new user controller
-    def create_user_controller(self, controller_key, filename_obj) -> str:  # controller_key = "Roi", "TimeWindow". Use the same name to delete like "ROI1"
+    def create_user_controller(self, controller_key, filename_obj, ch_key_list) -> str:  # controller_key = "Roi", "TimeWindow". Use the same name to delete like "ROI1"
         controller_key = controller_key.upper()
         if self.__user_controller_repository.find_by_name(controller_key) is None:
             # get a controller factory 
@@ -121,7 +121,7 @@ class DataService(ModelInterface):
             new_controller = controller_factory.create_controller()
             # set data in controller
             experiments_obj = self.get_experiments(filename_obj.name)
-            new_controller.set_controller_data(experiments_obj)
+            new_controller.set_controller_data(experiments_obj, ch_key_list)
             # get a new controller key name
             new_key = self.__key_num_maker(controller_key)
             # save the controller to repository

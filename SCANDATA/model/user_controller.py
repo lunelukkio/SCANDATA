@@ -56,9 +56,9 @@ class UserController(metaclass=ABCMeta):
     def set_controller_val(self, val_list:list):  # e.g. roi value
         raise NotImplementedError()
         
-    @abstractmethod
-    def set_controller_data(self, experiments_obj):  # get controller values from experiments
-        raise NotImplementedError()
+    def set_controller_data(self, experiments_obj, ch_key_list):   # get controller values from experiments
+        self._data_dict = {ch_key: self._get_val(experiments_obj, ch_key) for ch_key in ch_key_list}
+        self.print_infor()
         
     def get_controller_data(self):  # get a dictionary which has trace or image or etc data.
         if self.__mod_switch is True:
@@ -129,24 +129,24 @@ class Roi(UserController):
         self._val_obj = RoiVal(*roi_value_list[:4])  # replace the roi
          
         print(f"set ROI: {self._val_obj.data}")
-        
-    def set_controller_data(self, experiments_obj, ch_key_list): 
-        self._data_dict = {ch_key: self._get_val(experiments_obj, ch_key) for ch_key in ch_key_list}
 
     # calculate a trace from a single frames data with a roi value object
     def _get_val(self, experiments_obj, ch_key):
-        frames_obj = experiments_obj.frames_dict[ch_key]
-        if frames_obj is None:
-            raise Exception(f'The controller can not find the key:{ch_key} in experiments entity {experiments_obj}.')
-        roi_obj = self._val_obj
-        # check value is correct
-        self.__check_val(frames_obj, roi_obj)
-        # make raw trace data       
-        x, y, x_width, y_width = roi_obj.data[:4]
+        if "ROI" not in ch_key:
+            pass
+        else:
+            frames_obj = experiments_obj.frames_dict[ch_key]
+            if frames_obj is None:
+                raise Exception(f'The controller can not find the key:{ch_key} in experiments entity {experiments_obj}.')
+            roi_obj = self._val_obj
+            # check value is correct
+            self.__check_val(frames_obj, roi_obj)
+            # make raw trace data       
+            x, y, x_width, y_width = roi_obj.data[:4]
         
-        mean_data = np.mean(frames_obj.data[x:x+x_width, y:y+y_width, :], axis = (0, 1)) #slice end doesn't include to slice
-        # make a trace value object
-        return TraceData(mean_data, frames_obj.interval)
+            mean_data = np.mean(frames_obj.data[x:x+x_width, y:y+y_width, :], axis = (0, 1)) #slice end doesn't include to slice
+            # make a trace value object
+            return TraceData(mean_data, frames_obj.interval)
         
     def __check_val(self, frames_obj, roi_obj) -> bool:
         # convert to raw values
@@ -181,27 +181,23 @@ class ImageController(UserController):
         width = window_value_list[1]
         self._val_obj = TimeWindowVal(start, width)  # replace the roi
         print(f"set ImageController: {self._val_obj.data}")
-        
-    def set_controller_data(self, experiments_obj): 
-        self._data_dict = {}
-        original_data_list = experiments_obj.frames_dict.keys()
-        for ch_key in original_data_list:
-            self._data_dict[ch_key] = self._get_val(experiments_obj, ch_key)
-        self.print_infor()
 
     # calculate a image from a single frames data with a timewindow value object
     def _get_val(self, experiments_obj, ch_key):
-        frames_obj = experiments_obj.frames_dict[ch_key]
-        time_window_obj = self._val_obj
-        # check value is correct
-        self.__check_val(frames_obj, time_window_obj)
-        # make raw trace data
-        start = time_window_obj.data[0]
-        width = time_window_obj.data[1]
+        if "ROI" not in ch_key:
+            pass
+        else:
+            frames_obj = experiments_obj.frames_dict[ch_key]
+            time_window_obj = self._val_obj
+            # check value is correct
+            self.__check_val(frames_obj, time_window_obj)
+            # make raw trace data
+            start = time_window_obj.data[0]
+            width = time_window_obj.data[1]
         
-        val = np.mean(frames_obj.data[:, :, start:start+width], axis = 2) # slice end is end+1
-        print(f'Cell image from an avaraged frame# {start} to {start+width-1}: Succeeded')
-        return ImageData(val)
+            val = np.mean(frames_obj.data[:, :, start:start+width], axis = 2) # slice end is end+1
+            print(f'Cell image from an avaraged frame# {start} to {start+width-1}: Succeeded')
+            return ImageData(val)
 
     def __check_val(self, frames_obj, time_window_obj) -> bool:
         # convert to raw values
@@ -241,29 +237,25 @@ class TraceController(UserController):
         self._val_obj = TimeWindowVal(start, width)  # replace the roi
         print(f"set TimeController: {self._val_obj.data}")
 
-    def set_controller_data(self, experiments_obj): 
-        self._data_dict = {}
-        original_data_list = experiments_obj.trace_dict.keys()
-        for ch_key in original_data_list:
-            self._data_dict[ch_key] = self._get_val(experiments_obj, ch_key)
-        self.print_infor()
-
     # calculate a trace from a single trace data in experiments dict with a time window value object
     def _get_val(self, experiments_obj, ch_key):
-        trace_obj = experiments_obj.trace_dict[ch_key]
-        time_window_obj = self._val_obj
-        start = time_window_obj.data[0]
-        width = time_window_obj.data[1]
-        if self.__inf_mode is True:
-            return trace_obj
+        if "ELEC" not in ch_key:
+            pass
         else:
-            # check value is correct
-            self.__check_val(trace_obj, time_window_obj)
-            # make raw trace data
-            val = trace_obj.data[start:start+width]
-            print(f"Made a new trace from {start} to {start+width-1}: Succeeded")
-            interval = trace_obj.interval
-            return TraceData(val, interval)
+            trace_obj = experiments_obj.trace_dict[ch_key]
+            time_window_obj = self._val_obj
+            start = time_window_obj.data[0]
+            width = time_window_obj.data[1]
+            if self.__inf_mode is True:
+                return trace_obj
+            else:
+                # check value is correct
+                self.__check_val(trace_obj, time_window_obj)
+                # make raw trace data
+                val = trace_obj.data[start:start+width]
+                print(f"Made a new trace from {start} to {start+width-1}: Succeeded")
+                interval = trace_obj.interval
+                return TraceData(val, interval)
 
     def __check_val(self, trace_obj, time_window_obj) -> bool:
         # convert to raw values

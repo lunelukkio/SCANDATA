@@ -130,14 +130,14 @@ class TsmBuilder(Builder):
     def __init__(self, filename_obj):
         self.num_ch = 2   # this is for Na+ and Ca2+ recording.
         self.num_elec_ch = 8
-        self.default_controller = ["ROI", "ROI", "IMAGE_CONTROLLER", "TRACE_CONTROLLER"] 
-        self.default_data = ["FULL"]
+        self.default_controller = ["ROI", "ROI", "IMAGE_CONTROLLER", "IMAGE_CONTROLLER", "TRACE_CONTROLLER", "TRACE_CONTROLLER"] 
+        self.default_data = ["CH0"]
         for num in range(self.num_ch):
             self.default_data.append("CH" + str(num+1))
         for num in range(self.num_elec_ch):
             self.default_data.append("ELEC" + str(num+1))  # see self.get_trace
 
-        infor_keys = ["FULL_INTERVAL"]
+        infor_keys = ["CH0_INTERVAL"]
         for idx in range(self.num_ch):
             infor_keys.append(f"CH{idx + 1}_INTERVAL")
         for idx in range(self.num_elec_ch):
@@ -160,10 +160,10 @@ class TsmBuilder(Builder):
     def get_infor(self):
         return self.data_infor_dict
         
-    # make data_dict {ch_key: FrameData}  {"FULL": data, "CH1": data ......}
+    # make data_dict {ch_key: FrameData}  {"CH0": data, "CH1": data ......}
     def get_frame(self) -> dict:  # change to numpy to value obj
-        data = {"FULL": FramesData(self.frames[0], 
-                                   self.data_infor_dict["FULL_INTERVAL"])}
+        data = {"CH0": FramesData(self.frames[0], 
+                                   self.data_infor_dict["CH0_INTERVAL"])}
         for idx in range(self.num_ch):
             data[f"CH{idx + 1}"] = FramesData(self.frames[idx + 1], 
                                    self.data_infor_dict[f"CH{idx + 1}_INTERVAL"])    # change to numpy to value obj
@@ -191,14 +191,14 @@ class DaBuilder(Builder):
         self.num_ch = 2   # this is for Na+ and Ca2+ recording.
         self.num_elec_ch = 8
         self.default_controller = ["ROI", "ROI", "IMAGE_CONTROLLER", "IMAGE_CONTROLLER", "TRACE_CONTROLLER", "TRACE_CONTROLLER"] 
-        self.default_data = ["FULL"]
+        self.default_data = ["CH0"]
         for num in range(self.num_ch):
             self.default_data.append("CH" + str(num+1))
 
         for num in range(self.num_elec_ch):
             self.default_data.append("ELEC" + str(num+1))  # see self.get_trace
 
-        infor_keys = ["FULL_INTERVAL"]
+        infor_keys = ["CH0_INTERVAL"]
         for idx in range(self.num_ch):
             infor_keys.append(f"CH{idx + 1}_INTERVAL")
   
@@ -223,10 +223,10 @@ class DaBuilder(Builder):
     def get_infor(self):
         return self.data_infor_dict
         
-    # make data_dict {ch_key: FrameData}  {"FULL": data, "CH1": data ......}
+    # make data_dict {ch_key: FrameData}  {"CH0": data, "CH1": data ......}
     def get_frame(self) -> dict:  # change to numpy to value obj
-        data = {"FULL": FramesData(self.frames[0], 
-                                   self.data_infor_dict["FULL_INTERVAL"])}
+        data = {"CH0": FramesData(self.frames[0], 
+                                   self.data_infor_dict["CH0_INTERVAL"])}
         for idx in range(self.num_ch):
             data[f"CH{idx + 1}"] = FramesData(self.frames[idx + 1], 
                                    self.data_infor_dict[f"CH{idx + 1}_INTERVAL"])    # change to numpy to value obj

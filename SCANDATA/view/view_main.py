@@ -17,6 +17,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from SCANDATA.common_class import WholeFilename
 from SCANDATA.controller.controller_main import ViewController
+import json
 
 
 class MainView(tk.Frame):
@@ -327,19 +328,19 @@ class DataWindow(tk.Frame):
         self.ax_list[2].set_active_controller_key("ROI1", False)
         self.ax_list[2].set_active_controller_key("ROI2", False)
         # hide images from the image axis
-        self.ax_list[0].select_ch("IMAGE_CONTROLLER1", "FULL", False)  # to remove FULL image data
+        self.ax_list[0].select_ch("IMAGE_CONTROLLER1", "CH0", False)  # to remove CH0 image data
         self.ax_list[0].select_ch("IMAGE_CONTROLLER1", "CH2", False)  # to remove CH2 image data
         # hide traces from the fluo trace axis
-        self.ax_list[1].select_ch("ROI2", "FULL", False)  # to remove FULL trace data
-        self.ax_list[1].select_ch("ROI2", "CH2", False)  # to remove FULL trace data
+        self.ax_list[1].select_ch("ROI2", "CH0", False)  # to remove CH0 trace data
+        self.ax_list[1].select_ch("ROI2", "CH2", False)  # to remove CH0 trace data
         #hide elec traces from the fluo axis
         for ch in range(1, 9):
-            self.ax_list[0].select_ch("TRACE_CONTROLLER1", "ELEC" + str(ch), False)  # to remove FULL image data
+            self.ax_list[0].select_ch("TRACE_CONTROLLER1", "ELEC" + str(ch), False)  # to remove CH0 image data
         for ch in range(1, 9):
-            self.ax_list[1].select_ch("TRACE_CONTROLLER1", "ELEC" + str(ch), False)  # to remove FULL image data
+            self.ax_list[1].select_ch("TRACE_CONTROLLER1", "ELEC" + str(ch), False)  # to remove CH0 image data
         # hide #2 ~ #8 elec traces from the elec axis
         for ch in range(2, 9):
-            self.ax_list[2].select_ch("TRACE_CONTROLLER1", "ELEC" + str(ch), False)  # to remove FULL image data
+            self.ax_list[2].select_ch("TRACE_CONTROLLER1", "ELEC" + str(ch), False)  # to remove CH0 image data
         
         # set current controller list
         self.__controller.set_operating_controller_list("ROI2")
@@ -480,14 +481,20 @@ class ViewAx(metaclass=ABCMeta):
         
         self.__operating_filename_list = None
         self.__operating_ch_list = None
-        self._active_controller_dict = {}  # {"ROI1":{FULL:False,CH1:Ture, CH2:False}}
+        self._active_controller_dict = {}  # {"ROI1":{CH0:False,CH1:Ture, CH2:False}}
         self.sync_switch = False  # This switch is to show each data in each controllers.
         self.update_switch = True  # This switch is for avoiding image view update. Ture or False or empty: flip switch.
         
-        with open("axis_data_setting.json", "r") as json_file:
-            setting = json.load(json_file)
-        self.__ch_color = setting.get(ch_color)
-        self.__controller_color = setting.get(controller_color)
+        try:
+            os.chdir("../setting")
+            with open("axis_data_setting.json", "r") as json_file:
+                setting = json.load(json_file)
+        except:
+            os.chdir("./setting")
+            with open("axis_data_setting.json", "r") as json_file:
+                setting = json.load(json_file)
+        self.__ch_color = setting.get("ch_color")
+        self.__controller_color = setting.get("controller_color")
 
     @property
     def operating_user_controller_list(self):
@@ -577,18 +584,22 @@ class TraceAx(ViewAx):
         self.mode = "CH_MODE"  # or "ROI MODE" for showing sigle ch of several ROIs.
      
     def set_view_data(self):
-        for controller_key in self.__operating_user_controller_list:
-            #get data from current user controller
-            data_dict = self._controller.get_data(controller_key)
-                    for data in data_dict.
+        if self.update_switch is True:
+            for controller_key in self.__operating_user_controller_list:
+                #get data from current user controller
+                data_dict = self._controller.get_data(controller_key)
+                for ch_key in data_dict.keys():
+                    data = data_dict[ch_key]
                     if type(data).__name__ == "TraceData":
                         # get a graph
-                        ax_data, = controller_data.show_data(self._ax_obj)
+                        ax_data, = data.show_data(self._ax_obj)
                         # color setting
                         if self.mode == "CH_MODE":
                             ax_data.set_color(self.__ch_color[ch_key])
                         elif self.mode == "ROI_MODE":
-                            ax_data.set_color(self.__controller_color[conroller_key])
+                            ax_data.set_color(controller_key)
+        else:
+            pass
 
 
 class ImageAx(ViewAx):
@@ -596,40 +607,32 @@ class ImageAx(ViewAx):
         super().__init__(ax, view_controller)
         self.canvas = canvas
         self._roibox_data_dict = {}
-                
-    # override
-    def set_initial_controller_key(self, controller_key_dict):
-        super().set_initial_controller_key(controller_key_dict)
-        # make roi boxes
-        self._roibox_data_dict = copy.deepcopy(controller_key_dict)
-        roi_list = [item for item in self._roibox_data_dict if "ROI" in item]
-        not_roi_list = [item for item in self._roibox_data_dict if "ROI" not in item]
-        for roi in roi_list:
-            roi_num = re.sub(r'\D', '', roi)
+        self.mode = None  # no use
+        
+    # There are three dict. active_controller_dict is to switching. self._ax_data_dict is to keep ax data. controller_data_dict is from user controller.
+    def set_view_data(self):
+        if self.update_switch is True:
+            for controller_key in self.__operating_user_controller_list:
+                #get data from current user controller
+                data_dict = self._controller.get_data(controller_key)
+                for ch_key in data_dict.keys():
+                    data = data_dict[ch_key]
+                    if type(data).__name__ == "ImageData":
+                        # get a graph
+                        data.show_data(self._ax_obj)  # ax_data can use for image setting.
+                        RoiBox(roi_num)
+                        
+                        
+        else:
+            pass
+                    
+                    
+
+
+
             self._roibox_data_dict[roi] = RoiBox(roi_num)
         for not_roi in not_roi_list:
             self._roibox_data_dict[not_roi] = None
-        
-    # There are three dict. active_controller_dict is to switching. self._ax_data_dict is to keep ax data. controller_data_dict is from user controller.
-    def set_view_data(self, active_controller_dict):
-        for controller_key in active_controller_dict.keys():
-            for ch_key in active_controller_dict[controller_key]:
-                active_data = active_controller_dict[controller_key][ch_key]
-                ax_data = self._ax_data_dict[controller_key][ch_key]
-                if active_data is True:
-                    #get data from current user controller
-                    controller_data_dict = self._controller.get_data(controller_key)
-                    controller_data = controller_data_dict[ch_key]
-                    if type(controller_data).__name__ == "ImageData":
-                        if ax_data is None or isinstance(ax_data, bool):
-                            ax_data = controller_data.show_data(self._ax_obj)
-                        else:
-                            data = controller_data.data
-                            ax_data.set_data(data)
-                    else:
-                        ax_data = None
-                elif active_data is False:
-                    ax_data = None
                     
     # override            
     def update(self):
@@ -653,16 +656,12 @@ class ImageAx(ViewAx):
                 print("RoiBox: The ROI value is too small.")
 
 class RoiBox():
-    """ class variable """
-    color_selection = ['white', 'red', 'blue', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan', 'orange']
-
-    """ instance method """
-    def __init__(self, roi_num):
+    def __init__(self, roi_num, color):
         self.__rectangle_obj = patches.Rectangle(xy=(40, 40), 
                                                  width=1, 
                                                  height=1,
                                                  linewidth=0.7,
-                                                 ec=RoiBox.color_selection[int(roi_num)-1], 
+                                                 ec=color, 
                                                  fill=False)
 
     def set_roi(self, roi_val):
