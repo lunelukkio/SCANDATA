@@ -2,7 +2,15 @@
     "ch_color": {
         "CH0": "black",
         "CH1": "red",
-        "CH2": "blue"
+        "CH2": "blue",
+        "ELEC0": "black",
+        "ELEC1": "black",
+        "ELEC2": "black",
+        "ELEC3": "black",
+        "ELEC4": "black",
+        "ELEC5": "black",
+        "ELEC6": "black",
+        "ELEC7": "black"
     },
     "controller_color": {
         "ROI0": "white",

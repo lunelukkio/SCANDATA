@@ -55,7 +55,7 @@ class ViewController:
 
     # put data to user controller data dict.
     def set_controller_data(self):
-        self.__model.set_data(self.__operating_user_controller, self.__operating_user_controller, self.__operating_ch_list)
+        self.__model.set_data(operating_user_controller, operating_user_controller, operating_ch_list)
         
     def set_controller_val(self, controller_key: str, val: list):
         self.__model.set_controller_val(controller_key, val)

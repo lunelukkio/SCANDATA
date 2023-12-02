@@ -297,9 +297,6 @@ class DataWindow(tk.Frame):
         
     def open_file(self, filename_obj=None):
         filename_obj = self.__controller.open_file(filename_obj)  # make a model and get filename obj
-        controller_dict_keys = self.__controller.get_controller_infor()
-        print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
-        print(controller_dict_keys)
         self.default_view_data(filename_obj)
         self.update_ax(3)  # 3 = draw whole ax
         
@@ -308,7 +305,7 @@ class DataWindow(tk.Frame):
         self.ax_list[1].change_update_switch(True)
         self.ax_list[2].change_update_switch(True)
         
-    def default_view_data(self, controller_dict_keys):
+    def default_view_data(self, filename_obj):
         self.__controller.set_observer("ROI0", self.ax_list[1])   #background for bg_comp
         self.__controller.set_observer("ROI1", self.ax_list[1])
         self.__controller.set_observer("IMAGE_CONTROLLER0", self.ax_list[0])  # base image for difference image
@@ -323,13 +320,24 @@ class DataWindow(tk.Frame):
         # set mod
         self.__controller.set_mod_key("ROI2", "BGCOMP")
         """
+        self.ax_list[0].set_operating_filename_list(filename_obj.name)
+        self.ax_list[0].set_user_controller_list("IMAGE_CONTROLLER0")  # This is for difference image
+        self.ax_list[0].set_user_controller_list("IMAGE_CONTROLLER1")
+        self.ax_list[0].set_operating_user_controller_list("IMAGE_CONTROLLER1")
+        self.ax_list[0].set_operating_ch_list("CH1")
 
-        self.ax_list[0].set_user_controller_list("ROI0")
-        self.ax_list[0].set_user_controller_list("ROI1")
-        self.ax_list[0].set_operating_user_controller_list("ROI1")
-        self.ax_list[0].set_operating_filename_list("ROI1")
         
+        self.ax_list[1].set_operating_filename_list(filename_obj.name)
         self.ax_list[1].set_user_controller_list("ROI0")
+        self.ax_list[1].set_user_controller_list("ROI1")
+        self.ax_list[1].set_operating_user_controller_list("ROI1")
+        self.ax_list[1].set_operating_ch_list("CH1")
+        
+        self.ax_list[2].set_operating_filename_list(filename_obj.name)
+        self.ax_list[2].set_user_controller_list("TRACE_CONTROLLER0")  # currntly no use
+        self.ax_list[2].set_user_controller_list("TRACE_CONTROLLER1")
+        self.ax_list[2].set_operating_user_controller_list("TRACE_CONTROLLER1")
+        self.ax_list[2].set_operating_ch_list("ELEC0")
 
 
         """ about mod"""
@@ -451,61 +459,59 @@ class ViewAx(metaclass=ABCMeta):
         self._ax_obj = ax
         self._controller = controller
         
-        self.__user_controller_list = None  # the list for showing RoiBox including the background ROI.
-        self.__operating_user_controller_list = None
+        self._user_controller_list = []  # the list for showing RoiBox including the background ROI.
+        self._operating_user_controller_list = []
         
-        self.__operating_filename_list = None
-        self.__operating_ch_list = None
-        self._active_controller_dict = {}  # {"ROI1":{CH0:False,CH1:Ture, CH2:False}}
+        self._operating_filename_list = []
+        self._operating_ch_list = []
         self.sync_switch = False  # This switch is to show each data in each controllers.
         self.update_switch = True  # This switch is for avoiding image view update. Ture or False or empty: flip switch.
         
         try:
-            os.chdir("../setting")
-            with open("axis_data_setting.json", "r") as json_file:
+            with open("../setting/axis_data_setting.json", "r") as json_file:
                 setting = json.load(json_file)
         except:
-            os.chdir("./setting")
-            with open("axis_data_setting.json", "r") as json_file:
+            with open("./setting/axis_data_setting.json", "r") as json_file:
                 setting = json.load(json_file)
-        self.__ch_color = setting.get("ch_color")
-        self.__controller_color = setting.get("controller_color")
+            
+        self._ch_color = setting.get("ch_color")
+        self._controller_color = setting.get("controller_color")
 
     @abstractmethod
     def set_view_data(self, active_controller_dict):
             raise NotImplementedError()
     
     def set_user_controller_list(self, controller_key):
-        if controller_key not in self.__user_controller_list:
-            self.__user_controller_list.append(controller_key)
-            print(f"Added {controller_key} to {self.__user_controller_list} of {self.__class__.__name__}")
+        if controller_key not in self._user_controller_list:
+            self._user_controller_list.append(controller_key)
+            print(f"Added {controller_key} to {self._user_controller_list} of {self.__class__.__name__}")
         else:
-            self.__user_controller_list.remove(controller_key)
-            print(f"Removed {controller_key} from {self.__user_controller_list} of {self.__class__.__name__}")
+            self._user_controller_list.remove(controller_key)
+            print(f"Removed {controller_key} from {self._user_controller_list} of {self.__class__.__name__}")
             
     def set_operating_user_controller_list(self, controller_key):
-        if controller_key not in self.__operating_user_controller_list:
-            self.__operating_user_controller_list.append(controller_key)
-            print(f"Added {controller_key} to {self.__operating_user_controller_list} of {self.__class__.__name__}")
+        if controller_key not in self._operating_user_controller_list:
+            self._operating_user_controller_list.append(controller_key)
+            print(f"Added {controller_key} to {self._operating_user_controller_list} of {self.__class__.__name__}")
         else:
-            self.__operating_user_controller_list.remove(controller_key)
-            print(f"Removed {controller_key} from {self.__operating_user_controller_list} of {self.__class__.__name__}")
+            self._operating_user_controller_list.remove(controller_key)
+            print(f"Removed {controller_key} from {self._operating_user_controller_list} of {self.__class__.__name__}")
             
     def set_operating_filename_list(self, filename_key):
-        if filename_key not in self.__operating_filename_list:
-            self.__operating_filename_list.append(filename_key)
-            print(f"Added {filename_key} to {self.__operating_filename_list} of {self.__class__.__name__}")
+        if filename_key not in self._operating_filename_list:
+            self._operating_filename_list.append(filename_key)
+            print(f"Added {filename_key} to {self._operating_filename_list} of {self.__class__.__name__}")
         else:
-            self.__operating_filename_list.remove(filename_key)
-            print(f"Removed {filename_key} from {self.__operating_filename_list} of {self.__class__.__name__}")
+            self._operating_filename_list.remove(filename_key)
+            print(f"Removed {filename_key} from {self._operating_filename_list} of {self.__class__.__name__}")
             
     def set_operating_ch_list(self, ch_key):
-        if ch_key not in self.__operating_ch_list:
-            self.__operating_ch_list.append(ch_key)
-            print(f"Added {ch_key} to {self.__operating_ch_list} of {self.__class__.__name__}")
+        if ch_key not in self._operating_ch_list:
+            self._operating_ch_list.append(ch_key)
+            print(f"Added {ch_key} to {self._operating_ch_list} of {self.__class__.__name__}")
         else:
-            self.__operating_ch_list.remove(ch_key)
-            print(f"Removed {ch_key} from {self.__operating_ch_list} of {self.__class__.__name__}")
+            self._operating_ch_list.remove(ch_key)
+            print(f"Removed {ch_key} from {self._operating_ch_list} of {self.__class__.__name__}")
 
     def change_update_switch(self, val=None):
         if val is True:
@@ -516,7 +522,7 @@ class ViewAx(metaclass=ABCMeta):
             self.update_switch = not self.update_switch
         
     def draw_ax(self):
-        self.set_view_data(self._active_controller_dict)
+        self.set_view_data()
         self._ax_obj.relim()
         self._ax_obj.autoscale_view()
         self.canvas.draw()
@@ -529,10 +535,10 @@ class ViewAx(metaclass=ABCMeta):
     def print_infor(self):
         print("")
         print(f"{self.__class__.__name__} current data list = ")
-        for controller_key in self._active_controller_dict.keys():
-            for ch_key in self._active_controller_dict[controller_key].keys():
-                if self._active_controller_dict[controller_key][ch_key] == True:
-                    print(f"{controller_key} - {ch_key}")
+        print(self._operating_filename_list)
+        print(self._user_controller_list)
+        print(self._operating_user_controller_list)
+        print(self._operating_ch_list)
     
     
 class TraceAx(ViewAx):
@@ -542,18 +548,23 @@ class TraceAx(ViewAx):
         self.mode = "CH_MODE"  # or "ROI MODE" for showing sigle ch of several ROIs.
      
     def set_view_data(self):
+        クリックしたときにself._controller.set_controller_data()おつかってデータセット
+        ここではdata_dictをよびだしてｃｈごとにあx＿data、＝をくりかえす
         if self.update_switch is True:
-            for controller_key in self.__operating_user_controller_list:
-                #get data from current user controller
-                data_dict = self._controller.get_data(controller_key)
-                for ch_key in data_dict.keys():
+            for controller_key in self._operating_user_controller_list:
+                for ch_key in self._operating_ch_list:
+                    #get data from current user controller
+                    
+                    data_dict = self._controller.get_data(controller_key)
                     data = data_dict[ch_key]
+                    print("oooooooooooooooooooooooooooooooooo")
+                    print(controller_key)
                     if type(data).__name__ == "TraceData":
                         # get a graph
                         ax_data, = data.show_data(self._ax_obj)
                         # color setting
                         if self.mode == "CH_MODE":
-                            ax_data.set_color(self.__ch_color[ch_key])
+                            ax_data.set_color(self._ch_color[ch_key])
                         elif self.mode == "ROI_MODE":
                             ax_data.set_color(controller_key)
         else:
@@ -570,7 +581,7 @@ class ImageAx(ViewAx):
     # There are three dict. active_controller_dict is to switching. self._ax_data_dict is to keep ax data. controller_data_dict is from user controller.
     def set_view_data(self):
         if self.update_switch is True:
-            for controller_key in self.__operating_user_controller_list:
+            for controller_key in self._operating_user_controller_list:
                 #get data from current user controller
                 data_dict = self._controller.get_data(controller_key)
                 for ch_key in data_dict.keys():
@@ -585,7 +596,7 @@ class ImageAx(ViewAx):
     def update(self):
         if self.update_switch == True:
             self._ax_obj.cla()
-            self.set_view_data(self._active_controller_dict)
+            self.set_view_data()
         for roi_box in self._roibox_data_dict.values():
             if roi_box is not None:
                 self._ax_obj.add_patch(roi_box.rectangle_obj)
@@ -671,6 +682,5 @@ if __name__ == '__main__':
     
     print("＝＝＝to do list＝＝＝")
     print("second trace time shift ")
-    print("current problem is that missmatch of trace switch and image switch. sharing view active switch is also problem. ")
-    print("syc to every dict for a view. ")
+    print("make click functions")
     print("")

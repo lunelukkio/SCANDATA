@@ -57,12 +57,14 @@ class UserController(metaclass=ABCMeta):
         raise NotImplementedError()
         
     def set_controller_data(self, experiments_obj, ch_key_list):   # get controller values from experiments
-        
-        self._data_dict = {ch_key: self._get_val(experiments_obj, ch_key) for ch_key in ch_key_list}
-        
-        self._get_val(experiments.........)がNoneのときを除く
-        print("333333333333333333333333333333333333")
-        print(self._data_dict)
+        self._data_dict = {}
+        for ch_key in ch_key_list:
+            data = self._get_val(experiments_obj, ch_key)
+            if data  is None:
+                pass
+            else:
+                self._data_dict[ch_key] = data
+
         self.print_infor()
         
     def get_controller_data(self):  # get a dictionary which has trace or image or etc data.
@@ -94,15 +96,13 @@ class UserController(metaclass=ABCMeta):
         return self.data_dict.keys()
     
     def print_infor(self) -> None:
+        print(f"{self.__class__.__name__} information ===================")
         if not self._data_dict:
             print("Data_dict is empty")
-        dict_key = list(self._data_dict.keys())
-        if self._data_dict[dict_key[0]] is None:
-            print("No data in the ROI")
-        print(f"{self.__class__.__name__} information ===================")
+
         print(f"{self.__class__.__name__} = {self._val_obj.data}")
         print("-- data_dict LIST -- ")
-        print(dict_key)
+        print(self._data_dict.keys())
         print(f"=============== {self.__class__.__name__} information END")
         print("")
     
@@ -138,7 +138,7 @@ class Roi(UserController):
 
     # calculate a trace from a single frames data with a roi value object
     def _get_val(self, experiments_obj, ch_key):
-        if "ROI" not in ch_key:
+        if "CH" not in ch_key:
             pass
         else:
             frames_obj = experiments_obj.frames_dict[ch_key]
@@ -190,7 +190,7 @@ class ImageController(UserController):
 
     # calculate a image from a single frames data with a timewindow value object
     def _get_val(self, experiments_obj, ch_key):
-        if "ROI" not in ch_key:
+        if "CH" not in ch_key:
             pass
         else:
             frames_obj = experiments_obj.frames_dict[ch_key]

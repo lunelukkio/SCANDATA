@@ -131,17 +131,10 @@ class TsmBuilder(Builder):
         self.num_ch = 2   # this is for Na+ and Ca2+ recording.
         self.num_elec_ch = 8
         self.default_controller = ["ROI", "ROI", "IMAGE_CONTROLLER", "IMAGE_CONTROLLER", "TRACE_CONTROLLER", "TRACE_CONTROLLER"] 
-        self.default_data = ["CH0"]
-        for num in range(self.num_ch):
-            self.default_data.append("CH" + str(num+1))
-        for num in range(self.num_elec_ch):
-            self.default_data.append("ELEC" + str(num+1))  # see self.get_trace
-
-        infor_keys = ["CH0_INTERVAL"]
-        for idx in range(self.num_ch):
-            infor_keys.append(f"CH{idx + 1}_INTERVAL")
-        for idx in range(self.num_elec_ch):
-           infor_keys.append(f"ELEC{idx + 1}_INTERVAL")
+        self.default_data = ["CH" + str(num) for num in range(self.num_ch+1)] +\
+                            ["ELEC" + str(num) for num in range(self.num_elec_ch)]
+        infor_keys = [f"CH{i}_INTERVAL" for i in range(self.num_ch+1) ] + \
+                     [f"ELEC{i}_INTERVAL" for i in range (self.num_elec_ch)]
 
         file_io = TsmFileIo(filename_obj, self.num_ch)
         
@@ -162,11 +155,8 @@ class TsmBuilder(Builder):
         
     # make data_dict {ch_key: FrameData}  {"CH0": data, "CH1": data ......}
     def get_frame(self) -> dict:  # change to numpy to value obj
-        data = {"CH0": FramesData(self.frames[0], 
-                                   self.data_infor_dict["CH0_INTERVAL"])}
-        for idx in range(self.num_ch):
-            data[f"CH{idx + 1}"] = FramesData(self.frames[idx + 1], 
-                                   self.data_infor_dict[f"CH{idx + 1}_INTERVAL"])    # change to numpy to value obj
+        data = {"CH"+str(i): FramesData(self.frames[i], 
+                                   self.data_infor_dict["CH"+str(i)+"_INTERVAL"]) for i in range(self.num_ch+1)}
         print(f"Frames data = {data.keys()}")
         return data
 
@@ -176,10 +166,8 @@ class TsmBuilder(Builder):
     
     # make data_dict {ch_key: TraceData}  {"ELEC1": data, ""ELEC2": data ......}
     def get_trace(self):
-        data = {}
-        for ch in range(self.num_elec_ch):
-            data[f"ELEC{ch + 1}"] = TraceData(self.elec_data[:, ch], 
-                                          self.data_infor_dict[f"ELEC{ch + 1}_INTERVAL"])    # change to numpy to value obj
+        data = {"ELEC"+str(ch): TraceData(self.elec_data[:, ch], 
+                                      self.data_infor_dict[f"ELEC{ch}_INTERVAL"])for ch in range(self.num_elec_ch)}
         print(f"Trace data = {data.keys()}")
         return data
     
@@ -190,20 +178,12 @@ class DaBuilder(Builder):
     def __init__(self, filename_obj):
         self.num_ch = 2   # this is for Na+ and Ca2+ recording.
         self.num_elec_ch = 8
+
         self.default_controller = ["ROI", "ROI", "IMAGE_CONTROLLER", "IMAGE_CONTROLLER", "TRACE_CONTROLLER", "TRACE_CONTROLLER"] 
-        self.default_data = ["CH0"]
-        for num in range(self.num_ch):
-            self.default_data.append("CH" + str(num+1))
-
-        for num in range(self.num_elec_ch):
-            self.default_data.append("ELEC" + str(num+1))  # see self.get_trace
-
-        infor_keys = ["CH0_INTERVAL"]
-        for idx in range(self.num_ch):
-            infor_keys.append(f"CH{idx + 1}_INTERVAL")
-  
-        for idx in range(self.num_elec_ch):
-           infor_keys.append(f"ELEC{idx + 1}_INTERVAL")
+        self.default_data = ["CH" + str(num) for num in range(self.num_ch+1)] +\
+                            ["ELEC" + str(num) for num in range(self.num_elec_ch)]
+        infor_keys = [f"CH{i}_INTERVAL" for i in range(self.num_ch+1) ] + \
+                     [f"ELEC{i}_INTERVAL" for i in range (self.num_elec_ch)]
 
         file_io = DaFileIo(filename_obj, self.num_ch)
         
@@ -223,13 +203,10 @@ class DaBuilder(Builder):
     def get_infor(self):
         return self.data_infor_dict
         
-    # make data_dict {ch_key: FrameData}  {"CH0": data, "CH1": data ......}
+    # make data_dict {ch_key: FrameData}  {"CH0": data, "CH1": data ......} 
     def get_frame(self) -> dict:  # change to numpy to value obj
-        data = {"CH0": FramesData(self.frames[0], 
-                                   self.data_infor_dict["CH0_INTERVAL"])}
-        for idx in range(self.num_ch):
-            data[f"CH{idx + 1}"] = FramesData(self.frames[idx + 1], 
-                                   self.data_infor_dict[f"CH{idx + 1}_INTERVAL"])    # change to numpy to value obj
+        data = {"CH"+str(i): FramesData(self.frames[i],  
+                            self.data_infor_dict["CH"+str(i)+"_INTERVAL"]) for i in range(self.num_ch+1)}
         print(f"Frames data = {data.keys()}")
         return data
 
@@ -239,10 +216,8 @@ class DaBuilder(Builder):
     
     # make data_dict {ch_key: TraceData}  {"ELEC1": data, ""ELEC2": data ......}
     def get_trace(self):
-        data = {}
-        for ch in range(self.num_elec_ch):
-            data[f"ELEC{ch + 1}"] = TraceData(self.elec_data[:, ch], 
-                                          self.data_infor_dict[f"ELEC{ch + 1}_INTERVAL"])    # change to numpy to value obj
+        data = {"ELEC"+str(ch): TraceData(self.elec_data[:, ch], 
+                                      self.data_infor_dict[f"ELEC{ch}_INTERVAL"])for ch in range(self.num_elec_ch)}
         print(f"Trace data = {data.keys()}")
         return data
     
