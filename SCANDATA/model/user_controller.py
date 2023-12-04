@@ -48,8 +48,8 @@ class UserController(metaclass=ABCMeta):
         self.__mod_switch = False  # This is for test.
         
     def __del__(self):  #make a message when this object is deleted.
-        #print('.')
-        print('----- Deleted a Roi object.' + '  myId={}'.format(id(self)))
+        print('.')
+        #print('----- Deleted a Roi object.' + '  myId={}'.format(id(self)))
         #pass
         
     @abstractmethod
@@ -133,7 +133,6 @@ class Roi(UserController):
             if roi_value_list[i] == None:
                 roi_value_list[i] = self._val_obj.data[i]
         self._val_obj = RoiVal(*roi_value_list[:4])  # replace the roi
-         
         print(f"set ROI: {self._val_obj.data}")
 
     # calculate a trace from a single frames data with a roi value object
@@ -177,8 +176,8 @@ class ImageController(UserController):
         self._val_obj = TimeWindowVal(0, 1)
         
     def __del__(self):  #make a message when this object is deleted.
-        #print('.')
-        print('----- Deleted a ImageCOntroller object.' + '  myId={}'.format(id(self)))
+        print('.')
+        #print('----- Deleted a ImageCOntroller object.' + '  myId={}'.format(id(self)))
         #pass
 
         # make a new Roi value object
@@ -232,8 +231,8 @@ class TraceController(UserController):
         self.__inf_mode = True  # This is for no limit trace (whole trace)
         
     def __del__(self):  #make a message when this object is deleted.
-        #print('.')
-        print('----- Deleted a TraceController object.' + '  myId={}'.format(id(self)))
+        print('.')
+        #print('----- Deleted a TraceController object.' + '  myId={}'.format(id(self)))
         #pass
 
         # make a new Roi value object

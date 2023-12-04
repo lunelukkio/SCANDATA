@@ -23,7 +23,7 @@ import json
 class MainView(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
-        self.__controller = ViewController()
+        self.__view_controller = ViewController()
         
         self.__filename_obj_list = []
         self.window = []
@@ -87,7 +87,7 @@ class MainView(tk.Frame):
         self.master.config(menu = menu_bar)
         
     def check_memory(self):
-        memory_infor, maximum_memory, available_memory = self.__controller.get_memory_infor()
+        memory_infor, maximum_memory, available_memory = self.__view_controller.get_memory_infor()
         print(f"Current memory usage: {memory_infor / 1024 / 1024:.2f} MB / {maximum_memory / 1024 / 1024:.2f} MB, Available memory: {available_memory / 1024 / 1024:.2f} MB")
         
         
@@ -125,10 +125,10 @@ class MainView(tk.Frame):
         tree_list.pack(pady=0, fill=tk.BOTH, expand=True)  
         
         self.window.append(tk.Toplevel())
-        self.data_window.append(DataWindow(self.window[len(self.window)-1], filename_obj, self.__controller))
+        self.data_window.append(DataWindow(self.window[len(self.window)-1], filename_obj, self.__view_controller))
 
     def open_file(self, event=None):
-        filename_obj = self.__controller.open_file()
+        filename_obj = self.__view_controller.open_file()
         fullname = filename_obj.fullname
         self.__filename_obj_list.append(filename_obj)
         self.window.append(tk.Toplevel())
@@ -140,7 +140,7 @@ class DataWindow(tk.Frame):
     def __init__(self, master=None, filename_obj=None):
         super().__init__(master)
         self.pack()
-        self.__controller = ViewController(self)
+        self.__view_controller = ViewController(self)
         self.ax_list = []  # [0] = main cell image ax (ImageAxsis class), [1] = fluoresent trace ax (TraceAx class), [2] = elec trace ax
         self.my_color = '#BCD2EE'
         
@@ -238,7 +238,7 @@ class DataWindow(tk.Frame):
         
         self.canvas_image = FigureCanvasTkAgg(image_fig, frame_left)
         #canvas_image.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
-        self.ax_list.append(ImageAx(self.canvas_image, image_ax, self.__controller))  # ax_list[0]
+        self.ax_list.append(ImageAx(self.canvas_image, image_ax, self.__view_controller))  # ax_list[0]
 
         # for tool bar in the image window
         self.canvas_image.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
@@ -277,11 +277,11 @@ class DataWindow(tk.Frame):
         
         # matplotlib trace axes
         trace_ax1 = trace_fig.add_subplot(gridspec_trace_fig[0:15])
-        self.ax_list.append(TraceAx(self.canvas_trace, trace_ax1, self.__controller))  # ax_list[1]
+        self.ax_list.append(TraceAx(self.canvas_trace, trace_ax1, self.__view_controller))  # ax_list[1]
         
         # matplotlib elec trace axes
         trace_ax2 = trace_fig.add_subplot(gridspec_trace_fig[16:20], sharex=self.ax_list[1]._ax_obj)
-        self.ax_list.append(TraceAx(self.canvas_trace, trace_ax2, self.__controller))  # ax_list[2]
+        self.ax_list.append(TraceAx(self.canvas_trace, trace_ax2, self.__view_controller))  # ax_list[2]
         
         #canvas_trace.get_tk_widget().pack()
         toolbar_trace = NavigationToolbarMyTool(self.canvas_trace, frame_right, self.my_color)
@@ -296,7 +296,7 @@ class DataWindow(tk.Frame):
             self.open_file(filename_obj)
         
     def open_file(self, filename_obj=None):
-        filename_obj = self.__controller.open_file(filename_obj)  # make a model and get filename obj
+        filename_obj = self.__view_controller.open_file(filename_obj)  # make a model and get filename obj
         self.default_view_data(filename_obj)
         self.update_ax(3)  # 3 = draw whole ax
         
@@ -306,19 +306,21 @@ class DataWindow(tk.Frame):
         self.ax_list[2].change_update_switch(True)
         
     def default_view_data(self, filename_obj):
-        self.__controller.set_observer("ROI0", self.ax_list[1])   #background for bg_comp
-        self.__controller.set_observer("ROI1", self.ax_list[1])
-        self.__controller.set_observer("IMAGE_CONTROLLER0", self.ax_list[0])  # base image for difference image
-        self.__controller.set_observer("IMAGE_CONTROLLER1", self.ax_list[0])
-        self.__controller.set_observer("TRACE_CONTROLLER0", self.ax_list[2])  # no use
-        self.__controller.set_observer("TRACE_CONTROLLER1", self.ax_list[2])
+        print("===== Start default settings. =====")
+        
+        self.__view_controller.set_observer("ROI0", self.ax_list[1])   #background for bg_comp
+        self.__view_controller.set_observer("ROI1", self.ax_list[1])
+        self.__view_controller.set_observer("IMAGE_CONTROLLER0", self.ax_list[0])  # base image for difference image
+        self.__view_controller.set_observer("IMAGE_CONTROLLER1", self.ax_list[0])
+        self.__view_controller.set_observer("TRACE_CONTROLLER0", self.ax_list[2])  # no use
+        self.__view_controller.set_observer("TRACE_CONTROLLER1", self.ax_list[2])
         
         """
         # set background roi to the mod class
-        self.__controller.set_mod_val("ROI1", "BgCompMod")
+        self.__view_controller.set_mod_val("ROI1", "BgCompMod")
         
         # set mod
-        self.__controller.set_mod_key("ROI2", "BGCOMP")
+        self.__view_controller.set_mod_key("ROI2", "BGCOMP")
         """
         self.ax_list[0].set_operating_filename_list(filename_obj.name)
         self.ax_list[0].set_user_controller_list("IMAGE_CONTROLLER0")  # This is for difference image
@@ -343,12 +345,15 @@ class DataWindow(tk.Frame):
         """ about mod"""
         # Set ROI0 as background in ROI1 controller
         # send background ROI. but it done outside of the model.
-        background_dict = self.__controller.get_data("ROI0")
-        self.__controller.set_mod_val("ROI1", "BGCOMP", background_dict)
+        background_dict = self.__view_controller.get_data("ROI0")
+        self.__view_controller.set_mod_val("ROI1", "BGCOMP", background_dict)
         # Turn on the switch of BGCOMP for ROI1.
-        self.__controller.set_mod_key("ROI1", "BGCOMP")
+        self.__view_controller.set_mod_key("ROI1", "BGCOMP")
+        
+        print("===== End default settings. =====")
         
         for i in range(3):
+            self.ax_list[i].update()
             self.ax_list[i].print_infor()
         
     def update_ax(self, ax_num):
@@ -365,17 +370,17 @@ class DataWindow(tk.Frame):
     def onclick_image(self, event):
         if event.dblclick is False:
             if event.button == 1:  # left click
-                self.__controller.set_position_image_ax(event)
+                self.ax_list[1].set_click_position(event)
                 # adjust for image data pixels
                 x = round(event.xdata)-0.5
                 y = round(event.ydata)-0.5
                 self.ax_list[0].set_roibox(x, y)
-                self.ax_list[0].update()
+                self.ax_list[1].update()
             elif event.button == 2:
                 pass
             elif event.button == 3:
                 # get current controller
-                old_controller_list = self.__controller.get_operating_controller_list()
+                old_controller_list = self.__view_controller.get_operating_controller_list()
                 # get whole ROI controller list. Violation of scorpe range.  _activePcontoller_dict should not be used from the outside of the class.
                 filtered_list = [item for item in self.ax_list[1]._active_controller_dict.keys() if "ROI" in item]
 
@@ -389,8 +394,8 @@ class DataWindow(tk.Frame):
                     else:
                         print("Not in the active controller list")
                         
-                self.__controller.set_operating_controller_list(old_controller)
-                self.__controller.set_operating_controller_list(next_controller)
+                self.__view_controller.set_operating_controller_list(old_controller)
+                self.__view_controller.set_operating_controller_list(next_controller)
                 # Violation of scorpe range.  _activePcontoller_dict should not be used from the outside of the class.
                 # Need refactoring.
                 self.ax_list[1]._active_controller_dict[next_controller].update(self.ax_list[1]._active_controller_dict[old_controller])
@@ -401,6 +406,9 @@ class DataWindow(tk.Frame):
         elif event.dblclick is True:
             print("Double click is for ----")
         print('')
+        
+    def select_ch(self, event):
+        print(event)
         
     def elec_ch_select(self, event):
         selected_value = self.combo_box_elec_ch.get()
@@ -419,7 +427,7 @@ class DataWindow(tk.Frame):
 
     # need refactoring. shold delete return from the roi values.
     def change_roi_size(self, val):
-        new_roi = self.__controller.change_roi_size(val)
+        new_roi = self.__view_controller.change_roi_size(val)
         if new_roi is not None:
             x = new_roi[0]
             y = new_roi[1]
@@ -445,7 +453,7 @@ class DataWindow(tk.Frame):
                 self.remove_mod(ch_key, 'DFoverF')
             except:
                 print('No DFoverF mod.')
-        self.__controller.add_mod(ch_key, mod_key)
+        self.__view_controller.add_mod(ch_key, mod_key)
         self.update_trace()
         self.ax_list[1].update_ax()
         print('')
@@ -457,7 +465,7 @@ class ViewAx(metaclass=ABCMeta):
     def __init__(self, ax, controller):
         self._tools = AxesTools(ax)
         self._ax_obj = ax
-        self._controller = controller
+        self._view_controller = controller
         
         self._user_controller_list = []  # the list for showing RoiBox including the background ROI.
         self._operating_user_controller_list = []
@@ -476,6 +484,10 @@ class ViewAx(metaclass=ABCMeta):
             
         self._ch_color = setting.get("ch_color")
         self._controller_color = setting.get("controller_color")
+
+    @abstractmethod
+    def set_click_position(self, event):  
+            raise NotImplementedError()
 
     @abstractmethod
     def set_view_data(self, active_controller_dict):
@@ -530,6 +542,11 @@ class ViewAx(metaclass=ABCMeta):
     def update(self):  # It is overrided by ImageAx
         if self.update_switch == True:
             self._ax_obj.cla()  # clear ax
+            for controller_key in self._operating_user_controller_list:
+                for filename_key in self._operating_filename_list:
+                    self._view_controller.set_controller_data(controller_key,
+                                                         filename_key,
+                                                         self._operating_ch_list)
             self.draw_ax()
     
     def print_infor(self):
@@ -547,18 +564,19 @@ class TraceAx(ViewAx):
         self.canvas = canvas
         self.mode = "CH_MODE"  # or "ROI MODE" for showing sigle ch of several ROIs.
      
+    def set_click_position(self, event):
+        self._view_controller.set_position_image_ax(event, 
+                                                    self._operating_filename_list,
+                                                    self._operating_user_controller_list,
+                                                    self._operating_ch_list)
+     
     def set_view_data(self):
-        クリックしたときにself._controller.set_controller_data()おつかってデータセット
-        ここではdata_dictをよびだしてｃｈごとにあx＿data、＝をくりかえす
         if self.update_switch is True:
             for controller_key in self._operating_user_controller_list:
-                for ch_key in self._operating_ch_list:
-                    #get data from current user controller
-                    
-                    data_dict = self._controller.get_data(controller_key)
+                #get data from current user controller
+                data_dict = self._view_controller.get_data(controller_key)
+                for ch_key in data_dict.keys():
                     data = data_dict[ch_key]
-                    print("oooooooooooooooooooooooooooooooooo")
-                    print(controller_key)
                     if type(data).__name__ == "TraceData":
                         # get a graph
                         ax_data, = data.show_data(self._ax_obj)
@@ -578,12 +596,15 @@ class ImageAx(ViewAx):
         self._roibox_data_dict = {}
         self.mode = None  # no use
         
+    def set_click_position(self, event):  
+            raise NotImplementedError()
+        
     # There are three dict. active_controller_dict is to switching. self._ax_data_dict is to keep ax data. controller_data_dict is from user controller.
     def set_view_data(self):
         if self.update_switch is True:
             for controller_key in self._operating_user_controller_list:
                 #get data from current user controller
-                data_dict = self._controller.get_data(controller_key)
+                data_dict = self._view_controller.get_data(controller_key)
                 for ch_key in data_dict.keys():
                     data = data_dict[ch_key]
                     if type(data).__name__ == "ImageData":
@@ -592,18 +613,25 @@ class ImageAx(ViewAx):
         else:
             pass
                     
+    # override
+    def draw_ax(self):
+        self.set_view_data()
+        self._ax_obj.set_axis_off()
+        self.canvas.draw()
+        
     # override            
     def update(self):
         if self.update_switch == True:
-            self._ax_obj.cla()
-            self.set_view_data()
-        for roi_box in self._roibox_data_dict.values():
-            if roi_box is not None:
-                self._ax_obj.add_patch(roi_box.rectangle_obj)
-        self.canvas.draw()   
+            self._ax_obj.cla()  # clear ax
+            for controller_key in self._operating_user_controller_list:
+                for filename_key in self._operating_filename_list:
+                    self._view_controller.set_controller_data(controller_key,
+                                                         filename_key,
+                                                         self._operating_ch_list)
+        self.draw_ax()  
                  
     def set_roibox(self, x, y, width=0, height=0):  # roi[x,y,width,height]
-        for roi in self._controller.get_operating_controller_list():
+        for roi in self._view_controller.get_operating_controller_list():
             old_width = self._roibox_data_dict[roi].rectangle_obj.get_width()
             old_height = self._roibox_data_dict[roi].rectangle_obj.get_height()
             new_width = old_width + width
@@ -612,6 +640,10 @@ class ImageAx(ViewAx):
                 self._roibox_data_dict[roi].set_roi([x, y, new_width, new_height])
             else:
                 print("RoiBox: The ROI value is too small.")
+                
+        for roi_box in self._roibox_data_dict.values():
+            if roi_box is not None:
+                self._ax_obj.add_patch(roi_box.rectangle_obj)
 
 class RoiBox():
     """ class variable """

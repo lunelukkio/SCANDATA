@@ -28,9 +28,9 @@ class Experiments:   # entity
         print("")
         
     def __del__(self):  #make a message when this object is deleted.
-        #print('.')
-        print(f"----- Deleted a Expriments: {self.filename_obj.name}"  
-              + "  myId={}".format(id(self)))
+        print('.')
+        #print(f"----- Deleted a Expriments: {self.filename_obj.name}"  
+        #      + "  myId={}".format(id(self)))
         #pass
     
     def __factory_selector(self, filename_obj):

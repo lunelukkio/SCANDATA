@@ -42,7 +42,7 @@ class ModelInterface(metaclass=ABCMeta):
 
     # make a new data from experiments entities into the controllers.
     @abstractmethod
-    def set_controller_data(self, filename_key: str, controller_key: str, ch_key_list: list):
+    def set_controller_data(self, controller_key: str, filename_key: str, ch_key_list: list):
         raise NotImplementedError()
 
     # return a dict of controller including value objects.
@@ -137,16 +137,12 @@ class DataService(ModelInterface):
         return experiments_entity
 
     # set controller value and set controller data using the new value
-    def set_controller_val(self, filename_key, controller_key: str, val: list):
+    def set_controller_val(self, controller_key: str, val: list):
         # get the controller
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
         # set the controller values
         controller.set_controller_val(val)
-        # get the experiments
-        experiments_obj = self.get_experiments(filename_key)
-        # get trace_obj from the exeriments
-        controller.set_controller_data(experiments_obj)
         # notiry axis. then they will use "self.get_controller_data"
         controller.observer.notify_observer()
         
@@ -155,7 +151,7 @@ class DataService(ModelInterface):
         controller = self.__user_controller_repository.find_by_name(controller_key)
         return controller.val_obj
     
-    def set_controller_data(self, filename_key: str, controller_key:str, ch_key_list: list):
+    def set_controller_data(self, controller_key: str, filename_key:str, ch_key_list: list):
         experiments_obj = self.get_experiments(filename_key)
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)

@@ -20,7 +20,9 @@ class ViewController:
         self.__file_service = FileService()
         
     def __del__(self):
-        print('Deleted a ViewController.' + '  myId= {}'.format(id(self)))
+        print('.')
+        #print('Deleted a ViewController.' + '  myId= {}'.format(id(self)))
+        #pass
 
     def open_file(self, filename_obj=None) -> dict:
         # get filename object
@@ -52,13 +54,12 @@ class ViewController:
             print(f"Can't find data_dict in {controller_key}")
         else:
             return data_dict
-
-    # put data to user controller data dict.
-    def set_controller_data(self):
-        self.__model.set_data(operating_user_controller, operating_user_controller, operating_ch_list)
         
     def set_controller_val(self, controller_key: str, val: list):
         self.__model.set_controller_val(controller_key, val)
+        
+    def set_controller_data(self, controller_list, filename_list, ch_list):
+        self.__model.set_controller_data(controller_list, filename_list, ch_list)
         
     def set_observer(self, controller_key, ax:object):
         self.__model.set_observer(controller_key, ax)
@@ -76,17 +77,15 @@ class ViewController:
             data_infor = self.__model.get_infor(controller_key)
         return data_infor
 
-    def set_position_image_ax(self, event):
+    def set_position_image_ax(self, event, filename_list, controller_list, ch_list):
         #print(event.button, event.x, event.y, event.xdata, event.ydata, event.dblclick, event.inaxes)
-        for controller_key in self.__operating_controller_list:
-            print(f"{self.__operating_controller_list}: ", end='')
+        for controller_key in controller_list:
+            print(f"{controller_list}: ", end='')
             # Cursor adjustment. the center of the pixel is 0. So it need 0.5 shift. 
             roi_x = round(event.xdata)
             roi_y = round(event.ydata)
             roi = [roi_x, roi_y, None, None]
             self.__model.set_controller_val(controller_key, roi)
-
-
 
     def change_roi_size(self, val): #val = [x,y,x_length,y_length]
         for roi in self.__operating_controller_list:        
@@ -112,15 +111,6 @@ class ViewController:
             return
         key = 'Roi' + str(self.current_roi_num)
         self.send_update_message(key, [])
-        
-    def get_operating_controller_list(self):
-        return self.__operating_controller_list
-    
-    def set_operating_controller_list(self, controller_key):
-        if controller_key in self.__operating_controller_list:
-            self.__operating_controller_list.remove(controller_key)
-        else:
-            self.__operating_controller_list.append(controller_key)
         
     def print_model_infor(self):
         self.__model.print_infor()
