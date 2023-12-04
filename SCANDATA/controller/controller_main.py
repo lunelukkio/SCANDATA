@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Jul 21 11:45:37 2022
-
+It the future this file would be deleted.
 lunelukkio@gmail.com
 main for controller
 """
@@ -77,18 +77,10 @@ class ViewController:
             data_infor = self.__model.get_infor(controller_key)
         return data_infor
 
-    def set_position_image_ax(self, event, filename_list, controller_list, ch_list):
-        #print(event.button, event.x, event.y, event.xdata, event.ydata, event.dblclick, event.inaxes)
-        for controller_key in controller_list:
-            print(f"{controller_list}: ", end='')
-            # Cursor adjustment. the center of the pixel is 0. So it need 0.5 shift. 
-            roi_x = round(event.xdata)
-            roi_y = round(event.ydata)
-            roi = [roi_x, roi_y, None, None]
-            self.__model.set_controller_val(controller_key, roi)
+
 
     def change_roi_size(self, val): #val = [x,y,x_length,y_length]
-        for roi in self.__operating_controller_list:        
+        for roi in self.__operating_controller_list:    
             roi_val = self.__model.get_controller_val(roi).data
             new_roi_val = roi_val + val 
             if new_roi_val[2] < 1 or new_roi_val[3] < 1:

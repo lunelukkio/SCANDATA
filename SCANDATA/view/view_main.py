@@ -367,12 +367,14 @@ class DataWindow(tk.Frame):
     def onclick_image(self, event):
         if event.dblclick is False:
             if event.button == 1:  # left click
-                controller_list = self.ax_list[1].set_click_position(event)
-                # adjust for image data pixels
-                x = round(event.xdata)-0.5
-                y = round(event.ydata)-0.5
-                roi_pos = [x, y, 0, 0]
-                self.ax_list[0].set_roibox(roi_pos, controller_list)
+                x = round(event.xdata)
+                y = round(event.ydata)
+                # set roi value in ROI
+                self.ax_list[1].set_controller_val([x, y, None, None])
+                controller_list = self.ax_list[1].get_operating_user_controller_list()
+                # adjust for image data pixels 0.5
+                roi_box_pos = [x-0.5, y-0.5, 0, 0]
+                self.ax_list[0].set_roibox(roi_box_pos, controller_list)
                 self.update_ax(1)
             elif event.button == 2:
                 pass
@@ -424,14 +426,14 @@ class DataWindow(tk.Frame):
         pass
 
     def large_roi(self):
-        self.change_roi_size([0, 0, 1, 1])
+        self.change_roi_size([None, None, 1, 1])
 
     def small_roi(self):
-        self.change_roi_size([0, 0, -1, -1])
+        self.change_roi_size([None, None, -1, -1])
 
     # need refactoring. shold delete return from the roi values.
     def change_roi_size(self, val):
-        new_roi = self.__view_controller.change_roi_size(val)
+        new_roi = self.ax_list[1].set_controller_val(val)
         if new_roi is not None:
             x = new_roi[0]
             y = new_roi[1]
@@ -491,9 +493,14 @@ class ViewAx(metaclass=ABCMeta):
                 setting = json.load(json_file)
         self._ch_color = setting.get("ch_color")
         self._controller_color = setting.get("controller_color")
-
+     
+    def set_controller_val(self, val):  # e.g. val = [x, y, None, None]
+        for controller_key in self._operating_user_controller_list:
+            self._view_controller.set_controller_val(controller_key, val)
+        print(f"{self._operating_user_controller_list}: ", end='')
+            
     @abstractmethod
-    def set_click_position(self, event):  
+    def change_user_controller_size(self):
             raise NotImplementedError()
 
     @abstractmethod
@@ -563,20 +570,22 @@ class ViewAx(metaclass=ABCMeta):
         print(self._user_controller_list)
         print(self._operating_user_controller_list)
         print(self._operating_ch_list)
-    
+        
+    def get_operating_user_controller_list(self):
+        return self._operating_user_controller_list
     
 class TraceAx(ViewAx):
     def __init__(self, canvas, ax, view_controller):
         super().__init__(ax, view_controller)
         self.canvas = canvas
         self.mode = "CH_MODE"  # or "ROI MODE" for showing sigle ch of several ROIs.
-     
-    def set_click_position(self, event):
-        self._view_controller.set_position_image_ax(event, 
-                                                    self._operating_filename_list,
-                                                    self._operating_user_controller_list,
-                                                    self._operating_ch_list)
-        return self._operating_user_controller_list
+    
+    def change_user_controller_size(self):
+            self._view_controller.set_position_image_ax(event, 
+                                                        self._operating_filename_list,
+                                                        self._operating_user_controller_list,
+                                                        self._operating_ch_list)
+            return self._operating_user_controller_list
      
     def set_view_data(self):
         if self.update_switch is True:
@@ -605,6 +614,9 @@ class ImageAx(ViewAx):
         
     def set_click_position(self, event):  
             raise NotImplementedError()
+            
+    def change_user_controller_size(self):
+        pass
         
     # There are three dict. active_controller_dict is to switching. self._ax_data_dict is to keep ax data. controller_data_dict is from user controller.
     def set_view_data(self):
@@ -641,7 +653,7 @@ class ImageAx(ViewAx):
         for roi in controller_list:
             if roi not in self._marker_obj:
                 self._marker_obj[roi] = RoiBox(roi_pos, self._controller_color[roi])
-                self._ax_obj.add_patch(self._marker_obj[roi])
+                self._ax_obj.add_patch(self._marker_obj[roi].rectangle_obj)
 
             else:
                 old_width = self._marker_obj[roi].rectangle_obj.get_width()
@@ -653,7 +665,7 @@ class ImageAx(ViewAx):
                     self._marker_obj[roi].set_roi(new_roi_pos)
                 else:
                     print("RoiBox: The ROI value is too small.")
-            self.draw_ax
+            self.canvas.draw()
 
 
 class RoiBox():
@@ -725,5 +737,5 @@ if __name__ == '__main__':
     
     print("＝＝＝to do list＝＝＝")
     print("second trace time shift ")
-    print("make click functions")
+    print("make change roi size functions")
     print("")
