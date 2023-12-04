@@ -315,20 +315,12 @@ class DataWindow(tk.Frame):
         self.__view_controller.set_observer("TRACE_CONTROLLER0", self.ax_list[2])  # no use
         self.__view_controller.set_observer("TRACE_CONTROLLER1", self.ax_list[2])
         
-        """
-        # set background roi to the mod class
-        self.__view_controller.set_mod_val("ROI1", "BgCompMod")
-        
-        # set mod
-        self.__view_controller.set_mod_key("ROI2", "BGCOMP")
-        """
         self.ax_list[0].set_operating_filename_list(filename_obj.name)
         self.ax_list[0].set_user_controller_list("IMAGE_CONTROLLER0")  # This is for difference image
         self.ax_list[0].set_user_controller_list("IMAGE_CONTROLLER1")
         self.ax_list[0].set_operating_user_controller_list("IMAGE_CONTROLLER1")
         self.ax_list[0].set_operating_ch_list("CH1")
 
-        
         self.ax_list[1].set_operating_filename_list(filename_obj.name)
         self.ax_list[1].set_user_controller_list("ROI0")
         self.ax_list[1].set_user_controller_list("ROI1")
@@ -341,7 +333,6 @@ class DataWindow(tk.Frame):
         self.ax_list[2].set_operating_user_controller_list("TRACE_CONTROLLER1")
         self.ax_list[2].set_operating_ch_list("ELEC0")
 
-
         """ about mod"""
         # Set ROI0 as background in ROI1 controller
         # send background ROI. but it done outside of the model.
@@ -349,7 +340,13 @@ class DataWindow(tk.Frame):
         self.__view_controller.set_mod_val("ROI1", "BGCOMP", background_dict)
         # Turn on the switch of BGCOMP for ROI1.
         self.__view_controller.set_mod_key("ROI1", "BGCOMP")
+        """
+        # set background roi to the mod class
+        self.__view_controller.set_mod_val("ROI1", "BgCompMod")
         
+        # set mod
+        self.__view_controller.set_mod_key("ROI2", "BGCOMP")
+        """
         print("===== End default settings. =====")
         
         for i in range(3):
@@ -370,12 +367,13 @@ class DataWindow(tk.Frame):
     def onclick_image(self, event):
         if event.dblclick is False:
             if event.button == 1:  # left click
-                self.ax_list[1].set_click_position(event)
+                controller_list = self.ax_list[1].set_click_position(event)
                 # adjust for image data pixels
                 x = round(event.xdata)-0.5
                 y = round(event.ydata)-0.5
-                self.ax_list[0].set_roibox(x, y)
-                self.ax_list[1].update()
+                roi_pos = [x, y, 0, 0]
+                self.ax_list[0].set_roibox(roi_pos, controller_list)
+                self.update_ax(1)
             elif event.button == 2:
                 pass
             elif event.button == 3:
@@ -401,14 +399,20 @@ class DataWindow(tk.Frame):
                 self.ax_list[1]._active_controller_dict[next_controller].update(self.ax_list[1]._active_controller_dict[old_controller])
                 self.ax_list[1].set_active_controller_key(old_controller, False)
                 print(f"Switch to {next_controller}")
-                self.ax_list[1].update()
-                self.ax_list[0].update()
+                self.update_ax(0)
+                self.update_ax(1)
         elif event.dblclick is True:
             print("Double click is for ----")
         print('')
         
-    def select_ch(self, event):
-        print(event)
+    def select_ch(self, ch_key):
+        # send flags to ax.
+        if ch_key == "FULL":
+            ch_key = "CH0"
+        for ax_num in range(2):
+            self.ax_list[ax_num].set_operating_ch_list(ch_key)
+            self.update_ax(ax_num)
+        print('')
         
     def elec_ch_select(self, event):
         selected_value = self.combo_box_elec_ch.get()
@@ -432,7 +436,7 @@ class DataWindow(tk.Frame):
             x = new_roi[0]
             y = new_roi[1]
             self.ax_list[0].set_roibox(x, y, val[2], val[3])
-            self.ax_list[0].update()
+            #self.ax_list[0].update()
         else:
             return
         
@@ -472,16 +476,19 @@ class ViewAx(metaclass=ABCMeta):
         
         self._operating_filename_list = []
         self._operating_ch_list = []
+        
+        self._marker_obj = {}
+        
         self.sync_switch = False  # This switch is to show each data in each controllers.
         self.update_switch = True  # This switch is for avoiding image view update. Ture or False or empty: flip switch.
         
+        # color selection for traces and RoiBoxes
         try:
             with open("../setting/axis_data_setting.json", "r") as json_file:
                 setting = json.load(json_file)
         except:
             with open("./setting/axis_data_setting.json", "r") as json_file:
                 setting = json.load(json_file)
-            
         self._ch_color = setting.get("ch_color")
         self._controller_color = setting.get("controller_color")
 
@@ -569,6 +576,7 @@ class TraceAx(ViewAx):
                                                     self._operating_filename_list,
                                                     self._operating_user_controller_list,
                                                     self._operating_ch_list)
+        return self._operating_user_controller_list
      
     def set_view_data(self):
         if self.update_switch is True:
@@ -584,7 +592,7 @@ class TraceAx(ViewAx):
                         if self.mode == "CH_MODE":
                             ax_data.set_color(self._ch_color[ch_key])
                         elif self.mode == "ROI_MODE":
-                            ax_data.set_color(controller_key)
+                            ax_data.set_color(self._ch_color[controller_key])
         else:
             pass
 
@@ -593,7 +601,6 @@ class ImageAx(ViewAx):
     def __init__(self, canvas, ax, view_controller):
         super().__init__(ax, view_controller)
         self.canvas = canvas
-        self._roibox_data_dict = {}
         self.mode = None  # no use
         
     def set_click_position(self, event):  
@@ -630,32 +637,36 @@ class ImageAx(ViewAx):
                                                          self._operating_ch_list)
         self.draw_ax()  
                  
-    def set_roibox(self, x, y, width=0, height=0):  # roi[x,y,width,height]
-        for roi in self._view_controller.get_operating_controller_list():
-            old_width = self._roibox_data_dict[roi].rectangle_obj.get_width()
-            old_height = self._roibox_data_dict[roi].rectangle_obj.get_height()
-            new_width = old_width + width
-            new_height = old_height + height
-            if new_width > 0 and new_height >0:
-                self._roibox_data_dict[roi].set_roi([x, y, new_width, new_height])
+    def set_roibox(self, roi_pos, controller_list):  # roi[x,y,width,height]. controller_list came from the trace axis
+        for roi in controller_list:
+            if roi not in self._marker_obj:
+                self._marker_obj[roi] = RoiBox(roi_pos, self._controller_color[roi])
+                self._ax_obj.add_patch(self._marker_obj[roi])
+
             else:
-                print("RoiBox: The ROI value is too small.")
-                
-        for roi_box in self._roibox_data_dict.values():
-            if roi_box is not None:
-                self._ax_obj.add_patch(roi_box.rectangle_obj)
+                old_width = self._marker_obj[roi].rectangle_obj.get_width()
+                old_height = self._marker_obj[roi].rectangle_obj.get_height()
+                new_width = old_width + roi_pos[2]
+                new_height = old_height + roi_pos[3]
+                new_roi_pos = [roi_pos[0], roi_pos[1], new_width, new_height]
+                if new_width > 0 and new_height >0:
+                    self._marker_obj[roi].set_roi(new_roi_pos)
+                else:
+                    print("RoiBox: The ROI value is too small.")
+            self.draw_ax
+
 
 class RoiBox():
-    """ class variable """
-    color_selection = ['white', 'red', 'blue', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan', 'orange']
+    #""" class variable """
+    #color_selection = ['white', 'red', 'blue', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan', 'orange']
 
-    """ instance method """
-    def __init__(self, roi_num):
+    #""" instance method """
+    def __init__(self, roi_num, color):
         self.__rectangle_obj = patches.Rectangle(xy=(40, 40), 
                                                  width=1, 
                                                  height=1,
                                                  linewidth=0.7,
-                                                 ec=RoiBox.color_selection[int(roi_num)-1], 
+                                                 ec=color, 
                                                  fill=False)
 
     def set_roi(self, roi_val):
