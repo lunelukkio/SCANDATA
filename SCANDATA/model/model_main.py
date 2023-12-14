@@ -20,7 +20,7 @@ class ModelInterface(metaclass=ABCMeta):
     def create_experiments(self, fullname):
         raise NotImplementedError()
         
-    # make a new value of data.
+    # make a new value of data. return controller a key name.
     @abstractmethod
     def create_user_controller(self, controller_key) -> str:
         raise NotImplementedError()

@@ -10,8 +10,6 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.filedialog
 import os
-import copy
-import re
 import matplotlib.patches as patches
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
@@ -370,11 +368,14 @@ class DataWindow(tk.Frame):
                 x = round(event.xdata)
                 y = round(event.ydata)
                 # set roi value in ROI
-                self.ax_list[1].set_controller_val([x, y, None, None])
                 controller_list = self.ax_list[1].get_operating_user_controller_list()
-                # adjust for image data pixels 0.5
-                roi_box_pos = [x-0.5, y-0.5, 0, 0]
-                self.ax_list[0].set_roibox(roi_box_pos, controller_list)
+                for controller_key in controller_list:
+                    self.ax_list[1].set_controller_val(controller_key, [x, y, None, None])
+                    new_roi_val_obj = self.__view_controller.get_controller_val(controller_key)
+                    roi_pos = new_roi_val_obj.data
+                    # adjust for image data pixels 0.5
+                    roi_box_pos = roi_pos[0]-0.5, roi_pos[1]-0.5,roi_pos[2],roi_pos[3]
+                    self.ax_list[0].set_roibox(controller_key, roi_box_pos)
                 self.update_ax(1)
             elif event.button == 2:
                 pass
@@ -433,15 +434,20 @@ class DataWindow(tk.Frame):
 
     # need refactoring. shold delete return from the roi values.
     def change_roi_size(self, val):
-        new_roi = self.ax_list[1].set_controller_val(val)
-        if new_roi is not None:
-            x = new_roi[0]
-            y = new_roi[1]
-            self.ax_list[0].set_roibox(x, y, val[2], val[3])
-            #self.ax_list[0].update()
-        else:
-            return
-        
+        controller_list = self.ax_list[1].get_operating_user_controller_list()
+        for controller_key in controller_list:
+            # set roi in user controller
+            self.__view_controller.set_controller_val(controller_key, val)
+            # get new roi value object
+            new_roi_val_obj = self.__view_controller.get_controller_val(controller_key)
+            # get roi value numpy data.
+            new_roi_val = new_roi_val_obj.data  
+            # adjust for image data pixels 0.5
+            roi_box_pos = [new_roi_val[0]-0.5, new_roi_val[1]-0.5, new_roi_val[2], new_roi_val[3]]
+            # send data to image axis
+            self.ax_list[0].set_roibox(controller_key, roi_box_pos)
+        self.update_ax(1)
+         
     def add_roi(self):
         print('')
         
@@ -479,7 +485,7 @@ class ViewAx(metaclass=ABCMeta):
         self._operating_filename_list = []
         self._operating_ch_list = []
         
-        self._marker_obj = {}
+        self._marker_obj = {}  # This is for makers in axis windows.
         
         self.sync_switch = False  # This switch is to show each data in each controllers.
         self.update_switch = True  # This switch is for avoiding image view update. Ture or False or empty: flip switch.
@@ -494,14 +500,13 @@ class ViewAx(metaclass=ABCMeta):
         self._ch_color = setting.get("ch_color")
         self._controller_color = setting.get("controller_color")
      
-    def set_controller_val(self, val):  # e.g. val = [x, y, None, None]
-        for controller_key in self._operating_user_controller_list:
-            self._view_controller.set_controller_val(controller_key, val)
+    def set_controller_val(self, controller_key, val):  # e.g. val = [x, y, None, None]
+        self._view_controller.set_controller_val(controller_key, val)
         print(f"{self._operating_user_controller_list}: ", end='')
             
-    @abstractmethod
-    def change_user_controller_size(self):
-            raise NotImplementedError()
+    def get_controller_val(self):
+        for user_controller in self._operating_user_controller_list:
+             return self._view_controller.get_controller_val(user_controller)
 
     @abstractmethod
     def set_view_data(self, active_controller_dict):
@@ -579,13 +584,6 @@ class TraceAx(ViewAx):
         super().__init__(ax, view_controller)
         self.canvas = canvas
         self.mode = "CH_MODE"  # or "ROI MODE" for showing sigle ch of several ROIs.
-    
-    def change_user_controller_size(self):
-            self._view_controller.set_position_image_ax(event, 
-                                                        self._operating_filename_list,
-                                                        self._operating_user_controller_list,
-                                                        self._operating_ch_list)
-            return self._operating_user_controller_list
      
     def set_view_data(self):
         if self.update_switch is True:
@@ -614,9 +612,6 @@ class ImageAx(ViewAx):
         
     def set_click_position(self, event):  
             raise NotImplementedError()
-            
-    def change_user_controller_size(self):
-        pass
         
     # There are three dict. active_controller_dict is to switching. self._ax_data_dict is to keep ax data. controller_data_dict is from user controller.
     def set_view_data(self):
@@ -628,12 +623,22 @@ class ImageAx(ViewAx):
                     data = data_dict[ch_key]
                     if type(data).__name__ == "ImageData":
                         # get a graph
-                        data.show_data(self._ax_obj)  # ax_data can use for image setting.
+                        image = data.show_data(self._ax_obj)  # ax_data can use for image setting.
+                        print("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+                        print(image.get_zorder())
         else:
             pass
                     
     # override
     def draw_ax(self):
+        print(self._marker_obj)
+        if self._marker_obj  == {}:
+            print("ttttttttttttttttttttttttttttttttttttt")
+        else:
+            order_box = self._marker_obj["ROI1"].rectangle_obj.get_zorder()
+            print("dddddddddddddddddddddddddddddddddd")
+            print(order_box)
+            self._marker_obj["ROI1"].rectangle_obj.set_zorder(1)
         self.set_view_data()
         self._ax_obj.set_axis_off()
         self.canvas.draw()
@@ -647,25 +652,16 @@ class ImageAx(ViewAx):
                     self._view_controller.set_controller_data(controller_key,
                                                          filename_key,
                                                          self._operating_ch_list)
-        self.draw_ax()  
+        print("uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuupdate")
+        self.draw_ax()
                  
-    def set_roibox(self, roi_pos, controller_list):  # roi[x,y,width,height]. controller_list came from the trace axis
-        for roi in controller_list:
-            if roi not in self._marker_obj:
-                self._marker_obj[roi] = RoiBox(roi_pos, self._controller_color[roi])
-                self._ax_obj.add_patch(self._marker_obj[roi].rectangle_obj)
-
-            else:
-                old_width = self._marker_obj[roi].rectangle_obj.get_width()
-                old_height = self._marker_obj[roi].rectangle_obj.get_height()
-                new_width = old_width + roi_pos[2]
-                new_height = old_height + roi_pos[3]
-                new_roi_pos = [roi_pos[0], roi_pos[1], new_width, new_height]
-                if new_width > 0 and new_height >0:
-                    self._marker_obj[roi].set_roi(new_roi_pos)
-                else:
-                    print("RoiBox: The ROI value is too small.")
-            self.canvas.draw()
+    def set_roibox(self, controller_key, roi_pos):  # roi[x,y,width,height]. controller_list came from the trace axis
+        if controller_key not in self._marker_obj:
+            self._marker_obj[controller_key] = RoiBox(roi_pos, self._controller_color[controller_key])
+            self._ax_obj.add_patch(self._marker_obj[controller_key].rectangle_obj)
+        else:
+            self._marker_obj[controller_key].set_roi(roi_pos)
+        self.canvas.draw()
 
 
 class RoiBox():
@@ -738,4 +734,6 @@ if __name__ == '__main__':
     print("＝＝＝to do list＝＝＝")
     print("second trace time shift ")
     print("make change roi size functions")
+    print("ch を変えるとroiboxが消える")
+    print("スターtp字のROIBOXが見えない")
     print("")

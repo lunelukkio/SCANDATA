@@ -128,11 +128,19 @@ class Roi(UserController):
         self._val_obj = RoiVal(40, 40, 1, 1)
         
     # make a new Roi value object
-    def set_controller_val(self, roi_value_list: list):
-        for i in range(4):
-            if roi_value_list[i] == None:
-                roi_value_list[i] = self._val_obj.data[i]
-        self._val_obj = RoiVal(*roi_value_list[:4])  # replace the roi
+    def set_controller_val(self, roi_val: list):
+        if None not in roi_val:
+            pass
+        else:
+            for i in range(2):  # for x and y
+                if roi_val[i] == None:
+                    roi_val[i] = self._val_obj.data[i]
+            for i in range(2, 4):
+                if roi_val[i] == None:
+                    roi_val[i] = self._val_obj.data[i]# for width and hight
+                else:
+                    roi_val[i] = self._val_obj.data[i] + roi_val[i]
+        self._val_obj = RoiVal(*roi_val[:4])  # replace the roi
         print(f"set ROI: {self._val_obj.data}")
 
     # calculate a trace from a single frames data with a roi value object

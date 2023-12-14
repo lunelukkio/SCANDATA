@@ -58,6 +58,10 @@ class ViewController:
     def set_controller_val(self, controller_key: str, val: list):
         self.__model.set_controller_val(controller_key, val)
         
+    def get_controller_val(self, controller_key):
+        return self.__model.get_controller_val(controller_key)
+        
+        
     def set_controller_data(self, controller_list, filename_list, ch_list):
         self.__model.set_controller_data(controller_list, filename_list, ch_list)
         
