@@ -128,7 +128,7 @@ class DataService(ModelInterface):
             self.__user_controller_repository.save(new_key, new_controller)
             print(f"====================Created the new controller {controller_key}")
             self.print_infor()
-            return new_key  # This is to tell the key name to axtive_controller_dict in ViewController ax
+            return new_key  # This is to tell the key name to axtive_controller_dict in MainController ax
         else:
             self.__user_controller_repository.delete(controller_key)
             
@@ -191,7 +191,6 @@ class DataService(ModelInterface):
         controller.reset()
         print(f"Reset: {controller_key}")
 
-        
     def get_infor(self, controller_key=None) -> dict:
         if controller_key is None:
             controller_key_dict = {}
