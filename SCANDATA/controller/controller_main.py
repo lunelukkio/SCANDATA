@@ -62,14 +62,6 @@ class ControllerInterface(metaclass=ABCMeta):
         raise NotImplementedError() 
         
     @abstractmethod
-    def add_mod(self, ch_key: str, mod_key: str):
-        raise NotImplementedError() 
-        
-    @abstractmethod
-    def remove_mod(self, ch_key: str, mod_key: str):
-        raise NotImplementedError() 
-        
-    @abstractmethod
     def print_model_infor(self):
         raise NotImplementedError() 
 

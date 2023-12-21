@@ -126,7 +126,7 @@ class TraceAxisController(AxisController):
         if self.update_switch is True:
             for controller_key in self._operating_user_controller_list:
                 #get data from current user controller
-                data_dict = self._main_controller.get_data(controller_key)
+                data_dict = self._main_controller.get_controller_data(controller_key)
                 for ch_key in data_dict.keys():
                     data = data_dict[ch_key]
                     if type(data).__name__ == "TraceData":
@@ -155,7 +155,7 @@ class ImageAxisController(AxisController):
         if self.update_switch is True:
             for controller_key in self._operating_user_controller_list:
                 #get data from current user controller
-                data_dict = self._main_controller.get_data(controller_key)
+                data_dict = self._main_controller.get_controller_data(controller_key)
                 for ch_key in data_dict.keys():
                     data = data_dict[ch_key]
                     if type(data).__name__ == "ImageData":
