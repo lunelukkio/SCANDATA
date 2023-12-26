@@ -14,6 +14,9 @@ import psutil  # for memory check
 
 
 class ControllerInterface(metaclass=ABCMeta):
+    """
+    MainController 
+    """
     @abstractmethod
     def open_file(self, filename_obj):
         raise NotImplementedError() 
@@ -22,6 +25,13 @@ class ControllerInterface(metaclass=ABCMeta):
     def create_experiments(self, filename_obj):
         raise NotImplementedError() 
         
+    @abstractmethod
+    def get_controller_infor(self, controller_key=None) -> dict:
+        raise NotImplementedError()
+        
+    """
+    Delegation to the Model
+    """ 
     @abstractmethod
     def create_user_controller(self, controller_key):
         raise NotImplementedError() 
@@ -46,23 +56,33 @@ class ControllerInterface(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
-    def get_controller_infor(self, controller_key=None) -> dict:
-        raise NotImplementedError()
-        
-    @abstractmethod
     def set_observer(self, controller_key, ax:object):
         raise NotImplementedError() 
-
+        
+    @abstractmethod
+    def print_model_infor(self):
+        raise NotImplementedError() 
+        
+    """
+    Delegation to the AxisController
+    """
+    @abstractmethod
+    def add_axis(self, axis):
+        raise NotImplementedError()
+    
+    @abstractmethod
+    def get_operating_user_controller_list(self, ax_num):
+        raise NotImplementedError()
+    
+    """
+    Delegation to the Model
+    """
     @abstractmethod
     def set_mod_key(self, controller_key, mod_key):
         raise NotImplementedError() 
         
     @abstractmethod
     def set_mod_val(self, controller_key, mod_key, val):
-        raise NotImplementedError() 
-        
-    @abstractmethod
-    def print_model_infor(self):
         raise NotImplementedError() 
 
 class MainController(ControllerInterface):
@@ -71,13 +91,16 @@ class MainController(ControllerInterface):
         self.__view = view
         self.__file_service = FileService()
         self.__mod_controller = ModController(self.__model)
-        self.ax_list = []  # [0] = main cell image ax (ImageAxsis class), [1] = fluoresent trace ax (TraceAx class), [2] = elec trace ax
+        self.__ax_list = []  # [0] = main cell image ax (ImageAxsis class), [1] = fluoresent trace ax (TraceAx class), [2] = elec trace ax
         
     def __del__(self):
         print('.')
         #print('Deleted a MainController.' + '  myId= {}'.format(id(self)))
         #pass
-
+        
+    """
+    MainController 
+    """
     def open_file(self, filename_obj=None) -> dict:
         # get filename object
         if filename_obj is None:
@@ -97,12 +120,32 @@ class MainController(ControllerInterface):
             print('============================== MainController: Suceeded to read data from data files.')
             print('')
             return controller_dict_keys
+        
+    def get_controller_infor(self, controller_key=None) -> dict:
+        if controller_key is None:
+            data_infor = self.__model.get_infor()
+        else:
+            data_infor = self.__model.get_infor(controller_key)
+        return data_infor
+    
+    def get_memory_infor(self):
+        pid = os.getpid()
+        process = psutil.Process(pid)
+        memory_infor = process.memory_info().rss
+        maximum_memory = psutil.virtual_memory().total
+        available_memory = psutil.virtual_memory().available
+        return memory_infor, maximum_memory, available_memory
             
+    """
+    Delegation to the Model
+    """    
+    def add_axis(self, axis):
+        self.__ax_list.append(axis)
+        
     def create_user_controller(self, controller_key):
         new_key = self.__model.create_user_controller(controller_key)
         return new_key
 
-        
     def set_controller_val(self, controller_key: str, val: list):
         self.__model.set_controller_val(controller_key, val)
         
@@ -119,32 +162,27 @@ class MainController(ControllerInterface):
         else:
             return data_dict
         
-    def get_controller_infor(self, controller_key=None) -> dict:
-        if controller_key is None:
-            data_infor = self.__model.get_infor()
-        else:
-            data_infor = self.__model.get_infor(controller_key)
-        return data_infor
-        
     def set_observer(self, controller_key, ax:object):
         self.__model.set_observer(controller_key, ax)
         
+    def print_model_infor(self):
+        self.__model.print_infor()
+        
+    """
+    Delegation to the AxisController
+    """    
+    def get_operating_user_controller_list(self, ax_num):
+        return self.__ax_list[ax_num].get_operating_user_controller_list()
+    
+    """
+    Delegation to the ModController
+    """        
     def set_mod_key(self, controller_key, mod_key):
         self.__mod_controller.set_mod_key(controller_key, mod_key)
         
     def set_mod_val(self, controller_key, mod_key, val):
         self.__mod_controller.set_mod_val(controller_key, mod_key, val)
         
-    def print_model_infor(self):
-        self.__model.print_infor()
-    
-    def get_memory_infor(self):
-        pid = os.getpid()
-        process = psutil.Process(pid)
-        memory_infor = process.memory_info().rss
-        maximum_memory = psutil.virtual_memory().total
-        available_memory = psutil.virtual_memory().available
-        return memory_infor, maximum_memory, available_memory
 
 class FileService:
     def open_file(self, *filename):  # it can catch variable num of filenames.
