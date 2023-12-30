@@ -81,7 +81,7 @@ class AxisController(metaclass=ABCMeta):
             self._operating_ch_list.remove(ch_key)
             print(f"Removed {ch_key} from {self._operating_ch_list} of {self.__class__.__name__}")
 
-    def change_update_switch(self, val=None):
+    def ax_update_switch(self, val=None):
         if val is True:
             self.update_switch = True
         elif val is False:
@@ -117,8 +117,8 @@ class AxisController(metaclass=ABCMeta):
         return self._operating_user_controller_list
     
 class TraceAxisController(AxisController):
-    def __init__(self, canvas, ax, main_controller):
-        super().__init__(ax, main_controller)
+    def __init__(self, canvas, ax):
+        super().__init__(ax)
         self.canvas = canvas
         self.mode = "CH_MODE"  # or "ROI MODE" for showing sigle ch of several ROIs.
      
@@ -142,8 +142,8 @@ class TraceAxisController(AxisController):
 
 
 class ImageAxisController(AxisController):
-    def __init__(self, canvas, ax, main_controller):
-        super().__init__(ax, main_controller)
+    def __init__(self, canvas, ax):
+        super().__init__(ax)
         self.canvas = canvas
         self.mode = None  # no use
         

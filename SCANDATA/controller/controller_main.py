@@ -7,7 +7,7 @@ main for controller
 
 from abc import ABCMeta, abstractmethod
 from SCANDATA.model.model_main import DataService
-from SCANDATA.common_class import WholeFilename
+from SCANDATA.common_class import WholeFilename, ImagingDataStructure
 import tkinter as tk
 import os
 import psutil  # for memory check
@@ -17,6 +17,10 @@ class ControllerInterface(metaclass=ABCMeta):
     """
     MainController 
     """
+    @abstractmethod
+    def add_axis(self, axis_name: str, axis: object) -> None:
+        raise NotImplementedError()
+    
     @abstractmethod
     def open_file(self, filename_obj):
         raise NotImplementedError() 
@@ -56,7 +60,7 @@ class ControllerInterface(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
-    def set_observer(self, controller_key, ax:object):
+    def set_observer(self, controller_key: str, ax_num: int) -> None:
         raise NotImplementedError() 
         
     @abstractmethod
@@ -65,13 +69,25 @@ class ControllerInterface(metaclass=ABCMeta):
         
     """
     Delegation to the AxisController
-    """
+    """   
     @abstractmethod
-    def add_axis(self, axis):
+    def get_operating_user_controller_list(self, ax_key: str):
         raise NotImplementedError()
-    
+
     @abstractmethod
-    def get_operating_user_controller_list(self, ax_num):
+    def ax_update_switch(self, ax_key: str, swtch: bool) -> None:
+        raise NotImplementedError()
+        
+    @abstractmethod
+    def ax_update(self, ax_key: str) -> None:
+        raise NotImplementedError()
+        
+    @abstractmethod
+    def ax_print_infor(self, ax_key: str) -> None:
+        raise NotImplementedError()
+        
+    @abstractmethod
+    def set_roibox(self, controller_key, roi_box_pos):
         raise NotImplementedError()
     
     """
@@ -88,10 +104,10 @@ class ControllerInterface(metaclass=ABCMeta):
 class MainController(ControllerInterface):
     def __init__(self, view=None):
         self.__model = DataService()
-        self.__view = view
         self.__file_service = FileService()
         self.__mod_controller = ModController(self.__model)
-        self.__ax_list = []  # [0] = main cell image ax (ImageAxsis class), [1] = fluoresent trace ax (TraceAx class), [2] = elec trace ax
+        self.__ax_dict = {}  # {"ImageAxis": ImageAxsis class, FluoAxis: TraceAx class, ElecAxis: TraceAx class}
+        self.__imaging_data_structure = ImagingDataStructure()
         
     def __del__(self):
         print('.')
@@ -101,6 +117,9 @@ class MainController(ControllerInterface):
     """
     MainController 
     """
+    def add_axis(self, axis_name: str, axis_obj: object) -> None:
+        self.__ax_dict[axis_name] = axis_obj
+    
     def open_file(self, filename_obj=None) -> dict:
         # get filename object
         if filename_obj is None:
@@ -110,7 +129,7 @@ class MainController(ControllerInterface):
         self.print_model_infor()
         print(f"   !!! Open {filename_obj.name}: suceeded!!!")
         print("")
-        return filename_obj   
+        return filename_obj
     
     def create_experiments(self, filename_obj: object):  
         controller_dict_keys = self.__model.create_experiments(filename_obj.fullname)
@@ -138,10 +157,7 @@ class MainController(ControllerInterface):
             
     """
     Delegation to the Model
-    """    
-    def add_axis(self, axis):
-        self.__ax_list.append(axis)
-        
+    """           
     def create_user_controller(self, controller_key):
         new_key = self.__model.create_user_controller(controller_key)
         return new_key
@@ -162,17 +178,33 @@ class MainController(ControllerInterface):
         else:
             return data_dict
         
-    def set_observer(self, controller_key, ax:object):
-        self.__model.set_observer(controller_key, ax)
+    def set_observer(self, controller_key: str, ax_key: str) -> None:
+        self.__model.set_observer(controller_key, self.__ax_dict[ax_key])
         
     def print_model_infor(self):
         self.__model.print_infor()
         
+    @property
+    def ax_dict(self):
+        return self.__ax_dict
+        
     """
     Delegation to the AxisController
     """    
-    def get_operating_user_controller_list(self, ax_num):
-        return self.__ax_list[ax_num].get_operating_user_controller_list()
+    def get_operating_user_controller_list(self, ax_key):
+        return self.__ax_dict[ax_key].get_operating_user_controller_list()
+    
+    def ax_update_switch(self, ax_key: str, val=None) -> None:
+        self.__ax_dict[ax_key].ax_update_switch(val)
+        
+    def ax_update(self, ax_key: str):
+        self.__ax_dict[ax_key].update()
+        
+    def ax_print_infor(self, ax_key):
+        self.__ax_dict[ax_key].print_infor()
+        
+    def set_roibox(self, controller_key, roi_box_pos):
+        self.__ax_dict["IMAGE_AXIS"].set_roibox(controller_key, roi_box_pos)
     
     """
     Delegation to the ModController
@@ -182,6 +214,8 @@ class MainController(ControllerInterface):
         
     def set_mod_val(self, controller_key, mod_key, val):
         self.__mod_controller.set_mod_val(controller_key, mod_key, val)
+        
+
         
 
 class FileService:

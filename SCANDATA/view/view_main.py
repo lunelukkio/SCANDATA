@@ -235,7 +235,7 @@ class DataWindow(tk.Frame):
         
         self.canvas_image = FigureCanvasTkAgg(image_fig, frame_left)
         #canvas_image.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
-        self.__main_controller.add_axis(ImageAxisController(self.canvas_image, image_ax, self.__main_controller))  # _ax_list[0]
+        self.__main_controller.add_axis("IMAGE_AXIS",ImageAxisController(self.canvas_image, image_ax))  # ax_dict["ImageAxis"]
 
         # for tool bar in the image window
         self.canvas_image.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
@@ -274,11 +274,11 @@ class DataWindow(tk.Frame):
         
         # matplotlib trace axes
         trace_ax1 = trace_fig.add_subplot(gridspec_trace_fig[0:15])
-        self.__main_controller._ax_list.append(TraceAxisController(self.canvas_trace, trace_ax1, self.__main_controller))  # _ax_list[1]
+        self.__main_controller.add_axis("FLUO_AXIS", TraceAxisController(self.canvas_trace, trace_ax1))  # _ax_dict["FluoAxis"]
         
         # matplotlib elec trace axes
-        trace_ax2 = trace_fig.add_subplot(gridspec_trace_fig[16:20], sharex=self.__main_controller._ax_list[1]._ax_obj)
-        self.__main_controller._ax_list.append(TraceAxisController(self.canvas_trace, trace_ax2, self.__main_controller))  # _ax_list[2]
+        trace_ax2 = trace_fig.add_subplot(gridspec_trace_fig[16:20], sharex=self.__main_controller._ax_dict["FluoAxis"]._ax_obj)  # sync to FluoAxis
+        self.__main_controller.add_axis("ELEC_AXIS", TraceAxisController(self.canvas_trace, trace_ax2))  # _ax_dict["ElecAxis"]
         
         #canvas_trace.get_tk_widget().pack()
         toolbar_trace = NavigationToolbarMyTool(self.canvas_trace, frame_right, self.my_color)
@@ -293,24 +293,32 @@ class DataWindow(tk.Frame):
             self.open_file(filename_obj)
         
     def open_file(self, filename_obj=None):
-        filename_obj = self.__main_controller.open_file(filename_obj)  # make a model and get filename obj
-        self.default_view_data(filename_obj)
-        self.update_ax(3)  # 3 = draw whole ax
+        self.__main_controller.open_file(filename_obj)  # make a model and get filename obj
+        self.default_view_data()
+        self.__main_controller.ax_update("IMAGE_AXIS")
+        self.__main_controller.ax_update("FLUO_AXIS")
+        self.__main_controller.ax_update("ELEC_AXIS")
         
         # set image view doesn't update
-        self.__main_controller._ax_list[0].change_update_switch(True)
-        self.__main_controller._ax_list[1].change_update_switch(True)
-        self.__main_controller._ax_list[2].change_update_switch(True)
+        self.__main_controller.ax_update_switch("IMAGE_AXIS", True)
+        self.__main_controller.ax_update_switch("FLUO_AXIS", True)
+        self.__main_controller.ax_update_switch("ELEC_AXIS", True)
         
-    def default_view_data(self, filename_obj):
+    def default_view_data(self):
         print("===== Start default settings. =====")
         
-        self.__main_controller.set_observer("ROI0", self.__main_controller._ax_list[1])   #background for bg_comp
-        self.__main_controller.set_observer("ROI1", self.__main_controller._ax_list[1])
-        self.__main_controller.set_observer("IMAGE_CONTROLLER0", self.__main_controller._ax_list[0])  # base image for difference image
-        self.__main_controller.set_observer("IMAGE_CONTROLLER1", self.__main_controller._ax_list[0])
-        self.__main_controller.set_observer("TRACE_CONTROLLER0", self.__main_controller._ax_list[2])  # no use
-        self.__main_controller.set_observer("TRACE_CONTROLLER1", self.__main_controller._ax_list[2])
+        self.__main_controller.set_observer("ROI0", "FLUO_AXIS")   #background for bg_comp, (controller_key, axis number)
+        self.__main_controller.set_observer("ROI1", "FLUO_AXIS")
+        self.__main_controller.set_observer("IMAGE_CONTROLLER0", "IMAGE_AXIS")  # base image for difference image
+        self.__main_controller.set_observer("IMAGE_CONTROLLER1", "IMAGE_AXIS")  # for difference image
+        self.__main_controller.set_observer("TRACE_CONTROLLER0", "ELEC_AXIS")  # no use
+        self.__main_controller.set_observer("TRACE_CONTROLLER1", "ELEC_AXIS")
+        
+        
+        
+        
+        
+        
         
         self.__main_controller._ax_list[0].set_operating_filename_list(filename_obj.name)
         self.__main_controller._ax_list[0].set_user_controller_list("IMAGE_CONTROLLER0")  # This is for difference image
@@ -346,20 +354,12 @@ class DataWindow(tk.Frame):
         """
         print("===== End default settings. =====")
         
-        for i in range(3):
-            self.__main_controller._ax_list[i].update()
-            self.__main_controller._ax_list[i].print_infor()
-        
-    def update_ax(self, ax_num):
-        if ax_num == 0:
-            self.__main_controller._ax_list[0].update()
-        elif ax_num == 1:
-            self.__main_controller._ax_list[1].update()
-        elif ax_num == 2:
-            self.__main_controller._ax_list[2].update()
-        elif ax_num == 3:
-            for ax_num in range(3):
-                self.__main_controller._ax_list[ax_num].update()
+        self.__main_controller.ax_update("IMAGE_AXIS")
+        self.__main_controller.ax_update("FLUO_AXIS")
+        self.__main_controller.ax_update("ELEC_AXIS")
+        self.__main_controller.ax_print_infor("IMAGE_AXIS")
+        self.__main_controller.ax_print_infor("FLUO_AXIS")
+        self.__main_controller.ax_print_infor("ELEC_AXIS")
 
     def onclick_image(self, event):
         if event.dblclick is False:
@@ -369,20 +369,20 @@ class DataWindow(tk.Frame):
                 # set roi value in ROI
                 controller_list = self.__main_controller.get_operating_user_controller_list(1)
                 for controller_key in controller_list:
-                    self.__main_controller._ax_list[1].set_controller_val(controller_key, [x, y, None, None])
+                    self.__main_controller.set_controller_val(controller_key, [x, y, None, None])
                     new_roi_val_obj = self.__main_controller.get_controller_val(controller_key)
                     roi_pos = new_roi_val_obj.data
                     # adjust for image data pixels 0.5
                     roi_box_pos = roi_pos[0]-0.5, roi_pos[1]-0.5,roi_pos[2],roi_pos[3]
-                    self.__main_controller._ax_list[0].set_roibox(controller_key, roi_box_pos)
-                self.update_ax(1)
+                    self.__main_controller.set_roibox(controller_key, roi_box_pos)
+                self.__main_controller.ax_update("FLUO_AXIS")
             elif event.button == 2:
                 pass
             elif event.button == 3:
                 # get current controller
                 old_controller_list = self.__main_controller.get_operating_controller_list()
                 # get whole ROI controller list. Violation of scorpe range.  _activePcontoller_dict should not be used from the outside of the class.
-                filtered_list = [item for item in self.__main_controller._ax_list[1]._active_controller_dict.keys() if "ROI" in item]
+                filtered_list = [item for item in self.__main_controller.ax_dict["FLUO_AXIS"]._active_controller_dict.keys() if "ROI" in item]
 
                 for old_controller in old_controller_list:
                     if old_controller in filtered_list:
@@ -398,8 +398,8 @@ class DataWindow(tk.Frame):
                 self.__main_controller.set_operating_controller_list(next_controller)
                 # Violation of scorpe range.  _activePcontoller_dict should not be used from the outside of the class.
                 # Need refactoring.
-                self.__main_controller._ax_list[1]._active_controller_dict[next_controller].update(self.__main_controller._ax_list[1]._active_controller_dict[old_controller])
-                self.__main_controller._ax_list[1].set_active_controller_key(old_controller, False)
+                self.__main_controller.ax_dict["FLUO_AXIS"]._active_controller_dict[next_controller].update(self.__main_controller._ax_dict["FLUO_AXIS"]._active_controller_dict[old_controller])
+                self.__main_controller._ax_dict["FLUO_AXIS"].set_active_controller_key(old_controller, False)
                 print(f"Switch to {next_controller}")
                 self.update_ax(0)
                 self.update_ax(1)
@@ -411,9 +411,20 @@ class DataWindow(tk.Frame):
         # send flags to ax.
         if ch_key == "FULL":
             ch_key = "CH0"
-        for ax_num in range(2):
-            self.__main_controller._ax_list[ax_num].set_operating_ch_list(ch_key)
-            self.update_ax(ax_num)
+            
+            need change
+            
+            
+            
+            self.__main_controller._ax_dect["IMAGE_AXIS"].set_operating_ch_list(ch_key)
+            self.__main_controller._ax_dect["FLUO_AXIS"].set_operating_ch_list(ch_key)
+            
+            
+            
+            
+            
+            self.__main_controller.ax_update("IMAGE_AXIS")
+            self.__main_controller.ax_update("FLUO_AXIS")
         print('')
         
     def elec_ch_select(self, event):
@@ -444,7 +455,7 @@ class DataWindow(tk.Frame):
             # adjust for image data pixels 0.5
             roi_box_pos = [new_roi_val[0]-0.5, new_roi_val[1]-0.5, new_roi_val[2], new_roi_val[3]]
             # send data to image axis
-            self.__main_controller._ax_list[0].set_roibox(controller_key, roi_box_pos)
+            self.__main_controller.set_roibox(controller_key, roi_box_pos)
         self.update_ax(1)
          
     def add_roi(self):
@@ -466,11 +477,11 @@ class DataWindow(tk.Frame):
                 print('No DFoverF mod.')
         self.__main_controller.add_mod(ch_key, mod_key)
         self.update_trace()
-        self.__main_controller._ax_list[1].update_ax()
+        self.__main_controller.ax_update("FLUO_AXIS")
         print('')
         
     def image_update_pass(self):
-        self.__main_controller._ax_list[0].change_update_switch()
+        self.__main_controller.ax_update_switch()
         
 
 class NavigationToolbarMyTool(NavigationToolbar2Tk):

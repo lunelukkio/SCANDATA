@@ -73,4 +73,27 @@ class WholeFilename:  # Use it only in a view and controller
         print('The file extension = ' + self.__extension)
         print('The file name list in the same folder = ' + str(self.__filename_list))
         
+class DataStructure:
+    def __init__(self):
+        self.__filename_list = []
+        self.__user_controller_list = []
+        
+    @property
+    def filename_list(self):
+        return self.__filename_list
     
+    @property
+    def user_controller_list(self):
+        return self.__user_controller_list
+        
+class ImagingDataStructure(DataStructure):
+    def __init__(self):
+        super.__init__()
+        self.__ch_list = []
+        
+    def make_dict(self):
+        user_controller_dict = {self.__filename_list:[self.__ch_list]}
+
+    @property
+    def ch_list(self):
+        return self.__ch_list
