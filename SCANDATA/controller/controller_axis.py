@@ -6,6 +6,7 @@ Created on Fri Dec 15 09:01:53 2023
 """
 
 from abc import ABCMeta, abstractmethod
+from common_class import DataList
 import matplotlib.patches as patches
 import json
 
@@ -14,6 +15,13 @@ class AxisController(metaclass=ABCMeta):
     def __init__(self, ax, controller):
         self._tools = AxesTools(ax)
         self._ax_obj = ax
+        self._data_list = DataList()
+        
+        make data list method
+        
+        
+        
+        
         self._main_controller = controller
         
         self._user_controller_list = []  # the list for showing RoiBox including the background ROI.
@@ -229,15 +237,36 @@ class RoiBox():
     @property
     def rectangle_obj(self):
         return self.__rectangle_obj
-        
+      
 
 class AxesTools:
     def __init__(self, axes):
         self.axes = axes
-    
+
     def axes_patches_check(self, target_class):
         target_list = []
         for target in  self.axes.patches:
             if isinstance(target, target_class):
                 target_list.append(target)
         return target_list
+
+
+class DataList:
+    def __init__(self):
+        self.__controller_list = []
+        self.__filename_list = []
+        self.__user_controller_list = []
+
+    def 
+
+    @property
+    def controller_list(self):
+        return self.__controller_list
+        
+    @property
+    def filename_list(self):
+        return self.__filename_list
+    
+    @property
+    def user_controller_list(self):
+        return self.__user_controller_list
