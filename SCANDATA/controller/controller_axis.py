@@ -251,22 +251,50 @@ class AxesTools:
         return target_list
 
 
-class DataList:
+class ViewData:
     def __init__(self):
-        self.__controller_list = []
-        self.__filename_list = []
-        self.__user_controller_list = []
+        self.__user_controller_dict = {}  # {key: bool}
+        self.__filename_dict = {}  # {key: bool}
+        self.__ch_dict = {}  # {key: bool}
+        
+    def add_view_data(self, dict_name, key, val=True):
+        
+        
 
-    def 
+
+    def set_view_data_val(self, key, val=None):
+        if key in self.__user_controller_dict:
+            view_switch = self.__user_controller_dict[key]
+        elif key in self.__filename_dict:
+            view_switch = self.__filename_dict[key]
+        elif key in self.__ch_dict:
+            view_switch = self.__ch_dict[key]
+        else:
+            raise Exception("No key in the view data dict")
+        if val is not None:
+            view_switch = val
+        else:
+            view_switch = not data_switch
+            
+    def get_view_data_val(self, key):
+        if key in self.__user_controller_dict:
+            view_switch = self.__user_controller_dict[key]
+        elif key in self.__filename_dict:
+            view_switch = self.__filename_dict[key]
+        elif key in self.__ch_dict:
+            view_switch = self.__ch_dict[key]
+        else:
+            raise Exception("No key in the view data dict")
+        return view_switch
 
     @property
-    def controller_list(self):
-        return self.__controller_list
+    def user_controller_dict(self):
+        return self.__user_controller_dict
         
     @property
-    def filename_list(self):
-        return self.__filename_list
+    def filename_dict(self):
+        return self.__filename_dict
     
     @property
-    def user_controller_list(self):
-        return self.__user_controller_list
+    def ch_dict(self):
+        return self.__ch_dict
