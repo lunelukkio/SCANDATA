@@ -6,7 +6,6 @@ Created on Fri Dec 15 09:01:53 2023
 """
 
 from abc import ABCMeta, abstractmethod
-from common_class import DataList
 import matplotlib.patches as patches
 import json
 
@@ -15,12 +14,7 @@ class AxisController(metaclass=ABCMeta):
     def __init__(self, ax, controller):
         self._tools = AxesTools(ax)
         self._ax_obj = ax
-        self._data_list = DataList()
-        
-        make data list method
-        
-        
-        
+        self._data_list = ViewData()
         
         self._main_controller = controller
         
@@ -253,48 +247,46 @@ class AxesTools:
 
 class ViewData:
     def __init__(self):
-        self.__user_controller_dict = {}  # {key: bool}
-        self.__filename_dict = {}  # {key: bool}
-        self.__ch_dict = {}  # {key: bool}
+        user_controller_dict = {}  # {key: bool}
+        filename_dict = {}  # {key: bool}
+        ch_dict = {}  # {key: bool}
+        self.__view_dict = {"CONTROLLER": user_controller_dict,
+                            "FILENAME": filename_dict, 
+                            "CH": ch_dict}
         
-    def add_view_data(self, dict_name, key, val=True):
-        
-        
-
+    def set_view_data(self, dict_key, key, val=True):       
+        if key in self.__view_dict[dict_key]:
+            del self.__view_dict[dict_key][key]
+            print(f"Deleted view data {key} in {dict_key}")
+        elif key not in self.__view_dict[dict_key]:
+            self.__view_dict[dict_key][key] = True
+            print(f"Added view data {key} in {dict_key}")
 
     def set_view_data_val(self, key, val=None):
-        if key in self.__user_controller_dict:
-            view_switch = self.__user_controller_dict[key]
-        elif key in self.__filename_dict:
-            view_switch = self.__filename_dict[key]
-        elif key in self.__ch_dict:
-            view_switch = self.__ch_dict[key]
+        if key in self.__view_dict["CONTROLLER"]:
+            sub_dict = self.__view_dict["CONTROLLER"]
+        elif key in self.__view_dict["FILENAME"]:
+            sub_dict = self.__view_dict["FILENAME"]
+        elif key in self.__view_dict["CH"]:
+            sub_dict = self.__view_dict["CH"]
         else:
             raise Exception("No key in the view data dict")
         if val is not None:
-            view_switch = val
+            sub_dict[key] = val
         else:
-            view_switch = not data_switch
+            sub_dict[key] = not sub_dict[key]
             
     def get_view_data_val(self, key):
-        if key in self.__user_controller_dict:
-            view_switch = self.__user_controller_dict[key]
-        elif key in self.__filename_dict:
-            view_switch = self.__filename_dict[key]
-        elif key in self.__ch_dict:
-            view_switch = self.__ch_dict[key]
+        if key in self.__view_dict["CONTROLLER"]:
+            view_switch = self.__view_dict["CONTROLLER"][key]
+        elif key in self.__view_dict["FILENAME"]:
+            view_switch = self.__view_dict["FILENAME"][key]
+        elif key in self.__view_dict["CH"]:
+            view_switch = self.__view_dict["CH"][key]
         else:
             raise Exception("No key in the view data dict")
         return view_switch
 
     @property
-    def user_controller_dict(self):
-        return self.__user_controller_dict
-        
-    @property
-    def filename_dict(self):
-        return self.__filename_dict
-    
-    @property
-    def ch_dict(self):
-        return self.__ch_dict
+    def view_dict(self):
+        return self.__view_dict

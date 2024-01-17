@@ -6,24 +6,20 @@ Created on Mon Nov 20 17:04:36 2023
 """
 
 import unittest
-from SCANDATA.common_class import WholeFilename
 from SCANDATA.controller.controller_axis import ViewData
-import
-
-
-filename_obj = WholeFilename('..\\220408\\20408B002.tsm')  # this is a value object
 
 class Test(unittest.TestCase):
     def test(self):
 
-        view_data_list = ViewData(filename_obj)
-        
-
-
-if __name__ == '__main__':
-    unittest.main()
-
-
+        view_data = ViewData()
+        view_data.set_view_data("CONTROLLER", "ROI1")
+        print(view_data.view_dict)
+        view_data.set_view_data_val("ROI1", False)  
+        print(view_data.view_dict["CONTROLLER"])
+        view_data.set_view_data_val("ROI1")  
+        print(view_data.view_dict["CONTROLLER"])
+        view_data.set_view_data("CONTROLLER", "ROI1")
+        print(view_data.view_dict)
 
 
 if __name__ == '__main__':
