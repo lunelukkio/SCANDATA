@@ -7,7 +7,7 @@ main for controller
 
 from abc import ABCMeta, abstractmethod
 from SCANDATA.model.model_main import DataService
-from SCANDATA.common_class import WholeFilename, ImagingDataStructure
+from SCANDATA.common_class import WholeFilename, DataKeySet, ViewDataDict
 import tkinter as tk
 import os
 import psutil  # for memory check
@@ -103,11 +103,12 @@ class ControllerInterface(metaclass=ABCMeta):
 
 class MainController(ControllerInterface):
     def __init__(self, view=None):
+        self.__data_key_dict = DataKeySet()  #singleton
         self.__model = DataService()
         self.__file_service = FileService()
         self.__mod_controller = ModController(self.__model)
-        self.__ax_dict = {}  # {"ImageAxis": ImageAxsis class, FluoAxis: TraceAx class, ElecAxis: TraceAx class}
-        self.__imaging_data_structure = ImagingDataStructure()
+        self.__ax_dict = {}  # {"ImageAxis": ImageAxsis class, FluoAxis: TraceAx class, ElecAxis: TraceAx class}\
+        self.__operating_controller_dict = ViewDataDict()  #observer
         
     def __del__(self):
         print('.')

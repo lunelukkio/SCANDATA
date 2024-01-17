@@ -6,6 +6,7 @@ Created on Fri Dec 15 09:01:53 2023
 """
 
 from abc import ABCMeta, abstractmethod
+from SCANDATA.common_class import ViewDataDict
 import matplotlib.patches as patches
 import json
 
@@ -14,13 +15,18 @@ class AxisController(metaclass=ABCMeta):
     def __init__(self, ax, controller):
         self._tools = AxesTools(ax)
         self._ax_obj = ax
-        self._data_list = ViewData()
+        self._view_data_dict = DataKeyDict()
+        
+        
+        
+        
+        
         
         self._main_controller = controller
         
         self._user_controller_list = []  # the list for showing RoiBox including the background ROI.
-        self._operating_user_controller_list = []
         
+        self._operating_user_controller_list = []
         self._operating_filename_list = []
         self._operating_ch_list = []
         
@@ -245,48 +251,4 @@ class AxesTools:
         return target_list
 
 
-class ViewData:
-    def __init__(self):
-        user_controller_dict = {}  # {key: bool}
-        filename_dict = {}  # {key: bool}
-        ch_dict = {}  # {key: bool}
-        self.__view_dict = {"CONTROLLER": user_controller_dict,
-                            "FILENAME": filename_dict, 
-                            "CH": ch_dict}
-        
-    def set_view_data(self, dict_key, key, val=True):       
-        if key in self.__view_dict[dict_key]:
-            del self.__view_dict[dict_key][key]
-            print(f"Deleted view data {key} in {dict_key}")
-        elif key not in self.__view_dict[dict_key]:
-            self.__view_dict[dict_key][key] = True
-            print(f"Added view data {key} in {dict_key}")
 
-    def set_view_data_val(self, key, val=None):
-        if key in self.__view_dict["CONTROLLER"]:
-            sub_dict = self.__view_dict["CONTROLLER"]
-        elif key in self.__view_dict["FILENAME"]:
-            sub_dict = self.__view_dict["FILENAME"]
-        elif key in self.__view_dict["CH"]:
-            sub_dict = self.__view_dict["CH"]
-        else:
-            raise Exception("No key in the view data dict")
-        if val is not None:
-            sub_dict[key] = val
-        else:
-            sub_dict[key] = not sub_dict[key]
-            
-    def get_view_data_val(self, key):
-        if key in self.__view_dict["CONTROLLER"]:
-            view_switch = self.__view_dict["CONTROLLER"][key]
-        elif key in self.__view_dict["FILENAME"]:
-            view_switch = self.__view_dict["FILENAME"][key]
-        elif key in self.__view_dict["CH"]:
-            view_switch = self.__view_dict["CH"][key]
-        else:
-            raise Exception("No key in the view data dict")
-        return view_switch
-
-    @property
-    def view_dict(self):
-        return self.__view_dict

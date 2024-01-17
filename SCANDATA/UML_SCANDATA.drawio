@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2023-12-30T12:39:20.109Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" etag="XLp4O_whxSXO24QOM8WG" version="22.1.16" type="device" pages="10">
+<mxfile host="app.diagrams.net" modified="2024-01-17T09:32:36.654Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" etag="pffFOA2rd9fIdt8bpNgV" version="22.1.18" type="device" pages="10">
   <diagram id="cKamBB-SNn25kszP2A9I" name="Model Diagram">
-    <mxGraphModel dx="5266" dy="2753" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="0" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="none" math="0" shadow="0">
+    <mxGraphModel dx="5265" dy="2835" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="0" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="none" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -1700,7 +1700,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="4YTVUewkPkmJ4nNcDTOT" name="Model Sequence">
-    <mxGraphModel dx="2716" dy="553" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="2715" dy="635" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -2239,9 +2239,6 @@
         <mxCell id="R5Bb92umKER-YYLsxB6r-5" value="AxisController" style="html=1;fontColor=#0000FF;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="-680" y="200" width="160" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="pSie5-cQI4v4QiIiCaxW-4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="R5Bb92umKER-YYLsxB6r-6" target="NAFHMpcr7PcLbRX4OogB-4" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
         <mxCell id="R5Bb92umKER-YYLsxB6r-6" value="View_main" style="html=1;fontColor=#0000FF;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="-1240" y="200" width="160" height="40" as="geometry" />
         </mxCell>
@@ -2404,7 +2401,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="NAFHMpcr7PcLbRX4OogB-4" value="View" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-          <mxGeometry x="-1210" y="78" width="50" height="30" as="geometry" />
+          <mxGeometry x="-1185" y="78" width="50" height="30" as="geometry" />
         </mxCell>
         <mxCell id="NAFHMpcr7PcLbRX4OogB-5" value="Controller" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="-790" y="78" width="80" height="30" as="geometry" />
@@ -2473,34 +2470,34 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="Nv-Nhr-2LeGsmR4NNtDV-1" value="origiata holder" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+        <mxCell id="Nv-Nhr-2LeGsmR4NNtDV-1" value="origiata holder" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="870" y="165" width="100" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="Nv-Nhr-2LeGsmR4NNtDV-2" value="controller data holder&lt;br&gt;observer holder" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+        <mxCell id="Nv-Nhr-2LeGsmR4NNtDV-2" value="controller data holder&lt;br&gt;observer holder" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="1050" y="160" width="140" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="Nv-Nhr-2LeGsmR4NNtDV-3" value="axis holder&lt;br&gt;model holder" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-          <mxGeometry x="-925" y="155" width="90" height="40" as="geometry" />
+        <mxCell id="Nv-Nhr-2LeGsmR4NNtDV-3" value="axis holder&lt;br&gt;model holder&lt;br&gt;operating controller holder" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="-960" y="120" width="160" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="Nv-Nhr-2LeGsmR4NNtDV-4" value="the modl doesn&#39;t know&amp;nbsp; connectivitis between experiments and controllers. These information come from axis_controller" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+        <mxCell id="Nv-Nhr-2LeGsmR4NNtDV-4" value="the modl doesn&#39;t know&amp;nbsp; connectivitis between experiments and controllers. These information come from axis_controller" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="-350" y="100" width="660" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="Nv-Nhr-2LeGsmR4NNtDV-5" value="user controller list holder&lt;br&gt;operating (active) controller list holder" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-          <mxGeometry x="-710" y="155" width="220" height="40" as="geometry" />
+        <mxCell id="Nv-Nhr-2LeGsmR4NNtDV-5" value="view data list holder&lt;br&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="-665" y="160" width="130" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="Nv-Nhr-2LeGsmR4NNtDV-6" value="repository holder" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+        <mxCell id="Nv-Nhr-2LeGsmR4NNtDV-6" value="repository holder" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="-160" y="170" width="110" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="Nv-Nhr-2LeGsmR4NNtDV-7" value="fileIO holder" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+        <mxCell id="Nv-Nhr-2LeGsmR4NNtDV-7" value="fileIO holder" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="277" y="165" width="90" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="Nv-Nhr-2LeGsmR4NNtDV-8" value="data builder holder" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+        <mxCell id="Nv-Nhr-2LeGsmR4NNtDV-8" value="data builder holder" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="60" y="160" width="120" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="Nv-Nhr-2LeGsmR4NNtDV-9" value="actual data (value object holder)" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+        <mxCell id="Nv-Nhr-2LeGsmR4NNtDV-9" value="actual data (value object holder)" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="625" y="160" width="190" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="Nv-Nhr-2LeGsmR4NNtDV-10" value="Each axis has controller experiments ch list which are showed by axis windows." style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=#FF0000;" vertex="1" parent="1">
+        <mxCell id="Nv-Nhr-2LeGsmR4NNtDV-10" value="Each axis has controller experiments ch list which are showed by axis windows." style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=#FF0000;" parent="1" vertex="1">
           <mxGeometry x="-1615" y="38" width="450" height="30" as="geometry" />
         </mxCell>
       </root>
