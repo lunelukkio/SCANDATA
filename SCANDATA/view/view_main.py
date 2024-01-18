@@ -249,8 +249,9 @@ class DataWindow(tk.Frame):
 
         
         # mouse click events
-        self.canvas_image.mpl_connect('button_press_event', self.onclick_image)   
-        
+        self.canvas_image.mpl_connect('button_press_event', lambda event: self.onclick_axis(event, "IMAGE_AXIS"))
+        self.canvas_trace.mpl_connect('button_press_event', lambda event: self.onclick_axis(event, "FLUO_AXIS"))
+        self.canvas_trace.mpl_connect('button_press_event', lambda event: self.onclick_axis(event, "IMAGE_AXIS"))
         # image update switch
         self.checkbox_update_pass_switch = tk.BooleanVar()
         ttk.Checkbutton(frame_left,
@@ -361,7 +362,7 @@ class DataWindow(tk.Frame):
         self.__main_controller.ax_print_infor("FLUO_AXIS")
         self.__main_controller.ax_print_infor("ELEC_AXIS")
 
-    def onclick_image(self, event):
+    def onclick_axis(self, event, axis_name):
         if event.dblclick is False:
             if event.button == 1:  # left click
                 x = round(event.xdata)
