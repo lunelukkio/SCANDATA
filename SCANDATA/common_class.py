@@ -116,6 +116,22 @@ class DataKeySet:  # singleton
     def key_dict(self):
         return self.__key_dict
 
+class KeyList:
+    def __init__(self):
+        self.__keys = []
+        
+    def set_data_key(self, key):   
+        key = key.upper())
+        if key in list(self.__keys.keys()):
+            self.__keys[key].remove(key)
+            print(f"Deleted data key: {key}")
+        elif key not in  list(self.__keys.keys()):
+            self.__keys[key].append(key)
+            print(f"Added data key: {key}")
+            
+    @property
+    def keys(self):
+        return self.__keys
 
 class BoolKeyDict(dict):  # observer
     def update(self, keys):
@@ -126,6 +142,9 @@ class BoolKeyDict(dict):  # observer
         # add a new key without changing
         for key in keys:
             self.setdefault(key, self.get(key))  # None or key value (bool)
+            
+
+
             
 class DataKeyDict:
     def __init__(self):
