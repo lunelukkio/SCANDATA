@@ -12,10 +12,10 @@ import json
 
 
 class AxisController(metaclass=ABCMeta):
-    def __init__(self, ax, controller):
+    def __init__(self, model, ax):
         self._tools = AxesTools(ax)
         self._ax_obj = ax
-        self._main_controller = controller
+        self._model = model
         
         self._view_switch_set = DataSwitchSet()
 
@@ -34,13 +34,37 @@ class AxisController(metaclass=ABCMeta):
         self._ch_color = setting.get("ch_color")
         self._controller_color = setting.get("controller_color")
      
-    def set_controller_val(self, controller_key, val):  # e.g. val = [x, y, None, None]
-        self._main_controller.set_controller_val(controller_key, val)
-        print(f"{self._operating_user_controller_list}: ", end='')
-            
+    # set UserController value. but not calculate data. Currently, self.update calculate data.
+    def set_controller_val(self, controller_key: str, val: list):  # e.g. val = [x, y, None, None]
+        controller_list = self._view_switch_set.get_true_list("CONTROLLER")
+        for controller_key in controller_list:
+            self.__model.set_controller_val(controller_key, val)
+        print(f"{controller_list}: ", end='')
+
+
+    def get_controller_val(self, controller_key) -> object:
+        return self.__model.get_controller_val(controller_key)
+        
+    def set_controller_data(self, controller_list, filename_list, ch_list):
+        self.__model.set_controller_data(controller_list, filename_list, ch_list)
+        
+    def get_controller_data(self, controller_key) -> dict:
+        data_dict = self.__model.get_controller_data(controller_key)
+        if data_dict is None:
+            print(f"Can't find data_dict in {controller_key}")
+        else:
+            return data_dict
+        
+    def set_observer(self, controller_key: str, ax_key: str) -> None:
+        self.__model.set_observer(controller_key, self.__ax_dict[ax_key])
+
+
+==============================================================================
     def get_controller_val(self):
         for user_controller in self._operating_user_controller_list:
              return self._main_controller.get_controller_val(user_controller)
+         
+
 
 
 
@@ -116,13 +140,13 @@ class AxisController(metaclass=ABCMeta):
         print(self._operating_ch_list)
         
     def get_operating_user_controller_list(self):
-        return self._operating_user_controller_list
+        return self._view_switch_set.__switch_set
     
 class TraceAxisController(AxisController):
-    def __init__(self, canvas, ax):
-        super().__init__(ax)
-        self.canvas = canvas
+    def __init__(self, controller, ax):
+        super().__init__(controller, ax)
         self.mode = "CH_MODE"  # or "ROI MODE" for showing sigle ch of several ROIs.
+        self.ax_update_switch()
      
     def set_view_data(self):
         if self.update_switch is True:
@@ -144,10 +168,10 @@ class TraceAxisController(AxisController):
 
 
 class ImageAxisController(AxisController):
-    def __init__(self, canvas, ax):
-        super().__init__(ax)
-        self.canvas = canvas
+    def __init__(self, model, ax):
+        super().__init__(model, ax)
         self.mode = None  # no use
+        self.ax_update_switch()
         
     def set_click_position(self, event):  
             raise NotImplementedError()
@@ -201,6 +225,10 @@ class ImageAxisController(AxisController):
         else:
             self._marker_obj[controller_key].set_roi(roi_pos)
         self.canvas.draw()
+        
+    # override
+    def get_operating_user_controller_list(self):
+        return self._view_switch_set.get_true_list("CONTROLLER")
 
 
 class RoiBox():

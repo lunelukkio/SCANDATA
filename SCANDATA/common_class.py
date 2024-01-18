@@ -167,6 +167,10 @@ class DataSwitchSet:  # controller class should have this class
             else:
                 raise Exception("No key in the view data dict")
                 
+    def get_true_list(self, dict_key):
+        dict_key = dict_key.upper()
+        return [key for key, value in self.__switch_set[dict_key].items() if value is True]
+                
     def update(self, list_keys):
         for dict_key in self.__switch_set:
             self.__switch_set[dict_key].update(list_keys[dict_key])
@@ -174,6 +178,3 @@ class DataSwitchSet:  # controller class should have this class
     @property
     def switch_set(self):
         return self.__switch_set
-
-class OperatingDataDict():
-    pass

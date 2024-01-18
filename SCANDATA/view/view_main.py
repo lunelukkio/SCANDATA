@@ -14,7 +14,6 @@ import os
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from SCANDATA.common_class import WholeFilename
-from SCANDATA.controller.controller_axis import TraceAxisController, ImageAxisController
 from SCANDATA.controller.controller_main import MainController
 
 
@@ -235,7 +234,7 @@ class DataWindow(tk.Frame):
         
         self.canvas_image = FigureCanvasTkAgg(image_fig, frame_left)
         #canvas_image.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
-        self.__main_controller.add_axis("IMAGE_AXIS",ImageAxisController(self.canvas_image, image_ax))  # ax_dict["ImageAxis"]
+        self.__main_controller.add_axis("IMAGE_AXIS", image_ax))  # ax_dict["ImageAxis"]
 
         # for tool bar in the image window
         self.canvas_image.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
@@ -250,8 +249,7 @@ class DataWindow(tk.Frame):
         
         # mouse click events
         self.canvas_image.mpl_connect('button_press_event', lambda event: self.onclick_axis(event, "IMAGE_AXIS"))
-        self.canvas_trace.mpl_connect('button_press_event', lambda event: self.onclick_axis(event, "FLUO_AXIS"))
-        self.canvas_trace.mpl_connect('button_press_event', lambda event: self.onclick_axis(event, "IMAGE_AXIS"))
+
         # image update switch
         self.checkbox_update_pass_switch = tk.BooleanVar()
         ttk.Checkbutton(frame_left,
@@ -275,11 +273,15 @@ class DataWindow(tk.Frame):
         
         # matplotlib trace axes
         trace_ax1 = trace_fig.add_subplot(gridspec_trace_fig[0:15])
-        self.__main_controller.add_axis("FLUO_AXIS", TraceAxisController(self.canvas_trace, trace_ax1))  # _ax_dict["FluoAxis"]
+        self.__main_controller.add_axis("FLUO_AXIS", TraceAxisController(self.__main_controller, self.canvas_trace, trace_ax1))  # _ax_dict["FluoAxis"]
         
         # matplotlib elec trace axes
         trace_ax2 = trace_fig.add_subplot(gridspec_trace_fig[16:20], sharex=self.__main_controller._ax_dict["FluoAxis"]._ax_obj)  # sync to FluoAxis
-        self.__main_controller.add_axis("ELEC_AXIS", TraceAxisController(self.canvas_trace, trace_ax2))  # _ax_dict["ElecAxis"]
+        self.__main_controller.add_axis("ELEC_AXIS", TraceAxisController(self.__main_controller, self.canvas_trace, trace_ax2))  # _ax_dict["ElecAxis"]
+        
+        # mouse click event
+        trace_ax1.mpl_connect('button_press_event', lambda event: self.onclick_axis(event, "FLUO_AXIS"))
+        trace_ax2.mpl_connect('button_press_event', lambda event: self.onclick_axis(event, "ELEC_AXIS"))
         
         #canvas_trace.get_tk_widget().pack()
         toolbar_trace = NavigationToolbarMyTool(self.canvas_trace, frame_right, self.my_color)
@@ -362,58 +364,14 @@ class DataWindow(tk.Frame):
         self.__main_controller.ax_print_infor("FLUO_AXIS")
         self.__main_controller.ax_print_infor("ELEC_AXIS")
 
-    def onclick_axis(self, event, axis_name):
-        if event.dblclick is False:
-            if event.button == 1:  # left click
-                x = round(event.xdata)
-                y = round(event.ydata)
-                # set roi value in ROI
-                controller_list = self.__main_controller.get_operating_user_controller_list(1)
-                for controller_key in controller_list:
-                    self.__main_controller.set_controller_val(controller_key, [x, y, None, None])
-                    new_roi_val_obj = self.__main_controller.get_controller_val(controller_key)
-                    roi_pos = new_roi_val_obj.data
-                    # adjust for image data pixels 0.5
-                    roi_box_pos = roi_pos[0]-0.5, roi_pos[1]-0.5,roi_pos[2],roi_pos[3]
-                    self.__main_controller.set_roibox(controller_key, roi_box_pos)
-                self.__main_controller.ax_update("FLUO_AXIS")
-            elif event.button == 2:
-                pass
-            elif event.button == 3:
-                # get current controller
-                old_controller_list = self.__main_controller.get_operating_controller_list()
-                # get whole ROI controller list. Violation of scorpe range.  _activePcontoller_dict should not be used from the outside of the class.
-                filtered_list = [item for item in self.__main_controller.ax_dict["FLUO_AXIS"]._active_controller_dict.keys() if "ROI" in item]
 
-                for old_controller in old_controller_list:
-                    if old_controller in filtered_list:
-                        index = filtered_list.index(old_controller)
-                        if index < len(filtered_list) - 1:
-                            next_controller =filtered_list[index + 1]
-                        else:
-                            next_controller =filtered_list[0]
-                    else:
-                        print("Not in the active controller list")
-                        
-                self.__main_controller.set_operating_controller_list(old_controller)
-                self.__main_controller.set_operating_controller_list(next_controller)
-                # Violation of scorpe range.  _activePcontoller_dict should not be used from the outside of the class.
-                # Need refactoring.
-                self.__main_controller.ax_dict["FLUO_AXIS"]._active_controller_dict[next_controller].update(self.__main_controller._ax_dict["FLUO_AXIS"]._active_controller_dict[old_controller])
-                self.__main_controller._ax_dict["FLUO_AXIS"].set_active_controller_key(old_controller, False)
-                print(f"Switch to {next_controller}")
-                self.update_ax(0)
-                self.update_ax(1)
-        elif event.dblclick is True:
-            print("Double click is for ----")
-        print('')
         
     def select_ch(self, ch_key):
         # send flags to ax.
         if ch_key == "FULL":
             ch_key = "CH0"
             
-            need change
+            print("need change")
             
             
             

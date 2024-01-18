@@ -7,6 +7,7 @@ main for controller
 
 from abc import ABCMeta, abstractmethod
 from SCANDATA.model.model_main import DataService
+from SCANDATA.controller.controller_axis import TraceAxisController, ImageAxisController
 from SCANDATA.common_class import WholeFilename, DataKeySet, DataSwitchSet
 import tkinter as tk
 import os
@@ -30,7 +31,7 @@ class ControllerInterface(metaclass=ABCMeta):
         raise NotImplementedError() 
         
     @abstractmethod
-    def get_controller_infor(self, controller_key=None) -> dict:
+    def onclick_axis(self, event, axis_name):
         raise NotImplementedError()
         
     """
@@ -120,9 +121,10 @@ class MainController(ControllerInterface):
     """
     MainController 
     """
-    def add_axis(self, axis_name: str, axis_controller_obj: object) -> None:
-        self.__ax_dict[axis_name] = axis_controller_obj
-        self.__data_key_dict.add_observer(axis_controller_obj)
+    def add_axis(self, axis_name: str, ax: object) -> None:
+        new_axis_controller = ImageAxisController(self.__model, ax)
+        self.__ax_dict[axis_name] = new_axis_controller
+        self.__data_key_dict.add_observer(new_axis_controller)
     
     def open_file(self, filename_obj=None) -> dict:
         # get filename object
@@ -136,13 +138,21 @@ class MainController(ControllerInterface):
         return filename_obj
     
     def create_experiments(self, filename_obj: object):  
-        controller_dict_keys = self.__model.create_experiments(filename_obj.fullname)
+        self.__model.create_experiments(filename_obj.fullname)
+        # set key name list
+        controller_dict_keys = self.__model.get_infor()
+        self.__data_key_dict.set_data_key("FILENAME", filename_obj.name)
+        for key in controller_dict_keys:
+            self.__data_key_dict.set_data_key("CONTROLLER", key)
+        for key in controller_dict_keys:
+            self.__data_key_dict.set_data_key("CH", key)
+        print(self.__data_key_dict.key_dict)
+        # end proccess
         if self.__model == None:
             raise Exception('Failed to create a model.')
         else:
             print('============================== MainController: Suceeded to read data from data files.')
             print('')
-            return controller_dict_keys
         
     def get_controller_infor(self, controller_key=None) -> dict:
         if controller_key is None:
@@ -158,6 +168,56 @@ class MainController(ControllerInterface):
         maximum_memory = psutil.virtual_memory().total
         available_memory = psutil.virtual_memory().available
         return memory_infor, maximum_memory, available_memory
+    
+    def onclick_axis(self, event, axis_name):
+        if event.dblclick is False:
+            if axis_name == "IMAGE_AXIS":
+                if event.button == 1:  # left click
+                    x = round(event.xdata)
+                    y = round(event.ydata)
+                    # set roi value in ROI
+                    controller_list = self.get_operating_user_controller_list("IMAGE_AXIS")
+                    for controller_key in controller_list:
+                        self.__main_controller.set_controller_val(controller_key, [x, y, None, None])
+                        new_roi_val_obj = self.__main_controller.get_controller_val(controller_key)
+                        roi_pos = new_roi_val_obj.data
+                        # adjust for image data pixels 0.5
+                        roi_box_pos = roi_pos[0]-0.5, roi_pos[1]-0.5,roi_pos[2],roi_pos[3]
+                        self.__main_controller.set_roibox(controller_key, roi_box_pos)
+                    self.__main_controller.ax_update("FLUO_AXIS")
+                elif event.button == 2:
+                    pass
+                elif event.button == 3:
+                    # get current controller
+                    old_controller_list = self.__main_controller.get_operating_controller_list()
+                    # get whole ROI controller list. Violation of scorpe range.  _activePcontoller_dict should not be used from the outside of the class.
+                    filtered_list = [item for item in self.__main_controller.ax_dict["FLUO_AXIS"]._active_controller_dict.keys() if "ROI" in item]
+                    for old_controller in old_controller_list:
+                        if old_controller in filtered_list:
+                            index = filtered_list.index(old_controller)
+                            if index < len(filtered_list) - 1:
+                                next_controller =filtered_list[index + 1]
+                            else:
+                                next_controller =filtered_list[0]
+                        else:
+                            print("Not in the active controller list")
+                        
+                    self.__main_controller.set_operating_controller_list(old_controller)
+                    self.__main_controller.set_operating_controller_list(next_controller)
+                    # Violation of scorpe range.  _activePcontoller_dict should not be used from the outside of the class.
+                    # Need refactoring.
+                    self.__main_controller.ax_dict["FLUO_AXIS"]._active_controller_dict[next_controller].update(self.__main_controller._ax_dict["FLUO_AXIS"]._active_controller_dict[old_controller])
+                    self.__main_controller._ax_dict["FLUO_AXIS"].set_active_controller_key(old_controller, False)
+                    print(f"Switch to {next_controller}")
+                    self.update_ax(0)
+                    self.update_ax(1)
+            elif axis_name == "FLUO_AXIS":
+                raise NotImplementedError() 
+            elif axis_name == "ELEC_AXIS":
+                raise NotImplementedError() 
+        elif event.dblclick is True:
+            print("Double click is for ----")
+        print('')
             
     """
     Delegation to the Model
@@ -166,24 +226,9 @@ class MainController(ControllerInterface):
         new_key = self.__model.create_user_controller(controller_key)
         return new_key
 
-    def set_controller_val(self, controller_key: str, val: list):
-        self.__model.set_controller_val(controller_key, val)
+
         
-    def get_controller_val(self, controller_key) -> object:
-        return self.__model.get_controller_val(controller_key)
-        
-    def set_controller_data(self, controller_list, filename_list, ch_list):
-        self.__model.set_controller_data(controller_list, filename_list, ch_list)
-        
-    def get_controller_data(self, controller_key) -> dict:
-        data_dict = self.__model.get_controller_data(controller_key)
-        if data_dict is None:
-            print(f"Can't find data_dict in {controller_key}")
-        else:
-            return data_dict
-        
-    def set_observer(self, controller_key: str, ax_key: str) -> None:
-        self.__model.set_observer(controller_key, self.__ax_dict[ax_key])
+
         
     def print_model_infor(self):
         self.__model.print_infor()

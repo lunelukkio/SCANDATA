@@ -23,8 +23,8 @@ class Test(unittest.TestCase):
         print(dict1.switch_set)
         
         data_key_set.set_data_key("controller", "ROI4")
-        print(dict1.switch_set)
-        print(dict1.switch_set)
+        print(dict1.get_val("ROI1"))
+        print(dict1.get_true_list("CONTROLLER"))
         
         
 
