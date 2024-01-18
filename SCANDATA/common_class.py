@@ -110,107 +110,70 @@ class DataKeySet:  # singleton
     def key_dict(self):
         return self.__key_dict
 
-class KeyList:
-    def __init__(self):
-        self.__key_list = []
-        
-    def set_data_key(self, key):   
-        key = key.upper()
-        if key in self.__key_list:
-            self.__key_list.remove(key)
-            print(f"Deleted data key: [{key}]")
-        elif key not in  self.__key_list:
-            self.__key_list.append(key)
-            print(f"Added data key: [{key}]")
-            
-    @property
-    def key_list(self):
-        return self.__key_list
-    
-            
-class KeyDict:
-    def __init__(self):
-        self.__key_dict = {}
-        
-    def set_data_key(self, key):   
-        key = key.upper()
-        if key in self.__key_dict:
-            del self.__key_dict[key]
-            print(f"Deleted data key: [{key}]")
-        elif key not in  self.__key_dict:
-            self.__key_dict[key] = True
-            print(f"Added data key: [{key}]")
-            
-    @property
-    def key_dict(self):
-        return self.__key_dict
-    
 
-class BoolKeyDict(dict):  # observer
+class KeyList(list):
+    def set_data_key(self, key):   
+        key = key.upper()
+        if key in self:
+            self.remove(key)
+            print(f"Deleted data key: [{key}]")
+        elif key not in  self:
+            self.append(key)
+            print(f"Added data key: [{key}]")
+    
+            
+class KeyDict(dict):
+    def set_data_key(self, key):   
+        key = key.upper()
+        if key in self:
+            del self[key]
+            print(f"Deleted data key: [{key}]")
+        elif key not in self:
+            self[key] = True
+            print(f"Added data key: [{key}]")
+            
+    def set_val(self, key, val=None):
+        if not (isinstance(val, bool) or val is None):   # val is not bool or None.
+            raise Exception(f"This is not boolen value: {val}")
+        if key not in self:
+            raise Exception(f"No key in the dict: {key}")
+        if val is not None:
+            self[key] = val
+        elif val is None:
+            self[key] = not self[key]
+            
     def update(self, keys):
         # delete a key
-        for key in list(self.keys()):
-            if key not in keys:
-                del self[key]
+        for key in list(self.keys()):  # take own key
+            if key not in keys:  # check the new key_list
+                del self[key]  # if old is not in the new key list, delete it.
         # add a new key without changing
         for key in keys:
-            self.setdefault(key, self.get(key))  # None or key value (bool)
-            
-
-
-class ViewDataDict:
+            self.setdefault(key, self.get(key, True))  # None or key value (bool)
+    
+class DataSwitchSet:  # controller class should have this class
     def __init__(self):
-        self.__dict = DataDict()
-        
-        
-        
-        
-        
-        
-        
-        user_controller_dict = {}  # {key: bool}
-        filename_dict = {}  # {key: bool}
-        ch_dict = {}  # {key: bool}
-        self.__view_dict = {"CONTROLLER": user_controller_dict,
-                            "FILENAME": filename_dict, 
-                            "CH": ch_dict}
-        
-    def set_view_data(self, dict_key, key, val=True):       
-        if key in self.__view_dict[dict_key]:
-            del self.__view_dict[dict_key][key]
-            print(f"Deleted view data {key} in {dict_key}")
-        elif key not in self.__view_dict[dict_key]:
-            self.__view_dict[dict_key][key] = True
-            print(f"Added view data {key} in {dict_key}")
+        self.__switch_set = {"CONTROLLER": KeyDict(), "FILENAME": KeyDict(), "CH": KeyDict(), "MOD": KeyDict()}
 
-    def set_view_data_val(self, key, val=None):
-        if key in self.__view_dict["CONTROLLER"]:
-            sub_dict = self.__view_dict["CONTROLLER"]
-        elif key in self.__view_dict["FILENAME"]:
-            sub_dict = self.__view_dict["FILENAME"]
-        elif key in self.__view_dict["CH"]:
-            sub_dict = self.__view_dict["CH"]
-        else:
-            raise Exception("No key in the view data dict")
-        if val is not None:
-            sub_dict[key] = val
-        else:
-            sub_dict[key] = not sub_dict[key]
+    def set_val(self, dict_key, key, val=None):
+        dict_key = dict_key.upper()
+        key = key.upper()
+        self.__switch_set[dict_key].set_val(key, val)
             
-    def get_view_data_val(self, key):
-        if key in self.__view_dict["CONTROLLER"]:
-            view_switch = self.__view_dict["CONTROLLER"][key]
-        elif key in self.__view_dict["FILENAME"]:
-            view_switch = self.__view_dict["FILENAME"][key]
-        elif key in self.__view_dict["CH"]:
-            view_switch = self.__view_dict["CH"][key]
-        else:
-            raise Exception("No key in the view data dict")
-        return view_switch
+    def get_val(self, key):
+        for dict_key in self.__switch_set:
+            if key in self.__switch_set[dict_key].keys():
+                return self.__switch_set[dict_key][key]
+            else:
+                raise Exception("No key in the view data dict")
+                
+    def update(self, list_keys):
+        for dict_key in self.__switch_set:
+            self.__switch_set[dict_key].update(list_keys[dict_key])
 
     @property
-    def view_dict(self):
-        return self.__view_dict
+    def switch_set(self):
+        return self.__switch_set
 
 class OperatingDataDict():
     pass
