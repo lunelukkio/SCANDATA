@@ -82,38 +82,42 @@ class DataKeySet:  # singleton
         return cls._instance
     
     def __init__(self):
-        self._observers = []
-        self._key_dict = {"CONTROLLER": [], "FILENAME": [], "CH": [], "MOD": []}
+        self.__observers = []
+        
+        
+        self.__key_dict = {"CONTROLLER": [], "FILENAME": [], "CH": [], "MOD": []}
 
     def add_observer(self, observer):
-        self._observers.append(observer)
+        self.__observers.append(observer)
 
     def remove_observer(self, observer):
-        self._observers.remove(observer)
+        self.__observers.remove(observer)
 
-    def _notify(self):
-        for observer in self._observers:
-            observer.update(self._key_dict)
+    def __notify(self):
+        for observer in self.__observers:
+            observer.update(self.__key_dict)
             
-    def set_data_key(self, dict_key, key):       
-        if key in self.__view_dict[dict_key]:
-            self.__view_dict[dict_key].remove(key)
-            print(f"Deleted view data {key} in {dict_key}")
-        elif key not in self.__view_dict[dict_key]:
-            self.__view_dict[dict_key].append(key)
-            print(f"Added view data {key} in {dict_key}")
-        self._notify()
+    def set_data_key(self, list_key, key):   
+        list_key = list_key.upper()
+        key = key.upper()
+        if key in self.__key_dict[list_key]:
+            self.__key_dict[list_key].remove(key)
+            print(f"Deleted data key: {key} in {list_key}")
+        elif key not in self.__key_dict[list_key]:
+            self.__key_dict[list_key].append(key)
+            print(f"Added data key: {key} in {list_key}")
+        self.__notify()
         
     @property
     def observers(self):
-        return self._observers
+        return self.__observers
     
     @property
     def key_dict(self):
-        return self._key_dict
+        return self.__key_dict
 
 
-class ViewDataDict(dict):  # observer
+class BoolKeyDict(dict):  # observer
     def update(self, keys):
         # delete a key
         for key in list(self.keys()):
@@ -122,9 +126,21 @@ class ViewDataDict(dict):  # observer
         # add a new key without changing
         for key in keys:
             self.setdefault(key, self.get(key))  # None or key value (bool)
-
-class ViewData:
+            
+class DataKeyDict:
     def __init__(self):
+        
+
+class ViewDataDict:
+    def __init__(self):
+        self.__dict = DataDict()
+        
+        
+        
+        
+        
+        
+        
         user_controller_dict = {}  # {key: bool}
         filename_dict = {}  # {key: bool}
         ch_dict = {}  # {key: bool}
@@ -169,21 +185,4 @@ class ViewData:
     def view_dict(self):
         return self.__view_dict
 
-
-
-# キーセットにオブザーバーとして辞書を追加
-key_set.add_observer(dict1)
-key_set.add_observer(dict2)
-
-# キーセットにキーを追加して、辞書に異なる値を設定
-key_set.add_key("key1")
-dict1["key1"] = "value1"
-dict2["key1"] = "different value1"
-
-# キーセットからキーを削除
-key_set.remove_key("key1")
-
-# 辞書の状態を確認
-print(dict1)  # {}
-print(dict2)  # {}
-        
+class OperatingDataDict():
