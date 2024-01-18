@@ -7,7 +7,7 @@ main for controller
 
 from abc import ABCMeta, abstractmethod
 from SCANDATA.model.model_main import DataService
-from SCANDATA.common_class import WholeFilename, DataKeySet, ViewDataDict
+from SCANDATA.common_class import WholeFilename, DataKeySet, DataSwitchSet
 import tkinter as tk
 import os
 import psutil  # for memory check
@@ -103,12 +103,14 @@ class ControllerInterface(metaclass=ABCMeta):
 
 class MainController(ControllerInterface):
     def __init__(self, view=None):
-        self.__data_key_dict = DataKeySet()  #singleton
         self.__model = DataService()
         self.__file_service = FileService()
         self.__mod_controller = ModController(self.__model)
         self.__ax_dict = {}  # {"ImageAxis": ImageAxsis class, FluoAxis: TraceAx class, ElecAxis: TraceAx class}\
-        self.__operating_controller_dict = ViewDataDict()  #observer
+        
+        self.__data_key_dict = DataKeySet()  #singleton
+        self.__operating_controller_set = DataSwitchSet()  #observer
+        self.__data_key_dict.add_observer(self.__operating_controller_set)
         
     def __del__(self):
         print('.')
@@ -118,8 +120,9 @@ class MainController(ControllerInterface):
     """
     MainController 
     """
-    def add_axis(self, axis_name: str, axis_obj: object) -> None:
-        self.__ax_dict[axis_name] = axis_obj
+    def add_axis(self, axis_name: str, axis_controller_obj: object) -> None:
+        self.__ax_dict[axis_name] = axis_controller_obj
+        self.__data_key_dict.add_observer(axis_controller_obj)
     
     def open_file(self, filename_obj=None) -> dict:
         # get filename object
@@ -215,8 +218,6 @@ class MainController(ControllerInterface):
         
     def set_mod_val(self, controller_key, mod_key, val):
         self.__mod_controller.set_mod_val(controller_key, mod_key, val)
-        
-
         
 
 class FileService:

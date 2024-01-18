@@ -149,7 +149,7 @@ class KeyDict(dict):
                 del self[key]  # if old is not in the new key list, delete it.
         # add a new key without changing
         for key in keys:
-            self.setdefault(key, self.get(key, True))  # None or key value (bool)
+            self.setdefault(key, self.get(key, True))  # True or key value (bool)
     
 class DataSwitchSet:  # controller class should have this class
     def __init__(self):

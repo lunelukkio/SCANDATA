@@ -6,7 +6,7 @@ Created on Fri Dec 15 09:01:53 2023
 """
 
 from abc import ABCMeta, abstractmethod
-from SCANDATA.common_class import ViewDataDict
+from SCANDATA.common_class import DataSwitchSet
 import matplotlib.patches as patches
 import json
 
@@ -15,21 +15,10 @@ class AxisController(metaclass=ABCMeta):
     def __init__(self, ax, controller):
         self._tools = AxesTools(ax)
         self._ax_obj = ax
-        self._view_data_dict = DataKeyDict()
-        
-        
-        
-        
-        
-        
         self._main_controller = controller
         
-        self._user_controller_list = []  # the list for showing RoiBox including the background ROI.
-        
-        self._operating_user_controller_list = []
-        self._operating_filename_list = []
-        self._operating_ch_list = []
-        
+        self._view_switch_set = DataSwitchSet()
+
         self._marker_obj = {}  # This is for makers in axis windows.
         
         self.sync_switch = False  # This switch is to show each data in each controllers.
@@ -52,6 +41,11 @@ class AxisController(metaclass=ABCMeta):
     def get_controller_val(self):
         for user_controller in self._operating_user_controller_list:
              return self._main_controller.get_controller_val(user_controller)
+
+
+
+
+
 
     @abstractmethod
     def set_view_data(self, active_controller_dict):
