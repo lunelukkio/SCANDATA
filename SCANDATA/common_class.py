@@ -83,9 +83,7 @@ class DataKeySet:  # singleton
     
     def __init__(self):
         self.__observers = []
-        
-        
-        self.__key_dict = {"CONTROLLER": [], "FILENAME": [], "CH": [], "MOD": []}
+        self.__key_dict = {"CONTROLLER": KeyList(), "FILENAME": KeyList(), "CH": KeyList(), "MOD": KeyList()}
 
     def add_observer(self, observer):
         self.__observers.append(observer)
@@ -100,12 +98,8 @@ class DataKeySet:  # singleton
     def set_data_key(self, list_key, key):   
         list_key = list_key.upper()
         key = key.upper()
-        if key in self.__key_dict[list_key]:
-            self.__key_dict[list_key].remove(key)
-            print(f"Deleted data key: {key} in {list_key}")
-        elif key not in self.__key_dict[list_key]:
-            self.__key_dict[list_key].append(key)
-            print(f"Added data key: {key} in {list_key}")
+        print(f"Data key [{list_key}] -> ", end="")
+        self.__key_dict[list_key].set_data_key(key)
         self.__notify()
         
     @property
@@ -118,20 +112,39 @@ class DataKeySet:  # singleton
 
 class KeyList:
     def __init__(self):
-        self.__keys = []
+        self.__key_list = []
         
     def set_data_key(self, key):   
-        key = key.upper())
-        if key in list(self.__keys.keys()):
-            self.__keys[key].remove(key)
-            print(f"Deleted data key: {key}")
-        elif key not in  list(self.__keys.keys()):
-            self.__keys[key].append(key)
-            print(f"Added data key: {key}")
+        key = key.upper()
+        if key in self.__key_list:
+            self.__key_list.remove(key)
+            print(f"Deleted data key: [{key}]")
+        elif key not in  self.__key_list:
+            self.__key_list.append(key)
+            print(f"Added data key: [{key}]")
             
     @property
-    def keys(self):
-        return self.__keys
+    def key_list(self):
+        return self.__key_list
+    
+            
+class KeyDict:
+    def __init__(self):
+        self.__key_dict = {}
+        
+    def set_data_key(self, key):   
+        key = key.upper()
+        if key in self.__key_dict:
+            del self.__key_dict[key]
+            print(f"Deleted data key: [{key}]")
+        elif key not in  self.__key_dict:
+            self.__key_dict[key] = True
+            print(f"Added data key: [{key}]")
+            
+    @property
+    def key_dict(self):
+        return self.__key_dict
+    
 
 class BoolKeyDict(dict):  # observer
     def update(self, keys):
@@ -144,11 +157,6 @@ class BoolKeyDict(dict):  # observer
             self.setdefault(key, self.get(key))  # None or key value (bool)
             
 
-
-            
-class DataKeyDict:
-    def __init__(self):
-        
 
 class ViewDataDict:
     def __init__(self):
@@ -205,3 +213,4 @@ class ViewDataDict:
         return self.__view_dict
 
 class OperatingDataDict():
+    pass
