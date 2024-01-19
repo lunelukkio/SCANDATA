@@ -41,8 +41,9 @@ class ModelInterface(metaclass=ABCMeta):
         raise NotImplementedError()
 
     # make a new data from experiments entities into the controllers.
+    # This method can receive a list or str as a ch_key
     @abstractmethod
-    def set_controller_data(self, controller_key: str, filename_key: str, ch_key_list: list):
+    def set_controller_data(self, controller_key: str, filename_key: str, ch_key_or_list):  #ch_key = list or str
         raise NotImplementedError()
 
     # return a dict of controller including value objects.
@@ -50,7 +51,7 @@ class ModelInterface(metaclass=ABCMeta):
     def get_controller_data(self, controller_key: str) -> dict:
         raise NotImplementedError()
 
-    # set an axis observer of view into controller 
+    # set an axes observer of view into controller 
     @abstractmethod
     def set_observer(self, controller_key, observer:object):
         raise NotImplementedError()
@@ -143,7 +144,7 @@ class DataService(ModelInterface):
         controller = self.__user_controller_repository.find_by_name(controller_key)
         # set the controller values
         controller.set_controller_val(val)
-        # notiry axis. then they will use "self.get_controller_data"
+        # notiry axes. then they will use "self.get_controller_data"
         controller.observer.notify_observer()
         
     def get_controller_val(self, controller_key: str):  # This is for getting controller value ex.RoiVal
@@ -151,11 +152,12 @@ class DataService(ModelInterface):
         controller = self.__user_controller_repository.find_by_name(controller_key)
         return controller.val_obj
     
-    def set_controller_data(self, controller_key: str, filename_key:str, ch_key_list: list):
+    # This method can receive a list or str as a ch_key
+    def set_controller_data(self, controller_key: str, filename_key:str, ch_key):
         experiments_obj = self.get_experiments(filename_key)
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
-        controller.set_controller_data(experiments_obj, ch_key_list)
+        controller.set_controller_data(experiments_obj, ch_key)
         
     def get_controller_data(self, controller_key: str) -> dict:  #This is for geting controller data dictionaly
         controller_key = controller_key.upper()
@@ -194,7 +196,7 @@ class DataService(ModelInterface):
     def get_infor(self, controller_key=None) -> dict:
         if controller_key is None:
             controller_key_dict = {}
-            for controller_key in self.__user_controller_repository.data.keys():
+            for controller_key in list(self.__user_controller_repository.data.keys()):
                 controller = self.__user_controller_repository.find_by_name(controller_key)
                 controller_key_dict[controller_key] = controller.get_infor()
         else:

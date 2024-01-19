@@ -7,7 +7,7 @@ main for controller
 
 from abc import ABCMeta, abstractmethod
 from SCANDATA.model.model_main import DataService
-from SCANDATA.controller.controller_axis import TraceAxisController, ImageAxisController
+from SCANDATA.controller.controller_axes import TraceAxesController, ImageAxesController
 from SCANDATA.common_class import WholeFilename, DataKeySet, DataSwitchSet
 import tkinter as tk
 import os
@@ -19,7 +19,7 @@ class ControllerInterface(metaclass=ABCMeta):
     MainController 
     """
     @abstractmethod
-    def add_axis(self, axis_name: str, axis: object) -> None:
+    def add_axes(self, axes_name: str, axes: object) -> None:
         raise NotImplementedError()
     
     @abstractmethod
@@ -31,7 +31,7 @@ class ControllerInterface(metaclass=ABCMeta):
         raise NotImplementedError() 
         
     @abstractmethod
-    def onclick_axis(self, event, axis_name):
+    def onclick_axes(self, event, axes_name):
         raise NotImplementedError()
         
     """
@@ -46,30 +46,29 @@ class ControllerInterface(metaclass=ABCMeta):
     def set_controller_val(self, controller_key: str, val: list):
         raise NotImplementedError() 
         
-    # get cotroller value object such as RoiVal.
-    @abstractmethod
-    def get_controller_val(self, controller_key) -> object:
-        raise NotImplementedError() 
-        
     # set a new traces to user controller with value from experiments entity
     @abstractmethod
     def set_controller_data(self, controller_list, filename_list, ch_list):
         raise NotImplementedError()
 
+    # These are in AxesController classes
+    """
+    # get cotroller value object such as RoiVal.
+    @abstractmethod
+    def get_controller_val(self, controller_key) -> object:
+        raise NotImplementedError() 
+
     @abstractmethod
     def get_controller_data(self, controller_key) -> dict:
         raise NotImplementedError()
-        
-    @abstractmethod
-    def set_observer(self, controller_key: str, ax_num: int) -> None:
-        raise NotImplementedError() 
+    """
         
     @abstractmethod
     def print_model_infor(self):
         raise NotImplementedError() 
         
     """
-    Delegation to the AxisController
+    Delegation to the AxesController
     """   
     @abstractmethod
     def get_operating_user_controller_list(self, ax_key: str):
@@ -90,6 +89,10 @@ class ControllerInterface(metaclass=ABCMeta):
     @abstractmethod
     def set_roibox(self, controller_key, roi_box_pos):
         raise NotImplementedError()
+        
+    @abstractmethod
+    def set_observer(self, controller_key: str, ax_num: int) -> None:
+        raise NotImplementedError() 
     
     """
     Delegation to the Model
@@ -107,7 +110,7 @@ class MainController(ControllerInterface):
         self.__model = DataService()
         self.__file_service = FileService()
         self.__mod_controller = ModController(self.__model)
-        self.__ax_dict = {}  # {"ImageAxis": ImageAxsis class, FluoAxis: TraceAx class, ElecAxis: TraceAx class}\
+        self.__ax_dict = {}  # {"ImageAxes": ImageAxsis class, FluoAxes: TraceAx class, ElecAxes: TraceAx class}\
         
         self.__data_key_dict = DataKeySet()  #singleton
         self.__operating_controller_set = DataSwitchSet()  #observer
@@ -121,10 +124,13 @@ class MainController(ControllerInterface):
     """
     MainController 
     """
-    def add_axis(self, axis_name: str, ax: object) -> None:
-        new_axis_controller = ImageAxisController(self.__model, ax)
-        self.__ax_dict[axis_name] = new_axis_controller
-        self.__data_key_dict.add_observer(new_axis_controller)
+    def add_axes(self, ax_type, axes_name: str, ax: object) -> None:
+        if ax_type == "IMAGE":
+            new_axes_controller = ImageAxesController(self.__model, ax)
+        elif ax_type == "TRACE":
+            new_axes_controller = TraceAxesController(self.__model, ax)
+        self.__ax_dict[axes_name] = new_axes_controller
+        self.__data_key_dict.add_observer(new_axes_controller.view_switch_set)
     
     def open_file(self, filename_obj=None) -> dict:
         # get filename object
@@ -141,12 +147,15 @@ class MainController(ControllerInterface):
         self.__model.create_experiments(filename_obj.fullname)
         # set key name list
         controller_dict_keys = self.__model.get_infor()
+        print("1111111111111111111111111111")
+        print(controller_dict_keys)
         self.__data_key_dict.set_data_key("FILENAME", filename_obj.name)
         for key in controller_dict_keys:
             self.__data_key_dict.set_data_key("CONTROLLER", key)
         for key in controller_dict_keys:
             self.__data_key_dict.set_data_key("CH", key)
-        print(self.__data_key_dict.key_dict)
+        print("222222222222222222222222222222222222")
+        print(self.__data_key_dict.get_key_dict())
         # end proccess
         if self.__model == None:
             raise Exception('Failed to create a model.')
@@ -161,6 +170,12 @@ class MainController(ControllerInterface):
             data_infor = self.__model.get_infor(controller_key)
         return data_infor
     
+    def set_data_key_dict(self, list_key, key):
+        self.__data_key_dict.set_data_key(list_key, key)  #e.g. list_key "CONTROLLER" key = "ROI1"
+        
+    def set_operating_controller_val(self, list_key, key, val):
+        self.__operating_controller_set.set_val(list_key, key, val)  #e.g. list_key "CONTROLLER" key = "ROI1"
+    
     def get_memory_infor(self):
         pid = os.getpid()
         process = psutil.Process(pid)
@@ -169,14 +184,15 @@ class MainController(ControllerInterface):
         available_memory = psutil.virtual_memory().available
         return memory_infor, maximum_memory, available_memory
     
-    def onclick_axis(self, event, axis_name):
+    def onclick_axes(self, event, axes_name):
         if event.dblclick is False:
-            if axis_name == "IMAGE_AXIS":
+            #if axes_name == "IMAGE_AXES":
+            if event.inaxes == self.__ax_dict["IMAGE_AXES"]:
                 if event.button == 1:  # left click
                     x = round(event.xdata)
                     y = round(event.ydata)
                     # set roi value in ROI
-                    controller_list = self.get_operating_user_controller_list("IMAGE_AXIS")
+                    controller_list = self.get_operating_user_controller_list("IMAGE_AXES")
                     for controller_key in controller_list:
                         self.__main_controller.set_controller_val(controller_key, [x, y, None, None])
                         new_roi_val_obj = self.__main_controller.get_controller_val(controller_key)
@@ -184,14 +200,14 @@ class MainController(ControllerInterface):
                         # adjust for image data pixels 0.5
                         roi_box_pos = roi_pos[0]-0.5, roi_pos[1]-0.5,roi_pos[2],roi_pos[3]
                         self.__main_controller.set_roibox(controller_key, roi_box_pos)
-                    self.__main_controller.ax_update("FLUO_AXIS")
+                    self.__main_controller.ax_update("FLUO_AXES")
                 elif event.button == 2:
                     pass
                 elif event.button == 3:
                     # get current controller
                     old_controller_list = self.__main_controller.get_operating_controller_list()
                     # get whole ROI controller list. Violation of scorpe range.  _activePcontoller_dict should not be used from the outside of the class.
-                    filtered_list = [item for item in self.__main_controller.ax_dict["FLUO_AXIS"]._active_controller_dict.keys() if "ROI" in item]
+                    filtered_list = [item for item in self.__main_controller.ax_dict["FLUO_AXES"]._active_controller_dict.keys() if "ROI" in item]
                     for old_controller in old_controller_list:
                         if old_controller in filtered_list:
                             index = filtered_list.index(old_controller)
@@ -206,14 +222,17 @@ class MainController(ControllerInterface):
                     self.__main_controller.set_operating_controller_list(next_controller)
                     # Violation of scorpe range.  _activePcontoller_dict should not be used from the outside of the class.
                     # Need refactoring.
-                    self.__main_controller.ax_dict["FLUO_AXIS"]._active_controller_dict[next_controller].update(self.__main_controller._ax_dict["FLUO_AXIS"]._active_controller_dict[old_controller])
-                    self.__main_controller._ax_dict["FLUO_AXIS"].set_active_controller_key(old_controller, False)
+                    self.__main_controller.ax_dict["FLUO_AXES"]._active_controller_dict[next_controller].update(self.__main_controller._ax_dict["FLUO_AXES"]._active_controller_dict[old_controller])
+                    self.__main_controller._ax_dict["FLUO_AXES"].set_active_controller_key(old_controller, False)
                     print(f"Switch to {next_controller}")
                     self.update_ax(0)
                     self.update_ax(1)
-            elif axis_name == "FLUO_AXIS":
-                raise NotImplementedError() 
-            elif axis_name == "ELEC_AXIS":
+            elif axes_name == "FLUO_AXES":
+                if event.inaxes == self.__ax_dict["FLUO_AXES"]:
+                    raise NotImplementedError()
+                elif event.inaxes == self.__ax_dict["ELEC_AXES"]:
+                    raise NotImplementedError()
+            elif axes_name == "ELEC_AXES":
                 raise NotImplementedError() 
         elif event.dblclick is True:
             print("Double click is for ----")
@@ -225,20 +244,34 @@ class MainController(ControllerInterface):
     def create_user_controller(self, controller_key):
         new_key = self.__model.create_user_controller(controller_key)
         return new_key
+    
+    # set UserController value. but not calculate data. Currently, self.update calculate data.
+    def set_controller_val(self, val: list, key_type=None):  # e.g. val = [x, y, None, None]
+        controller_list = self.__operating_controller_set.get_true_list("CONTROLLER", key_type)  # e.g. key_type = "ROI"
+        for controller_key in controller_list:
+            self.__model.set_controller_val(controller_key, val)
+        print(f"{controller_list}: ", end='')
 
+    # to calculate new data with the new controller values
+    def set_controller_data(self):
+        for controller_key in self.__operating_controller_set.get_true_list("CONTROLLER"):
+            for filename_key in self.__operating_controller_set.get_true_list("FILENAME"):
+                # Model can recieve ch_list directly too. 
+                for ch_key in self.__operating_controller_set.get_true_list("CH"):
+                    self.__model.set_controller_data(controller_key, filename_key, ch_key)
 
-        
-
-        
     def print_model_infor(self):
         self.__model.print_infor()
+        
+    def get_key_dict(self):
+        return self.__data_key_dict.get_key_dict()
         
     @property
     def ax_dict(self):
         return self.__ax_dict
         
     """
-    Delegation to the AxisController
+    Delegation to the AxesController
     """    
     def get_operating_user_controller_list(self, ax_key):
         return self.__ax_dict[ax_key].get_operating_user_controller_list()
@@ -253,7 +286,10 @@ class MainController(ControllerInterface):
         self.__ax_dict[ax_key].print_infor()
         
     def set_roibox(self, controller_key, roi_box_pos):
-        self.__ax_dict["IMAGE_AXIS"].set_roibox(controller_key, roi_box_pos)
+        self.__ax_dict["IMAGE_AXES"].set_roibox(controller_key, roi_box_pos)
+        
+    def set_observer(self, controller_key: str, ax_name: str) -> None:
+        self.__ax_dict[ax_name].set_observer(controller_key)
     
     """
     Delegation to the ModController

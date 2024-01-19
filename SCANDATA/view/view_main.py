@@ -234,7 +234,7 @@ class DataWindow(tk.Frame):
         
         self.canvas_image = FigureCanvasTkAgg(image_fig, frame_left)
         #canvas_image.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
-        self.__main_controller.add_axis("IMAGE_AXIS", image_ax))  # ax_dict["ImageAxis"]
+        self.__main_controller.add_axes("IMAGE", "IMAGE_AXES", image_ax)  # ax_dict["ImageAxes"]
 
         # for tool bar in the image window
         self.canvas_image.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
@@ -248,7 +248,7 @@ class DataWindow(tk.Frame):
 
         
         # mouse click events
-        self.canvas_image.mpl_connect('button_press_event', lambda event: self.onclick_axis(event, "IMAGE_AXIS"))
+        self.canvas_image.mpl_connect('button_press_event', lambda event: self.onclick_axes(event, "IMAGE_AXeS"))
 
         # image update switch
         self.checkbox_update_pass_switch = tk.BooleanVar()
@@ -273,15 +273,15 @@ class DataWindow(tk.Frame):
         
         # matplotlib trace axes
         trace_ax1 = trace_fig.add_subplot(gridspec_trace_fig[0:15])
-        self.__main_controller.add_axis("FLUO_AXIS", TraceAxisController(self.__main_controller, self.canvas_trace, trace_ax1))  # _ax_dict["FluoAxis"]
+        self.__main_controller.add_axes("TRACE", "FLUO_AXES", trace_ax1)  # _ax_dict["FluoAxes"]
         
         # matplotlib elec trace axes
-        trace_ax2 = trace_fig.add_subplot(gridspec_trace_fig[16:20], sharex=self.__main_controller._ax_dict["FluoAxis"]._ax_obj)  # sync to FluoAxis
-        self.__main_controller.add_axis("ELEC_AXIS", TraceAxisController(self.__main_controller, self.canvas_trace, trace_ax2))  # _ax_dict["ElecAxis"]
-        
+        trace_ax2 = trace_fig.add_subplot(gridspec_trace_fig[16:20], sharex=self.__main_controller.ax_dict["FLUO_AXES"]._ax_obj)  # sync to FluoAxes
+        self.__main_controller.add_axes("TRACE", "ELEC_AXES", trace_ax2)  # _ax_dict["ElecAxes"]
+
         # mouse click event
-        trace_ax1.mpl_connect('button_press_event', lambda event: self.onclick_axis(event, "FLUO_AXIS"))
-        trace_ax2.mpl_connect('button_press_event', lambda event: self.onclick_axis(event, "ELEC_AXIS"))
+        self.canvas_trace.mpl_connect('button_press_event', lambda event: self.onclick_axes(event, "FLUO_AXES"))
+        self.canvas_trace.mpl_connect('button_press_event', lambda event: self.onclick_axes(event, "ELEC_AXES"))
         
         #canvas_trace.get_tk_widget().pack()
         toolbar_trace = NavigationToolbarMyTool(self.canvas_trace, frame_right, self.my_color)
@@ -298,32 +298,31 @@ class DataWindow(tk.Frame):
     def open_file(self, filename_obj=None):
         self.__main_controller.open_file(filename_obj)  # make a model and get filename obj
         self.default_view_data()
-        self.__main_controller.ax_update("IMAGE_AXIS")
-        self.__main_controller.ax_update("FLUO_AXIS")
-        self.__main_controller.ax_update("ELEC_AXIS")
+        self.__main_controller.ax_update("IMAGE_AXES")
+        self.__main_controller.ax_update("FLUO_AXES")
+        self.__main_controller.ax_update("ELEC_AXES")
         
         # set image view doesn't update
-        self.__main_controller.ax_update_switch("IMAGE_AXIS", True)
-        self.__main_controller.ax_update_switch("FLUO_AXIS", True)
-        self.__main_controller.ax_update_switch("ELEC_AXIS", True)
+        self.__main_controller.ax_update_switch("IMAGE_AXES", True)
+        self.__main_controller.ax_update_switch("FLUO_AXES", True)
+        self.__main_controller.ax_update_switch("ELEC_AXES", True)
         
     def default_view_data(self):
         print("===== Start default settings. =====")
         
-        self.__main_controller.set_observer("ROI0", "FLUO_AXIS")   #background for bg_comp, (controller_key, axis number)
-        self.__main_controller.set_observer("ROI1", "FLUO_AXIS")
-        self.__main_controller.set_observer("IMAGE_CONTROLLER0", "IMAGE_AXIS")  # base image for difference image
-        self.__main_controller.set_observer("IMAGE_CONTROLLER1", "IMAGE_AXIS")  # for difference image
-        self.__main_controller.set_observer("TRACE_CONTROLLER0", "ELEC_AXIS")  # no use
-        self.__main_controller.set_observer("TRACE_CONTROLLER1", "ELEC_AXIS")
-        
-        
-        
-        
-        
-        
-        
-        self.__main_controller._ax_list[0].set_operating_filename_list(filename_obj.name)
+        self.__main_controller.set_observer("ROI0", "FLUO_AXES")   #background for bg_comp, (controller_key, AXES number)
+        self.__main_controller.set_observer("ROI1", "FLUO_AXES")
+        self.__main_controller.set_observer("IMAGE_CONTROLLER0", "IMAGE_AXES")  # base image for difference image
+        self.__main_controller.set_observer("IMAGE_CONTROLLER1", "IMAGE_AXES")  # for difference image
+        self.__main_controller.set_observer("TRACE_CONTROLLER0", "ELEC_AXES")  # no use
+        self.__main_controller.set_observer("TRACE_CONTROLLER1", "ELEC_AXES")
+        print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+        print(self.__main_controller.get_key_dict())
+
+
+
+        self.__main_controller.set_operating_controller_val("CH", "CH2", False)  # disable CH2
+
         self.__main_controller._ax_list[0].set_user_controller_list("IMAGE_CONTROLLER0")  # This is for difference image
         self.__main_controller._ax_list[0].set_user_controller_list("IMAGE_CONTROLLER1")
         self.__main_controller._ax_list[0].set_operating_user_controller_list("IMAGE_CONTROLLER1")
@@ -357,12 +356,12 @@ class DataWindow(tk.Frame):
         """
         print("===== End default settings. =====")
         
-        self.__main_controller.ax_update("IMAGE_AXIS")
-        self.__main_controller.ax_update("FLUO_AXIS")
-        self.__main_controller.ax_update("ELEC_AXIS")
-        self.__main_controller.ax_print_infor("IMAGE_AXIS")
-        self.__main_controller.ax_print_infor("FLUO_AXIS")
-        self.__main_controller.ax_print_infor("ELEC_AXIS")
+        self.__main_controller.ax_update("IMAGE_AXES")
+        self.__main_controller.ax_update("FLUO_AXES")
+        self.__main_controller.ax_update("ELEC_AXES")
+        self.__main_controller.ax_print_infor("IMAGE_AXES")
+        self.__main_controller.ax_print_infor("FLUO_AXES")
+        self.__main_controller.ax_print_infor("ELEC_AXES")
 
 
         
@@ -375,15 +374,15 @@ class DataWindow(tk.Frame):
             
             
             
-            self.__main_controller._ax_dect["IMAGE_AXIS"].set_operating_ch_list(ch_key)
-            self.__main_controller._ax_dect["FLUO_AXIS"].set_operating_ch_list(ch_key)
+            self.__main_controller._ax_dect["IMAGE_AXES"].set_operating_ch_list(ch_key)
+            self.__main_controller._ax_dect["FLUO_AXES"].set_operating_ch_list(ch_key)
             
             
             
             
             
-            self.__main_controller.ax_update("IMAGE_AXIS")
-            self.__main_controller.ax_update("FLUO_AXIS")
+            self.__main_controller.ax_update("IMAGE_AXES")
+            self.__main_controller.ax_update("FLUO_AXES")
         print('')
         
     def elec_ch_select(self, event):
@@ -413,7 +412,7 @@ class DataWindow(tk.Frame):
             new_roi_val = new_roi_val_obj.data  
             # adjust for image data pixels 0.5
             roi_box_pos = [new_roi_val[0]-0.5, new_roi_val[1]-0.5, new_roi_val[2], new_roi_val[3]]
-            # send data to image axis
+            # send data to image axes
             self.__main_controller.set_roibox(controller_key, roi_box_pos)
         self.update_ax(1)
          
@@ -436,7 +435,7 @@ class DataWindow(tk.Frame):
                 print('No DFoverF mod.')
         self.__main_controller.add_mod(ch_key, mod_key)
         self.update_trace()
-        self.__main_controller.ax_update("FLUO_AXIS")
+        self.__main_controller.ax_update("FLUO_AXES")
         print('')
         
     def image_update_pass(self):

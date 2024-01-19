@@ -8,9 +8,9 @@ Created on Fri Dec  1 10:55:57 2023
 import json
 
 scandata_setting = {
-    "color_ch": {"FULL": "black", 
-                  "CH1": "red", 
-                  "CH2": "blue"},
+    "color_ch": {"CH0": "black", 
+                 "CH1": "red", 
+                 "CH2": "blue"},
     "color_roi" : {"ROI1": "black", 
                     "ROI2": "red", 
                     "ROI3": "blue", 

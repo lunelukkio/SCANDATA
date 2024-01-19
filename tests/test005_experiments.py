@@ -18,7 +18,7 @@ class Test(unittest.TestCase):
 
         experiments = Experiments(filename_obj)
         plt.figure()
-        experiments.frames_dict["FULL"].show_data()
+        experiments.frames_dict["CH0"].show_data()
         plt.figure()
         experiments.trace_dict["ELEC1"].show_data()
         experiments.print_infor()

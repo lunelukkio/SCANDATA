@@ -11,7 +11,7 @@ import matplotlib.patches as patches
 import json
 
 
-class AxisController(metaclass=ABCMeta):
+class AxesController(metaclass=ABCMeta):
     def __init__(self, model, ax):
         self._tools = AxesTools(ax)
         self._ax_obj = ax
@@ -19,62 +19,40 @@ class AxisController(metaclass=ABCMeta):
         
         self._view_switch_set = DataSwitchSet()
 
-        self._marker_obj = {}  # This is for makers in axis windows.
+        self._marker_obj = {}  # This is for makers in axes windows.
         
         self.sync_switch = False  # This switch is to show each data in each controllers.
         self.update_switch = True  # This switch is for avoiding image view update. Ture or False or empty: flip switch.
         
         # color selection for traces and RoiBoxes
         try:
-            with open("../setting/axis_data_setting.json", "r") as json_file:
+            with open("../setting/axes_data_setting.json", "r") as json_file:
                 setting = json.load(json_file)
         except:
-            with open("./setting/axis_data_setting.json", "r") as json_file:
+            with open("./setting/axes_data_setting.json", "r") as json_file:
                 setting = json.load(json_file)
         self._ch_color = setting.get("ch_color")
         self._controller_color = setting.get("controller_color")
      
-    # set UserController value. but not calculate data. Currently, self.update calculate data.
-    def set_controller_val(self, controller_key: str, val: list):  # e.g. val = [x, y, None, None]
-        controller_list = self._view_switch_set.get_true_list("CONTROLLER")
-        for controller_key in controller_list:
-            self.__model.set_controller_val(controller_key, val)
-        print(f"{controller_list}: ", end='')
-
-
+    # to get a controller valueobject
     def get_controller_val(self, controller_key) -> object:
-        return self.__model.get_controller_val(controller_key)
+        return self._model.get_controller_val(controller_key)
         
-    def set_controller_data(self, controller_list, filename_list, ch_list):
-        self.__model.set_controller_data(controller_list, filename_list, ch_list)
-        
+    # get value object from controllers
     def get_controller_data(self, controller_key) -> dict:
-        data_dict = self.__model.get_controller_data(controller_key)
+        data_dict = self._model.get_controller_data(controller_key)
         if data_dict is None:
             print(f"Can't find data_dict in {controller_key}")
         else:
             return data_dict
         
-    def set_observer(self, controller_key: str, ax_key: str) -> None:
-        self.__model.set_observer(controller_key, self.__ax_dict[ax_key])
-
-
-==============================================================================
-    def get_controller_val(self):
-        for user_controller in self._operating_user_controller_list:
-             return self._main_controller.get_controller_val(user_controller)
-         
-
-
-
-
-
-
+    def set_observer(self, controller_key) -> None:
+        self._model.set_observer(controller_key, self)
 
     @abstractmethod
     def set_view_data(self, active_controller_dict):
             raise NotImplementedError()
-    
+    """
     def set_user_controller_list(self, controller_key):
         if controller_key not in self._user_controller_list:
             self._user_controller_list.append(controller_key)
@@ -106,6 +84,8 @@ class AxisController(metaclass=ABCMeta):
         else:
             self._operating_ch_list.remove(ch_key)
             print(f"Removed {ch_key} from {self._operating_ch_list} of {self.__class__.__name__}")
+    
+    """
 
     def ax_update_switch(self, val=None):
         if val is True:
@@ -142,7 +122,11 @@ class AxisController(metaclass=ABCMeta):
     def get_operating_user_controller_list(self):
         return self._view_switch_set.__switch_set
     
-class TraceAxisController(AxisController):
+    @property
+    def view_switch_set(self):
+        return self._view_switch_set
+    
+class TraceAxesController(AxesController):
     def __init__(self, controller, ax):
         super().__init__(controller, ax)
         self.mode = "CH_MODE"  # or "ROI MODE" for showing sigle ch of several ROIs.
@@ -167,7 +151,7 @@ class TraceAxisController(AxisController):
             pass
 
 
-class ImageAxisController(AxisController):
+class ImageAxesController(AxesController):
     def __init__(self, model, ax):
         super().__init__(model, ax)
         self.mode = None  # no use
@@ -218,7 +202,7 @@ class ImageAxisController(AxisController):
         print("uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuupdate")
         self.draw_ax()
                  
-    def set_roibox(self, controller_key, roi_pos):  # roi[x,y,width,height]. controller_list came from the trace axis
+    def set_roibox(self, controller_key, roi_pos):  # roi[x,y,width,height]. controller_list came from the trace axes
         if controller_key not in self._marker_obj:
             self._marker_obj[controller_key] = RoiBox(roi_pos, self._controller_color[controller_key])
             self._ax_obj.add_patch(self._marker_obj[controller_key].rectangle_obj)

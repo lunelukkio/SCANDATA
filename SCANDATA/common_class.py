@@ -94,7 +94,7 @@ class DataKeySet:  # singleton
     def __notify(self):
         for observer in self.__observers:
             observer.update(self.__key_dict)
-            
+    
     def set_data_key(self, list_key, key):   
         list_key = list_key.upper()
         key = key.upper()
@@ -102,13 +102,12 @@ class DataKeySet:  # singleton
         self.__key_dict[list_key].set_data_key(key)
         self.__notify()
         
+    def get_key_dict(self):
+        return self.__key_dict
+        
     @property
     def observers(self):
         return self.__observers
-    
-    @property
-    def key_dict(self):
-        return self.__key_dict
 
 
 class KeyList(list):
@@ -150,6 +149,7 @@ class KeyDict(dict):
         # add a new key without changing
         for key in keys:
             self.setdefault(key, self.get(key, True))  # True or key value (bool)
+
     
 class DataSwitchSet:  # controller class should have this class
     def __init__(self):
@@ -166,10 +166,16 @@ class DataSwitchSet:  # controller class should have this class
                 return self.__switch_set[dict_key][key]
             else:
                 raise Exception("No key in the view data dict")
-                
-    def get_true_list(self, dict_key):
+    
+    # No type_key: get every true list.
+    def get_true_list(self, dict_key, key_type=None):  # e.g. type_key = "ROI"
         dict_key = dict_key.upper()
-        return [key for key, value in self.__switch_set[dict_key].items() if value is True]
+        if key_type:
+            key_type = key_type.upper()
+            true_key = [key for key, value in self.__switch_set[dict_key].items() if value is True]
+            return [key for key in true_key if key_type in key]
+        else:
+            return [key for key, value in self.__switch_set[dict_key].items() if value is True]
                 
     def update(self, list_keys):
         for dict_key in self.__switch_set:
@@ -178,3 +184,40 @@ class DataSwitchSet:  # controller class should have this class
     @property
     def switch_set(self):
         return self.__switch_set
+    
+    
+    
+    
+    
+    
+    
+class DataSwitch(dict. Entry):
+    # e.g. {CH0: False, CH1: True, CH2: True}  
+    def set_data_key(self, key):   
+        key = key.upper()
+        if key in self:
+            del self[key]
+            print(f"Deleted data key: [{key}]")
+        elif key not in self:
+            self[key] = True
+            print(f"Added data key: [{key}]")
+            
+    def set_val(self, key, val=None):
+        if not (isinstance(val, bool) or val is None):   # val is not bool or None.
+            raise Exception(f"This is not boolen value: {val}")
+        if key not in self:
+            raise Exception(f"No key in the dict: {key}")
+        if val is not None:
+            self[key] = val
+        elif val is None:
+            self[key] = not self[key]
+            
+    def update(self, keys):
+        # delete a key
+        for key in list(self.keys()):  # take own key
+            if key not in keys:  # check the new key_list
+                del self[key]  # if old is not in the new key list, delete it.
+        # add a new key without changing
+        for key in keys:
+            self.setdefault(key, self.get(key, True))  # True or key value (bool)
+

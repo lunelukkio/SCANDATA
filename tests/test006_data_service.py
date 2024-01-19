@@ -20,9 +20,7 @@ class Test(unittest.TestCase):
         data_service.create_user_controller("Roi2")
         data_service.print_infor()
         
-        #roi1.data_dict["20408B002.tsm"]["CH1"].show_data()
-        #roi1.data_dict["20408B001.tsm"]["FULL"].show_data()
-        #roi3.data_dict["20408B001.tsm"]["CH2"].show_data()
+
         roi1 = data_service.get_user_controller("ROI1")
         data_service.set_controller_val("ROI1", [20,20,1,1])
         roi1.print_infor()

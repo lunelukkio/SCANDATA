@@ -56,15 +56,30 @@ class UserController(metaclass=ABCMeta):
     def set_controller_val(self, val_list:list):  # e.g. roi value
         raise NotImplementedError()
         
-    def set_controller_data(self, experiments_obj, ch_key_list):   # get controller values from experiments
+    @abstractmethod
+    def _get_val(self, experiments_obj, ch_key):
+        raise NotImplementedError()
+    
+    @abstractmethod
+    def reset(self) -> None:
+        raise NotImplementedError()
+        
+    # it can receive list or str as ch_key
+    def set_controller_data(self, experiments_obj, ch_key):   # get controller values from experiments
         self._data_dict = {}
-        for ch_key in ch_key_list:
+        if isinstance(ch_key, str):
             data = self._get_val(experiments_obj, ch_key)
-            if data  is None:
+            if data is None:
                 pass
             else:
                 self._data_dict[ch_key] = data
-
+        elif isinstance(ch_key, list):
+            for key in ch_key:
+                data = self._get_val(experiments_obj, key)
+                if data is None:
+                    pass
+                else:
+                    self._data_dict[key] = data
         self.print_infor()
         
     def get_controller_data(self):  # get a dictionary which has trace or image or etc data.
@@ -93,7 +108,7 @@ class UserController(metaclass=ABCMeta):
 
     # return data dict keys with "True" without data. This is for view ax.
     def get_infor(self) -> dict:          
-        return self.data_dict.keys()
+        return list(self.data_dict.keys())
     
     def print_infor(self) -> None:
         print(f"{self.__class__.__name__} information ===================")

@@ -10,7 +10,7 @@ from SCANDATA.common_class import DataKeySet, DataSwitchSet
 class Test(unittest.TestCase):
     def test(self):
         data_key_set = DataKeySet()
-        data_key_set.set_data_key("controller", "ROI1")
+        data_key_set.set_data_key("controller", "RO1")
         data_key_set.set_data_key("controller", "ROI2")
 
 
@@ -23,8 +23,8 @@ class Test(unittest.TestCase):
         print(dict1.switch_set)
         
         data_key_set.set_data_key("controller", "ROI4")
-        print(dict1.get_val("ROI1"))
-        print(dict1.get_true_list("CONTROLLER"))
+        print(dict1.get_val("ROI3"))
+        print(dict1.get_true_list("CONTROLLER", "ROI"))
         
         
 
