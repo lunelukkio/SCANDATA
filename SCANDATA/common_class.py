@@ -7,6 +7,7 @@ Created on Mon Oct  2 13:42:38 2023
 
 import os
 import glob
+from abc import ABCMeta, abstractmethod
 
         
 """
@@ -191,7 +192,20 @@ class DataSwitchSet:  # controller class should have this class
     
     
     
-class DataSwitch(dict. Entry):
+    
+class Entry(metaclass=ABCMeta):
+    @abstractmethod
+    def set_data_key(self, key):
+        raise NotImplementedError()
+        
+    @abstractmethod
+    def update(self, keys):
+        raise NotImplementedError()
+
+
+    
+    
+class DataSwitchDict(dict, Entry):
     # e.g. {CH0: False, CH1: True, CH2: True}  
     def set_data_key(self, key):   
         key = key.upper()
@@ -221,3 +235,26 @@ class DataSwitch(dict. Entry):
         for key in keys:
             self.setdefault(key, self.get(key, True))  # True or key value (bool)
 
+
+class KeyDirectory(dict, Entry):
+    def set_data_key(self, key):   
+        key = key.upper()
+        if key in self:
+            del self[key]
+            print(f"Deleted data key: [{key}]")
+        elif key not in self:
+            self[key] = True
+            print(f"Added data key: [{key}]")
+            
+    def update(self, keys):
+        # delete a key
+        for key in list(self.keys()):  # take own key
+            if key not in keys:  # check the new key_list
+                del self[key]  # if old is not in the new key list, delete it.
+        # add a new key without changing
+        for key in keys:
+            self.setdefault(key, self.get(key, True))  # True or key value (bool)
+            
+    def add(self, entry):
+        entry.path = self.name
+        self[] = entry
