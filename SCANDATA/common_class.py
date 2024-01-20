@@ -7,6 +7,7 @@ Created on Mon Oct  2 13:42:38 2023
 
 import os
 import glob
+import copy
 from abc import ABCMeta, abstractmethod
 
         
@@ -86,29 +87,7 @@ class DataKeySet:  # singleton
         self.__observers = []
         self.__key_dict = {"CONTROLLER": KeyList(), "FILENAME": KeyList(), "CH": KeyList(), "MOD": KeyList()}
 
-    def add_observer(self, observer):
-        self.__observers.append(observer)
 
-    def remove_observer(self, observer):
-        self.__observers.remove(observer)
-
-    def __notify(self):
-        for observer in self.__observers:
-            observer.update(self.__key_dict)
-    
-    def set_data_key(self, list_key, key):   
-        list_key = list_key.upper()
-        key = key.upper()
-        print(f"Data key [{list_key}] -> ", end="")
-        self.__key_dict[list_key].set_data_key(key)
-        self.__notify()
-        
-    def get_key_dict(self):
-        return self.__key_dict
-        
-    @property
-    def observers(self):
-        return self.__observers
 
 
 class KeyList(list):
@@ -193,10 +172,72 @@ class DataSwitchSet:  # controller class should have this class
     
     
     
+    
+    
+class SingletonKeyDict:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(SingletonKeyDict, cls).__new__(cls)
+            cls._instance._dict = {}
+            cls._instance._observers = []
+        return cls._instance
+
+    def copy_dict(self, original_dict):
+        self._dict = copy.deepcopy(original_dict)
+
+    def get_dict(self):
+        return self._dict
+
+    def set_data_key(self, list_key, key):   
+        list_key = list_key.upper()
+        key = key.upper()
+        print(f"Data key [{list_key}] -> ", end="")
+        self.__key_dict[list_key].set_data_key(key)
+        self.__notify()
+
+    def get_controller_key(self):
+        return list(self._dict.keys())
+    
+    def get_ch_key(self, controller_key):
+        return list(self._dict[controller_key].keys())
+    
+    def add_observer(self, observer):
+        self.__observers.append(observer)
+
+    def remove_observer(self, observer):
+        self.__observers.remove(observer)
+
+    def __notify(self):
+        for observer in self.__observers:
+            observer.update(self.__key_dict)
+    
+
+        
+    def get_key_dict(self):
+        return self.__key_dict
+        
+    @property
+    def observers(self):
+        return self.__observers
+    
+    
+    
 class Entry(metaclass=ABCMeta):
-    @abstractmethod
-    def set_data_key(self, key):
-        raise NotImplementedError()
+    def __init__(self):
+        self.__name = None
+        self.__list = []
+        self.__switch = True
+        
+    def set_data_key(self, key):   
+        key = key.upper()
+        if key in self:
+            del self[key]
+            print(f"Deleted data key: [{key}]")
+        elif key not in self:
+            self[key] = True
+            print(f"Added data key: [{key}]")
         
     @abstractmethod
     def update(self, keys):
@@ -205,8 +246,13 @@ class Entry(metaclass=ABCMeta):
 
     
     
-class DataSwitchDict(dict, Entry):
+class DataSwitchDict(Entry):
     # e.g. {CH0: False, CH1: True, CH2: True}  
+    def __init__(self):
+        self.__name = None
+        self.__list = []
+        self.__switch = True
+        
     def set_data_key(self, key):   
         key = key.upper()
         if key in self:
@@ -236,7 +282,8 @@ class DataSwitchDict(dict, Entry):
             self.setdefault(key, self.get(key, True))  # True or key value (bool)
 
 
-class KeyDirectory(dict, Entry):
+class KeyDict(dict, Entry):
+    # self = dict
     def set_data_key(self, key):   
         key = key.upper()
         if key in self:
@@ -257,4 +304,4 @@ class KeyDirectory(dict, Entry):
             
     def add(self, entry):
         entry.path = self.name
-        self[] = entry
+        #self[] = entry
