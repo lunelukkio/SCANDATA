@@ -43,7 +43,6 @@ class UserController(metaclass=ABCMeta):
     def __init__(self):
         self.observer = ControllerObserver()
         self.__mod_service = ModService()
-        self._data_dict = {}  # data dict = {full:TraceData_value obj,ch1:TraceData,ch2:TraceData}
         self._val_obj = None
         self.__mod_switch = False  # This is for test.
         
@@ -64,32 +63,28 @@ class UserController(metaclass=ABCMeta):
     def reset(self) -> None:
         raise NotImplementedError()
         
-    # it can receive list or str as ch_key
-    def set_controller_data(self, experiments_obj, ch_key):   # get controller values from experiments
-        self._data_dict = {}
-        if isinstance(ch_key, str):
-            data = self._get_val(experiments_obj, ch_key)
+    # it can receive list or str as ch_key. But usualy it should be a list, becase every data shold be produced by the same controller.
+    def set_controller_data(self, experiments_obj, data_key_list):   # get controller values from experiments
+        data_dict = {}
+        if isinstance(data_key_list, str):
+            data = self._get_val(experiments_obj, data_key_list)
             if data is None:
                 pass
             else:
-                self._data_dict[ch_key] = data
-        elif isinstance(ch_key, list):
-            for key in ch_key:
-                data = self._get_val(experiments_obj, key)
+                data_dict[data_key_list] = data
+        elif isinstance(data_key_list, list):
+            for data_key in data_key_list:
+                data = self._get_val(experiments_obj, data_key)
                 if data is None:
                     pass
                 else:
-                    self._data_dict[key] = data
-        self.print_infor()
-        
-    def get_controller_data(self):  # get a dictionary which has trace or image or etc data.
+                    data_dict[data_key] = data
+        print("Mod service should be here???????????")
         if self.__mod_switch is True:
             # apply mod 
-            new_data_dict = self.__mod_service.apply_mod(self._data_dict)
-            print("mod data is not correct!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!need bug fix")
-        else:
-            new_data_dict = self._data_dict
-        return new_data_dict
+            data_dict = self.__mod_service.apply_mod(data_dict)
+        self.print_infor(data_dict)
+        return data_dict
 
     def set_observer(self, observer):
         self.observer.set_observer(observer)
@@ -110,24 +105,20 @@ class UserController(metaclass=ABCMeta):
     def get_infor(self) -> dict:          
         return list(self.data_dict.keys())
     
-    def print_infor(self) -> None:
+    def print_infor(self, data_dict) -> None:
         print(f"{self.__class__.__name__} information ===================")
-        if not self._data_dict:
+        if not data_dict:
             print("Data_dict is empty")
-
+            return
         print(f"{self.__class__.__name__} = {self._val_obj.data}")
         print("-- data_dict LIST -- ")
-        print(self._data_dict.keys())
+        print(data_dict.keys())
         print(f"=============== {self.__class__.__name__} information END")
         print("")
     
     @abstractmethod
     def reset(self):
         raise NotImplementedError()
-
-    @property
-    def data_dict(self):
-        return self._data_dict
     
     @property
     def val_obj(self):

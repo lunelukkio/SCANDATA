@@ -149,12 +149,15 @@ class MainController(ControllerInterface):
         print("")
         return filename_obj
     
-    def create_experiments(self, filename_obj: object):  
+    def create_experiments(self, filename_obj: object):
+        filename_key = filename_obj.name
         self.__model.create_experiments(filename_obj.fullname)
         # copy default controller names and data names from the model
-        self.__singleton_key_dict.copy_dict(self.__model.get_infor())
+        print("77777777777777777777777")
+        print(self.__model.get_default(filename_key))
+        self.__singleton_key_dict.copy_dict(self.__model.get_default(filename_key))
         # set filename key to key_dict
-        self.__singleton_key_dict.set_filename(filename_obj.name)
+        self.__singleton_key_dict.set_filename(filename_key)
         # end proccess
         if self.__model == None:
             raise Exception('Failed to create a model.')
@@ -183,9 +186,8 @@ class MainController(ControllerInterface):
                                      for data_key, bool_val 
                                      in switch_dict[controller_key].items() 
                                      if bool_val]
-                # Model can recieve not only individual data_key but also data_list directly. 
-                for data_key in data_key_list:
-                    self.__model.set_controller_data(controller_key, filename_key, data_key)
+                # Model can recieve not only data_list but also individual data_key directly. 
+                self.__model.set_controller_data(controller_key, filename_key, data_key_list)
         
     def set_operating_controller_val(self, controller_key, data_key, bool_val):
         self.__operating_controller_set.set_val(controller_key, data_key, bool_val)

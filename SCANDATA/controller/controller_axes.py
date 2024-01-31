@@ -124,27 +124,49 @@ class ImageAxesController(AxesController):
         
     # There are three dict. active_controller_dict is to switching. self._ax_data_dict is to keep ax data. controller_data_dict is from user controller.
     def set_view_data(self):
-        if self.update_switch is True:
-            for controller_key in self._operating_user_controller_list:
-                #get data from current user controller
-                data_dict = self._main_controller.get_controller_data(controller_key)
-                for ch_key in data_dict.keys():
-                    data = data_dict[ch_key]
-                    if type(data).__name__ == "ImageData":
-                        # get a graph
-                        image = data.show_data(self._ax_obj)  # ax_data can use for image setting.
-                        print("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
-                        print(image.get_zorder())
+        switch_dict = self.__operating_controller_set.get_dict()
+        filename_dict = self.__operating_controller_set.get_filename_dict()
+        for controller_key in switch_dict.keys():
+            filename_key_list = [filename_key 
+                                     for filename_key, bool_val 
+                                     in filename_dict.items() 
+                                     if bool_val]
+            for filename_key in filename_key_list:
+                data_key_list = [data_key 
+                                     for data_key, bool_val 
+                                     in switch_dict[controller_key].items() 
+                                     if bool_val]
+                # Model can recieve not only individual data_key but also data_list directly. 
+                for data_key in data_key_list:
+                    self.__model.set_controller_data(controller_key, filename_key, data_key)
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        print("under constraction")
+        view_list = self._view_switch_set
+        for controller_key in view_list:
+            #get data from current user controller
+            data_dict = self._main_controller.get_controller_data(controller_key)
+            for ch_key in data_dict.keys():
+                data = data_dict[ch_key]
+                if type(data).__name__ == "ImageData":
+                    # get a graph
+                    image = data.show_data(self._ax_obj)  # ax_data can use for image setting.
+                    print("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+                    print(image.get_zorder())
         else:
             pass
                     
-    # override
-    def draw_ax(self):
-        self.set_view_data()
-        self._ax_obj.set_axis_off()
-        self.canvas.draw()
+
         
-    def draw_marker(self):
+    def set_marker(self):
         print(self._marker_obj)
         if self._marker_obj  == {}:
             print("ttttttttttttttttttttttttttttttttttttt")
@@ -156,12 +178,15 @@ class ImageAxesController(AxesController):
         self.set_view_data()
         self._ax_obj.set_axis_off()
         self.canvas.draw()
-        
+
     # override    shold be in main conrtoller         
     def update(self) -> None:
-        if self.update_switch == True:
-            self.draw_ax()
-            self.draw_marker()
+        if self.update_switch is True:
+            self.set_view_data()
+            self.set_marker()
+            self._ax_obj.set_axis_off()
+            self.canvas.draw()
+
                  
     def set_roibox(self, controller_key, roi_pos):  # roi[x,y,width,height]. controller_list came from the trace axes
         if controller_key not in self._marker_obj:
