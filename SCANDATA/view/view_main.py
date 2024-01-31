@@ -298,9 +298,7 @@ class DataWindow(tk.Frame):
     def open_file(self, filename_obj=None):
         self.__main_controller.open_file(filename_obj)  # make a model and get filename obj
         self.default_view_data()
-        self.__main_controller.ax_update("IMAGE_AXES")
-        self.__main_controller.ax_update("FLUO_AXES")
-        self.__main_controller.ax_update("ELEC_AXES")
+        self.__main_controller.ax_update("ALL")
         
         # set image view doesn't update
         self.__main_controller.ax_update_switch("IMAGE_AXES", True)
@@ -317,12 +315,16 @@ class DataWindow(tk.Frame):
         self.__main_controller.set_observer("TRACE_CONTROLLER0", "ELEC_AXES")  # no use
         self.__main_controller.set_observer("TRACE_CONTROLLER1", "ELEC_AXES")
 
-        self.__main_controller.set_switch("ALL", "CH0", False)  # disable CH0 for fulltrace
-        self.__main_controller.set_switch("ALL", "CH2", False)  # disable CH2
-        
+        # set axes controllers view switches
+        self.__main_controller.set_view_switch("ALL", "ALL", "ALL", False)  # (ax, controller_key, data_key, value) 
+        self.__main_controller.set_view_switch("FLUO_AXES", "ROI1", "CH1", True)  # (ax, controller_key, data_key, value)
+        self.__main_controller.set_view_switch("IMAGE_AXES", "ROI1", "CH1", True)  # (ax, controller_key, data_key, value) 
+        self.__main_controller.set_view_switch("ELEC_AXES", "TRACE_CONTROLLER1", "ELEC0", True)  # (ax, controller_key, data_key, value) 
+
+        # set maincontroller keys "CH1", "ELEC0"
         self.__main_controller.set_operating_controller_val("ALL", "ALL", False)  # All switch is False
         self.__main_controller.set_operating_controller_val("ROI1", "CH1", True)  # This is for difference image
-        self.__main_controller.set_operating_controller_val("TRACE_CONTROLLER1", "ELEC0", True)  # This is for difference image
+        self.__main_controller.set_operating_controller_val("ROI1", "CH2", True)  # This is for difference image
 
         """ about mod"""
         # Set ROI0 as background in ROI1 controller
@@ -338,14 +340,12 @@ class DataWindow(tk.Frame):
         # set mod
         self.__main_controller.set_mod_key("ROI2", "BGCOMP")
         """
+        
+        self.__main_controller.print_infor()
         print("===== End default settings. =====")
         
-        self.__main_controller.ax_update("IMAGE_AXES")
-        self.__main_controller.ax_update("FLUO_AXES")
-        self.__main_controller.ax_update("ELEC_AXES")
-        self.__main_controller.ax_print_infor("IMAGE_AXES")
-        self.__main_controller.ax_print_infor("FLUO_AXES")
-        self.__main_controller.ax_print_infor("ELEC_AXES")
+        self.__main_controller.update()
+
 
 
         
@@ -386,7 +386,7 @@ class DataWindow(tk.Frame):
 
     # need refactoring. shold delete return from the roi values.
     def change_roi_size(self, val):
-        controller_list = self.__main_controller.get_operating_user_controller_list(1)
+        controller_list = self.__main_controller.get_operating_user_controller_list(1)  # delete
         for controller_key in controller_list:
             # set roi in user controller
             self.__main_controller.set_controller_val(controller_key, val)

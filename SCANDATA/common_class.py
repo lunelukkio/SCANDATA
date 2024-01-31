@@ -155,6 +155,11 @@ class SingletonKeyDict:
     @property
     def filename_list(self):
         return self._filename_list
+    
+    def print_infor(self):
+        print(self._dict)
+        print(self._filename_list)
+        print(self._observers)
 
 
 class Switch_dict:
@@ -224,3 +229,8 @@ class Switch_dict:
     
     def get_filename_dict(self):
         return self.__filename_dict
+    
+    def print_infor(self):
+        print(self.__dict)
+        print(self.__filename_dict)
+        

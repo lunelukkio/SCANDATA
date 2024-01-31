@@ -316,7 +316,7 @@ class ControllerObserver:
                 print(f"Observer removed {observer.__class__.__name__}")
                 return
         self._observers.append(observer)   
-        print(f"Observer added {observer.__class__.__name__}")
+        print(f"Observer added {observer.__class__.__name__} to a user controller")
             
     def notify_observer(self):
         for observer_name in self._observers:

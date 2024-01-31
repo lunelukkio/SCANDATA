@@ -55,43 +55,8 @@ class AxesController(metaclass=ABCMeta):
     @abstractmethod
     def set_view_data(self, active_controller_dict):
             raise NotImplementedError()
-            
-    """
-    def set_user_controller_list(self, controller_key):
-        if controller_key not in self._user_controller_list:
-            self._user_controller_list.append(controller_key)
-            print(f"Added {controller_key} to {self._user_controller_list} of {self.__class__.__name__}")
-        else:
-            self._user_controller_list.remove(controller_key)
-            print(f"Removed {controller_key} from {self._user_controller_list} of {self.__class__.__name__}")
-            
-    def set_operating_user_controller_list(self, controller_key):
-        if controller_key not in self._operating_user_controller_list:
-            self._operating_user_controller_list.append(controller_key)
-            print(f"Added {controller_key} to {self._operating_user_controller_list} of {self.__class__.__name__}")
-        else:
-            self._operating_user_controller_list.remove(controller_key)
-            print(f"Removed {controller_key} from {self._operating_user_controller_list} of {self.__class__.__name__}")
-            
-    def set_operating_filename_list(self, filename_key):
-        if filename_key not in self._operating_filename_list:
-            self._operating_filename_list.append(filename_key)
-            print(f"Added {filename_key} to {self._operating_filename_list} of {self.__class__.__name__}")
-        else:
-            self._operating_filename_list.remove(filename_key)
-            print(f"Removed {filename_key} from {self._operating_filename_list} of {self.__class__.__name__}")
-            
-    def set_operating_ch_list(self, ch_key):
-        if ch_key not in self._operating_ch_list:
-            self._operating_ch_list.append(ch_key)
-            print(f"Added {ch_key} to {self._operating_ch_list} of {self.__class__.__name__}")
-        else:
-            self._operating_ch_list.remove(ch_key)
-            print(f"Removed {ch_key} from {self._operating_ch_list} of {self.__class__.__name__}")
-    
-    """
 
-    def ax_update_switch(self, val=None):
+    def ax_update_enable(self, val=None) -> None:
         if val is True:
             self.update_switch = True
         elif val is False:
@@ -118,13 +83,8 @@ class AxesController(metaclass=ABCMeta):
     def print_infor(self):
         print("")
         print(f"{self.__class__.__name__} current data list = ")
-        print(self._operating_filename_list)
-        print(self._user_controller_list)
-        print(self._operating_user_controller_list)
-        print(self._operating_ch_list)
-        
-    def get_operating_user_controller_list(self):
-        return self._view_switch_set.__switch_set
+        self._view_switch_set.print_infor()
+
     
     @property
     def view_switch_set(self):
@@ -134,7 +94,6 @@ class TraceAxesController(AxesController):
     def __init__(self, controller, ax):
         super().__init__(controller, ax)
         self.mode = "CH_MODE"  # or "ROI MODE" for showing sigle ch of several ROIs.
-        self.ax_update_switch()
      
     def set_view_data(self):
         if self.update_switch is True:
@@ -159,7 +118,6 @@ class ImageAxesController(AxesController):
     def __init__(self, model, ax):
         super().__init__(model, ax)
         self.mode = None  # no use
-        self.ax_update_switch()
         
     def set_click_position(self, event):  
             raise NotImplementedError()
@@ -182,6 +140,11 @@ class ImageAxesController(AxesController):
                     
     # override
     def draw_ax(self):
+        self.set_view_data()
+        self._ax_obj.set_axis_off()
+        self.canvas.draw()
+        
+    def draw_marker(self):
         print(self._marker_obj)
         if self._marker_obj  == {}:
             print("ttttttttttttttttttttttttttttttttttttt")
@@ -194,17 +157,11 @@ class ImageAxesController(AxesController):
         self._ax_obj.set_axis_off()
         self.canvas.draw()
         
-    # override            
-    def update(self):
+    # override    shold be in main conrtoller         
+    def update(self) -> None:
         if self.update_switch == True:
-            self._ax_obj.cla()  # clear ax
-            for controller_key in self._operating_user_controller_list:
-                for filename_key in self._operating_filename_list:
-                    self._main_controller.set_controller_data(controller_key,
-                                                         filename_key,
-                                                         self._operating_ch_list)
-        print("uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuupdate")
-        self.draw_ax()
+            self.draw_ax()
+            self.draw_marker()
                  
     def set_roibox(self, controller_key, roi_pos):  # roi[x,y,width,height]. controller_list came from the trace axes
         if controller_key not in self._marker_obj:
@@ -213,10 +170,6 @@ class ImageAxesController(AxesController):
         else:
             self._marker_obj[controller_key].set_roi(roi_pos)
         self.canvas.draw()
-        
-    # override
-    def get_operating_user_controller_list(self):
-        return self._view_switch_set.get_true_list("CONTROLLER")
 
 
 class RoiBox():

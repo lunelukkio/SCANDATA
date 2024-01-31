@@ -34,6 +34,11 @@ class ControllerInterface(metaclass=ABCMeta):
     def onclick_axes(self, event, axes_name):
         raise NotImplementedError()
         
+    # set a new traces to user controller with value from experiments entity
+    @abstractmethod
+    def update(self, controller_list, filename_list, ch_list):
+        raise NotImplementedError()
+        
     """
     Delegation to the Model
     """ 
@@ -46,10 +51,7 @@ class ControllerInterface(metaclass=ABCMeta):
     def set_controller_val(self, controller_key: str, val: list):
         raise NotImplementedError() 
         
-    # set a new traces to user controller with value from experiments entity
-    @abstractmethod
-    def set_controller_data(self, controller_list, filename_list, ch_list):
-        raise NotImplementedError()
+
 
     # These are in AxesController classes
     """
@@ -70,16 +72,17 @@ class ControllerInterface(metaclass=ABCMeta):
     """
     Delegation to the AxesController
     """   
-    @abstractmethod
-    def get_operating_user_controller_list(self, ax_key: str):
-        raise NotImplementedError()
 
     @abstractmethod
-    def ax_update_switch(self, ax_key: str, swtch: bool) -> None:
+    def set_view_switch(self, controller_key, data_key, bool_val) -> None:
         raise NotImplementedError()
         
     @abstractmethod
     def ax_update(self, ax_key: str) -> None:
+        raise NotImplementedError()
+        
+    @abstractmethod
+    def ax_update_enable(self, ax_key: str) -> None:
         raise NotImplementedError()
         
     @abstractmethod
@@ -166,8 +169,23 @@ class MainController(ControllerInterface):
             data_infor = self.__model.get_infor(controller_key)
         return data_infor
     
-    def set_data_key_dict(self, list_key, key):
-        self.__singleton_key_dict.set_data_key(list_key, key)  #e.g. list_key "CONTROLLER" key = "ROI1"
+    # Calculate new data with the new controller values
+    def update(self) -> None:
+        switch_dict = self.__operating_controller_set.get_dict()
+        filename_dict = self.__operating_controller_set.get_filename_dict()
+        for controller_key in switch_dict.keys():
+            filename_key_list = [filename_key 
+                                     for filename_key, bool_val 
+                                     in filename_dict.items() 
+                                     if bool_val]
+            for filename_key in filename_key_list:
+                data_key_list = [data_key 
+                                     for data_key, bool_val 
+                                     in switch_dict[controller_key].items() 
+                                     if bool_val]
+                # Model can recieve not only individual data_key but also data_list directly. 
+                for data_key in data_key_list:
+                    self.__model.set_controller_data(controller_key, filename_key, data_key)
         
     def set_operating_controller_val(self, controller_key, data_key, bool_val):
         self.__operating_controller_set.set_val(controller_key, data_key, bool_val)
@@ -191,7 +209,7 @@ class MainController(ControllerInterface):
                     controller_list = self.get_operating_user_controller_list("IMAGE_AXES")
                     for controller_key in controller_list:
                         self.__main_controller.set_controller_val(controller_key, [x, y, None, None])
-                        new_roi_val_obj = self.__main_controller.get_controller_val(controller_key)
+                        new_roi_val_obj = self.__main_cntroller.get_controller_val(controller_key)  # need change
                         roi_pos = new_roi_val_obj.data
                         # adjust for image data pixels 0.5
                         roi_box_pos = roi_pos[0]-0.5, roi_pos[1]-0.5,roi_pos[2],roi_pos[3]
@@ -248,16 +266,18 @@ class MainController(ControllerInterface):
             self.__model.set_controller_val(controller_key, val)
         print(f"{controller_list}: ", end='')
 
-    # to calculate new data with the new controller values
-    def set_controller_data(self):
-        for controller_key in self.__operating_controller_set.get_true_list("CONTROLLER"):
-            for filename_key in self.__operating_controller_set.get_true_list("FILENAME"):
-                # Model can recieve ch_list directly too. 
-                for ch_key in self.__operating_controller_set.get_true_list("CH"):
-                    self.__model.set_controller_data(controller_key, filename_key, ch_key)
 
     def print_model_infor(self):
         self.__model.print_infor()
+        
+    def print_infor(self):
+        print("Singleton key dict")
+        self.__singleton_key_dict.print_infor()
+        print("Operating controller list")
+        self.__operating_controller_set.print_infor()
+        print("Axes controller infor")
+        for ax in self.__ax_dict.values():
+            ax.print_infor()
         
     def get_key_dict(self):
         return self.__singleton_key_dict.get_dict()
@@ -273,18 +293,28 @@ class MainController(ControllerInterface):
     """
     Delegation to the AxesController
     """               
-    def set_switch(self, controller_key, data_key, bool_val):
-        for ax in self.__ax_dict.values():
-            ax.set_switch(controller_key, data_key, bool_val)
-    
-    def get_operating_user_controller_list(self, ax_key):
-        return self.__ax_dict[ax_key].get_operating_user_controller_list()
-    
-    def ax_update_switch(self, ax_key: str, val=None) -> None:
-        self.__ax_dict[ax_key].ax_update_switch(val)
-        
-    def ax_update(self, ax_key: str):
-        self.__ax_dict[ax_key].update()
+    def set_view_switch(self, ax_key, controller_key, data_key, bool_val) -> None:
+        if ax_key == "ALL":
+            for ax in self.__ax_dict.values():
+                ax.set_switch(controller_key, data_key, bool_val)
+        else:
+            if ax_key not in self.__ax_dict:
+                print(f"There is no Axes: {ax_key}")
+            else:
+                self.__ax_dict[ax_key].set_switch(controller_key, data_key, bool_val)
+                
+    def ax_update(self, ax_key: str) -> None:
+        if ax_key == "ALL":
+            for ax in self.__ax_dict.values():
+                ax.update()
+        else:
+            if ax_key not in self.__ax_dict:
+                print(f"There is no Axes: {ax_key}")
+            else:
+                self.__ax_dict[ax_key].update()
+                
+    def ax_update_enable(self, ax_key: str):
+        self.__ax_dict[ax_key].ax_update_enable()
         
     def ax_print_infor(self, ax_key):
         self.__ax_dict[ax_key].print_infor()
