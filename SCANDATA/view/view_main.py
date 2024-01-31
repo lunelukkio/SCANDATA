@@ -316,37 +316,21 @@ class DataWindow(tk.Frame):
         self.__main_controller.set_observer("IMAGE_CONTROLLER1", "IMAGE_AXES")  # for difference image
         self.__main_controller.set_observer("TRACE_CONTROLLER0", "ELEC_AXES")  # no use
         self.__main_controller.set_observer("TRACE_CONTROLLER1", "ELEC_AXES")
-        print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
-        print(self.__main_controller.get_key_dict())
 
-
-
-        self.__main_controller.set_operating_controller_val("CH", "CH2", False)  # disable CH2
-
-        self.__main_controller._ax_list[0].set_user_controller_list("IMAGE_CONTROLLER0")  # This is for difference image
-        self.__main_controller._ax_list[0].set_user_controller_list("IMAGE_CONTROLLER1")
-        self.__main_controller._ax_list[0].set_operating_user_controller_list("IMAGE_CONTROLLER1")
-        self.__main_controller._ax_list[0].set_operating_ch_list("CH1")
-
-        self.__main_controller._ax_list[1].set_operating_filename_list(filename_obj.name)
-        self.__main_controller._ax_list[1].set_user_controller_list("ROI0")
-        self.__main_controller._ax_list[1].set_user_controller_list("ROI1")
-        self.__main_controller._ax_list[1].set_operating_user_controller_list("ROI1")
-        self.__main_controller._ax_list[1].set_operating_ch_list("CH1")
+        self.__main_controller.set_switch("ALL", "CH0", False)  # disable CH0 for fulltrace
+        self.__main_controller.set_switch("ALL", "CH2", False)  # disable CH2
         
-        self.__main_controller._ax_list[2].set_operating_filename_list(filename_obj.name)
-        self.__main_controller._ax_list[2].set_user_controller_list("TRACE_CONTROLLER0")  # currntly no use
-        self.__main_controller._ax_list[2].set_user_controller_list("TRACE_CONTROLLER1")
-        self.__main_controller._ax_list[2].set_operating_user_controller_list("TRACE_CONTROLLER1")
-        self.__main_controller._ax_list[2].set_operating_ch_list("ELEC0")
+        self.__main_controller.set_operating_controller_val("ALL", "ALL", False)  # All switch is False
+        self.__main_controller.set_operating_controller_val("ROI1", "CH1", True)  # This is for difference image
+        self.__main_controller.set_operating_controller_val("TRACE_CONTROLLER1", "ELEC0", True)  # This is for difference image
 
         """ about mod"""
         # Set ROI0 as background in ROI1 controller
         # send background ROI. but it done outside of the model.
-        background_dict = self.__main_controller.get_controller_data("ROI0")
-        self.__main_controller.set_mod_val("ROI1", "BGCOMP", background_dict)
+        #background_dict = self.__main_controller.get_controller_data("ROI0")
+        #self.__main_controller.set_mod_val("ROI1", "BGCOMP", background_dict)
         # Turn on the switch of BGCOMP for ROI1.
-        self.__main_controller.set_mod_key("ROI1", "BGCOMP")
+        #self.__main_controller.set_mod_key("ROI1", "BGCOMP")
         """
         # set background roi to the mod class
         self.__main_controller.set_mod_val("ROI1", "BgCompMod")

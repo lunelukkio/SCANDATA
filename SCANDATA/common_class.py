@@ -8,9 +8,7 @@ Created on Mon Oct  2 13:42:38 2023
 import os
 import glob
 import copy
-from abc import ABCMeta, abstractmethod
-
-        
+  
 """
 Value object
 """
@@ -83,6 +81,7 @@ class SingletonKeyDict:
         if cls._instance is None:
             cls._instance = super(SingletonKeyDict, cls).__new__(cls)
             cls._instance._dict = {}
+            cls._instance._filename_list = []
             cls._instance._observers = []
         return cls._instance
 
@@ -96,80 +95,132 @@ class SingletonKeyDict:
             if controller_key in list(self._dict.keys()):
                 del self._dict[controller_key]
                 print("Deleted")
-            elif controller_key not in list(self._dict.keys()):
+            else:
                 self._dict[controller_key] = None
                 print("Added")
-        elif data_key is not None:
+        else:
             data_key = data_key.upper()
+            if controller_key not in self._dict:
+                self._dict[controller_key] = []
             print(f"Data key in {controller_key}: {data_key} -> ", end="")
             if data_key in self._dict[controller_key]:
                 self._dict[controller_key].remove(data_key)
                 print("Deleted")
-            elif data_key not in self._dict[controller_key]:
+            else:
                 self._dict[controller_key].append(data_key)
                 print("Added")
-        self.__notify()
+        self._notify()
 
     # get keys of controller or data.
     def get_key(self, controller_key=None):
         if controller_key is None:
             return list(self._dict.keys())
-        elif controller_key is not None:
+        else:
             return self._dict[controller_key]
         
     def get_dict(self):
         return self._dict
     
-    def add_observer(self, observer):
-        self._observers.append(observer)
+    def set_filename(self, filename_key):
+        if filename_key in self._filename_list:
+            self._filename_list.remove(filename_key)
+            print(f"Removed {filename_key} from the filename list")
+        else:
+            self._filename_list.append(filename_key)
+            print(f"Added {filename_key} from the filename list")
+        self._notify()
+            
+    def get_filename_list(self):
+        return self._filename_list
+    
+    def set_observer(self, observer):
+        if observer in self._observers:
+            self._observers.remove(observer)
+            print(f"Removed {observer} from the ovserver list")
+        else:
+            self._observers.append(observer)
+            print(f"Added {observer} from the observer list")    
+            # update the new observer
+            observer.update(self._dict)
 
-    def remove_observer(self, observer):
-        self._observers.remove(observer)
-
-    def __notify(self):
+    def _notify(self):
         for observer in self._observers:
             observer.update(self._dict)
+            observer.update_filename(self._filename_list)
 
     @property
     def observers(self):
         return self._observers
-
-
     
-class swith_dict(self):
+    @property
+    def filename_list(self):
+        return self._filename_list
+
+
+class Switch_dict:
     def __init__(self):
-        self._dict = {}
+        self.__dict = {}
+        self.__filename_dict = {}
 
-    def create_switch_from_keys(self, original_key):
-        self._dict = copy.deepcopy(original_key)
+    def update(self, key_dict):
+        old_dict = self.__dict
+        new_dict = {}
+        # make a new dict from the key list
+        for controller_key, data_list in key_dict.items():
+            if data_list is not None: 
+                new_dict[controller_key] = {data_key: old_dict[controller_key][data_key] 
+                                            if data_key in old_dict 
+                                            else True for data_key in data_list}
+            else:
+                new_dict[controller_key] = None
+        self.__dict = new_dict
 
-    def set_key(self, controller_key, data_key=None):
-        controller_key.upper()
-        if data_key is None:
-            print(f"Controller key: {controller_key} -> ", end="")
-            if controller_key in list(self._dict.keys()):
-                del self._dict[controller_key]
-                print("Deleted")
-            elif controller_key not in list(self._dict.keys()):
-                self._dict[controller_key] = None
-                print("Added")
-        elif data_key is not None:
-            data_key = data_key.upper()
-            print(f"Data key in {controller_key}: {data_key} -> ", end="")
-            if data_key in self._dict[controller_key]:
-                self._dict[controller_key].remove(data_key)
-                print("Deleted")
-            elif data_key not in self._dict[controller_key]:
-                self._dict[controller_key].append(data_key)
-                print("Added")
-        self.__notify()
-
-    # get keys of controller or data.
-    def get_key(self, controller_key=None):
-        if controller_key is None:
-            return list(self._dict.keys())
-        elif controller_key is not None:
-            return self._dict[controller_key]
+    def set_val(self, controller_key, data_key, val):  # "ALL" in controller and data key is acceptable.
+        if controller_key == "ALL":
+            for controller_key in self.__dict.keys():
+                self.__set_val(controller_key, data_key, val)
+        else:
+            self.__set_val(controller_key, data_key, val)
+        
+    def __set_val(self, controller_key, data_key, val=None):  # "ALL" in data_key is acceptable.
+        if controller_key not in self.__dict:
+            print(f"Controller key: {controller_key} doesn't exist.")
+        else:
+            if data_key == "ALL":
+                for data_key in self.__dict[controller_key].keys():
+                    self.__dict[controller_key][data_key] = val
+            elif data_key not in self.__dict[controller_key]:
+                print(f"Data key: {data_key} doesn't exist in {controller_key}")
+                return
+            else:
+                if val is None:
+                    self.__dict[controller_key][data_key] = not self.__dict[controller_key][data_key]
+                else:
+                    self.__dict[controller_key][data_key] = val
+                    
+    def update_filename(self, filename_list):
+        old_dict = self.__filename_dict
+        new_dict = {}
+        copy_list = copy.deepcopy(filename_list)
+        # make a new dict from the keylist
+        for filename_key in copy_list:
+            if filename_key in old_dict:
+                new_dict[filename_key] = old_dict[filename_key]
+            else:
+                new_dict[filename_key] = True
+        self.__filename_dict = new_dict
+        
+    def set_filename_val(self, filename_key, val=None):
+        if filename_key not in self.__filename_dict:
+            print(f"Filename key: {filename_key} doesn't exist.")
+        else:
+            if val is None:
+                self.__filename_dict[filename_key] = not self.__filename_dict[filename_key]
+            else:
+                self.__filename_dict[filename_key] = val
         
     def get_dict(self):
-        return self._dict
+        return self.__dict
+    
+    def get_filename_dict(self):
+        return self.__filename_dict

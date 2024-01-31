@@ -6,7 +6,7 @@ Created on Fri Dec 15 09:01:53 2023
 """
 
 from abc import ABCMeta, abstractmethod
-from SCANDATA.common_class import DataSwitchSet
+from SCANDATA.common_class import Switch_dict
 import matplotlib.patches as patches
 import json
 
@@ -17,7 +17,7 @@ class AxesController(metaclass=ABCMeta):
         self._ax_obj = ax
         self._model = model
         
-        self._view_switch_set = DataSwitchSet()
+        self._view_switch_set = Switch_dict()
 
         self._marker_obj = {}  # This is for makers in axes windows.
         
@@ -33,6 +33,9 @@ class AxesController(metaclass=ABCMeta):
                 setting = json.load(json_file)
         self._ch_color = setting.get("ch_color")
         self._controller_color = setting.get("controller_color")
+            
+    def set_switch(self, controller_key, data_key, bool_val):
+            self._view_switch_set.set_val(controller_key, data_key, bool_val)
      
     # to get a controller valueobject
     def get_controller_val(self, controller_key) -> object:
@@ -52,6 +55,7 @@ class AxesController(metaclass=ABCMeta):
     @abstractmethod
     def set_view_data(self, active_controller_dict):
             raise NotImplementedError()
+            
     """
     def set_user_controller_list(self, controller_key):
         if controller_key not in self._user_controller_list:

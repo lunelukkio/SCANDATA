@@ -8,7 +8,7 @@ main for controller
 from abc import ABCMeta, abstractmethod
 from SCANDATA.model.model_main import DataService
 from SCANDATA.controller.controller_axes import TraceAxesController, ImageAxesController
-from SCANDATA.common_class import WholeFilename, SingletonKeyDict, DataKeySet, DataSwitchSet
+from SCANDATA.common_class import WholeFilename, SingletonKeyDict, Switch_dict
 import tkinter as tk
 import os
 import psutil  # for memory check
@@ -112,11 +112,12 @@ class MainController(ControllerInterface):
         self.__mod_controller = ModController(self.__model)
         self.__ax_dict = {}  # {"ImageAxes": ImageAxsis class, FluoAxes: TraceAx class, ElecAxes: TraceAx class}\
         
-        self.__filename_key_list = []
-        self.__singleton_key_dict = SingletonKeyDict()  #singleton
-        self.__operating_controller_set = DataSwitchSet()  #observer
+        self.__singleton_key_dict = SingletonKeyDict()  #singleton. It has filename- and controller- and data-keys.
+        self.__operating_controller_set = Switch_dict()  #observer. It has filename- and controller- and data-keys.
         
-        self.__singleton_key_dict.add_observer(self.__operating_controller_set)
+        self.__singleton_key_dict.set_observer(self.__operating_controller_set)
+        #print(f"Set operating controller list from singleton keys.")
+        #print(self.__singleton_key_dict.get_dict())
         
     def __del__(self):
         print('.')
@@ -132,7 +133,7 @@ class MainController(ControllerInterface):
         elif ax_type == "TRACE":
             new_axes_controller = TraceAxesController(self.__model, ax)
         self.__ax_dict[axes_name] = new_axes_controller
-        self.__singleton_key_dict.add_observer(new_axes_controller.view_switch_set)
+        self.__singleton_key_dict.set_observer(new_axes_controller.view_switch_set)
     
     def open_file(self, filename_obj=None) -> dict:
         # get filename object
@@ -147,19 +148,10 @@ class MainController(ControllerInterface):
     
     def create_experiments(self, filename_obj: object):  
         self.__model.create_experiments(filename_obj.fullname)
-        # set key name list
+        # copy default controller names and data names from the model
         self.__singleton_key_dict.copy_dict(self.__model.get_infor())
-        print("1111111111111111111111111111")
-        print("next dict should be deepcopyed and exchanged to singleton ")
-        print(self.__singleton_key_dict)
-        self.__singleton_key_dict.set_data_key("FILENAME", filename_obj.name)
-        for key in self.__singleton_key_dict:
-            self.__singleton_key_dict.set_data_key("CONTROLLER", key)
-        for key in self.__singleton_key_dict:
-            self.__singleton_key_dict.set_data_key("CH", key)
-        print("222222222222222222222222222222222222")
-        print("between 111111111111111 and 22222222222222222222 should be chanbed.")
-        print(self.__singleton_key_dict.get_key_dict())
+        # set filename key to key_dict
+        self.__singleton_key_dict.set_filename(filename_obj.name)
         # end proccess
         if self.__model == None:
             raise Exception('Failed to create a model.')
@@ -177,8 +169,8 @@ class MainController(ControllerInterface):
     def set_data_key_dict(self, list_key, key):
         self.__singleton_key_dict.set_data_key(list_key, key)  #e.g. list_key "CONTROLLER" key = "ROI1"
         
-    def set_operating_controller_val(self, list_key, key, val):
-        self.__operating_controller_set.set_val(list_key, key, val)  #e.g. list_key "CONTROLLER" key = "ROI1"
+    def set_operating_controller_val(self, controller_key, data_key, bool_val):
+        self.__operating_controller_set.set_val(controller_key, data_key, bool_val)
     
     def get_memory_infor(self):
         pid = os.getpid()
@@ -268,15 +260,23 @@ class MainController(ControllerInterface):
         self.__model.print_infor()
         
     def get_key_dict(self):
-        return self.__singleton_key_dict.get_key_dict()
+        return self.__singleton_key_dict.get_dict()
         
     @property
     def ax_dict(self):
         return self.__ax_dict
+    
+    @property
+    def operating_controller_set(self):
+        return self.__operating_controller_set
         
     """
     Delegation to the AxesController
-    """    
+    """               
+    def set_switch(self, controller_key, data_key, bool_val):
+        for ax in self.__ax_dict.values():
+            ax.set_switch(controller_key, data_key, bool_val)
+    
     def get_operating_user_controller_list(self, ax_key):
         return self.__ax_dict[ax_key].get_operating_user_controller_list()
     
