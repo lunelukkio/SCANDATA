@@ -7,7 +7,7 @@ When new controllers are added, import from "user controller" factory and __chec
 
 """
 from abc import ABCMeta, abstractmethod
-from SCANDATA.common_class import WholeFilename
+from SCANDATA.common_class import WholeFilename, DictTools
 from SCANDATA.model.experiments import Experiments
 from SCANDATA.model.user_controller import RoiFactory, ImageControllerFactory, TraceControllerFactory
 
@@ -43,7 +43,7 @@ class ModelInterface(metaclass=ABCMeta):
     # make a new data from experiments entities into the controllers.
     # This method can receive a list or str as a ch_key
     @abstractmethod
-    def set_controller_data(self, controller_key: str, filename_key: str, ch_key_or_list):  #ch_key = list or str
+    def set_controller_data(self, filename_key: str, controller_key: str, ch_key_or_list):  #ch_key = list or str
         raise NotImplementedError()
 
     # return a dict of controller including value objects.
@@ -79,10 +79,6 @@ class ModelInterface(metaclass=ABCMeta):
     @abstractmethod
     def reset(self, controller_key):
         raise NotImplementedError()
-        
-    @abstractmethod
-    def get_default(self, filename_key):
-        raise NotImplementedError() 
         
     # get infor of dict
     @abstractmethod
@@ -124,10 +120,10 @@ class DataService(ModelInterface):
         experiments_data = self.get_experiments(filename_obj.name)
         default_controller_list, ch_key_list = experiments_data.get_default()
         for controller_key in default_controller_list:  # controller_list doesn't have controller numbers
-            self.create_user_controller(controller_key, filename_obj, ch_key_list)
+            self.create_user_controller(filename_obj, controller_key, ch_key_list)
 
     # make a new user controller
-    def create_user_controller(self, controller_key, filename_obj, ch_key_list) -> str:  # controller_key = "Roi", "TimeWindow". Use the same name to delete like "ROI1"
+    def create_user_controller(self, filename_obj, controller_key, ch_key_list) -> str:  # controller_key = "Roi", "TimeWindow". Use the same name to delete like "ROI1"
         controller_key = controller_key.upper()
         if self.__user_controller_repository.find_by_name(controller_key) is None:
             # get a controller factory 
@@ -166,13 +162,13 @@ class DataService(ModelInterface):
         controller = self.__user_controller_repository.find_by_name(controller_key)
         return controller.val_obj
     
-    # This method can receive a list or str as a data_key, but usually it shold be data_list becase every data shold be produced by the same controller.
-    def set_controller_data(self, controller_key: str, filename_key:str, data_key_list):
+    # This method can receive a list or str as a ch_key, but usually it shold be data_list becase every data shold be produced by the same controller.
+    def set_controller_data(self, filename_key:str, controller_key: str, ch_key_list):
         experiments_obj = self.get_experiments(filename_key)
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
-        data_dict = controller.set_controller_data(experiments_obj, data_key_list)
-        self._set_data(controller_key, filename_key, data_dict)
+        data_dict = controller.set_controller_data(experiments_obj, ch_key_list)
+        self._set_data(filename_key, controller_key, data_dict)
         
     def get_controller_data(self, controller_key: str) -> dict:  #This is for geting controller data dictionaly
         controller_key = controller_key.upper()
@@ -180,15 +176,14 @@ class DataService(ModelInterface):
         data_dict = controller.get_controller_data()
         return data_dict 
     
-    def _set_data(self, controller_key, filename_key, data_dict: str):  #ch_key = list or str
-        key = controller_key
+    def _set_data(self, filename_key, controller_key, data_dict):  #ch_key = list or str
         data = {}
-        data[filename_key] = data_dict
-        self.__data_repository.save(key, data)
+        data[controller_key] = data_dict
+        self.__data_repository.save(filename_key, data)
 
     # return a dict of value objects with filename.
-    def get_data(self, controller_key, filename_key, data_key=None) -> dict:
-        return self.__data_repository.find_by_name(controller_key, filename_key, data_key)
+    def get_data(self, filename_key, controller_key, ch_key=None) -> dict:
+        return self.__data_repository.find_by_name(filename_key, controller_key, ch_key)
             
     def set_observer(self, controller_key, observer:object):
         controller_key = controller_key.upper()
@@ -218,23 +213,28 @@ class DataService(ModelInterface):
         controller.reset()
         print(f"Reset: {controller_key}")
 
-    def get_default(self, filename_key):
-        experiments = self.get_experiments(filename_key)
-        return experiments.get_default
-
-    # no use???
-    def get_infor(self, controller_key=None) -> dict:
-        if controller_key is None:
-            controller_key_dict = {}
-            for controller_key in list(self.__user_controller_repository.data.keys()):
-                controller = self.__user_controller_repository.find_by_name(controller_key)
-                controller_key_dict[controller_key] = controller.get_infor()
+    def get_infor(self, filename_key=None, controller_key=None) -> dict:
+        if filename_key is None:
+            return self.__data_repository.data
         else:
-            controller_key = controller_key.upper()
-            controller = self.__user_controller_repository.find_by_name(controller_key)
-            controller_key_dict = {}
-            controller_key_dict[controller_key] = controller.get_infor()
-        return controller_key_dict
+            if controller_key is None:
+                data_keys = self.__data_repository.find_by_name(filename_key).get_infor()
+                return data_keys[filename_key]
+                
+            
+            
+            
+            
+            
+                for controller_key in list(self.__user_controller_repository.data.keys()):
+                    controller = self.__user_controller_repository.find_by_name(controller_key)
+                    #controller_key_dict[controller_key] = controller.get_infor()
+            else:
+                controller_key = controller_key.upper()
+                controller = self.__data_repository.find_by_name(controller_key)
+                controller_key_dict = {}
+                controller_key_dict[controller_key] = controller.get_infor()
+            return controller_key_dict
             
     
     def print_infor(self):
@@ -291,6 +291,7 @@ class DataService(ModelInterface):
 """
 Repository
 """
+# Need refactoring using keys* and recursive function
 class RepositoryInterface(metaclass=ABCMeta):
     def __init__(self):
         self._data = {}   # {key:entiry}
@@ -330,28 +331,42 @@ class UserControllerRepository(RepositoryInterface):
 class DataRepository(RepositoryInterface):
     def __init__(self):
         super().__init__()
-        self.__filename_dict = {}
+        
+    def save(self, filename_key: str, data):
+        if filename_key not in self._data:
+            self._data[filename_key] = data
+            print(f"Saved {filename_key} in {self.__class__.__name__}.")
+        else:
+            self._data[filename_key].append(data)
+            print(f"Saved {data} in {filename_key}: {self.__class__.__name__}.")
         
     # override
-    def find_by_name(self, controller_key, filename_key):
-        if controller_key in self._data:
-            if filename_key in self._data[controller_key]:
-                return self._data[controller_key]
+    def find_by_name(self, filename_key, controller_key):
+        if filename_key in self._data:
+            if controller_key in self._data[filename_key]:
+                return self._data[filename_key]
             else:
-                print(f"There is no {filename_key} in {controller_key}")
+                print(f"There is no {controller_key} in {filename_key}")
         else:
-            print(f"There is no {controller_key} in the data_repository")
+            print(f"There is no {filename_key} in the data_repository")
             
     # override        
-    def delete(self, controller_key, filename_key):
-        if controller_key in self._data:
-            if filename_key in self._data[controller_key]:
-                del self._data[controller_key][filename_key]
-                print(f"Deleted {filename_key} from {controller_key} in the data_repository")
+    def delete(self, filename_key, controller_key):
+        if filename_key in self._data:
+            if controller_key in self._data[filename_key]:
+                del self._data[filename_key][controller_key]
+                print(f"Deleted {controller_key} from {filename_key} in the data_repository")
             else:
-                print(f"There is no {filename_key} in {controller_key}")
+                print(f"There is no {controller_key} in {filename_key}")
         else:
-            print(f"There is no {controller_key} in the data_repository")
+            print(f"There is no {filename_key} in the data_repository")
+            
+    # return data dict keys with "True" without data. This is for view ax.
+    def get_infor(self):
+        return DictTools.data_dict_to_key_dict(self._data)
+
+        
+        
             
         
 

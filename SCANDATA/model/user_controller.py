@@ -100,10 +100,6 @@ class UserController(metaclass=ABCMeta):
             self.__mod_service.set_mod_val(mod_key, val)
         else:
             pass
-
-    # return data dict keys with "True" without data. This is for view ax.
-    def get_infor(self) -> dict:          
-        return list(self.data_dict.keys())
     
     def print_infor(self, data_dict) -> None:
         print(f"{self.__class__.__name__} information ===================")
