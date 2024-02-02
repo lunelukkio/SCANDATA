@@ -83,7 +83,10 @@ class ModelInterface(metaclass=ABCMeta):
     # get data key dict from the data repository
     @abstractmethod
     def get_infor(self, controller_key):
-        raise NotImplementedError() 
+        raise NotImplementedError()
+        
+    def get_default_data_structure(self, filename_key):
+        raise NotImplementedError()
         
     @abstractmethod
     def help(self):
@@ -118,9 +121,9 @@ class DataService(ModelInterface):
         
     def make_default_controllers(self, filename_obj):
         experiments_data = self.get_experiments(filename_obj.name)
-        default_controller_list, ch_key_list = experiments_data.get_default()
-        for controller_key in default_controller_list:  # controller_list doesn't have controller numbers
-            self.create_user_controller(filename_obj, controller_key, ch_key_list)
+        default_data_structure = experiments_data.get_default_data_structure()
+        for controller_key in default_data_structure.keys():
+            self.create_user_controller(filename_obj, controller_key, default_data_structure[controller_key])
 
     # make a new user controller
     def create_user_controller(self, filename_obj, controller_key, ch_key_list) -> str:  # controller_key = "Roi", "TimeWindow". Use the same name to delete like "ROI1"
@@ -221,7 +224,11 @@ class DataService(ModelInterface):
             if controller_key is None:
                 print(self.__data_repository.data)
                 data_keys = self.__data_repository.find_by_name(filename_key).get_infor()
-                return data_keys[filename_key]            
+                return data_keys[filename_key]   
+            
+    def get_default_data_structure(self, filename_key):
+        experiments_entity = self.__experiments_repository.find_by_name(filename_key)
+        return experiments_entity.get_default_data_structure()
     
     def print_infor(self):
         print("DataService information ===========================")
@@ -231,12 +238,14 @@ class DataService(ModelInterface):
         print("")
 
     def __check_controller_type(self, key):
-        if key == "ROI":
+        if "ROI" in key:
             return RoiFactory()
-        if key == "IMAGE_CONTROLLER":
+        elif "IMAGE_CONTROLLER" in key:
             return ImageControllerFactory()
-        if key == "TRACE_CONTROLLER":
+        elif "TRACE_CONTROLLER" in key:
             return TraceControllerFactory()
+        else:
+            print(f"{key} Factory done not exist.")
 
         # To make a number for controller key.
     def __key_num_maker(self, controller_key):
@@ -323,12 +332,9 @@ class DataRepository(RepositoryInterface):
         super().__init__()
         
     def save(self, filename_key: str, data):
-        if filename_key not in self._data:
-            self._data[filename_key] = data
-            print(f"Saved {filename_key} in {self.__class__.__name__}.")
-        else:
-            self._data[filename_key].append(data)
-            print(f"Saved {data} in {filename_key}: {self.__class__.__name__}.")
+        self._data[filename_key] = data
+        print(f"Saved {filename_key} in {self.__class__.__name__}.")
+
         
     # override
     def find_by_name(self, filename_key, controller_key=None):

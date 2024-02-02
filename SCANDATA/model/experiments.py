@@ -17,12 +17,16 @@ class Experiments:   # entity
         self.filename_obj = filename_obj
         # create default data set.
         builder_factory = self.__factory_selector(self.filename_obj)
-        self.builder = builder_factory.create_builder(self.filename_obj)
+        #Biluder should be holded by Experiments?")
+        builder = builder_factory.create_builder(self.filename_obj)
+        self.__default_data_structure = builder.get_default_data_structure()
 
-        self.__txt_data = self.builder.get_infor()
-        self.__frames_dict = self.builder.get_frame()  # {FramsData:val_obj}
-        self.__image_dict = self.builder.get_image()   # ImageData:val_obj}
-        self.__trace_dict = self.builder.get_trace()  # {Trace_Data:val_obj}
+        self.__txt_data = builder.get_infor()
+        self.__frames_dict = builder.get_frame()  # {FramsData:val_obj}
+        self.__image_dict = builder.get_image()   # ImageData:val_obj}
+        self.__trace_dict = builder.get_trace()  # {Trace_Data:val_obj}
+        
+
         
         print("----- Experiments: Successful data construction!!!")
         print("")
@@ -42,9 +46,9 @@ class Experiments:   # entity
             return DaBuilderFactory()
         else:
             raise Exception("This file is an undefineded file!!!")
-            
-    def get_default(self):
-        return self.builder.default()
+
+    def get_default_data_structure(self):
+        return self.__default_data_structure
             
     def print_infor(self):
         print("Experiments information")
@@ -121,8 +125,9 @@ class Builder(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
-    def default(self, filename_obj):
-        raise NotImplementedError()   
+    def get_default_data_structure(self, filename_obj):
+        raise NotImplementedError()
+
         
 
 # This class define the names of controllers and data
@@ -135,6 +140,15 @@ class TsmBuilder(Builder):
                             ["ELEC" + str(num) for num in range(self.num_elec_ch)]
         infor_keys = [f"CH{i}_INTERVAL" for i in range(self.num_ch+1) ] + \
                      [f"ELEC{i}_INTERVAL" for i in range (self.num_elec_ch)]
+        
+        ch_list = [f"CH{i}" for i in range(self.num_ch+1)]  # This includes full trace
+        elec_list = [f"ELEC{i}" for i in range(self.num_elec_ch)]
+        self.__default_data_structure = {"ROI0": ch_list, 
+                                         "ROI1": ch_list, 
+                                         "IMAGE_CONTROLLER0": ch_list,
+                                         "IMAGE_CONTROLLER1": ch_list,
+                                         "TRACE_CONTROLLER0": elec_list,
+                                         "TRACE_CONTROLLER1": elec_list}
 
         file_io = TsmFileIo(filename_obj, self.num_ch)
         
@@ -171,19 +185,28 @@ class TsmBuilder(Builder):
         print(f"Trace data = {data.keys()}")
         return data
     
-    def default(self):
-        return self.default_controller, self.default_data
+    def get_default_data_structure(self):
+        return self.__default_data_structure
 
 class DaBuilder(Builder):
     def __init__(self, filename_obj):
         self.num_ch = 2   # this is for Na+ and Ca2+ recording.
         self.num_elec_ch = 8
 
-        self.default_controller = ["ROI", "ROI", "IMAGE_CONTROLLER", "IMAGE_CONTROLLER", "TRACE_CONTROLLER", "TRACE_CONTROLLER"] 
+        self.default_controller = ["ROI1", "ROI", "IMAGE_CONTROLLER", "IMAGE_CONTROLLER", "TRACE_CONTROLLER", "TRACE_CONTROLLER"] 
         self.default_data = ["CH" + str(num) for num in range(self.num_ch+1)] +\
                             ["ELEC" + str(num) for num in range(self.num_elec_ch)]
         infor_keys = [f"CH{i}_INTERVAL" for i in range(self.num_ch+1) ] + \
                      [f"ELEC{i}_INTERVAL" for i in range (self.num_elec_ch)]
+                     
+        ch_list = [f"CH{i}" for i in range(self.num_ch+1)]  # This includes full trace
+        elec_list = [f"ELEC{i}" for i in range(self.num_elec_ch)]
+        self.__default_data_structure = {"ROI0": ch_list, 
+                                         "ROI1": ch_list, 
+                                         "IMAGE_CONTROLLER0": ch_list,
+                                         "IMAGE_CONTROLLER1": ch_list,
+                                         "TRACE_CONTROLLER0": elec_list,
+                                         "TRACE_CONTROLLER1": elec_list}
 
         file_io = DaFileIo(filename_obj, self.num_ch)
         
@@ -221,5 +244,6 @@ class DaBuilder(Builder):
         print(f"Trace data = {data.keys()}")
         return data
     
-    def default(self):
-        return self.default_controller, self.default_data
+    def get_default_data_structure(self):
+        return self.__default_data_structure
+    

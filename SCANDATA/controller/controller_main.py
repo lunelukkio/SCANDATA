@@ -146,9 +146,9 @@ class MainController(ControllerInterface):
         self.create_experiments(filename_obj) 
         filename_key = filename_obj.name
         print("777777777777777777777777777777777777777777")
-        print(self.__model.get_infor(filename_key))
+        print(self.__model.get_default_data_structure(filename_key))
         # copy default controller names and data names from the model
-        self.__singleton_key_dict.copy_dict(self.__model.get_infor(filename_key))
+        self.__singleton_key_dict.copy_dict(self.__model.get_default_data_structure(filename_key))
         # set filename key to key_dict
         self.__singleton_key_dict.set_filename(filename_key)
         self.print_model_infor()
