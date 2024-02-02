@@ -238,8 +238,8 @@ class DictTools:
     @staticmethod
     def data_dict_to_key_dict(data_dict) -> dict:
         if isinstance(data_dict, dict):
-            if all(isinstance(value, object) for value in data_dict.valuse()):
+            if all(not isinstance(value, dict) for value in data_dict.values()):
                 return list(data_dict.keys())
             else:
-                return {key: transform_dict(value) for key, value in data_dict.items()}
+                return {key: DictTools.data_dict_to_key_dict(value) for key, value in data_dict.items()}
         return data_dict

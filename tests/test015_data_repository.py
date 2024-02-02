@@ -13,12 +13,11 @@ from SCANDATA.model.model_main import DataRepository
 class Test(unittest.TestCase):
     def test(self):
         #data = {"ROI0":1}
-        data = {"ROI0": {"CH0": 0, "CH1": 1, "CH2":2}, "TRACE_CONTROLLER":{"ELEC0": 3, "ELEC1": 4}}
+        data = {"ROI0": {"CH0": {"TEST1":1,"TEST2":2}, "CH1": {"TEST1":1,"TEST2":2}, "CH2":{"TEST1":1,"TEST2":2}}, "TRACE_CONTROLLER":{"ELEC0": 3, "ELEC1": 4}}
 
         repository = DataRepository()
         #repository.save("00101A001", 1)
         repository.save("00101A001", data)
-        print(repository.data)
         print(repository.get_infor())
 
 if __name__ == '__main__':

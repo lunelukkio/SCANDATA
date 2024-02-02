@@ -80,7 +80,7 @@ class ModelInterface(metaclass=ABCMeta):
     def reset(self, controller_key):
         raise NotImplementedError()
         
-    # get infor of dict
+    # get data key dict from the data repository
     @abstractmethod
     def get_infor(self, controller_key):
         raise NotImplementedError() 
@@ -213,29 +213,15 @@ class DataService(ModelInterface):
         controller.reset()
         print(f"Reset: {controller_key}")
 
+    # get data key dict from the data repository
     def get_infor(self, filename_key=None, controller_key=None) -> dict:
         if filename_key is None:
             return self.__data_repository.data
         else:
             if controller_key is None:
+                print(self.__data_repository.data)
                 data_keys = self.__data_repository.find_by_name(filename_key).get_infor()
-                return data_keys[filename_key]
-                
-            
-            
-            
-            
-            
-                for controller_key in list(self.__user_controller_repository.data.keys()):
-                    controller = self.__user_controller_repository.find_by_name(controller_key)
-                    #controller_key_dict[controller_key] = controller.get_infor()
-            else:
-                controller_key = controller_key.upper()
-                controller = self.__data_repository.find_by_name(controller_key)
-                controller_key_dict = {}
-                controller_key_dict[controller_key] = controller.get_infor()
-            return controller_key_dict
-            
+                return data_keys[filename_key]            
     
     def print_infor(self):
         print("DataService information ===========================")
@@ -313,6 +299,10 @@ class RepositoryInterface(metaclass=ABCMeta):
         self._data.pop(key)
         print(f"Deleted {key} from {self.__class__.__name__}.")
         
+    # return data dict keys without value obujects
+    def get_infor(self):
+        return DictTools.data_dict_to_key_dict(self._data)
+        
     @property
     def data(self):
         return self._data
@@ -341,14 +331,20 @@ class DataRepository(RepositoryInterface):
             print(f"Saved {data} in {filename_key}: {self.__class__.__name__}.")
         
     # override
-    def find_by_name(self, filename_key, controller_key):
-        if filename_key in self._data:
-            if controller_key in self._data[filename_key]:
+    def find_by_name(self, filename_key, controller_key=None):
+        if controller_key is None:
+            if filename_key in self._data:
                 return self._data[filename_key]
             else:
-                print(f"There is no {controller_key} in {filename_key}")
+                print(f"There is no {filename_key} in the data_repository")
         else:
-            print(f"There is no {filename_key} in the data_repository")
+            if filename_key in self._data:
+                if controller_key in self._data[filename_key]:
+                    return self._data[filename_key][controller_key]
+                else:
+                    print(f"There is no {controller_key} in {filename_key}")
+            else:
+                print(f"There is no {filename_key} in the data_repository")
             
     # override        
     def delete(self, filename_key, controller_key):
@@ -360,10 +356,7 @@ class DataRepository(RepositoryInterface):
                 print(f"There is no {controller_key} in {filename_key}")
         else:
             print(f"There is no {filename_key} in the data_repository")
-            
-    # return data dict keys with "True" without data. This is for view ax.
-    def get_infor(self):
-        return DictTools.data_dict_to_key_dict(self._data)
+
 
         
         

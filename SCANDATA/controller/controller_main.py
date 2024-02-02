@@ -144,21 +144,21 @@ class MainController(ControllerInterface):
             filename_obj = self.__file_service.open_file()
         # make experiments data
         self.create_experiments(filename_obj) 
-        self.print_model_infor()
-        print(f"   !!! Open {filename_obj.name}: suceeded!!!")
-        print("")
-        return filename_obj
-    
-    def create_experiments(self, filename_obj: object):
         filename_key = filename_obj.name
-        self.__model.create_experiments(filename_obj.fullname)
         print("777777777777777777777777777777777777777777")
         print(self.__model.get_infor(filename_key))
         # copy default controller names and data names from the model
         self.__singleton_key_dict.copy_dict(self.__model.get_infor(filename_key))
         # set filename key to key_dict
         self.__singleton_key_dict.set_filename(filename_key)
-        # end proccess
+        self.print_model_infor()
+        print(f"   !!! Open {filename_obj.name}: suceeded!!!")
+        print("")
+        return filename_obj
+    
+    def create_experiments(self, filename_obj: object):
+        self.__model.create_experiments(filename_obj.fullname)
+        # create_model end proccess
         if self.__model == None:
             raise Exception('Failed to create a model.')
         else:
