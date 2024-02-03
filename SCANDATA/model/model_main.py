@@ -10,6 +10,7 @@ from abc import ABCMeta, abstractmethod
 from SCANDATA.common_class import WholeFilename, DictTools
 from SCANDATA.model.experiments import Experiments
 from SCANDATA.model.user_controller import RoiFactory, ImageControllerFactory, TraceControllerFactory
+import re  # This is for regular expression 
 
 """
 Service
@@ -123,9 +124,10 @@ class DataService(ModelInterface):
         experiments_data = self.get_experiments(filename_obj.name)
         default_data_structure = experiments_data.get_default_data_structure()
         for controller_key in default_data_structure.keys():
-            self.create_user_controller(filename_obj, controller_key, default_data_structure[controller_key])
+            controller_key_without_number = re.sub(r'\d+$', '', controller_key)
+            self.create_user_controller(filename_obj, controller_key_without_number, default_data_structure[controller_key])
 
-    # make a new user controller
+    # make a new user controller. New keys should not have any number.
     def create_user_controller(self, filename_obj, controller_key, ch_key_list) -> str:  # controller_key = "Roi", "TimeWindow". Use the same name to delete like "ROI1"
         controller_key = controller_key.upper()
         if self.__user_controller_repository.find_by_name(controller_key) is None:
@@ -260,7 +262,7 @@ class DataService(ModelInterface):
         if count == 0:
             new_key = controller_key + "0"
         else:
-            # from chatGTP. Take keys with number
+            # Take keys with number
             numeric_keys = [key for key in controller_dict.keys() if controller_key in key and any(char.isdigit() for char in key)]
             numeric_values = [int(''.join(filter(str.isdigit, key))) for key in numeric_keys]
             # sort from a small number

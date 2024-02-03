@@ -103,7 +103,7 @@ class UserController(metaclass=ABCMeta):
     
     def print_infor(self, data_dict) -> None:
         print(f"{self.__class__.__name__} information ===================")
-        if not data_dict:
+             if not data_dict:
             print("Data_dict is empty")
             return
         print(f"{self.__class__.__name__} = {self._val_obj.data}")
