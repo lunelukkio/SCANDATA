@@ -175,7 +175,7 @@ class TsmBuilder(Builder):
         return data
 
     def get_image(self):
-        print("----- There is no image data")
+        print("Image data = No Image in .TMS file.")
         return None
     
     # make data_dict {ch_key: TraceData}  {"ELEC1": data, ""ELEC2": data ......}

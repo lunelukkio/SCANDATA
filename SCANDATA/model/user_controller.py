@@ -83,7 +83,6 @@ class UserController(metaclass=ABCMeta):
         if self.__mod_switch is True:
             # apply mod 
             data_dict = self.__mod_service.apply_mod(data_dict)
-        self.print_infor(data_dict)
         return data_dict
 
     def set_observer(self, observer):
@@ -100,17 +99,6 @@ class UserController(metaclass=ABCMeta):
             self.__mod_service.set_mod_val(mod_key, val)
         else:
             pass
-    
-    def print_infor(self, data_dict) -> None:
-        print(f"{self.__class__.__name__} information ===================")
-             if not data_dict:
-            print("Data_dict is empty")
-            return
-        print(f"{self.__class__.__name__} = {self._val_obj.data}")
-        print("-- data_dict LIST -- ")
-        print(data_dict.keys())
-        print(f"=============== {self.__class__.__name__} information END")
-        print("")
     
     @abstractmethod
     def reset(self):
@@ -161,6 +149,7 @@ class Roi(UserController):
         
             mean_data = np.mean(frames_obj.data[x:x+x_width, y:y+y_width, :], axis = (0, 1)) #slice end doesn't include to slice
             # make a trace value object
+            print(f"{ch_key}: ROI trace with {roi_obj.data}: Succeeded")
             return TraceData(mean_data, frames_obj.interval)
         
     def __check_val(self, frames_obj, roi_obj) -> bool:
@@ -211,7 +200,7 @@ class ImageController(UserController):
             width = time_window_obj.data[1]
         
             val = np.mean(frames_obj.data[:, :, start:start+width], axis = 2) # slice end is end+1
-            print(f'Cell image from an avaraged frame# {start} to {start+width-1}: Succeeded')
+            print(f"{ch_key}: An avarage Cell image from frame# {start} to {start+width-1}: Succeeded")
             return ImageData(val)
 
     def __check_val(self, frames_obj, time_window_obj) -> bool:

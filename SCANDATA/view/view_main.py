@@ -306,7 +306,9 @@ class DataWindow(tk.Frame):
         self.__main_controller.ax_update_switch("ELEC_AXES", True)
         
     def default_view_data(self):
-        print("===== Start default settings. =====")
+        print("=============================================")
+        print("========== Start default settings. ==========")
+        print("=============================================")
         
         self.__main_controller.set_observer("ROI0", "FLUO_AXES")   #background for bg_comp, (controller_key, AXES number)
         self.__main_controller.set_observer("ROI1", "FLUO_AXES")
@@ -342,7 +344,9 @@ class DataWindow(tk.Frame):
         """
         
         self.__main_controller.print_infor()
-        print("===== End default settings. =====")
+        print("=============================================")
+        print("========== End of default settings ==========")
+        print("=============================================")
         
         self.__main_controller.update()
 

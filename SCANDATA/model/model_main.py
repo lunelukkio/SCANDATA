@@ -112,7 +112,10 @@ class DataService(ModelInterface):
             experiments = Experiments(filename_obj)
             # save entity to the repository
             self.__experiments_repository.save(filename_obj.name, experiments)
-            print("====================Created a new expriments!!!")
+            print("===============================================")
+            print("==========Created a new expriments!!!==========")
+            print("===============================================")
+            print("")
             # make controllers
             self.make_default_controllers(filename_obj)
             self.print_infor()
@@ -142,8 +145,7 @@ class DataService(ModelInterface):
             new_key = self.__key_num_maker(controller_key)
             # save the controller to repository
             self.__user_controller_repository.save(new_key, new_controller)
-            print(f"====================Created the new controller {controller_key}")
-            self.print_infor()
+            print("")
             return new_key  # This is to tell the key name to axtive_controller_dict in MainController ax
         else:
             self.__user_controller_repository.delete(controller_key)
@@ -233,9 +235,12 @@ class DataService(ModelInterface):
         return experiments_entity.get_default_data_structure()
     
     def print_infor(self):
-        print("DataService information ===========================")
-        print(f"Current experiments data = {list(self.__experiments_repository.data.keys())}")
-        print(f"Current user controllers = {list(self.__user_controller_repository.data.keys())}")
+        print("=======================================================")
+        print("==========DataService Repository Information ==========")
+        print("=======================================================")
+        print(f"Experiments repository = {list(self.__experiments_repository.data.keys())}")
+        print(f"User controller repository = {list(self.__user_controller_repository.data.keys())}")
+        print(f"Data repository= {list(self.__data_repository.data.keys())}")
         print("======================= DataService information END")
         print("")
 
@@ -302,8 +307,7 @@ class RepositoryInterface(metaclass=ABCMeta):
             #print(f"Found {key} in {self.__class__.__name__}.")
             return self._data[key]
         else:
-            print(f"{self.__class__.__name__}---")
-            print(f"There is no {key} in {self.__class__.__name__}. Try to make a new {key}")
+            print(f"There is no {key} in {self.__class__.__name__}. Try to make a new {key}.")
             return None
     
     def delete(self, key: str):
