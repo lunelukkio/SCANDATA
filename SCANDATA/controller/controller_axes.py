@@ -6,7 +6,7 @@ Created on Fri Dec 15 09:01:53 2023
 """
 
 from abc import ABCMeta, abstractmethod
-from SCANDATA.common_class import Switch_dict
+from SCANDATA.common_class import Switch_dict, DictTools
 import matplotlib.patches as patches
 import json
 
@@ -144,45 +144,43 @@ class ImageAxesController(AxesController):
                     image = value_data.show_data(self._ax_obj)
                     print("image order in matplotlib")
                     print(image.get_zorder())
+
         
-    def set_marker(self, controller_key):
+    def set_marker(self):
+        get controller key fromm Trace axes
+        print(controller_key)
+        if "ROI" not in controller_key:
+            return
         view_switch_dict = self._view_switch_set.get_dict()
             # get only True user controller switch from the dict.
-            
-            for controller_key in view_switch_dict.keys():
-                ch_data_dict = self._model.get_data(filename_key, controller_key)
-                
-                # get only True ch data switch from the dict.
-                ch_key_list = [ch_key 
-                                     for ch_key, bool_val 
-                                     in view_switch_dict[controller_key].items() 
-                                     if bool_val]
-                # Model can recieve not only data_list but also individual ch_key directly.
-                for ch_key in ch_key_list:
-                    value_data = ch_data_dict[ch_key]
-                    image = value_data.show_data(self._ax_obj)
-                    print("image order in matplotlib")
-                    print(image.get_zorder())
+        check_true = DictTools.find_true_controller_key(view_switch_dict[controller_key])
+        print(check_true)
         
-        print(self._marker_obj)
-        if self._marker_obj  == {}:
-            new_marker =RoiBox(self._controller_color[controller_key])
-            
-            self._controller_color
-            print("ttttttttttttttttttttttttttttttttttttt")
+        
+        print("ttttttttttttttttttttttttttttttttttttt")
+        
+        if check_true is not None:
+            if controller_key in self._marker_obj:
+                roi_val = self._model.get_controller_val(controller_key)
+                self._marker_obj[controller_key].set_roi(roi_val.data)
+                
+            else:
+                self._marker_obj[controller_key] = RoiBox(self._controller_color[controller_key])
         else:
             order_box = self._marker_obj["ROI1"].rectangle_obj.get_zorder()
             print("dddddddddddddddddddddddddddddddddd")
             print(order_box)
             self._marker_obj["ROI1"].rectangle_obj.set_zorder(1)
+        print("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
+        print(self._marker_obj)
         self._ax_obj.set_axis_off()
         self.canvas.draw()
 
     # override    shold be in main conrtoller         
     def update(self) -> None:
         if self.update_switch is True:
-            self.set_view_data()
-            self.set_marker()
+            self.set_view_data()  # This belong to Image Controller
+            self.set_marker() # This belong to ROI
             self._ax_obj.set_axis_off()
             self.canvas.draw()
 
