@@ -247,3 +247,17 @@ class DictTools:
             else:
                 return {key: DictTools.data_dict_to_key_dict(value) for key, value in data_dict.items()}
         return data_dict
+    
+    @staticmethod
+    def find_true_controller_key(data_dict, current_path=[]):
+        for key, value in data_dict.items():
+            path = current_path + [key]
+            if isinstance(value, dict):
+                result = DictTools.find_true_controller_key(value, path)
+                if result is not None:
+                    return result
+            else:
+                if value is True:
+                    return path[0] 
+        return None
+            

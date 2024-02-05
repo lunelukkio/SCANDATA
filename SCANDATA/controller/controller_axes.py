@@ -141,41 +141,40 @@ class ImageAxesController(AxesController):
                 # Model can recieve not only data_list but also individual ch_key directly.
                 for ch_key in ch_key_list:
                     value_data = ch_data_dict[ch_key]
-                    print("55555555555555555555555555555555555555555555555")
-                    image = value_data.show_data()
                     image = value_data.show_data(self._ax_obj)
-        
-        
-        
-        
-        
-        
-        
-        
-        
-
-            for ch_key in data_dict.keys():
-                data = data_dict[ch_key]
-                if type(data).__name__ == "ImageData":
-                    # get a graph
-                    image = data.show_data(self._ax_obj)  # ax_data can use for image setting.
-                    print("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+                    print("image order in matplotlib")
                     print(image.get_zorder())
-        else:
-            pass
-                    
-
         
-    def set_marker(self):
+    def set_marker(self, controller_key):
+        view_switch_dict = self._view_switch_set.get_dict()
+            # get only True user controller switch from the dict.
+            
+            for controller_key in view_switch_dict.keys():
+                ch_data_dict = self._model.get_data(filename_key, controller_key)
+                
+                # get only True ch data switch from the dict.
+                ch_key_list = [ch_key 
+                                     for ch_key, bool_val 
+                                     in view_switch_dict[controller_key].items() 
+                                     if bool_val]
+                # Model can recieve not only data_list but also individual ch_key directly.
+                for ch_key in ch_key_list:
+                    value_data = ch_data_dict[ch_key]
+                    image = value_data.show_data(self._ax_obj)
+                    print("image order in matplotlib")
+                    print(image.get_zorder())
+        
         print(self._marker_obj)
         if self._marker_obj  == {}:
+            new_marker =RoiBox(self._controller_color[controller_key])
+            
+            self._controller_color
             print("ttttttttttttttttttttttttttttttttttttt")
         else:
             order_box = self._marker_obj["ROI1"].rectangle_obj.get_zorder()
             print("dddddddddddddddddddddddddddddddddd")
             print(order_box)
             self._marker_obj["ROI1"].rectangle_obj.set_zorder(1)
-        self.set_view_data()
         self._ax_obj.set_axis_off()
         self.canvas.draw()
 
@@ -202,7 +201,7 @@ class RoiBox():
     #color_selection = ['white', 'red', 'blue', 'green', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan', 'orange']
 
     #""" instance method """
-    def __init__(self, roi_num, color):
+    def __init__(self, color):
         self.__rectangle_obj = patches.Rectangle(xy=(40, 40), 
                                                  width=1, 
                                                  height=1,
