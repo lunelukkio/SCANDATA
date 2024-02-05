@@ -130,11 +130,11 @@ class MainController(ControllerInterface):
     """
     MainController 
     """
-    def add_axes(self, ax_type, axes_name: str, ax: object) -> None:
+    def add_axes(self, ax_type, axes_name: str, canvas, ax: object) -> None:
         if ax_type == "IMAGE":
-            new_axes_controller = ImageAxesController(self.__model, ax)
+            new_axes_controller = ImageAxesController(self.__model, canvas, ax)
         elif ax_type == "TRACE":
-            new_axes_controller = TraceAxesController(self.__model, ax)
+            new_axes_controller = TraceAxesController(self.__model, canvas, ax)
         self.__ax_dict[axes_name] = new_axes_controller
         self.__singleton_key_dict.set_observer(new_axes_controller.view_switch_set)
     

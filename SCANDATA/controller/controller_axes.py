@@ -12,8 +12,9 @@ import json
 
 
 class AxesController(metaclass=ABCMeta):
-    def __init__(self, model, ax):
+    def __init__(self, model, canvas, ax):
         self._tools = AxesTools(ax)
+        self._canvas = canvas
         self._ax_obj = ax
         self._model = model
         
@@ -89,8 +90,8 @@ class AxesController(metaclass=ABCMeta):
         return self._view_switch_set
     
 class TraceAxesController(AxesController):
-    def __init__(self, controller, ax):
-        super().__init__(controller, ax)
+    def __init__(self, model, canvas, ax):
+        super().__init__(model, canvas, ax)
         self.mode = "CH_MODE"  # or "ROI MODE" for showing sigle ch of several ROIs.
      
     def set_view_data(self):
@@ -113,8 +114,8 @@ class TraceAxesController(AxesController):
 
 
 class ImageAxesController(AxesController):
-    def __init__(self, model, ax):
-        super().__init__(model, ax)
+    def __init__(self, model, canvas, ax):
+        super().__init__(model, canvas, ax)
         self.mode = None  # no use
         
     def set_click_position(self, event):  
@@ -146,8 +147,7 @@ class ImageAxesController(AxesController):
                     print(image.get_zorder())
 
         
-    def set_marker(self):
-        get controller key fromm Trace axes
+    def set_marker(self, controller_key):
         print(controller_key)
         if "ROI" not in controller_key:
             return
@@ -180,7 +180,8 @@ class ImageAxesController(AxesController):
     def update(self) -> None:
         if self.update_switch is True:
             self.set_view_data()  # This belong to Image Controller
-            self.set_marker() # This belong to ROI
+            print("Skip ROI BOX draw. it should be controlled by trace axes")
+            #self.set_marker() # This belong to ROI
             self._ax_obj.set_axis_off()
             self.canvas.draw()
 

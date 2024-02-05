@@ -232,13 +232,13 @@ class DataWindow(tk.Frame):
         image_ax.set_xticklabels([])
         image_ax.set_yticklabels([])
         
-        self.canvas_image = FigureCanvasTkAgg(image_fig, frame_left)
+        canvas_image = FigureCanvasTkAgg(image_fig, frame_left)
         #canvas_image.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
-        self.__main_controller.add_axes("IMAGE", "IMAGE_AXES", image_ax)  # ax_dict["ImageAxes"]
+        self.__main_controller.add_axes("IMAGE", "IMAGE_AXES", canvas_image, image_ax)  # ax_dict["ImageAxes"]
 
         # for tool bar in the image window
-        self.canvas_image.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-        toolbar_image = NavigationToolbarMyTool(self.canvas_image, frame_left, self.my_color)
+        canvas_image.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        toolbar_image = NavigationToolbarMyTool(canvas_image, frame_left, self.my_color)
         # delete tools
         toolbar_image.children['!button2'].pack_forget()
         toolbar_image.children['!button3'].pack_forget()
@@ -248,7 +248,7 @@ class DataWindow(tk.Frame):
 
         
         # mouse click events
-        self.canvas_image.mpl_connect('button_press_event', lambda event: self.onclick_axes(event, "IMAGE_AXeS"))
+        canvas_image.mpl_connect('button_press_event', lambda event: self.onclick_axes(event, "IMAGE_AXeS"))
 
         # image update switch
         self.checkbox_update_pass_switch = tk.BooleanVar()
