@@ -105,10 +105,10 @@ class SingletonKeyDict:
             print(f"Data key in {controller_key}: {data_key} -> ", end="")
             if data_key in self._dict[controller_key]:
                 self._dict[controller_key].remove(data_key)
-                print("Deleted")
+                print("SingletonKeyDict: Deleted")
             else:
                 self._dict[controller_key].append(data_key)
-                print("Added")
+                print("SingletonKeyDict: Added")
         self._notify()
 
     # get keys of controller or data.
@@ -124,10 +124,11 @@ class SingletonKeyDict:
     def set_filename(self, filename_key):
         if filename_key in self._filename_list:
             self._filename_list.remove(filename_key)
-            print(f"Removed {filename_key} from the filename list")
+            print(f"SingletonKeyDict: Removed {filename_key} from the filename list")
         else:
             self._filename_list.append(filename_key)
-            print(f"Added {filename_key} from the filename list")
+            print(f"SingletonKeyDict: Added {filename_key} from the filename list")
+        print("")
         self._notify()
             
     def get_filename_list(self):
@@ -136,10 +137,10 @@ class SingletonKeyDict:
     def set_observer(self, observer):
         if observer in self._observers:
             self._observers.remove(observer)
-            print(f"Removed {observer} from the ovserver list")
+            #print(f"Removed {observer} from the ovserver list")
         else:
             self._observers.append(observer)
-            print(f"Added {observer} from the observer list")    
+            #print(f"Added {observer} from the observer list")    
             # update the new observer
             observer.update(self._dict)
 
@@ -157,9 +158,11 @@ class SingletonKeyDict:
         return self._filename_list
     
     def print_infor(self):
-        print(self._dict)
-        print(self._filename_list)
-        print(self._observers)
+        print("Singleton key dict ---------->")
+        print(f"Data keys: {self._dict}")
+        print(f"Filename keys: {self._filename_list}")
+        print(f"Observers: {self._observers}")
+        print("----------> End")
 
 
 class Switch_dict:
@@ -231,8 +234,9 @@ class Switch_dict:
         return self.__filename_dict
     
     def print_infor(self):
-        print(self.__dict)
-        print(self.__filename_dict)
+        print(f"Data switches: {self.__dict}")
+        print(f"Filename switches: {self.__filename_dict}")
+        print("")
 
 class DictTools:
     @staticmethod

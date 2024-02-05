@@ -34,8 +34,8 @@ class AxesController(metaclass=ABCMeta):
         self._ch_color = setting.get("ch_color")
         self._controller_color = setting.get("controller_color")
             
-    def set_switch(self, controller_key, data_key, bool_val):
-            self._view_switch_set.set_val(controller_key, data_key, bool_val)
+    def set_switch(self, controller_key, ch_key, bool_val):
+            self._view_switch_set.set_val(controller_key, ch_key, bool_val)
      
     # to get a controller valueobject
     def get_controller_val(self, controller_key) -> object:
@@ -81,11 +81,9 @@ class AxesController(metaclass=ABCMeta):
             self.draw_ax()
     
     def print_infor(self):
-        print("")
         print(f"{self.__class__.__name__} current data list = ")
         self._view_switch_set.print_infor()
 
-    
     @property
     def view_switch_set(self):
         return self._view_switch_set
@@ -124,21 +122,28 @@ class ImageAxesController(AxesController):
         
     # There are three dict. active_controller_dict is to switching. self._ax_data_dict is to keep ax data. controller_data_dict is from user controller.
     def set_view_data(self):
-        switch_dict = self.__operating_controller_set.get_dict()
-        filename_dict = self.__operating_controller_set.get_filename_dict()
-        for controller_key in switch_dict.keys():
-            filename_key_list = [filename_key 
-                                     for filename_key, bool_val 
-                                     in filename_dict.items() 
+        filename_dict = self._view_switch_set.get_filename_dict()
+        view_switch_dict = self._view_switch_set.get_dict()
+        filename_key_list = [filename_key 
+                                 for filename_key, bool_val 
+                                 in filename_dict.items() 
+                                 if bool_val]
+        for filename_key in filename_key_list:
+            # get only True user controller switch from the dict.
+            for controller_key in view_switch_dict.keys():
+                ch_data_dict = self._model.get_data(filename_key, controller_key)
+                
+                # get only True ch data switch from the dict.
+                ch_key_list = [ch_key 
+                                     for ch_key, bool_val 
+                                     in view_switch_dict[controller_key].items() 
                                      if bool_val]
-            for filename_key in filename_key_list:
-                data_key_list = [data_key 
-                                     for data_key, bool_val 
-                                     in switch_dict[controller_key].items() 
-                                     if bool_val]
-                # Model can recieve not only individual data_key but also data_list directly. 
-                for data_key in data_key_list:
-                    self.__model.set_controller_data(controller_key, filename_key, data_key)
+                # Model can recieve not only data_list but also individual ch_key directly.
+                for ch_key in ch_key_list:
+                    value_data = ch_data_dict[ch_key]
+                    print("55555555555555555555555555555555555555555555555")
+                    image = value_data.show_data()
+                    image = value_data.show_data(self._ax_obj)
         
         
         
@@ -148,12 +153,7 @@ class ImageAxesController(AxesController):
         
         
         
-        
-        print("under constraction")
-        view_list = self._view_switch_set
-        for controller_key in view_list:
-            #get data from current user controller
-            data_dict = self._main_controller.get_controller_data(controller_key)
+
             for ch_key in data_dict.keys():
                 data = data_dict[ch_key]
                 if type(data).__name__ == "ImageData":

@@ -9,7 +9,7 @@ When new controllers are added, import from "user controller" factory and __chec
 from abc import ABCMeta, abstractmethod
 from SCANDATA.common_class import WholeFilename, DictTools
 from SCANDATA.model.experiments import Experiments
-from SCANDATA.model.user_controller import RoiFactory, ImageControllerFactory, TraceControllerFactory
+from SCANDATA.model.user_controller import RoiFactory, ImageControllerFactory, ElecTraceControllerFactory
 import re  # This is for regular expression 
 
 """
@@ -51,14 +51,10 @@ class ModelInterface(metaclass=ABCMeta):
     @abstractmethod
     def get_controller_data(self, controller_key: str) -> dict:
         raise NotImplementedError()
-        
-    @abstractmethod
-    def _set_data(self, filename_obj: object, data_dict: str):  #ch_key = list or str
-        raise NotImplementedError()
 
     # return a dict of value objects with filename.
     @abstractmethod
-    def get_data(self, filename_key: str) -> dict:
+    def get_data(self, filename_key: str, controller_key) -> dict:
         raise NotImplementedError()
 
     # set an axes observer of view into controller 
@@ -118,7 +114,6 @@ class DataService(ModelInterface):
             print("")
             # make controllers
             self.make_default_controllers(filename_obj)
-            self.print_infor()
         else:
             # delete a model
             self.__experiments_repository.delete(filename_obj.name)
@@ -139,8 +134,8 @@ class DataService(ModelInterface):
             # make a new controller with the method in DataService
             new_controller = controller_factory.create_controller()
             # set data in controller
-            experiments_obj = self.get_experiments(filename_obj.name)
-            new_controller.set_controller_data(experiments_obj, ch_key_list)
+                  #experiments_obj = self.get_experiments(filename_obj.name)
+                  #new_controller.set_controller_data(experiments_obj, ch_key_list)
             # get a new controller key name
             new_key = self.__key_num_maker(controller_key)
             # save the controller to repository
@@ -174,23 +169,18 @@ class DataService(ModelInterface):
         experiments_obj = self.get_experiments(filename_key)
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
-        data_dict = controller.set_controller_data(experiments_obj, ch_key_list)
-        self._set_data(filename_key, controller_key, data_dict)
+        ch_data_dict = controller.set_controller_data(experiments_obj, ch_key_list)
+        self.__data_repository.save(filename_key, controller_key, ch_data_dict)
         
     def get_controller_data(self, controller_key: str) -> dict:  #This is for geting controller data dictionaly
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
         data_dict = controller.get_controller_data()
         return data_dict 
-    
-    def _set_data(self, filename_key, controller_key, data_dict):  #ch_key = list or str
-        data = {}
-        data[controller_key] = data_dict
-        self.__data_repository.save(filename_key, data)
 
     # return a dict of value objects with filename.
-    def get_data(self, filename_key, controller_key, ch_key=None) -> dict:
-        return self.__data_repository.find_by_name(filename_key, controller_key, ch_key)
+    def get_data(self, filename_key, controller_key) -> dict:
+        return self.__data_repository.find_by_name(filename_key, controller_key)
             
     def set_observer(self, controller_key, observer:object):
         controller_key = controller_key.upper()
@@ -235,13 +225,11 @@ class DataService(ModelInterface):
         return experiments_entity.get_default_data_structure()
     
     def print_infor(self):
-        print("=======================================================")
-        print("==========DataService Repository Information ==========")
-        print("=======================================================")
-        print(f"Experiments repository = {list(self.__experiments_repository.data.keys())}")
-        print(f"User controller repository = {list(self.__user_controller_repository.data.keys())}")
-        print(f"Data repository= {list(self.__data_repository.data.keys())}")
-        print("======================= DataService information END")
+        print("Model Repository Information ---------->")
+        print(f"Experiments repository     = {self.__experiments_repository.get_infor()}")
+        print(f"User controller repository = {self.__user_controller_repository.get_infor()}")
+        print(f"Data repository            = {self.__data_repository.get_infor()}")
+        print("----------> Model Repository Information END")
         print("")
 
     def __check_controller_type(self, key):
@@ -249,8 +237,8 @@ class DataService(ModelInterface):
             return RoiFactory()
         elif "IMAGE_CONTROLLER" in key:
             return ImageControllerFactory()
-        elif "TRACE_CONTROLLER" in key:
-            return TraceControllerFactory()
+        elif "ELEC_TRACE_CONTROLLER" in key:
+            return ElecTraceControllerFactory()
         else:
             print(f"{key} Factory done not exist.")
 
@@ -337,8 +325,14 @@ class DataRepository(RepositoryInterface):
     def __init__(self):
         super().__init__()
         
-    def save(self, filename_key: str, data):
-        self._data[filename_key] = data
+    # data should not be replaced.
+    def save(self, filename_key: str, controller_key, ch_data_dict):
+        if filename_key not in self._data:
+            controller_dict = {}
+            controller_dict[controller_key] = ch_data_dict
+            self._data[filename_key] = controller_dict
+        else:
+            self._data[filename_key][controller_key] = ch_data_dict
         print(f"Saved {filename_key} in {self.__class__.__name__}.")
 
         

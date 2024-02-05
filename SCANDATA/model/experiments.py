@@ -135,7 +135,12 @@ class TsmBuilder(Builder):
     def __init__(self, filename_obj):
         self.num_ch = 2   # this is for Na+ and Ca2+ recording.
         self.num_elec_ch = 8
-        self.default_controller = ["ROI", "ROI", "IMAGE_CONTROLLER", "IMAGE_CONTROLLER", "TRACE_CONTROLLER", "TRACE_CONTROLLER"] 
+        self.default_controller = ["ROI", 
+                                   "ROI", 
+                                   "IMAGE_CONTROLLER", 
+                                   "IMAGE_CONTROLLER", 
+                                   "ELEC_TRACE_CONTROLLER", 
+                                   "ELEC_TRACE_CONTROLLER"] 
         self.default_data = ["CH" + str(num) for num in range(self.num_ch+1)] +\
                             ["ELEC" + str(num) for num in range(self.num_elec_ch)]
         infor_keys = [f"CH{i}_INTERVAL" for i in range(self.num_ch+1) ] + \
@@ -147,8 +152,8 @@ class TsmBuilder(Builder):
                                          "ROI1": ch_list, 
                                          "IMAGE_CONTROLLER0": ch_list,
                                          "IMAGE_CONTROLLER1": ch_list,
-                                         "TRACE_CONTROLLER0": elec_list,
-                                         "TRACE_CONTROLLER1": elec_list}
+                                         "ELEC_TRACE_CONTROLLER0": elec_list,
+                                         "ELEC_TRACE_CONTROLLER1": elec_list}
 
         file_io = TsmFileIo(filename_obj, self.num_ch)
         
@@ -193,7 +198,12 @@ class DaBuilder(Builder):
         self.num_ch = 2   # this is for Na+ and Ca2+ recording.
         self.num_elec_ch = 8
 
-        self.default_controller = ["ROI1", "ROI", "IMAGE_CONTROLLER", "IMAGE_CONTROLLER", "TRACE_CONTROLLER", "TRACE_CONTROLLER"] 
+        self.default_controller = ["ROI1", 
+                                   "ROI", 
+                                   "IMAGE_CONTROLLER", 
+                                   "IMAGE_CONTROLLER", 
+                                   "ELEC_TRACE_CONTROLLER", 
+                                   "ELEC_TRACE_CONTROLLER"] 
         self.default_data = ["CH" + str(num) for num in range(self.num_ch+1)] +\
                             ["ELEC" + str(num) for num in range(self.num_elec_ch)]
         infor_keys = [f"CH{i}_INTERVAL" for i in range(self.num_ch+1) ] + \
@@ -205,8 +215,8 @@ class DaBuilder(Builder):
                                          "ROI1": ch_list, 
                                          "IMAGE_CONTROLLER0": ch_list,
                                          "IMAGE_CONTROLLER1": ch_list,
-                                         "TRACE_CONTROLLER0": elec_list,
-                                         "TRACE_CONTROLLER1": elec_list}
+                                         "ELEC_TRACE_CONTROLLER0": elec_list,
+                                         "ELEC_TRACE_CONTROLLER1": elec_list}
 
         file_io = DaFileIo(filename_obj, self.num_ch)
         

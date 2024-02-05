@@ -298,6 +298,14 @@ class DataWindow(tk.Frame):
     def open_file(self, filename_obj=None):
         self.__main_controller.open_file(filename_obj)  # make a model and get filename obj
         self.default_view_data()
+        self.__main_controller.update()
+        self.__main_controller.print_infor()
+        
+        
+        
+        
+        
+        
         self.__main_controller.ax_update("ALL")
         
         # set image view doesn't update
@@ -314,19 +322,22 @@ class DataWindow(tk.Frame):
         self.__main_controller.set_observer("ROI1", "FLUO_AXES")
         self.__main_controller.set_observer("IMAGE_CONTROLLER0", "IMAGE_AXES")  # base image for difference image
         self.__main_controller.set_observer("IMAGE_CONTROLLER1", "IMAGE_AXES")  # for difference image
-        self.__main_controller.set_observer("TRACE_CONTROLLER0", "ELEC_AXES")  # no use
-        self.__main_controller.set_observer("TRACE_CONTROLLER1", "ELEC_AXES")
+        self.__main_controller.set_observer("ELEC_TRACE_CONTROLLER0", "ELEC_AXES")  # no use
+        self.__main_controller.set_observer("ELEC_TRACE_CONTROLLER1", "ELEC_AXES")
 
         # set axes controllers view switches
         self.__main_controller.set_view_switch("ALL", "ALL", "ALL", False)  # (ax, controller_key, data_key, value) 
         self.__main_controller.set_view_switch("FLUO_AXES", "ROI1", "CH1", True)  # (ax, controller_key, data_key, value)
-        self.__main_controller.set_view_switch("IMAGE_AXES", "ROI1", "CH1", True)  # (ax, controller_key, data_key, value) 
-        self.__main_controller.set_view_switch("ELEC_AXES", "TRACE_CONTROLLER1", "ELEC0", True)  # (ax, controller_key, data_key, value) 
+        self.__main_controller.set_view_switch("IMAGE_AXES", "IMAGE_CONTROLLER1", "CH1", True)  # (ax, controller_key, data_key, value) 
+        self.__main_controller.set_view_switch("ELEC_AXES", "ELEC_TRACE_CONTROLLER1", "ELEC0", True)  # (ax, controller_key, data_key, value) 
 
         # set maincontroller keys "CH1", "ELEC0"
         self.__main_controller.set_operating_controller_val("ALL", "ALL", False)  # All switch is False
         self.__main_controller.set_operating_controller_val("ROI1", "CH1", True)  # This is for difference image
         self.__main_controller.set_operating_controller_val("ROI1", "CH2", True)  # This is for difference image
+        self.__main_controller.set_operating_controller_val("IMAGE_CONTROLLER1", "CH1", True)  # This is for a cell image
+        self.__main_controller.set_operating_controller_val("IMAGE_CONTROLLER1", "CH2", True)  # This is for a cell image
+        self.__main_controller.set_operating_controller_val("ELEC_TRACE_CONTROLLER1", "ELEC0", True)  # This is for a elec trace
 
         """ about mod"""
         # Set ROI0 as background in ROI1 controller
@@ -342,15 +353,7 @@ class DataWindow(tk.Frame):
         # set mod
         self.__main_controller.set_mod_key("ROI2", "BGCOMP")
         """
-        
-        self.__main_controller.print_infor()
-        print("=============================================")
         print("========== End of default settings ==========")
-        print("=============================================")
-        
-        self.__main_controller.update()
-
-
 
         
     def select_ch(self, ch_key):
@@ -458,6 +461,4 @@ if __name__ == '__main__':
     print("＝＝＝to do list＝＝＝")
     print("second trace time shift ")
     print("make change roi size functions")
-    print("ch を変えるとroiboxが消える")
-    print("スターtp字のROIBOXが見えない")
     print("")

@@ -31,9 +31,9 @@ class ImageControllerFactory(UserControllerFactory):
     def create_controller(self):
         return ImageController()
     
-class TraceControllerFactory(UserControllerFactory):
+class ElecTraceControllerFactory(UserControllerFactory):
     def create_controller(self):
-        return TraceController() 
+        return ElecTraceController() 
         
 
 """
@@ -65,25 +65,25 @@ class UserController(metaclass=ABCMeta):
         
     # it can receive list or str as ch_key. But usualy it should be a list, becase every data shold be produced by the same controller.
     def set_controller_data(self, experiments_obj, data_key_list):   # get controller values from experiments
-        data_dict = {}
+        ch_data_dict = {}
         if isinstance(data_key_list, str):
             data = self._get_val(experiments_obj, data_key_list)
             if data is None:
                 pass
             else:
-                data_dict[data_key_list] = data
+                ch_data_dict[data_key_list] = data
         elif isinstance(data_key_list, list):
             for data_key in data_key_list:
                 data = self._get_val(experiments_obj, data_key)
                 if data is None:
                     pass
                 else:
-                    data_dict[data_key] = data
+                    ch_data_dict[data_key] = data
         print("Mod service should be here???????????")
         if self.__mod_switch is True:
             # apply mod 
-            data_dict = self.__mod_service.apply_mod(data_dict)
-        return data_dict
+            ch_data_dict = self.__mod_service.apply_mod(ch_data_dict)
+        return ch_data_dict
 
     def set_observer(self, observer):
         self.observer.set_observer(observer)
@@ -223,15 +223,15 @@ class ImageController(UserController):
         self.set_controller_val([0, 1])
 
 
-class TraceController(UserController):
+class ElecTraceController(UserController):
     def __init__(self):
         super().__init__()
-        self._val_obj = TimeWindowVal(0, 100)
-        self.__inf_mode = True  # This is for no limit trace (whole trace)
+        self._val_obj = TimeWindowVal(0, 1000)
+        self.__inf_mode = False  # This is for no limit trace (whole trace)
         
     def __del__(self):  #make a message when this object is deleted.
         print('.')
-        #print('----- Deleted a TraceController object.' + '  myId={}'.format(id(self)))
+        #print('----- Deleted a ElecTraceController object.' + '  myId={}'.format(id(self)))
         #pass
 
         # make a new Roi value object
@@ -257,7 +257,7 @@ class TraceController(UserController):
                 self.__check_val(trace_obj, time_window_obj)
                 # make raw trace data
                 val = trace_obj.data[start:start+width]
-                print(f"Made a new trace from {start} to {start+width-1}: Succeeded")
+                print(f"{ch_key}: Trace data point range from {start} to {start+width-1}: Succeeded")
                 interval = trace_obj.interval
                 return TraceData(val, interval)
 
@@ -279,7 +279,7 @@ class TraceController(UserController):
 
     def reset(self) -> None:
         self.set_controller_val([0, 1])
-    
+        
         
 class ControllerObserver:
     def __init__(self):
@@ -292,7 +292,7 @@ class ControllerObserver:
                 print(f"Observer removed {observer.__class__.__name__}")
                 return
         self._observers.append(observer)   
-        print(f"Observer added {observer.__class__.__name__} to a user controller")
+        print(f"Controller observer added {observer.__class__.__name__} to a user controller")
             
     def notify_observer(self):
         for observer_name in self._observers:

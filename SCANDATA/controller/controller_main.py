@@ -66,7 +66,7 @@ class ControllerInterface(metaclass=ABCMeta):
     """
         
     @abstractmethod
-    def print_model_infor(self):
+    def print_infor(self):
         raise NotImplementedError() 
         
     """
@@ -74,7 +74,7 @@ class ControllerInterface(metaclass=ABCMeta):
     """   
 
     @abstractmethod
-    def set_view_switch(self, controller_key, data_key, bool_val) -> None:
+    def set_view_switch(self, controller_key, ch_key, bool_val) -> None:
         raise NotImplementedError()
         
     @abstractmethod
@@ -139,30 +139,31 @@ class MainController(ControllerInterface):
         self.__singleton_key_dict.set_observer(new_axes_controller.view_switch_set)
     
     def open_file(self, filename_obj=None) -> dict:
+        print("========== Open a new file. ==========")
         # get filename object
         if filename_obj is None:
             filename_obj = self.__file_service.open_file()
         # make experiments data
         self.create_experiments(filename_obj) 
         filename_key = filename_obj.name
-        print("777777777777777777777777777777777777777777")
-        print(self.__model.get_default_data_structure(filename_key))
         # copy default controller names and data names from the model
         self.__singleton_key_dict.copy_dict(self.__model.get_default_data_structure(filename_key))
         # set filename key to key_dict
         self.__singleton_key_dict.set_filename(filename_key)
-        self.print_model_infor()
-        print(f"   !!! Open {filename_obj.name}: suceeded!!!")
+        print("============================================================")
+        print(f"========== Open {filename_obj.name}: suceeded!!! ==========")
+        print("============================================================")
         print("")
         return filename_obj
     
     def create_experiments(self, filename_obj: object):
+        print("Make a model (experiments entities and controllers) ---------->")
         self.__model.create_experiments(filename_obj.fullname)
         # create_model end proccess
         if self.__model == None:
             raise Exception('Failed to create a model.')
         else:
-            print('============================== MainController: Suceeded to read data from data files.')
+            print('----------> MainController: Suceeded to read data from data files.')
             print('')
         
     def get_controller_infor(self, controller_key=None) -> dict:
@@ -175,23 +176,28 @@ class MainController(ControllerInterface):
     #data_dict (e.g. CH1, ELEC0) shold be bandled because there are always come from the same controller values.
     # Calculate new data with the new controller values
     def update(self) -> None:
+        # get a data switch list for update the model.
         switch_dict = self.__operating_controller_set.get_dict()
+        # get a filename switch list for update the model.
         filename_dict = self.__operating_controller_set.get_filename_dict()
-        for controller_key in switch_dict.keys():
-            filename_key_list = [filename_key 
-                                     for filename_key, bool_val 
-                                     in filename_dict.items() 
-                                     if bool_val]
-            for filename_key in filename_key_list:
-                data_key_list = [data_key 
-                                     for data_key, bool_val 
+        # get a list with filename True.
+        filename_key_list = [filename_key 
+                                 for filename_key, bool_val 
+                                 in filename_dict.items() 
+                                 if bool_val]
+        for filename_key in filename_key_list:
+            # get only True user controller switch from the dict.
+            for controller_key in switch_dict.keys():
+                # get only True ch data switch from the dict.
+                ch_key_list = [ch_key 
+                                     for ch_key, bool_val 
                                      in switch_dict[controller_key].items() 
                                      if bool_val]
-                # Model can recieve not only data_list but also individual data_key directly. 
-                self.__model.set_controller_data(filename_key, controller_key, data_key_list)
+                # Model can recieve not only data_list but also individual ch_key directly.
+                self.__model.set_controller_data(filename_key, controller_key, ch_key_list)
         
-    def set_operating_controller_val(self, controller_key, data_key, bool_val):
-        self.__operating_controller_set.set_val(controller_key, data_key, bool_val)
+    def set_operating_controller_val(self, controller_key, ch_key, bool_val):
+        self.__operating_controller_set.set_val(controller_key, ch_key, bool_val)
     
     def get_memory_infor(self):
         pid = os.getpid()
@@ -269,18 +275,18 @@ class MainController(ControllerInterface):
             self.__model.set_controller_val(controller_key, val)
         print(f"{controller_list}: ", end='')
 
-
-    def print_model_infor(self):
-        self.__model.print_infor()
-        
     def print_infor(self):
-        print("Singleton key dict")
-        self.__singleton_key_dict.print_infor()
-        print("Operating controller list")
+        print("======================================")
+        print("========== Data Information ==========")
+        print("======================================")
+        self.__model.print_infor()
+        print("Operating controller list ---------->")
         self.__operating_controller_set.print_infor()
-        print("Axes controller infor")
+        print("Axes controller infor ---------->")
         for ax in self.__ax_dict.values():
             ax.print_infor()
+        print("========== Data Information End ==========")
+        print("")
         
     def get_key_dict(self):
         return self.__singleton_key_dict.get_dict()
@@ -296,15 +302,15 @@ class MainController(ControllerInterface):
     """
     Delegation to the AxesController
     """               
-    def set_view_switch(self, ax_key, controller_key, data_key, bool_val) -> None:
+    def set_view_switch(self, ax_key, controller_key, ch_key, bool_val) -> None:
         if ax_key == "ALL":
             for ax in self.__ax_dict.values():
-                ax.set_switch(controller_key, data_key, bool_val)
+                ax.set_switch(controller_key, ch_key, bool_val)
         else:
             if ax_key not in self.__ax_dict:
                 print(f"There is no Axes: {ax_key}")
             else:
-                self.__ax_dict[ax_key].set_switch(controller_key, data_key, bool_val)
+                self.__ax_dict[ax_key].set_switch(controller_key, ch_key, bool_val)
                 
     def ax_update(self, ax_key: str) -> None:
         if ax_key == "ALL":
@@ -350,7 +356,6 @@ class FileService:
             new_full_filename = filename
         return WholeFilename(new_full_filename)
     
-    
     @staticmethod
     def get_fullname(event=None):
         # open file dialog
@@ -363,6 +368,7 @@ class FileService:
                        ('WinCP files', '*.wcp')
                       ))
         return fullname
+
 
 class ModController:
     def __init__(self, model):
