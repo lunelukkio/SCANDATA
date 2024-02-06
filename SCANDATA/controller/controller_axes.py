@@ -39,8 +39,8 @@ class AxesController(metaclass=ABCMeta):
     def set_flag(self, controller_key, ch_key, bool_val):
         self._view_flag_set.set_val(controller_key, ch_key, bool_val)
         
-    def get_flag(self):
-        return self._view_flag_set
+    def get_canvas_axes(self):
+        return self._canvas, self._ax_obj
      
     # to get a controller valueobject
     def get_controller_val(self, controller_key) -> object:
@@ -76,12 +76,7 @@ class AxesController(metaclass=ABCMeta):
         self._canvas.draw()
         
     def update(self):  # It is overrided by ImageAx
-        if self.update_flag is True:
-            self._ax_obj.cla()  # clear ax
-            self.set_view_data()  # See each subclass.
-            self.draw_ax()
-        else:
-            pass
+        raise NotImplementedError()
     
     def print_infor(self):
         print(f"{self.__class__.__name__} current data list = ")
@@ -115,6 +110,44 @@ class TraceAxesController(AxesController):
                         ax_data.set_color(self._ch_color[ch_key])
                     elif self.mode == "ROI_MODE":
                         ax_data.set_color(self._ch_color[controller_key])
+                        
+    def set_marker(self):
+        # get flag data from FLUO_AXES
+        image_canvas, image_axes = self._main_controller.get_canvas_axes("IMAGE_AXES")
+        # get a true flag list
+        true_controller = self._view_flag_set.find_true_controller_keys()
+        roi_true_controller = [key for key in true_controller if "ROI" in key]
+        for controller_key in roi_true_controller:
+            roi_val = self._model.get_controller_val(controller_key).data
+            # adjust for image data pixels 0.5
+            box_pos = [roi_val[0]-0.5, 
+                      roi_val[1]-0.5, 
+                      roi_val[2], 
+                      roi_val[3]]
+            if controller_key in self._marker_obj:
+                self._marker_obj[controller_key].set_roi(box_pos)
+            else:
+                self._marker_obj[controller_key] = RoiBox(self._controller_color[controller_key])
+                self._marker_obj[controller_key].set_roi(box_pos)
+                # put the ROI BOX on the top of images.
+                self._marker_obj[controller_key].rectangle_obj.set_zorder(1)
+                image_axes.add_patch(self._marker_obj[controller_key].rectangle_obj)
+        image_canvas.draw()
+
+
+        
+    # override
+    def update(self):  # It is overrided by ImageAx
+        if self.update_flag is True:
+            self._ax_obj.cla()  # clear ax
+            self.set_view_data()  # See each subclass.
+            self.set_marker() # for ROIBOX
+            self.draw_ax()
+            self._ax_obj.relim()
+            self._ax_obj.autoscale_view()
+            self._canvas.draw()
+        else:
+            pass
 
 
 class ImageAxesController(AxesController):
@@ -140,36 +173,12 @@ class ImageAxesController(AxesController):
                     value_data = ch_data_dict[ch_key]
                     value_data.show_data(self._ax_obj)
 
-    def set_marker(self):
-        # get flag data from FLUO_AXES
-        flag_dict = self._main_controller.get_flag("FLUO_AXES")
-        # get a true flag list
-        true_controller = flag_dict.find_true_controller_keys()
-        for controller_key in true_controller:
-            roi_val = self._model.get_controller_val(controller_key).data
-            # adjust for image data pixels 0.5
-            box_pos = [roi_val[0]-0.5, 
-                      roi_val[1]-0.5, 
-                      roi_val[2], 
-                      roi_val[3]]
-            if controller_key in self._marker_obj:
-                self._marker_obj[controller_key].set_roi(box_pos)
-            else:
-                self._marker_obj[controller_key] = RoiBox(self._controller_color[controller_key])
-                self._marker_obj[controller_key].set_roi(box_pos)
-                # put the ROI BOX on the top of images.
-                self._marker_obj[controller_key].rectangle_obj.set_zorder(1)
-                self._ax_obj.add_patch(self._marker_obj[controller_key].rectangle_obj)
-        self._ax_obj.set_axis_off()
-        self._canvas.draw()
-
     # override    shold be in main conrtoller         
     def update(self) -> None:
         if self.update_flag is True:
             print("Think about ax object clearing. how about ROIBOX? Need clearing for deleting image objects?")
             self._ax_obj.cla()
             self.set_view_data()  # This belong to Image Controller
-            self.set_marker() # This belong to ROI
             self._ax_obj.set_axis_off()
             self._canvas.draw()
         else:

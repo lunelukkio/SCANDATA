@@ -286,11 +286,8 @@ class MainController(ControllerInterface):
     def get_key_dict(self):
         return self.__singleton_key_dict.get_dict()
     
-    def get_flag(self, view_controller) -> object:
-        if view_controller == "MAIN":
-            return self.__operating_controller_set
-        else:
-            return self.__ax_dict[view_controller].get_flag()
+    def get_canvas_axes(self, view_controller) -> object:
+            return self.__ax_dict[view_controller].get_canvas_axes()
         
     @property
     def ax_dict(self):
