@@ -7,7 +7,7 @@ When new controllers are added, import from "user controller" factory and __chec
 
 """
 from abc import ABCMeta, abstractmethod
-from SCANDATA.common_class import WholeFilename, DictTools
+from SCANDATA.common_class import WholeFilename, FlagDict
 from SCANDATA.model.experiments import Experiments
 from SCANDATA.model.user_controller import RoiFactory, ImageControllerFactory, ElecTraceControllerFactory
 import re  # This is for regular expression 
@@ -304,7 +304,7 @@ class RepositoryInterface(metaclass=ABCMeta):
         
     # return data dict keys without value obujects
     def get_infor(self):
-        return DictTools.data_dict_to_key_dict(self._data)
+        return FlagDict.data_dict_to_key_dict(self._data)
         
     @property
     def data(self):

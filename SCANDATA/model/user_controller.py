@@ -149,7 +149,7 @@ class Roi(UserController):
         
             mean_data = np.mean(frames_obj.data[x:x+x_width, y:y+y_width, :], axis = (0, 1)) #slice end doesn't include to slice
             # make a trace value object
-            print(f"{ch_key}: ROI trace with {roi_obj.data}: Succeeded")
+            print(f"ROI: {ch_key}: ROI trace with {roi_obj.data}: Succeeded")
             return TraceData(mean_data, frames_obj.interval)
         
     def __check_val(self, frames_obj, roi_obj) -> bool:
@@ -200,7 +200,7 @@ class ImageController(UserController):
             width = time_window_obj.data[1]
         
             val = np.mean(frames_obj.data[:, :, start:start+width], axis = 2) # slice end is end+1
-            print(f"{ch_key}: An avarage Cell image from frame# {start} to {start+width-1}: Succeeded")
+            print(f"ImageController: {ch_key}: An avarage Cell image from frame# {start} to {start+width-1}: Succeeded")
             return ImageData(val)
 
     def __check_val(self, frames_obj, time_window_obj) -> bool:
@@ -257,7 +257,7 @@ class ElecTraceController(UserController):
                 self.__check_val(trace_obj, time_window_obj)
                 # make raw trace data
                 val = trace_obj.data[start:start+width]
-                print(f"{ch_key}: Trace data point range from {start} to {start+width-1}: Succeeded")
+                print(f"ElecTraceController: {ch_key}: Trace data point range from {start} to {start+width-1}: Succeeded")
                 interval = trace_obj.interval
                 return TraceData(val, interval)
 

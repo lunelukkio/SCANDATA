@@ -175,24 +175,20 @@ class MainController(ControllerInterface):
     
     #data_dict (e.g. CH1, ELEC0) shold be bandled because there are always come from the same controller values.
     # Calculate new data with the new controller values
-    def update(self) -> None:
-        # get a data flag list for update the model.
-        flag_dict = self.__operating_controller_set.get_dict()
-        # get a filename flag list for update the model.
-        filename_dict = self.__operating_controller_set.get_filename_dict()
+    def update(self, controller="ALL") -> None:
         # get a list with filename True.
-        filename_key_list = [filename_key 
-                                 for filename_key, bool_val 
-                                 in filename_dict.items() 
-                                 if bool_val]
-        for filename_key in filename_key_list:
-            # get only True user controller flag from the dict.
-            for controller_key in flag_dict.keys():
+        filename_true_list = self.__operating_controller_set.find_true_filename_keys()
+        # get true flag controller list
+        controller_true_list = self.__operating_controller_set.find_true_controller_keys()
+
+        for filename_key in filename_true_list:
+            # if controller has a specific key, overwrite key list only with the key.
+            if controller != "ALL":
+                controller_true_list = [key for key in controller_true_list 
+                                             if controller in key]
+            for controller_key in controller_true_list:
                 # get only True ch data flag from the dict.
-                ch_key_list = [ch_key 
-                                     for ch_key, bool_val 
-                                     in flag_dict[controller_key].items() 
-                                     if bool_val]
+                ch_key_list = self.__operating_controller_set.find_true_ch_keys(controller_key)
                 # Model can recieve not only data_list but also individual ch_key directly.
                 self.__model.set_controller_data(filename_key, controller_key, ch_key_list)
         
@@ -208,22 +204,21 @@ class MainController(ControllerInterface):
         return memory_infor, maximum_memory, available_memory
     
     def onclick_axes(self, event, axes_name):
+        axes_name = axes_name.upper()
         if event.dblclick is False:
+            true_flag = self.__operating_controller_set.find_true_controller_keys()
             #if axes_name == "IMAGE_AXES":
-            if event.inaxes == self.__ax_dict["IMAGE_AXES"]:
+            if axes_name == "IMAGE_AXES":
                 if event.button == 1:  # left click
                     x = round(event.xdata)
                     y = round(event.ydata)
+                    val = [x, y, None, None]
                     # set roi value in ROI
-                    controller_list = self.get_operating_user_controller_list("IMAGE_AXES")
-                    for controller_key in controller_list:
-                        self.__main_controller.set_controller_val(controller_key, [x, y, None, None])
-                        new_roi_val_obj = self.__main_cntroller.get_controller_val(controller_key)  # need change
-                        roi_pos = new_roi_val_obj.data
-                        # adjust for image data pixels 0.5
-                        roi_box_pos = roi_pos[0]-0.5, roi_pos[1]-0.5,roi_pos[2],roi_pos[3]
-                        self.__main_controller.set_roibox(controller_key, roi_box_pos)
-                    self.__main_controller.ax_update("FLUO_AXES")
+                    roi_true_flag = [key for key in true_flag if "ROI" in key]
+                    for controller_key in roi_true_flag:
+                        self.__model.set_controller_val(controller_key, val)
+                    self.update("ROI")
+
                 elif event.button == 2:
                     pass
                 elif event.button == 3:
@@ -291,7 +286,7 @@ class MainController(ControllerInterface):
     def get_key_dict(self):
         return self.__singleton_key_dict.get_dict()
     
-    def get_flag(self, view_controller):
+    def get_flag(self, view_controller) -> object:
         if view_controller == "MAIN":
             return self.__operating_controller_set
         else:

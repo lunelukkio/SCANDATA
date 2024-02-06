@@ -167,11 +167,11 @@ class SingletonKeyDict:
 
 class FlagDict:
     def __init__(self):
-        self.__dict = {}
+        self.__data_dict = {}
         self.__filename_dict = {}
 
     def update(self, key_dict):
-        old_dict = self.__dict
+        old_dict = self.__data_dict
         new_dict = {}
         # make a new dict from the key list
         for controller_key, data_list in key_dict.items():
@@ -181,30 +181,30 @@ class FlagDict:
                                             else True for data_key in data_list}
             else:
                 new_dict[controller_key] = None
-        self.__dict = new_dict
+        self.__data_dict = new_dict
 
     def set_val(self, controller_key, data_key, val):  # "ALL" in controller and data key is acceptable.
         if controller_key == "ALL":
-            for controller_key in self.__dict.keys():
+            for controller_key in self.__data_dict.keys():
                 self.__set_val(controller_key, data_key, val)
         else:
             self.__set_val(controller_key, data_key, val)
         
     def __set_val(self, controller_key, data_key, val=None):  # "ALL" in data_key is acceptable.
-        if controller_key not in self.__dict:
+        if controller_key not in self.__data_dict:
             print(f"Controller key: {controller_key} doesn't exist.")
         else:
             if data_key == "ALL":
-                for data_key in self.__dict[controller_key].keys():
-                    self.__dict[controller_key][data_key] = val
-            elif data_key not in self.__dict[controller_key]:
+                for data_key in self.__data_dict[controller_key].keys():
+                    self.__data_dict[controller_key][data_key] = val
+            elif data_key not in self.__data_dict[controller_key]:
                 print(f"Data key: {data_key} doesn't exist in {controller_key}")
                 return
             else:
                 if val is None:
-                    self.__dict[controller_key][data_key] = not self.__dict[controller_key][data_key]
+                    self.__data_dict[controller_key][data_key] = not self.__data_dict[controller_key][data_key]
                 else:
-                    self.__dict[controller_key][data_key] = val
+                    self.__data_dict[controller_key][data_key] = val
                     
     def update_filename(self, filename_list):
         old_dict = self.__filename_dict
@@ -228,28 +228,37 @@ class FlagDict:
                 self.__filename_dict[filename_key] = val
         
     def get_dict(self):
-        return self.__dict
+        return self.__data_dict
     
     def get_filename_dict(self):
         return self.__filename_dict
     
+    # find only controller keys which have true in ch data.
+    def find_true_controller_keys(self) -> list:
+        return [key for key, value in self.__data_dict.items() if any(value.values())]
+    
+    def find_true_ch_keys(self, controller_key) -> list:
+        return [key for key, value in self.__data_dict[controller_key].items() if value]
+    
+    def find_true_filename_keys(self) -> list:
+        return [filename_key 
+                for filename_key, bool_val 
+                in self.__filename_dict.items() 
+                if bool_val]
+    
     def print_infor(self):
-        print(f"Data Flags: {self.__dict}")
+        print(f"Data Flags: {self.__data_dict}")
         print(f"Filename flags: {self.__filename_dict}")
         print("")
 
-class DictTools:
     @staticmethod
     def data_dict_to_key_dict(data_dict) -> dict:
         if isinstance(data_dict, dict):
             if all(not isinstance(value, dict) for value in data_dict.values()):
                 return list(data_dict.keys())
             else:
-                return {key: DictTools.data_dict_to_key_dict(value) for key, value in data_dict.items()}
+                return {key: FlagDict.data_dict_to_key_dict(value) for key, value in data_dict.items()}
         return data_dict
-    
-    @staticmethod
-    # find only controller keys which have true in ch data.
-    def find_true_controller_key(data_dict):
-        return [key for key, value in data_dict.items() if any(value.values())]
+
+
             

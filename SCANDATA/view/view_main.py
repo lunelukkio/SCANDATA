@@ -248,7 +248,7 @@ class DataWindow(tk.Frame):
 
         
         # mouse click events
-        canvas_image.mpl_connect('button_press_event', lambda event: self.onclick_axes(event, "IMAGE_AXeS"))
+        canvas_image.mpl_connect('button_press_event', lambda event: self.__main_controller.onclick_axes(event, "IMAGE_AXES"))
 
         # image update flag
         self.checkbox_update_pass_flag = tk.BooleanVar()

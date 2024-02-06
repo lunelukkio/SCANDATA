@@ -6,7 +6,7 @@ Created on Fri Dec 15 09:01:53 2023
 """
 
 from abc import ABCMeta, abstractmethod
-from SCANDATA.common_class import FlagDict, DictTools
+from SCANDATA.common_class import FlagDict
 import matplotlib.patches as patches
 import json
 
@@ -97,24 +97,18 @@ class TraceAxesController(AxesController):
         self.mode = "CH_MODE"  # or "ROI MODE" for showing sigle ch of several ROIs.
      
     def set_view_data(self):
-        filename_dict = self._view_flag_set.get_filename_dict()
-        view_flag_dict = self._view_flag_set.get_dict()
-        filename_key_list = [filename_key 
-                                 for filename_key, bool_val 
-                                 in filename_dict.items() 
-                                 if bool_val]
-        for filename_key in filename_key_list:
+        filename_true_dict = self._view_flag_set.find_true_filename_keys()
+        controller_true_dict = self._view_flag_set.find_true_controller_keys()
+        for filename_key in filename_true_dict:
             # get only True user controller flag from the dict.
-            for controller_key in view_flag_dict.keys():
+            for controller_key in controller_true_dict:
                 ch_data_dict = self._model.get_data(filename_key, controller_key)
-                
                 # get only True ch data flag from the dict.
-                ch_key_list = [ch_key 
-                                     for ch_key, bool_val 
-                                     in view_flag_dict[controller_key].items() 
-                                     if bool_val]
+                ch_true_list = self._view_flag_set.find_true_ch_keys(controller_key)
                 # Model can recieve not only data_list but also individual ch_key directly.
-                for ch_key in ch_key_list:
+                # Model can recieve not only data_list but also individual ch_key directly.
+                for ch_key in ch_true_list:
+
                     ax_data, = ch_data_dict[ch_key].show_data(self._ax_obj)
                     # color setting
                     if self.mode == "CH_MODE":
@@ -133,43 +127,39 @@ class ImageAxesController(AxesController):
         
     # There are three dict. active_controller_dict is to flaging. self._ax_data_dict is to keep ax data. controller_data_dict is from user controller.
     def set_view_data(self):
-        filename_dict = self._view_flag_set.get_filename_dict()
-        view_flag_dict = self._view_flag_set.get_dict()
-        filename_key_list = [filename_key 
-                                 for filename_key, bool_val 
-                                 in filename_dict.items() 
-                                 if bool_val]
-        for filename_key in filename_key_list:
+        filename_true_dict = self._view_flag_set.find_true_filename_keys()
+        controller_true_dict = self._view_flag_set.find_true_controller_keys()
+        for filename_key in filename_true_dict:
             # get only True user controller flag from the dict.
-            for controller_key in view_flag_dict.keys():
+            for controller_key in controller_true_dict:
                 ch_data_dict = self._model.get_data(filename_key, controller_key)
                 # get only True ch data flag from the dict.
-                ch_key_list = [ch_key 
-                                     for ch_key, bool_val 
-                                     in view_flag_dict[controller_key].items() 
-                                     if bool_val]
+                ch_true_list = self._view_flag_set.find_true_ch_keys(controller_key)
                 # Model can recieve not only data_list but also individual ch_key directly.
-                for ch_key in ch_key_list:
+                for ch_key in ch_true_list:
                     value_data = ch_data_dict[ch_key]
                     value_data.show_data(self._ax_obj)
 
     def set_marker(self):
         # get flag data from FLUO_AXES
-        flag_dict = self._main_controller.get_flag("FLUO_AXES").get_dict()
+        flag_dict = self._main_controller.get_flag("FLUO_AXES")
         # get a true flag list
-        true_controller = DictTools.find_true_controller_key(flag_dict)
-
+        true_controller = flag_dict.find_true_controller_keys()
         for controller_key in true_controller:
+            roi_val = self._model.get_controller_val(controller_key).data
+            # adjust for image data pixels 0.5
+            box_pos = [roi_val[0]-0.5, 
+                      roi_val[1]-0.5, 
+                      roi_val[2], 
+                      roi_val[3]]
             if controller_key in self._marker_obj:
-                roi_val = self._model.get_controller_val(controller_key)
-                self._marker_obj[controller_key].set_roi(roi_val.data)
+                self._marker_obj[controller_key].set_roi(box_pos)
             else:
                 self._marker_obj[controller_key] = RoiBox(self._controller_color[controller_key])
+                self._marker_obj[controller_key].set_roi(box_pos)
                 # put the ROI BOX on the top of images.
                 self._marker_obj[controller_key].rectangle_obj.set_zorder(1)
-                
-
-        print(self._marker_obj)
+                self._ax_obj.add_patch(self._marker_obj[controller_key].rectangle_obj)
         self._ax_obj.set_axis_off()
         self._canvas.draw()
 
@@ -179,21 +169,11 @@ class ImageAxesController(AxesController):
             print("Think about ax object clearing. how about ROIBOX? Need clearing for deleting image objects?")
             self._ax_obj.cla()
             self.set_view_data()  # This belong to Image Controller
-            print("Skip ROI BOX draw. it should be controlled by trace axes")
             self.set_marker() # This belong to ROI
             self._ax_obj.set_axis_off()
             self._canvas.draw()
         else:
             pass
-
-                 
-    def set_roibox(self, controller_key, roi_pos):  # roi[x,y,width,height]. controller_list came from the trace axes
-        if controller_key not in self._marker_obj:
-            self._marker_obj[controller_key] = RoiBox(roi_pos, self._controller_color[controller_key])
-            self._ax_obj.add_patch(self._marker_obj[controller_key].rectangle_obj)
-        else:
-            self._marker_obj[controller_key].set_roi(roi_pos)
-        self._canvas.draw()
 
 
 class RoiBox():
