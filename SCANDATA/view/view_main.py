@@ -250,11 +250,11 @@ class DataWindow(tk.Frame):
         # mouse click events
         canvas_image.mpl_connect('button_press_event', lambda event: self.onclick_axes(event, "IMAGE_AXeS"))
 
-        # image update switch
-        self.checkbox_update_pass_switch = tk.BooleanVar()
+        # image update flag
+        self.checkbox_update_pass_flag = tk.BooleanVar()
         ttk.Checkbutton(frame_left,
                         text='Pass update',
-                        variable=self.checkbox_update_pass_switch,
+                        variable=self.checkbox_update_pass_flag,
                         command=self.image_update_pass).pack(side=tk.LEFT)
         
         """ 
@@ -269,27 +269,27 @@ class DataWindow(tk.Frame):
         trace_fig = Figure(figsize=(5, 5), dpi=100, facecolor=self.my_color)  #Figure
         gridspec_trace_fig = trace_fig.add_gridspec(20, 1)
 
-        self.canvas_trace = FigureCanvasTkAgg(trace_fig, frame_right)
+        canvas_trace = FigureCanvasTkAgg(trace_fig, frame_right)
         
         # matplotlib trace axes
         trace_ax1 = trace_fig.add_subplot(gridspec_trace_fig[0:15])
-        self.__main_controller.add_axes("TRACE", "FLUO_AXES", trace_ax1)  # _ax_dict["FluoAxes"]
+        self.__main_controller.add_axes("TRACE", "FLUO_AXES",canvas_trace, trace_ax1)  # _ax_dict["FluoAxes"]
         
         # matplotlib elec trace axes
         trace_ax2 = trace_fig.add_subplot(gridspec_trace_fig[16:20], sharex=self.__main_controller.ax_dict["FLUO_AXES"]._ax_obj)  # sync to FluoAxes
-        self.__main_controller.add_axes("TRACE", "ELEC_AXES", trace_ax2)  # _ax_dict["ElecAxes"]
+        self.__main_controller.add_axes("TRACE", "ELEC_AXES",canvas_trace, trace_ax2)  # _ax_dict["ElecAxes"]
 
         # mouse click event
-        self.canvas_trace.mpl_connect('button_press_event', lambda event: self.onclick_axes(event, "FLUO_AXES"))
-        self.canvas_trace.mpl_connect('button_press_event', lambda event: self.onclick_axes(event, "ELEC_AXES"))
+        canvas_trace.mpl_connect('button_press_event', lambda event: self.onclick_axes(event, "FLUO_AXES"))
+        canvas_trace.mpl_connect('button_press_event', lambda event: self.onclick_axes(event, "ELEC_AXES"))
         
         #canvas_trace.get_tk_widget().pack()
-        toolbar_trace = NavigationToolbarMyTool(self.canvas_trace, frame_right, self.my_color)
+        toolbar_trace = NavigationToolbarMyTool(canvas_trace, frame_right, self.my_color)
         toolbar_trace.children['!button2'].pack_forget()
         toolbar_trace.children['!button3'].pack_forget()
         toolbar_trace.children['!button4'].pack_forget()
         toolbar_trace.update()
-        self.canvas_trace.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        canvas_trace.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         trace_fig.subplots_adjust(left=0.06, right=0.97, bottom=0.05, top=0.9)
         
         if filename_obj is not None:
@@ -300,18 +300,12 @@ class DataWindow(tk.Frame):
         self.default_view_data()
         self.__main_controller.update()
         self.__main_controller.print_infor()
-        
-        
-        
-        
-        
-        
         self.__main_controller.ax_update("ALL")
         
         # set image view doesn't update
-        self.__main_controller.ax_update_switch("IMAGE_AXES", True)
-        self.__main_controller.ax_update_switch("FLUO_AXES", True)
-        self.__main_controller.ax_update_switch("ELEC_AXES", True)
+        self.__main_controller.ax_update_flag("IMAGE_AXES", False)
+        self.__main_controller.ax_update_flag("FLUO_AXES", True)
+        self.__main_controller.ax_update_flag("ELEC_AXES", False)
         
     def default_view_data(self):
         print("=============================================")
@@ -325,14 +319,14 @@ class DataWindow(tk.Frame):
         self.__main_controller.set_observer("ELEC_TRACE_CONTROLLER0", "ELEC_AXES")  # no use
         self.__main_controller.set_observer("ELEC_TRACE_CONTROLLER1", "ELEC_AXES")
 
-        # set axes controllers view switches
-        self.__main_controller.set_view_switch("ALL", "ALL", "ALL", False)  # (ax, controller_key, data_key, value) 
-        self.__main_controller.set_view_switch("FLUO_AXES", "ROI1", "CH1", True)  # (ax, controller_key, data_key, value)
-        self.__main_controller.set_view_switch("IMAGE_AXES", "IMAGE_CONTROLLER1", "CH1", True)  # (ax, controller_key, data_key, value) 
-        self.__main_controller.set_view_switch("ELEC_AXES", "ELEC_TRACE_CONTROLLER1", "ELEC0", True)  # (ax, controller_key, data_key, value) 
+        # set axes controllers view flages
+        self.__main_controller.set_view_flag("ALL", "ALL", "ALL", False)  # (ax, controller_key, data_key, value) 
+        self.__main_controller.set_view_flag("FLUO_AXES", "ROI1", "CH1", True)  # (ax, controller_key, data_key, value)
+        self.__main_controller.set_view_flag("IMAGE_AXES", "IMAGE_CONTROLLER1", "CH1", True)  # (ax, controller_key, data_key, value) 
+        self.__main_controller.set_view_flag("ELEC_AXES", "ELEC_TRACE_CONTROLLER1", "ELEC0", True)  # (ax, controller_key, data_key, value) 
 
         # set maincontroller keys "CH1", "ELEC0"
-        self.__main_controller.set_operating_controller_val("ALL", "ALL", False)  # All switch is False
+        self.__main_controller.set_operating_controller_val("ALL", "ALL", False)  # All flag is False
         self.__main_controller.set_operating_controller_val("ROI1", "CH1", True)  # This is for difference image
         self.__main_controller.set_operating_controller_val("ROI1", "CH2", True)  # This is for difference image
         self.__main_controller.set_operating_controller_val("IMAGE_CONTROLLER1", "CH1", True)  # This is for a cell image
@@ -344,7 +338,7 @@ class DataWindow(tk.Frame):
         # send background ROI. but it done outside of the model.
         #background_dict = self.__main_controller.get_controller_data("ROI0")
         #self.__main_controller.set_mod_val("ROI1", "BGCOMP", background_dict)
-        # Turn on the switch of BGCOMP for ROI1.
+        # Turn on the flag of BGCOMP for ROI1.
         #self.__main_controller.set_mod_key("ROI1", "BGCOMP")
         """
         # set background roi to the mod class
@@ -430,7 +424,7 @@ class DataWindow(tk.Frame):
         print('')
         
     def image_update_pass(self):
-        self.__main_controller.ax_update_switch()
+        self.__main_controller.ax_update_flag()
         
 
 class NavigationToolbarMyTool(NavigationToolbar2Tk):

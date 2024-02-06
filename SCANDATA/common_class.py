@@ -165,7 +165,7 @@ class SingletonKeyDict:
         print("----------> End")
 
 
-class Switch_dict:
+class FlagDict:
     def __init__(self):
         self.__dict = {}
         self.__filename_dict = {}
@@ -234,8 +234,8 @@ class Switch_dict:
         return self.__filename_dict
     
     def print_infor(self):
-        print(f"Data switches: {self.__dict}")
-        print(f"Filename switches: {self.__filename_dict}")
+        print(f"Data Flags: {self.__dict}")
+        print(f"Filename flags: {self.__filename_dict}")
         print("")
 
 class DictTools:

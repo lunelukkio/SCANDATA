@@ -44,7 +44,7 @@ class UserController(metaclass=ABCMeta):
         self.observer = ControllerObserver()
         self.__mod_service = ModService()
         self._val_obj = None
-        self.__mod_switch = False  # This is for test.
+        self.__mod_flag = False  # This is for test.
         
     def __del__(self):  #make a message when this object is deleted.
         print('.')
@@ -80,7 +80,7 @@ class UserController(metaclass=ABCMeta):
                 else:
                     ch_data_dict[data_key] = data
         print("Mod service should be here???????????")
-        if self.__mod_switch is True:
+        if self.__mod_flag is True:
             # apply mod 
             ch_data_dict = self.__mod_service.apply_mod(ch_data_dict)
         return ch_data_dict
@@ -89,13 +89,13 @@ class UserController(metaclass=ABCMeta):
         self.observer.set_observer(observer)
 
     def set_mod_key(self, mod_key):
-        if self.__mod_switch is True:
+        if self.__mod_flag is True:
             self.__mod_service.set_mod_key(mod_key)
         else:
             pass
         
     def set_mod_val(self, mod_key, val):
-        if self.__mod_switch is True:
+        if self.__mod_flag is True:
             self.__mod_service.set_mod_val(mod_key, val)
         else:
             pass
@@ -227,7 +227,7 @@ class ElecTraceController(UserController):
     def __init__(self):
         super().__init__()
         self._val_obj = TimeWindowVal(0, 1000)
-        self.__inf_mode = False  # This is for no limit trace (whole trace)
+        self.__inf_mode = True  # This is for no limit trace (whole trace)
         
     def __del__(self):  #make a message when this object is deleted.
         print('.')

@@ -8,7 +8,7 @@ main for controller
 from abc import ABCMeta, abstractmethod
 from SCANDATA.model.model_main import DataService
 from SCANDATA.controller.controller_axes import TraceAxesController, ImageAxesController
-from SCANDATA.common_class import WholeFilename, SingletonKeyDict, Switch_dict
+from SCANDATA.common_class import WholeFilename, SingletonKeyDict, FlagDict
 import tkinter as tk
 import os
 import psutil  # for memory check
@@ -74,7 +74,7 @@ class ControllerInterface(metaclass=ABCMeta):
     """   
 
     @abstractmethod
-    def set_view_switch(self, controller_key, ch_key, bool_val) -> None:
+    def set_view_flag(self, controller_key, ch_key, bool_val) -> None:
         raise NotImplementedError()
         
     @abstractmethod
@@ -82,7 +82,7 @@ class ControllerInterface(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
-    def ax_update_enable(self, ax_key: str) -> None:
+    def ax_update_flag(self, ax_key: str) -> None:
         raise NotImplementedError()
         
     @abstractmethod
@@ -116,7 +116,7 @@ class MainController(ControllerInterface):
         self.__ax_dict = {}  # {"ImageAxes": ImageAxsis class, FluoAxes: TraceAx class, ElecAxes: TraceAx class}\
         
         self.__singleton_key_dict = SingletonKeyDict()  #singleton. It has filename- and controller- and data-keys.
-        self.__operating_controller_set = Switch_dict()  #observer. It has filename- and controller- and data-keys.
+        self.__operating_controller_set = FlagDict()  #observer. It has filename- and controller- and data-keys.
         
         self.__singleton_key_dict.set_observer(self.__operating_controller_set)
         #print(f"Set operating controller list from singleton keys.")
@@ -136,7 +136,7 @@ class MainController(ControllerInterface):
         elif ax_type == "TRACE":
             new_axes_controller = TraceAxesController(self.__model, canvas, ax)
         self.__ax_dict[axes_name] = new_axes_controller
-        self.__singleton_key_dict.set_observer(new_axes_controller.view_switch_set)
+        self.__singleton_key_dict.set_observer(new_axes_controller.view_flag_set)
     
     def open_file(self, filename_obj=None) -> dict:
         print("========== Open a new file. ==========")
@@ -176,9 +176,9 @@ class MainController(ControllerInterface):
     #data_dict (e.g. CH1, ELEC0) shold be bandled because there are always come from the same controller values.
     # Calculate new data with the new controller values
     def update(self) -> None:
-        # get a data switch list for update the model.
-        switch_dict = self.__operating_controller_set.get_dict()
-        # get a filename switch list for update the model.
+        # get a data flag list for update the model.
+        flag_dict = self.__operating_controller_set.get_dict()
+        # get a filename flag list for update the model.
         filename_dict = self.__operating_controller_set.get_filename_dict()
         # get a list with filename True.
         filename_key_list = [filename_key 
@@ -186,12 +186,12 @@ class MainController(ControllerInterface):
                                  in filename_dict.items() 
                                  if bool_val]
         for filename_key in filename_key_list:
-            # get only True user controller switch from the dict.
-            for controller_key in switch_dict.keys():
-                # get only True ch data switch from the dict.
+            # get only True user controller flag from the dict.
+            for controller_key in flag_dict.keys():
+                # get only True ch data flag from the dict.
                 ch_key_list = [ch_key 
                                      for ch_key, bool_val 
-                                     in switch_dict[controller_key].items() 
+                                     in flag_dict[controller_key].items() 
                                      if bool_val]
                 # Model can recieve not only data_list but also individual ch_key directly.
                 self.__model.set_controller_data(filename_key, controller_key, ch_key_list)
@@ -247,7 +247,7 @@ class MainController(ControllerInterface):
                     # Need refactoring.
                     self.__main_controller.ax_dict["FLUO_AXES"]._active_controller_dict[next_controller].update(self.__main_controller._ax_dict["FLUO_AXES"]._active_controller_dict[old_controller])
                     self.__main_controller._ax_dict["FLUO_AXES"].set_active_controller_key(old_controller, False)
-                    print(f"Switch to {next_controller}")
+                    print(f"flag to {next_controller}")
                     self.update_ax(0)
                     self.update_ax(1)
             elif axes_name == "FLUO_AXES":
@@ -302,15 +302,15 @@ class MainController(ControllerInterface):
     """
     Delegation to the AxesController
     """               
-    def set_view_switch(self, ax_key, controller_key, ch_key, bool_val) -> None:
+    def set_view_flag(self, ax_key, controller_key, ch_key, bool_val) -> None:
         if ax_key == "ALL":
             for ax in self.__ax_dict.values():
-                ax.set_switch(controller_key, ch_key, bool_val)
+                ax.set_flag(controller_key, ch_key, bool_val)
         else:
             if ax_key not in self.__ax_dict:
                 print(f"There is no Axes: {ax_key}")
             else:
-                self.__ax_dict[ax_key].set_switch(controller_key, ch_key, bool_val)
+                self.__ax_dict[ax_key].set_flag(controller_key, ch_key, bool_val)
                 
     def ax_update(self, ax_key: str) -> None:
         if ax_key == "ALL":
@@ -322,8 +322,8 @@ class MainController(ControllerInterface):
             else:
                 self.__ax_dict[ax_key].update()
                 
-    def ax_update_enable(self, ax_key: str):
-        self.__ax_dict[ax_key].ax_update_enable()
+    def ax_update_flag(self, ax_key: str, val=None):
+        self.__ax_dict[ax_key].ax_update_flag(val)
         
     def ax_print_infor(self, ax_key):
         self.__ax_dict[ax_key].print_infor()
