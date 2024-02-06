@@ -12,10 +12,11 @@ import json
 
 
 class AxesController(metaclass=ABCMeta):
-    def __init__(self, model, canvas, ax):
+    def __init__(self, main_controller, model, canvas, ax):
         self._tools = AxesTools(ax)
         self._canvas = canvas
         self._ax_obj = ax
+        self._main_controller = main_controller
         self._model = model
         
         self._view_flag_set = FlagDict()
@@ -36,7 +37,10 @@ class AxesController(metaclass=ABCMeta):
         self._controller_color = setting.get("controller_color")
             
     def set_flag(self, controller_key, ch_key, bool_val):
-            self._view_flag_set.set_val(controller_key, ch_key, bool_val)
+        self._view_flag_set.set_val(controller_key, ch_key, bool_val)
+        
+    def get_flag(self):
+        return self._view_flag_set
      
     # to get a controller valueobject
     def get_controller_val(self, controller_key) -> object:
@@ -88,8 +92,8 @@ class AxesController(metaclass=ABCMeta):
         return self._view_flag_set
     
 class TraceAxesController(AxesController):
-    def __init__(self, model, canvas, ax):
-        super().__init__(model, canvas, ax)
+    def __init__(self, main_controller, model, canvas, ax):  # controller is for getting ROI information from FLU-AXES.
+        super().__init__(main_controller, model, canvas, ax)
         self.mode = "CH_MODE"  # or "ROI MODE" for showing sigle ch of several ROIs.
      
     def set_view_data(self):
@@ -120,8 +124,8 @@ class TraceAxesController(AxesController):
 
 
 class ImageAxesController(AxesController):
-    def __init__(self, model, canvas, ax):
-        super().__init__(model, canvas, ax)
+    def __init__(self,main_controller, model, canvas, ax):
+        super().__init__(main_controller, model, canvas, ax)
         self.mode = None  # no use
         
     def set_click_position(self, event):  
@@ -139,7 +143,6 @@ class ImageAxesController(AxesController):
             # get only True user controller flag from the dict.
             for controller_key in view_flag_dict.keys():
                 ch_data_dict = self._model.get_data(filename_key, controller_key)
-                
                 # get only True ch data flag from the dict.
                 ch_key_list = [ch_key 
                                      for ch_key, bool_val 
@@ -148,36 +151,24 @@ class ImageAxesController(AxesController):
                 # Model can recieve not only data_list but also individual ch_key directly.
                 for ch_key in ch_key_list:
                     value_data = ch_data_dict[ch_key]
-                    image = value_data.show_data(self._ax_obj)
-                    print("image order in matplotlib")
-                    print(image.get_zorder())
+                    value_data.show_data(self._ax_obj)
 
-        
-    def set_marker(self, controller_key):
-        print(controller_key)
-        if "ROI" not in controller_key:
-            return
-        view_flag_dict = self._view_flag_set.get_dict()
-            # get only True user controller flag from the dict.
-        check_true = DictTools.find_true_controller_key(view_flag_dict[controller_key])
-        print(check_true)
-        
-        
-        print("ttttttttttttttttttttttttttttttttttttt")
-        
-        if check_true is not None:
+    def set_marker(self):
+        # get flag data from FLUO_AXES
+        flag_dict = self._main_controller.get_flag("FLUO_AXES").get_dict()
+        # get a true flag list
+        true_controller = DictTools.find_true_controller_key(flag_dict)
+
+        for controller_key in true_controller:
             if controller_key in self._marker_obj:
                 roi_val = self._model.get_controller_val(controller_key)
                 self._marker_obj[controller_key].set_roi(roi_val.data)
-                
             else:
                 self._marker_obj[controller_key] = RoiBox(self._controller_color[controller_key])
-        else:
-            order_box = self._marker_obj["ROI1"].rectangle_obj.get_zorder()
-            print("dddddddddddddddddddddddddddddddddd")
-            print(order_box)
-            self._marker_obj["ROI1"].rectangle_obj.set_zorder(1)
-        print("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
+                # put the ROI BOX on the top of images.
+                self._marker_obj[controller_key].rectangle_obj.set_zorder(1)
+                
+
         print(self._marker_obj)
         self._ax_obj.set_axis_off()
         self._canvas.draw()
@@ -189,7 +180,7 @@ class ImageAxesController(AxesController):
             self._ax_obj.cla()
             self.set_view_data()  # This belong to Image Controller
             print("Skip ROI BOX draw. it should be controlled by trace axes")
-            #self.set_marker() # This belong to ROI
+            self.set_marker() # This belong to ROI
             self._ax_obj.set_axis_off()
             self._canvas.draw()
         else:

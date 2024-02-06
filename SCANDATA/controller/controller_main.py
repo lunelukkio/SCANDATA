@@ -132,9 +132,9 @@ class MainController(ControllerInterface):
     """
     def add_axes(self, ax_type, axes_name: str, canvas, ax: object) -> None:
         if ax_type == "IMAGE":
-            new_axes_controller = ImageAxesController(self.__model, canvas, ax)
+            new_axes_controller = ImageAxesController(self, self.__model, canvas, ax)
         elif ax_type == "TRACE":
-            new_axes_controller = TraceAxesController(self.__model, canvas, ax)
+            new_axes_controller = TraceAxesController(self, self.__model, canvas, ax)
         self.__ax_dict[axes_name] = new_axes_controller
         self.__singleton_key_dict.set_observer(new_axes_controller.view_flag_set)
     
@@ -290,6 +290,12 @@ class MainController(ControllerInterface):
         
     def get_key_dict(self):
         return self.__singleton_key_dict.get_dict()
+    
+    def get_flag(self, view_controller):
+        if view_controller == "MAIN":
+            return self.__operating_controller_set
+        else:
+            return self.__ax_dict[view_controller].get_flag()
         
     @property
     def ax_dict(self):

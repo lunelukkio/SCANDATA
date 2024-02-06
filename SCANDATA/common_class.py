@@ -249,15 +249,7 @@ class DictTools:
         return data_dict
     
     @staticmethod
-    def find_true_controller_key(data_dict, current_path=[]):
-        for key, value in data_dict.items():
-            path = current_path + [key]
-            if isinstance(value, dict):
-                result = DictTools.find_true_controller_key(value, path)
-                if result is not None:
-                    return result
-            else:
-                if value is True:
-                    return path[0] 
-        return None
+    # find only controller keys which have true in ch data.
+    def find_true_controller_key(data_dict):
+        return [key for key, value in data_dict.items() if any(value.values())]
             

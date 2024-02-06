@@ -324,7 +324,6 @@ class DataWindow(tk.Frame):
         self.__main_controller.set_view_flag("FLUO_AXES", "ROI1", "CH1", True)  # (ax, controller_key, data_key, value)
         self.__main_controller.set_view_flag("IMAGE_AXES", "IMAGE_CONTROLLER1", "CH1", True)  # (ax, controller_key, data_key, value) 
         self.__main_controller.set_view_flag("ELEC_AXES", "ELEC_TRACE_CONTROLLER1", "ELEC0", True)  # (ax, controller_key, data_key, value) 
-
         # set maincontroller keys "CH1", "ELEC0"
         self.__main_controller.set_operating_controller_val("ALL", "ALL", False)  # All flag is False
         self.__main_controller.set_operating_controller_val("ROI1", "CH1", True)  # This is for difference image
