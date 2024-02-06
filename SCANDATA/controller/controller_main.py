@@ -255,6 +255,13 @@ class MainController(ControllerInterface):
         elif event.dblclick is True:
             print("Double click is for ----")
         print('')
+        
+    def change_roi_size(self, val:list):
+        controller_true_list = self.__operating_controller_set.find_true_controller_keys()
+        for controller_key in controller_true_list:
+            # set roi in user controller
+            self.__model.set_controller_val(controller_key, val)
+        self.update_ax("ROI")
             
     """
     Delegation to the Model

@@ -146,6 +146,9 @@ class TraceAxesController(AxesController):
             self._ax_obj.relim()
             self._ax_obj.autoscale_view()
             self._canvas.draw()
+            print("000000000000000000000000000000000000000")
+            print(" This method is called twice because ROI class update ch1 and ch2")
+            print("This method is called before ROI class reculculate data.")
         else:
             pass
 

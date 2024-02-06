@@ -379,26 +379,10 @@ class DataWindow(tk.Frame):
         pass
 
     def large_roi(self):
-        self.change_roi_size([None, None, 1, 1])
+        self.__main_controller.change_roi_size([None, None, 1, 1])
 
     def small_roi(self):
-        self.change_roi_size([None, None, -1, -1])
-
-    # need refactoring. shold delete return from the roi values.
-    def change_roi_size(self, val):
-        controller_list = self.__main_controller.get_operating_user_controller_list(1)  # delete
-        for controller_key in controller_list:
-            # set roi in user controller
-            self.__main_controller.set_controller_val(controller_key, val)
-            # get new roi value object
-            new_roi_val_obj = self.__main_controller.get_controller_val(controller_key)
-            # get roi value numpy data.
-            new_roi_val = new_roi_val_obj.data  
-            # adjust for image data pixels 0.5
-            roi_box_pos = [new_roi_val[0]-0.5, new_roi_val[1]-0.5, new_roi_val[2], new_roi_val[3]]
-            # send data to image axes
-            self.__main_controller.set_roibox(controller_key, roi_box_pos)
-        self.update_ax(1)
+        self.__main_controller.change_roi_size([None, None, -1, -1])
          
     def add_roi(self):
         print('')
