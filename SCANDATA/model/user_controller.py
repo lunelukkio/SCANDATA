@@ -131,7 +131,7 @@ class Roi(UserController):
                 else:
                     roi_val[i] = self._val_obj.data[i] + roi_val[i]
         self._val_obj = RoiVal(*roi_val[:4])  # replace the roi
-        print(f"set ROI: {self._val_obj.data}")
+        #print(f"set value = {self._val_obj.data}")
 
     # calculate a trace from a single frames data with a roi value object
     def _get_val(self, experiments_obj, ch_key):
@@ -149,7 +149,7 @@ class Roi(UserController):
         
             mean_data = np.mean(frames_obj.data[x:x+x_width, y:y+y_width, :], axis = (0, 1)) #slice end doesn't include to slice
             # make a trace value object
-            print(f"ROI: {ch_key}: ROI trace with {roi_obj.data}: Succeeded")
+            print(f"{ch_key}: ROI trace with {roi_obj.data}")
             return TraceData(mean_data, frames_obj.interval)
         
     def __check_val(self, frames_obj, roi_obj) -> bool:
@@ -200,7 +200,7 @@ class ImageController(UserController):
             width = time_window_obj.data[1]
         
             val = np.mean(frames_obj.data[:, :, start:start+width], axis = 2) # slice end is end+1
-            print(f"ImageController: {ch_key}: An avarage Cell image from frame# {start} to {start+width-1}: Succeeded")
+            print(f"{ch_key}: An avarage Cell image from frame# {start} to {start+width-1}")
             return ImageData(val)
 
     def __check_val(self, frames_obj, time_window_obj) -> bool:
@@ -239,7 +239,7 @@ class ElecTraceController(UserController):
         start = window_value_list[0]
         width = window_value_list[1]
         self._val_obj = TimeWindowVal(start, width)  # replace the roi
-        print(f"set TimeController: {self._val_obj.data}")
+        print(f"set ElecTraceController: {self._val_obj.data}")
 
     # calculate a trace from a single trace data in experiments dict with a time window value object
     def _get_val(self, experiments_obj, ch_key):
@@ -251,13 +251,14 @@ class ElecTraceController(UserController):
             start = time_window_obj.data[0]
             width = time_window_obj.data[1]
             if self.__inf_mode is True:
+                print(f"{ch_key}: Full trace")
                 return trace_obj
             else:
                 # check value is correct
                 self.__check_val(trace_obj, time_window_obj)
                 # make raw trace data
                 val = trace_obj.data[start:start+width]
-                print(f"ElecTraceController: {ch_key}: Trace data point range from {start} to {start+width-1}: Succeeded")
+                print(f"{ch_key}: Trace data point range from {start} to {start+width-1}")
                 interval = trace_obj.interval
                 return TraceData(val, interval)
 

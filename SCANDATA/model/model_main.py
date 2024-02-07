@@ -157,7 +157,6 @@ class DataService(ModelInterface):
         # set the controller values
         controller.set_controller_val(val)
         # notiry axes. then they will use "self.get_controller_data"
-        controller.observer.notify_observer()
         
     def get_controller_val(self, controller_key: str):  # This is for getting controller value ex.RoiVal
         controller_key = controller_key.upper()
@@ -166,11 +165,13 @@ class DataService(ModelInterface):
     
     # This method can receive a list or str as a ch_key, but usually it shold be data_list becase every data shold be produced by the same controller.
     def set_controller_data(self, filename_key:str, controller_key: str, ch_key_list):
+        print(f"{controller_key}: ")
         experiments_obj = self.get_experiments(filename_key)
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
         ch_data_dict = controller.set_controller_data(experiments_obj, ch_key_list)
         self.__data_repository.save(filename_key, controller_key, ch_data_dict)
+        controller.observer.notify_observer()
         
     def get_controller_data(self, controller_key: str) -> dict:  #This is for geting controller data dictionaly
         controller_key = controller_key.upper()
@@ -333,7 +334,7 @@ class DataRepository(RepositoryInterface):
             self._data[filename_key] = controller_dict
         else:
             self._data[filename_key][controller_key] = ch_data_dict
-        print(f"Saved {filename_key} in {self.__class__.__name__}.")
+        #print(f"Saved {filename_key} in {self.__class__.__name__}.")
 
         
     # override

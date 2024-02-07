@@ -8,6 +8,7 @@ Created on Fri Dec 15 09:01:53 2023
 from abc import ABCMeta, abstractmethod
 from SCANDATA.common_class import FlagDict
 import matplotlib.patches as patches
+from matplotlib.image import AxesImage
 import json
 
 
@@ -19,10 +20,9 @@ class AxesController(metaclass=ABCMeta):
         self._main_controller = main_controller
         self._model = model
         
-        self._view_flag_set = FlagDict()
-
         self._marker_obj = {}  # This is for makers in axes windows.
         
+        self._view_flag_set = FlagDict()
         self.sync_flag = False  # This flag is to show each data in each controllers.
         self.update_flag = True  # This flag is for avoiding image view update. Ture or False or empty: flip flag.
         
@@ -68,13 +68,8 @@ class AxesController(metaclass=ABCMeta):
             self.update_flag = False
         else:
             self.update_flag = not self.update_flag
-        
-    def draw_ax(self):
-        self.set_view_data()
-        self._ax_obj.relim()
-        self._ax_obj.autoscale_view()
-        self._canvas.draw()
-        
+       
+    @abstractmethod
     def update(self):  # It is overrided by ImageAx
         raise NotImplementedError()
     
@@ -112,6 +107,7 @@ class TraceAxesController(AxesController):
                         ax_data.set_color(self._ch_color[controller_key])
                         
     def set_marker(self):
+        print("87777777777777777777777777777777777")
         # get flag data from FLUO_AXES
         image_canvas, image_axes = self._main_controller.get_canvas_axes("IMAGE_AXES")
         # get a true flag list
@@ -134,21 +130,15 @@ class TraceAxesController(AxesController):
                 image_axes.add_patch(self._marker_obj[controller_key].rectangle_obj)
         image_canvas.draw()
 
-
-        
     # override
     def update(self):  # It is overrided by ImageAx
         if self.update_flag is True:
             self._ax_obj.cla()  # clear ax
             self.set_view_data()  # See each subclass.
             self.set_marker() # for ROIBOX
-            self.draw_ax()
             self._ax_obj.relim()
             self._ax_obj.autoscale_view()
             self._canvas.draw()
-            print("000000000000000000000000000000000000000")
-            print(" This method is called twice because ROI class update ch1 and ch2")
-            print("This method is called before ROI class reculculate data.")
         else:
             pass
 
@@ -179,8 +169,12 @@ class ImageAxesController(AxesController):
     # override    shold be in main conrtoller         
     def update(self) -> None:
         if self.update_flag is True:
-            print("Think about ax object clearing. how about ROIBOX? Need clearing for deleting image objects?")
-            self._ax_obj.cla()
+            # delete old image objects
+            all_objects = self._ax_obj.get_children()
+            image_obj = [obj for obj in all_objects if isinstance(obj, AxesImage)]
+            if images := []:
+                for image_obj in images:
+                    del image_obj
             self.set_view_data()  # This belong to Image Controller
             self._ax_obj.set_axis_off()
             self._canvas.draw()

@@ -234,8 +234,13 @@ class FlagDict:
         return self.__filename_dict
     
     # find only controller keys which have true in ch data.
-    def find_true_controller_keys(self) -> list:
-        return [key for key, value in self.__data_dict.items() if any(value.values())]
+    def find_true_controller_keys(self, controller=None) -> list:
+        if controller is None or controller == "ALL":
+            return [key for key, value in self.__data_dict.items() if any(value.values())]
+        else:
+            controller = controller.upper()
+            true_list = [key for key, value in self.__data_dict.items() if any(value.values())]
+            return [key for key in true_list if controller in key]
     
     def find_true_ch_keys(self, controller_key) -> list:
         return [key for key, value in self.__data_dict[controller_key].items() if value]

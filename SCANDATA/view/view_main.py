@@ -300,7 +300,6 @@ class DataWindow(tk.Frame):
         self.default_view_data()
         self.__main_controller.update()
         self.__main_controller.print_infor()
-        self.__main_controller.ax_update("ALL")
         
         # set image view doesn't update
         self.__main_controller.ax_update_flag("IMAGE_AXES", False)
@@ -426,8 +425,6 @@ class NavigationToolbarMyTool(NavigationToolbar2Tk):
     
 
 if __name__ == '__main__':
-    
-
     fullname = '..\\..\\220408\\20408B002.tsm'
     filename_obj = WholeFilename(fullname)
     root = tk.Tk()
@@ -438,4 +435,5 @@ if __name__ == '__main__':
     print("＝＝＝to do list＝＝＝")
     print("second trace time shift ")
     print("make change roi size functions")
+    print("In the first setup, update in Axescontrollers are called twice.")
     print("")

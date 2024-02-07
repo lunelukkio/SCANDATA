@@ -78,10 +78,6 @@ class ControllerInterface(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
-    def ax_update(self, ax_key: str) -> None:
-        raise NotImplementedError()
-        
-    @abstractmethod
     def ax_update_flag(self, ax_key: str) -> None:
         raise NotImplementedError()
         
@@ -175,22 +171,19 @@ class MainController(ControllerInterface):
     
     #data_dict (e.g. CH1, ELEC0) shold be bandled because there are always come from the same controller values.
     # Calculate new data with the new controller values
-    def update(self, controller="ALL") -> None:
+    def update(self, controller=None) -> None:  # "controller" should not have numbers
         # get a list with filename True.
         filename_true_list = self.__operating_controller_set.find_true_filename_keys()
         # get true flag controller list
-        controller_true_list = self.__operating_controller_set.find_true_controller_keys()
+        controller_true_list = self.__operating_controller_set.find_true_controller_keys(controller)
 
         for filename_key in filename_true_list:
-            # if controller has a specific key, overwrite key list only with the key.
-            if controller != "ALL":
-                controller_true_list = [key for key in controller_true_list 
-                                             if controller in key]
             for controller_key in controller_true_list:
                 # get only True ch data flag from the dict.
                 ch_key_list = self.__operating_controller_set.find_true_ch_keys(controller_key)
                 # Model can recieve not only data_list but also individual ch_key directly.
                 self.__model.set_controller_data(filename_key, controller_key, ch_key_list)
+
         
     def set_operating_controller_val(self, controller_key, ch_key, bool_val):
         self.__operating_controller_set.set_val(controller_key, ch_key, bool_val)
@@ -257,11 +250,11 @@ class MainController(ControllerInterface):
         print('')
         
     def change_roi_size(self, val:list):
-        controller_true_list = self.__operating_controller_set.find_true_controller_keys()
+        controller_true_list = self.__operating_controller_set.find_true_controller_keys("ROI")
         for controller_key in controller_true_list:
             # set roi in user controller
             self.__model.set_controller_val(controller_key, val)
-        self.update_ax("ROI")
+        self.update("ROI")
             
     """
     Delegation to the Model
@@ -316,16 +309,7 @@ class MainController(ControllerInterface):
                 print(f"There is no Axes: {ax_key}")
             else:
                 self.__ax_dict[ax_key].set_flag(controller_key, ch_key, bool_val)
-                
-    def ax_update(self, ax_key: str) -> None:
-        if ax_key == "ALL":
-            for ax in self.__ax_dict.values():
-                ax.update()
-        else:
-            if ax_key not in self.__ax_dict:
-                print(f"There is no Axes: {ax_key}")
-            else:
-                self.__ax_dict[ax_key].update()
+
                 
     def ax_update_flag(self, ax_key: str, val=None):
         self.__ax_dict[ax_key].ax_update_flag(val)
