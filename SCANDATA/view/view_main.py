@@ -301,10 +301,10 @@ class DataWindow(tk.Frame):
         self.__main_controller.update()
         self.__main_controller.print_infor()
         
-        # set image view doesn't update
-        self.__main_controller.ax_update_flag("IMAGE_AXES", False)
+        # set image view update. No need!!!!!!
+        self.__main_controller.ax_update_flag("IMAGE_AXES", True)
         self.__main_controller.ax_update_flag("FLUO_AXES", True)
-        self.__main_controller.ax_update_flag("ELEC_AXES", False)
+        self.__main_controller.ax_update_flag("ELEC_AXES", True)
         
     def default_view_data(self):
         print("=============================================")

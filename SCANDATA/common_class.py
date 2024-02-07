@@ -8,6 +8,7 @@ Created on Mon Oct  2 13:42:38 2023
 import os
 import glob
 import copy
+import re
   
 """
 Value object
@@ -250,6 +251,27 @@ class FlagDict:
                 for filename_key, bool_val 
                 in self.__filename_dict.items() 
                 if bool_val]
+    
+    def next_controller_to_true(self, controller):
+        controller_whole_list = [key for key in self.__data_dict.keys() if controller in key]
+        controller_true_key_list = self.find_true_controller_keys(controller)
+        targeted_controller_key = controller_true_key_list[-1]  # the last key
+        if targeted_controller_key in controller_whole_list:
+            target_index = controller_whole_list.index(targeted_controller_key)
+            if target_index + 1 < len(controller_whole_list):
+                next_element = controller_whole_list[target_index + 1]
+
+            else:
+                next_element = controller_whole_list[0]
+            #print(f"Switch to the next controller = {next_element}")
+            ch_list = self.find_true_ch_keys(targeted_controller_key)
+            for ch_key in ch_list:
+                original_val = self.__data_dict[targeted_controller_key][ch_key]
+                self.__data_dict[targeted_controller_key][ch_key] = False
+                self.__data_dict[next_element][ch_key] = original_val
+        else:
+            print(f"There is no {targeted_controller_key}")
+
     
     def print_infor(self):
         print(f"Data Flags: {self.__data_dict}")

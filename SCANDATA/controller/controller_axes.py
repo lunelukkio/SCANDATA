@@ -39,6 +39,9 @@ class AxesController(metaclass=ABCMeta):
     def set_flag(self, controller_key, ch_key, bool_val):
         self._view_flag_set.set_val(controller_key, ch_key, bool_val)
         
+    def next_controller_to_true(self, controller):
+        self._view_flag_set.next_controller_to_true(controller)
+        
     def get_canvas_axes(self):
         return self._canvas, self._ax_obj
      
@@ -107,13 +110,12 @@ class TraceAxesController(AxesController):
                         ax_data.set_color(self._ch_color[controller_key])
                         
     def set_marker(self):
-        print("87777777777777777777777777777777777")
         # get flag data from FLUO_AXES
         image_canvas, image_axes = self._main_controller.get_canvas_axes("IMAGE_AXES")
         # get a true flag list
         true_controller = self._view_flag_set.find_true_controller_keys()
         roi_true_controller = [key for key in true_controller if "ROI" in key]
-        for controller_key in roi_true_controller:
+        for controller_key in roi_true_controller:          
             roi_val = self._model.get_controller_val(controller_key).data
             # adjust for image data pixels 0.5
             box_pos = [roi_val[0]-0.5, 
@@ -122,7 +124,7 @@ class TraceAxesController(AxesController):
                       roi_val[3]]
             if controller_key in self._marker_obj:
                 self._marker_obj[controller_key].set_roi(box_pos)
-            else:
+            else:                     
                 self._marker_obj[controller_key] = RoiBox(self._controller_color[controller_key])
                 self._marker_obj[controller_key].set_roi(box_pos)
                 # put the ROI BOX on the top of images.
@@ -172,9 +174,10 @@ class ImageAxesController(AxesController):
             # delete old image objects
             all_objects = self._ax_obj.get_children()
             image_obj = [obj for obj in all_objects if isinstance(obj, AxesImage)]
-            if images := []:
-                for image_obj in images:
-                    del image_obj
+            print(image_obj)
+            if image_obj:
+                for image in image_obj:
+                    image.remove()
             self.set_view_data()  # This belong to Image Controller
             self._ax_obj.set_axis_off()
             self._canvas.draw()

@@ -183,7 +183,6 @@ class MainController(ControllerInterface):
                 ch_key_list = self.__operating_controller_set.find_true_ch_keys(controller_key)
                 # Model can recieve not only data_list but also individual ch_key directly.
                 self.__model.set_controller_data(filename_key, controller_key, ch_key_list)
-
         
     def set_operating_controller_val(self, controller_key, ch_key, bool_val):
         self.__operating_controller_set.set_val(controller_key, ch_key, bool_val)
@@ -211,33 +210,14 @@ class MainController(ControllerInterface):
                     for controller_key in roi_true_flag:
                         self.__model.set_controller_val(controller_key, val)
                     self.update("ROI")
-
                 elif event.button == 2:
                     pass
+                # move to next controller
                 elif event.button == 3:
-                    # get current controller
-                    old_controller_list = self.__main_controller.get_operating_controller_list()
-                    # get whole ROI controller list. Violation of scorpe range.  _activePcontoller_dict should not be used from the outside of the class.
-                    filtered_list = [item for item in self.__main_controller.ax_dict["FLUO_AXES"]._active_controller_dict.keys() if "ROI" in item]
-                    for old_controller in old_controller_list:
-                        if old_controller in filtered_list:
-                            index = filtered_list.index(old_controller)
-                            if index < len(filtered_list) - 1:
-                                next_controller =filtered_list[index + 1]
-                            else:
-                                next_controller =filtered_list[0]
-                        else:
-                            print("Not in the active controller list")
-                        
-                    self.__main_controller.set_operating_controller_list(old_controller)
-                    self.__main_controller.set_operating_controller_list(next_controller)
-                    # Violation of scorpe range.  _activePcontoller_dict should not be used from the outside of the class.
-                    # Need refactoring.
-                    self.__main_controller.ax_dict["FLUO_AXES"]._active_controller_dict[next_controller].update(self.__main_controller._ax_dict["FLUO_AXES"]._active_controller_dict[old_controller])
-                    self.__main_controller._ax_dict["FLUO_AXES"].set_active_controller_key(old_controller, False)
-                    print(f"flag to {next_controller}")
-                    self.update_ax(0)
-                    self.update_ax(1)
+                    # move and copy ch boolen value
+                    self.__operating_controller_set.next_controller_to_true("ROI")
+                    self.__ax_dict["FLUO_AXES"].next_controller_to_true("ROI")
+                    self.update("ROI")
             elif axes_name == "FLUO_AXES":
                 if event.inaxes == self.__ax_dict["FLUO_AXES"]:
                     raise NotImplementedError()
@@ -310,7 +290,6 @@ class MainController(ControllerInterface):
             else:
                 self.__ax_dict[ax_key].set_flag(controller_key, ch_key, bool_val)
 
-                
     def ax_update_flag(self, ax_key: str, val=None):
         self.__ax_dict[ax_key].ax_update_flag(val)
         
