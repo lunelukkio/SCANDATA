@@ -10,6 +10,7 @@ from abc import ABCMeta, abstractmethod
 from SCANDATA.common_class import WholeFilename, FlagDict
 from SCANDATA.model.experiments import Experiments
 from SCANDATA.model.user_controller import RoiFactory, ImageControllerFactory, ElecTraceControllerFactory
+from SCANDATA.model.mod.mod_main import ModService
 import re  # This is for regular expression 
 
 """
@@ -45,11 +46,6 @@ class ModelInterface(metaclass=ABCMeta):
     # This method can receive a list or str as a ch_key
     @abstractmethod
     def set_controller_data(self, filename_key: str, controller_key: str, ch_key_or_list):  #ch_key = list or str
-        raise NotImplementedError()
-
-    # return a dict of controller including value objects.
-    @abstractmethod
-    def get_controller_data(self, controller_key: str) -> dict:
         raise NotImplementedError()
 
     # return a dict of value objects with filename.
@@ -95,6 +91,8 @@ class DataService(ModelInterface):
         self.__experiments_repository = ExperimentsRepository()
         self.__user_controller_repository = UserControllerRepository()
         self.__data_repository = DataRepository()
+        self.__mod_service = ModService(self)
+        self.__mod_flag = True  # This is for test.
         
     def __create_filename_obj(self, fullname):
         filename_obj = WholeFilename(fullname)
@@ -163,6 +161,7 @@ class DataService(ModelInterface):
         controller = self.__user_controller_repository.find_by_name(controller_key)
         return controller.val_obj
     
+    
     # This method can receive a list or str as a ch_key, but usually it shold be data_list becase every data shold be produced by the same controller.
     def set_controller_data(self, filename_key:str, controller_key: str, ch_key_list):
         print(f"{controller_key}: ")
@@ -172,16 +171,17 @@ class DataService(ModelInterface):
         ch_data_dict = controller.set_controller_data(experiments_obj, ch_key_list)
         self.__data_repository.save(filename_key, controller_key, ch_data_dict)
         controller.observer.notify_observer()
-        
-    def get_controller_data(self, controller_key: str) -> dict:  #This is for geting controller data dictionaly
-        controller_key = controller_key.upper()
-        controller = self.__user_controller_repository.find_by_name(controller_key)
-        data_dict = controller.get_controller_data()
-        return data_dict 
 
     # return a dict of value objects with filename.
-    def get_data(self, filename_key, controller_key) -> dict:
-        return self.__data_repository.find_by_name(filename_key, controller_key)
+    def get_data(self, filename_key, controller_key) -> dict:  # dict e.g.{'CH1': <SCANDATA.model.value_object.TraceData object at 0x000001905EC11850>, 'CH2': <SCANDATA.model.value_object.TraceData object at 0x000001905CC856D0>}
+        controller_key = controller_key.upper()
+        data_dict = self.__data_repository.find_by_name(filename_key, controller_key)
+        # apply mod 
+        if self.__mod_flag is True:
+            controller = self.__user_controller_repository.find_by_name(controller_key)
+            mod_list = controller.get_mod_list()
+            data_dict = self.__mod_service.apply_mod(data_dict, mod_list)
+        return data_dict
             
     def set_observer(self, controller_key, observer:object):
         controller_key = controller_key.upper()
@@ -199,11 +199,9 @@ class DataService(ModelInterface):
         controller = self.__user_controller_repository.find_by_name(controller_key)
         controller.set_mod_key(mod_key)
 
-    def set_mod_val(self, controller_key, mod_key, val):
-        print(f"Set mod value: Set {type(val)} to {mod_key} in {controller_key}")
-        controller_key = controller_key.upper()
-        controller = self.__user_controller_repository.find_by_name(controller_key)
-        controller.set_mod_val(mod_key, val)
+    def set_mod_val(self, mod_key, val):
+        print(f"Set mod value: Set {type(val)} to {mod_key}")
+        self.__mod_service.set_mod_val(mod_key, val)
     
     def reset(self, controller_key):
         controller_key = controller_key.upper()
@@ -334,6 +332,8 @@ class DataRepository(RepositoryInterface):
             self._data[filename_key] = controller_dict
         else:
             self._data[filename_key][controller_key] = ch_data_dict
+        print("22222222222222222222222222222222222222222222222222222")
+        print(self._data)
         #print(f"Saved {filename_key} in {self.__class__.__name__}.")
 
         
@@ -346,6 +346,9 @@ class DataRepository(RepositoryInterface):
                 print(f"There is no {filename_key} in the data_repository")
         else:
             if filename_key in self._data:
+                print("111111111111111111111111")
+                print(controller_key)
+                print(self._data)
                 if controller_key in self._data[filename_key]:
                     return self._data[filename_key][controller_key]
                 else:

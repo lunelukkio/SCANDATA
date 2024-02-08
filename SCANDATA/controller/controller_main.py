@@ -108,7 +108,6 @@ class MainController(ControllerInterface):
     def __init__(self, view=None):
         self.__model = DataService()
         self.__file_service = FileService()
-        self.__mod_controller = ModController(self.__model)
         self.__ax_dict = {}  # {"ImageAxes": ImageAxsis class, FluoAxes: TraceAx class, ElecAxes: TraceAx class}\
         
         self.__singleton_key_dict = SingletonKeyDict()  #singleton. It has filename- and controller- and data-keys.
@@ -306,10 +305,10 @@ class MainController(ControllerInterface):
     Delegation to the ModController
     """        
     def set_mod_key(self, controller_key, mod_key):
-        self.__mod_controller.set_mod_key(controller_key, mod_key)
+        self.__model.set_mod_key(controller_key, mod_key)
         
-    def set_mod_val(self, controller_key, mod_key, val):
-        self.__mod_controller.set_mod_val(controller_key, mod_key, val)
+    def set_mod_val(self, mod_key, val):
+        self.__model.set_mod_val(mod_key, val)
         
 
 class FileService:
@@ -317,7 +316,7 @@ class FileService:
         if filename == ():
             fullname = self.get_fullname()  # This is str filename
             if fullname == None:
-                print("There is no such a filename.")
+                print("No filename.")
                 return
             new_full_filename = fullname
         else:
@@ -336,16 +335,5 @@ class FileService:
                        ('WinCP files', '*.wcp')
                       ))
         return fullname
-
-
-class ModController:
-    def __init__(self, model):
-        self.__model = model
-        
-    def set_mod_key(self, controller_key, mod_key):
-        self.__model.set_mod_key(controller_key, mod_key)
-        
-    def set_mod_val(self, controller_key, mod_key, val):
-        self.__model.set_mod_val(controller_key, mod_key, val)
 
 

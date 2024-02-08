@@ -12,10 +12,8 @@ Chain of responsibility client
 """
 
 class ModService:  # Put every mods. Don't need to sepalate mods for each data type..
-    def __init__(self):
-        self.__mod_list = []
-        
-        self.bg_comp = BgCompMod() 
+    def __init__(self, data_service):
+        self.bg_comp = BgCompMod(data_service) 
         self.df_over_f = DFOverFMod()
         self.normalize = Normalize()
         self.error_mod = ErrorMod()
@@ -26,10 +24,8 @@ class ModService:  # Put every mods. Don't need to sepalate mods for each data t
                               set_next(self.normalize). \
                               set_next(self.error_mod)
         
-    def apply_mod(self, original_data_dict: dict):
-        print("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
-        print(original_data_dict)
-        if self.__mod_list == []:
+    def apply_mod(self, original_data_dict, mod_list):
+        if mod_list == []:
             mod_data_dict = original_data_dict
         else:
             mod_data_dict = {}
@@ -37,19 +33,15 @@ class ModService:  # Put every mods. Don't need to sepalate mods for each data t
             for original_ch_key in original_data_dict.keys():
                 # set each mod key to the chain of responsibility
                 original_data = original_data_dict[original_ch_key]
-                for mod_key in self.__mod_list: 
+                for mod_key in mod_list: 
                     original_data = self.bg_comp.apply_mod(mod_key, original_data, original_ch_key)
                 mod_data_dict[original_ch_key] = original_data
         return mod_data_dict
     
-    def set_mod_key(self, mod_key):
-        if mod_key in self.__mod_list:
-            self.__mod_list.remove(mod_key)
-        elif mod_key not in self.__mod_list:
-            self.__mod_list.append(mod_key)
-            
-    def set_mod_val(self, mod_key, *val):   # the mod_key comes from the outside of the class   
-        self.bg_comp.set_mod_val(mod_key, *val)
+    def set_mod_val(self, mod_key, *val):   # the mod_key comes from the outside of the class  
+        mod_key = mod_key.upper()
+        if mod_key == "BGCOMP":
+            self.bg_comp.set_mod_val(mod_key, *val)
         
         
 """
@@ -78,36 +70,37 @@ ConcreteHandler
 """
 
 class BgCompMod(ModHandler):
-    def __init__(self):
+    def __init__(self, data_service):
         super().__init__()
         self.trace_calc = TraceCalculation()
-        self.__bg_roi_dict = None
+        self.__data_service = data_service
+        self.bg_filename_key = None
         
     def apply_mod(self, mod_key: str, original_data: dict, original_ch_key: str) -> dict:
         mod_key = mod_key.upper()
         if mod_key == 'BGCOMP':
             # separate a data from dict
             bg_trace = self.__get_bg_trace(original_ch_key)
+            if bg_trace is None:
+                return super().handle_request(mod_key, original_data, original_ch_key)
             bg_comp_trace_obj = self.trace_calc.create_bg_comp(original_data, bg_trace)
             return bg_comp_trace_obj
         else:
             return super().handle_request(mod_key, original_data, original_ch_key)
         
     def set_mod_val(self, mod_key, *val: object):
-        mod_key = mod_key.upper()
-        if mod_key == 'BGCOMP':
-            self.__bg_roi_dict = val[0]
-        else:
-            return super().handle_request(mod_key, *val)
+        self.bg_filename_key = val[0]
 
     def __get_bg_trace(self, ch_key):
-        if ch_key in self.__bg_roi_dict.keys():
-            bg_trace = self.__bg_roi_dict[ch_key]
+        data_dict = self.__data_service.get_data(self.bg_filename_key, "ROI0")
+        if data_dict is None:
+            return
+        if ch_key in data_dict:
+            bg_trace = data_dict[ch_key]
         else:
             print(f"There is no {ch_key} in the background dict.")
             bg_trace = None
         return bg_trace
-
 
 
 class DFOverFMod(ModHandler):
@@ -183,7 +176,7 @@ class ErrorMod(ModHandler):
         
     def apply_mod(self, mod_key: str, original_data: dict, original_ch_key: str) -> dict:
         print('----------------------- !!!!!!!!! --------------------')
-        print('There is no such　Mod: ' + str(mod_key))
+        print('No　Mod: ' + str(mod_key))
         print('----------------------- !!!!!!!!! --------------------')
         
         

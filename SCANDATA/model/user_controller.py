@@ -8,7 +8,6 @@ lunelukkio@gmail.com
 from abc import ABCMeta, abstractmethod
 from SCANDATA.model.value_object import TraceData, ImageData
 from SCANDATA.model.value_object import RoiVal, TimeWindowVal
-from SCANDATA.model.mod.mod_main import ModService
 import numpy as np
 
 """
@@ -42,9 +41,8 @@ abstract product
 class UserController(metaclass=ABCMeta):
     def __init__(self):
         self.observer = ControllerObserver()
-        self.__mod_service = ModService()
         self._val_obj = None
-        self.__mod_flag = False  # This is for test.
+        self.__mod_list = []
         
     def __del__(self):  #make a message when this object is deleted.
         print('.')
@@ -79,20 +77,19 @@ class UserController(metaclass=ABCMeta):
                     pass
                 else:
                     ch_data_dict[data_key] = data
-        print("Mod service should be here???????????")
-        if self.__mod_flag is True:
-            # apply mod 
-            ch_data_dict = self.__mod_service.apply_mod(ch_data_dict)
         return ch_data_dict
 
     def set_observer(self, observer):
         self.observer.set_observer(observer)
 
     def set_mod_key(self, mod_key):
-        if self.__mod_flag is True:
-            self.__mod_service.set_mod_key(mod_key)
+        if mod_key in self.__mod_list:
+            self.__mod_list.remove(mod_key)
         else:
-            pass
+            self.__mod_list.append(mod_key)
+
+    def get_mod_list(self):
+        return self.__mod_list
         
     def set_mod_val(self, mod_key, val):
         if self.__mod_flag is True:

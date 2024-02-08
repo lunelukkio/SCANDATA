@@ -297,16 +297,17 @@ class DataWindow(tk.Frame):
         
     def open_file(self, filename_obj=None):
         self.__main_controller.open_file(filename_obj)  # make a model and get filename obj
-        self.default_view_data()
+        self.default_view_data(filename_obj.name)
         self.__main_controller.update()
         self.__main_controller.print_infor()
         
+
         # set image view update. No need!!!!!!
         self.__main_controller.ax_update_flag("IMAGE_AXES", True)
         self.__main_controller.ax_update_flag("FLUO_AXES", True)
         self.__main_controller.ax_update_flag("ELEC_AXES", True)
         
-    def default_view_data(self):
+    def default_view_data(self, filename_key):
         print("=============================================")
         print("========== Start default settings. ==========")
         print("=============================================")
@@ -325,6 +326,8 @@ class DataWindow(tk.Frame):
         self.__main_controller.set_view_flag("ELEC_AXES", "ELEC_TRACE_CONTROLLER1", "ELEC0", True)  # (ax, controller_key, data_key, value) 
         # set maincontroller keys "CH1", "ELEC0"
         self.__main_controller.set_operating_controller_val("ALL", "ALL", False)  # All flag is False
+        self.__main_controller.set_operating_controller_val("ROI0", "CH1", True)  # This is for difference image
+        self.__main_controller.set_operating_controller_val("ROI0", "CH2", True)  # This is for difference image
         self.__main_controller.set_operating_controller_val("ROI1", "CH1", True)  # This is for difference image
         self.__main_controller.set_operating_controller_val("ROI1", "CH2", True)  # This is for difference image
         self.__main_controller.set_operating_controller_val("IMAGE_CONTROLLER1", "CH1", True)  # This is for a cell image
@@ -332,6 +335,9 @@ class DataWindow(tk.Frame):
         self.__main_controller.set_operating_controller_val("ELEC_TRACE_CONTROLLER1", "ELEC0", True)  # This is for a elec trace
 
         """ about mod"""
+        self.__main_controller.set_mod_val("BGCOMP", filename_key)
+        self.__main_controller.set_mod_key("ROI1", "DFOVERF")
+        self.__main_controller.set_mod_key("ROI1", "BGCOMP")
         # Set ROI0 as background in ROI1 controller
         # send background ROI. but it done outside of the model.
         #background_dict = self.__main_controller.get_controller_data("ROI0")
@@ -347,7 +353,6 @@ class DataWindow(tk.Frame):
         """
         print("========== End of default settings ==========")
 
-        
     def select_ch(self, ch_key):
         # send flags to ax.
         if ch_key == "FULL":
