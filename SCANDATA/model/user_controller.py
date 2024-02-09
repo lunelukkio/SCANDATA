@@ -147,7 +147,7 @@ class Roi(UserController):
             mean_data = np.mean(frames_obj.data[x:x+x_width, y:y+y_width, :], axis = (0, 1)) #slice end doesn't include to slice
             # make a trace value object
             print(f"{ch_key}: ROI trace with {roi_obj.data}")
-            return TraceData(mean_data, frames_obj.interval)
+            return TraceData(mean_data, frames_obj.interval, "Roi")
         
     def __check_val(self, frames_obj, roi_obj) -> bool:
         # convert to raw values
@@ -257,7 +257,7 @@ class ElecTraceController(UserController):
                 val = trace_obj.data[start:start+width]
                 print(f"{ch_key}: Trace data point range from {start} to {start+width-1}")
                 interval = trace_obj.interval
-                return TraceData(val, interval)
+                return TraceData(val, interval, "ElecTraceController")
 
     def __check_val(self, trace_obj, time_window_obj) -> bool:
         # convert to raw values

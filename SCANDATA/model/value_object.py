@@ -15,13 +15,18 @@ Value object
 """
 
 class FramesData:
-    def __init__(self, val: np.ndarray, interval = 0, pixel_size = [0, 0]):  # need *args, **kwargs for constracting
+    def __init__(self, val: np.ndarray, interval = 0, pixel_size = [0, 0], data_type=None):  # need *args, **kwargs for constracting
         if val.ndim != 3: 
             raise Exception('The argument of FrameData should be numpy 3D data(x, y, t)')
         self.__data = val
         self.__shape = val.shape  # the number of pixels and frames [pixel, pixel, frame]
         self.__interval = interval  # frame interval (ms)
         self.__pixel_size = pixel_size  #actual length (um)
+        called_class = inspect.stack()[1].frame.f_locals['self']
+        if data_type is None:
+            self.__data_type = called_class.__class__.__name__
+        else:
+            self.__data_type = data_type
         #print(self.__data_type + ' made a FramesData' + '  myId= {}'.format(id(self)))
         
     def __del__(self):
@@ -58,12 +63,17 @@ class FramesData:
     
     
 class ImageData:
-    def __init__(self, val: np.ndarray, pixel_size = [0, 0]):  # need *args, **kwargs for constracting
+    def __init__(self, val: np.ndarray, pixel_size = [0, 0], data_type=None):  # need *args, **kwargs for constracting
         if val.ndim != 2: 
             raise Exception('The argument of ImageData should be numpy 2D data(x, y)')
         self.__data = val
         self.__shape = val.shape  # the number of pixels
         self.__pixel_size = pixel_size
+        called_class = inspect.stack()[1].frame.f_locals['self']
+        if data_type is None:
+            self.__data_type = called_class.__class__.__name__
+        else:
+            self.__data_type = data_type
         #print(self.__data_type + ' made a ImageData' + '  myId= {}'.format(id(self)))
         
     def __del__(self):
@@ -96,7 +106,7 @@ class ImageData:
     
     
 class TraceData:
-    def __init__(self, val: np.ndarray, interval) -> None:  #  needs 2 variables
+    def __init__(self, val: np.ndarray, interval, data_type=None) -> None:  #  needs 2 variables
         if val.ndim != 1: 
             raise Exception('The argument of TraceData should be numpy 1D data(x)')
         if  val.shape[0] < 5: 
@@ -112,7 +122,10 @@ class TraceData:
         self.__interval = interval  # data interval
         
         called_class = inspect.stack()[1].frame.f_locals['self']
-        self.__data_type = called_class.__class__.__name__
+        if data_type is None:
+            self.__data_type = called_class.__class__.__name__
+        else:
+            self.__data_type = data_type
         #print(self.__data_type + ' made a TraceData' + '  myId= {}'.format(id(self)))
 
     def __del__(self):
@@ -132,7 +145,7 @@ class TraceData:
             sub_trace = np.sum(self.__data, sum_val.data)
         else:
             raise Exception('Wrong value. This value object should be dvided by int or float or other value object')
-        return TraceData(sub_trace, self.__interval)
+        return TraceData(sub_trace, self.__interval, self.__data_type)
         
     def __sub__(self, sub_val) -> object:
         if type(sub_val) == float or \
@@ -145,9 +158,10 @@ class TraceData:
                 print('!!! Caution! The length of these data is not matched!')
             sub_trace = np.subtract(self.__data, sub_val.data)
         else:
+            print(f"TraceData class: {self.__data_type} - {sub_val.data_type}")
             raise Exception('Wrong value. This value object should be dvided by int or float or other value object')
             
-        return TraceData(sub_trace, self.__interval)
+        return TraceData(sub_trace, self.__interval, self.__data_type)
         
     def __truediv__(self, div_val) -> object:
         if type(div_val) != float and \
@@ -156,7 +170,7 @@ class TraceData:
            type(div_val) != np.float64:
             raise Exception('Wrong value. This value object should be dvided by int or float')
         div_trace = self.__data/div_val
-        return TraceData(div_trace, self.__interval)
+        return TraceData(div_trace, self.__interval, self.__data_type)
     
     def __mul__(self, mul_val) -> object:
         if type(mul_val) != float and \
@@ -165,7 +179,7 @@ class TraceData:
            type(mul_val) != np.float64:
             raise Exception('Wrong value. This value object should be dvided by int or float')
         mul_trace = self.__data * mul_val
-        return TraceData(mul_trace, self.__interval)
+        return TraceData(mul_trace, self.__interval, self.__data_type)
         
         
     def __create_time_data(self, trace, interval) -> np.ndarray:
@@ -214,14 +228,17 @@ class TraceData:
 Value object for controller
 """
 class RoiVal:  # Shold be called by the same class for __add__ and __sub__
-    def __init__(self, x: int, y: int, x_width: int, y_width: int):         
+    def __init__(self, x: int, y: int, x_width: int, y_width: int, data_type=None):         
         if x < 0 or y < 0 :  # np.mean slice doesn't inculed end value. so width shold be 1 or more than 1
             raise Exception('ROI x and y values should be 0 or more')
         if x_width < 1 or y_width < 1:
             raise Exception('ROI width values should be 1 or more')
-        called_class = inspect.stack()[1].frame.f_locals['self']
         self.__data = np.array([x, y, x_width, y_width])  # self.__data should be np.array data.
-        self.__data_type = called_class.__class__.__name__
+        called_class = inspect.stack()[1].frame.f_locals['self']
+        if data_type is None:
+            self.__data_type = called_class.__class__.__name__
+        else:
+            self.__data_type = data_type
         #print(self.__data_type + ' made a RoiVal' + '  myId= {}'.format(id(self)))
         
     def __del__(self):
@@ -266,14 +283,17 @@ class RoiVal:  # Shold be called by the same class for __add__ and __sub__
 
 class TimeWindowVal:  # Shold be called by the same class for __add__ and __sub__
     # be careful about end_width. np.mean slice a value not include end.
-    def __init__(self, start: int, width=1):
+    def __init__(self, start: int, width=1, data_type=None):
         if start < 0:
             raise Exception('TimeWindow start values should be 0 or more')
         if width < 1:
             raise Exception('FrameWindow width values should be 1 or more')
-        called_class = inspect.stack()[1].frame.f_locals['self']
         self.__data = np.array([start, width])
-        self.__data_type = called_class.__class__.__name__
+        called_class = inspect.stack()[1].frame.f_locals['self']
+        if data_type is None:
+            self.__data_type = called_class.__class__.__name__
+        else:
+            self.__data_type = data_type
         #print(self.__data_type + ' made a TimeWindowVal' + '  myId= {}'.format(id(self)))
         
     def __del__(self):

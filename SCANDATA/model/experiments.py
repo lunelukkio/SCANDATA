@@ -186,7 +186,7 @@ class TsmBuilder(Builder):
     # make data_dict {ch_key: TraceData}  {"ELEC1": data, ""ELEC2": data ......}
     def get_trace(self):
         data = {"ELEC"+str(ch): TraceData(self.elec_data[:, ch], 
-                                      self.data_infor_dict[f"ELEC{ch}_INTERVAL"])for ch in range(self.num_elec_ch)}
+                                      self.data_infor_dict[f"ELEC{ch}_INTERVAL"], "ElecTraceController")for ch in range(self.num_elec_ch)}
         print(f"Trace data = {data.keys()}")
         return data
     
@@ -250,7 +250,7 @@ class DaBuilder(Builder):
     # make data_dict {ch_key: TraceData}  {"ELEC1": data, ""ELEC2": data ......}
     def get_trace(self):
         data = {"ELEC"+str(ch): TraceData(self.elec_data[:, ch], 
-                                      self.data_infor_dict[f"ELEC{ch}_INTERVAL"])for ch in range(self.num_elec_ch)}
+                                      self.data_infor_dict[f"ELEC{ch}_INTERVAL"], "ElecTraceController")for ch in range(self.num_elec_ch)}
         print(f"Trace data = {data.keys()}")
         return data
     

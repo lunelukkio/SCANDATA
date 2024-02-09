@@ -149,65 +149,82 @@ class DataService(ModelInterface):
 
     # set controller value and set controller data using the new value
     def set_controller_val(self, controller_key: str, val: list):
+        print(f"DataService: set_controller_val ({controller_key}, {val}) ---------->")
         # get the controller
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
         # set the controller values
         controller.set_controller_val(val)
         # notiry axes. then they will use "self.get_controller_data"
+        print("----------> Done: set_controller_val")
         
     def get_controller_val(self, controller_key: str):  # This is for getting controller value ex.RoiVal
+        print(f"DataService: get_controller_val ({controller_key}) ---------->")
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
+        print("----------> Done: get_controller_val")
         return controller.val_obj
     
     
     # This method can receive a list or str as a ch_key, but usually it shold be data_list becase every data shold be produced by the same controller.
     def set_controller_data(self, filename_key:str, controller_key: str, ch_key_list):
-        print(f"{controller_key}: ")
+        print(f"DataService: set_controller_data ({controller_key}) ---------->")
         experiments_obj = self.get_experiments(filename_key)
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
         ch_data_dict = controller.set_controller_data(experiments_obj, ch_key_list)
         self.__data_repository.save(filename_key, controller_key, ch_data_dict)
         controller.observer.notify_observer()
+        print("----------> Done: set_controller_data")
 
     # return a dict of value objects with filename.
     def get_data(self, filename_key, controller_key) -> dict:  # dict e.g.{'CH1': <SCANDATA.model.value_object.TraceData object at 0x000001905EC11850>, 'CH2': <SCANDATA.model.value_object.TraceData object at 0x000001905CC856D0>}
+        print(f"DataService: get_data ({controller_key}) ---------->")
         controller_key = controller_key.upper()
         data_dict = self.__data_repository.find_by_name(filename_key, controller_key)
+        if data_dict is None:
+            return
         # apply mod 
         if self.__mod_flag is True:
             controller = self.__user_controller_repository.find_by_name(controller_key)
             mod_list = controller.get_mod_list()
             data_dict = self.__mod_service.apply_mod(data_dict, mod_list)
+        print("----------> Done: get_data")
         return data_dict
             
     def set_observer(self, controller_key, observer:object):
+        print(f"DataService: set_observer ({observer.__class__.__name__} to {controller_key}) ---------->")
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
         controller.set_observer(observer)
+        print("----------> Done: set_observer")
 
     # Use this only for a test. return a controller object.
     def get_user_controller(self, controller_key):
+        print(f"DataService: get_user_controller ({controller_key}) ---------->")
         controller_key = controller_key.upper()
+        print("----------> Done: get_user_controller")
         return self.__user_controller_repository.data[controller_key]
+    
         
     def set_mod_key(self,controller_key, mod_key) -> None:
-        print(f"Set mod: {mod_key} in {controller_key}")
+        print(f"DataService: set_mod_key ({mod_key} in {controller_key})")
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
         controller.set_mod_key(mod_key)
+        print("----------> Done: set_mod_key")
 
     def set_mod_val(self, mod_key, val):
-        print(f"Set mod value: Set {type(val)} to {mod_key}")
+        print(f"DataService: set_mod_val ({val} to {mod_key})")
         self.__mod_service.set_mod_val(mod_key, val)
+        print("----------> Done: set_mod_val")
     
     def reset(self, controller_key):
+        print(f"DataService: reset ({controller_key}) ---------->")
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
         controller.reset()
-        print(f"Reset: {controller_key}")
+        print("----------> Done: reset")
 
     # get data key dict from the data repository
     def get_infor(self, filename_key=None, controller_key=None) -> dict:
@@ -332,8 +349,6 @@ class DataRepository(RepositoryInterface):
             self._data[filename_key] = controller_dict
         else:
             self._data[filename_key][controller_key] = ch_data_dict
-        print("22222222222222222222222222222222222222222222222222222")
-        print(self._data)
         #print(f"Saved {filename_key} in {self.__class__.__name__}.")
 
         
@@ -346,9 +361,6 @@ class DataRepository(RepositoryInterface):
                 print(f"There is no {filename_key} in the data_repository")
         else:
             if filename_key in self._data:
-                print("111111111111111111111111")
-                print(controller_key)
-                print(self._data)
                 if controller_key in self._data[filename_key]:
                     return self._data[filename_key][controller_key]
                 else:

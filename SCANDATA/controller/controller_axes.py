@@ -96,6 +96,8 @@ class TraceAxesController(AxesController):
             # get only True user controller flag from the dict.
             for controller_key in controller_true_dict:
                 ch_data_dict = self._model.get_data(filename_key, controller_key)
+                if ch_data_dict is None:
+                    return
                 # get only True ch data flag from the dict.
                 ch_true_list = self._view_flag_set.find_true_ch_keys(controller_key)
                 # Model can recieve not only data_list but also individual ch_key directly.

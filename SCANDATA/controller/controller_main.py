@@ -175,7 +175,6 @@ class MainController(ControllerInterface):
         filename_true_list = self.__operating_controller_set.find_true_filename_keys()
         # get true flag controller list
         controller_true_list = self.__operating_controller_set.find_true_controller_keys(controller)
-
         for filename_key in filename_true_list:
             for controller_key in controller_true_list:
                 # get only True ch data flag from the dict.

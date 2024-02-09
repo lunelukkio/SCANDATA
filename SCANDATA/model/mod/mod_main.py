@@ -199,7 +199,7 @@ class TraceCalculation:
         return average
 
     def create_new_value_obj(self, val, interval):
-        new_obj = TraceData(val, interval)
+        new_obj = TraceData(val, interval, "Roi")
         return new_obj
     
     def create_normalize(self, trace_obj):
