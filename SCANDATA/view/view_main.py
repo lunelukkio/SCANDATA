@@ -357,21 +357,14 @@ class DataWindow(tk.Frame):
         # send flags to ax.
         if ch_key == "FULL":
             ch_key = "CH0"
-            
-            print("need change")
-            
-            
-            
-            self.__main_controller._ax_dect["IMAGE_AXES"].set_operating_ch_list(ch_key)
-            self.__main_controller._ax_dect["FLUO_AXES"].set_operating_ch_list(ch_key)
-            
-            
-            
-            
-            
-            self.__main_controller.ax_update("IMAGE_AXES")
-            self.__main_controller.ax_update("FLUO_AXES")
+            self.__main_controller.set_operating_controller_val("ROI0", "CH0")  # This is for difference image
+            self.__main_controller.set_operating_controller_val("ROI1", "CH0")  # This is for difference image
+            self.__main_controller.set_view_flag("FLUO_AXES", "ROI1", "CH0")
+        else:
+            self.__main_controller.set_view_flag("FLUO_AXES", ch_key, "CH1")
+        self.__main_controller.update()
         print('')
+        
         
     def elec_ch_select(self, event):
         selected_value = self.combo_box_elec_ch.get()

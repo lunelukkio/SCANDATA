@@ -182,7 +182,7 @@ class MainController(ControllerInterface):
                 # Model can recieve not only data_list but also individual ch_key directly.
                 self.__model.set_controller_data(filename_key, controller_key, ch_key_list)
         
-    def set_operating_controller_val(self, controller_key, ch_key, bool_val):
+    def set_operating_controller_val(self, controller_key, ch_key, bool_val=None):
         self.__operating_controller_set.set_val(controller_key, ch_key, bool_val)
     
     def get_memory_infor(self):
@@ -278,7 +278,7 @@ class MainController(ControllerInterface):
     """
     Delegation to the AxesController
     """               
-    def set_view_flag(self, ax_key, controller_key, ch_key, bool_val) -> None:
+    def set_view_flag(self, ax_key, controller_key, ch_key, bool_val=None) -> None:
         if ax_key == "ALL":
             for ax in self.__ax_dict.values():
                 ax.set_flag(controller_key, ch_key, bool_val)
