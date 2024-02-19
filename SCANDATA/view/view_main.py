@@ -296,7 +296,7 @@ class DataWindow(tk.Frame):
             self.open_file(filename_obj)
         
     def open_file(self, filename_obj=None):
-        self.__main_controller.open_file(filename_obj)  # make a model and get filename obj
+        filename_obj = self.__main_controller.open_file(filename_obj)  # make a model and get filename obj
         self.default_view_data(filename_obj.name)
         self.__main_controller.update()
         self.__main_controller.print_infor()
