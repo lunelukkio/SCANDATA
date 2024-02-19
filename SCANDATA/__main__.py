@@ -6,7 +6,7 @@ lunelukkio@gmail.com
 """
 
     
-from SCANDATA.view.view_main import MainView
+from SCANDATA.view.view_main import MainView, DataWindow
 import tkinter as tk
 import gc
 
@@ -20,7 +20,7 @@ class Main:
         root = tk.Tk()
         root.title("SCANDATA")
 
-        view = MainView(root)
+        view = DataWindow(root)
 
         root.mainloop()
 

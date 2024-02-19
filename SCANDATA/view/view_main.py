@@ -126,15 +126,14 @@ class MainView(tk.Frame):
 
     def open_file(self, event=None):
         filename_obj = self.__main_controller.open_file()
-        fullname = filename_obj.fullname
         self.__filename_obj_list.append(filename_obj)
-        self.window.append(tk.Toplevel())
-        self.data_window.append(DataWindow(self.window[len(self.window)-1], filename_obj))
-        print('Open ' + str(fullname))
-
+        # this should be collected in repository
+        data_window = DataWindow(tk.Toplevel())
+        #data_window.open_file(filename_obj)
+        
 
 class DataWindow(tk.Frame):
-    def __init__(self, master=None, filename_obj=None):
+    def __init__(self, master=None):
         super().__init__(master)
         self.pack()
         self.__main_controller = MainController(self)
@@ -292,11 +291,8 @@ class DataWindow(tk.Frame):
         canvas_trace.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         trace_fig.subplots_adjust(left=0.06, right=0.97, bottom=0.05, top=0.9)
         
-        if filename_obj is not None:
-            self.open_file(filename_obj)
-        
     def open_file(self, filename_obj=None):
-        self.__main_controller.open_file(filename_obj)  # make a model and get filename obj
+        filename_obj = self.__main_controller.open_file(filename_obj)  # make a model and get filename obj
         self.default_view_data(filename_obj.name)
         self.__main_controller.update()
         self.__main_controller.print_infor()
@@ -427,7 +423,8 @@ if __name__ == '__main__':
     filename_obj = WholeFilename(fullname)
     root = tk.Tk()
     root.title("SCANDATA")
-    view = DataWindow(root, filename_obj)
+    view = DataWindow(root)
+    view.open_file(filename_obj)
     root.mainloop()
     
     print("＝＝＝to do list＝＝＝")

@@ -145,10 +145,13 @@ class MainController(ControllerInterface):
         self.__singleton_key_dict.copy_dict(self.__model.get_default_data_structure(filename_key))
         # set filename key to key_dict
         self.__singleton_key_dict.set_filename(filename_key)
-        print("============================================================")
-        print(f"========== Open {filename_obj.name}: suceeded!!! ==========")
-        print("============================================================")
-        print("")
+        if filename_obj is None:
+            print("Failed to open the file")
+        else:
+            print("============================================================")
+            print(f"========== Open {filename_obj.name}: suceeded!!! ==========")
+            print("============================================================")
+            print("")
         return filename_obj
     
     def create_experiments(self, filename_obj: object):

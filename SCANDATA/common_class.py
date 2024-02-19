@@ -36,6 +36,16 @@ class WholeFilename:  # Use it only in a view and controller
         #print('.')
         #print('Deleted a ImageData object.' + '  myId= {}'.format(id(self)))
         pass
+    
+    # Function to rename multiple files: https://www.youtube.com/watch?v=uhpnT8hGTnY&t=511s
+    def rename_for_nnunet(self):
+        folder_path = "C:/Users/lunel/Documents/python/nnUNetFrame/testfolder"
+        for count, filename in enumerate(sorted(os.listdir(folder_path))):
+            dst = "ABD_" + str(count).zfill(3) + ".nii.gz"
+            src = f"{folder_path}/{filename}"  # foldername/filename, if .py file
+            dst = f"{folder_path}/{dst}"
+            # rename() function will rename all the files
+            os.rename(src, dst)
         
     @property
     def fullname(self) -> str:
