@@ -37,7 +37,7 @@ class DataWindow(tk.Frame):
         master.geometry(setting["main_window"]["geometry"])
         master.configure(background=self.my_color)
         master.title('None')
-
+        
         # menubar
         menubar = tk.Menu(master)
         master.config(menu=menubar)
@@ -48,13 +48,13 @@ class DataWindow(tk.Frame):
         menubar.add_cascade(label="File", menu=file_menu)
         menubar.add_cascade(label="AI", menu=ai_menu)
         
-        file_menu.add_command(label="Open", command=self.open_file())
-        file_menu.add_command(label="Check memory", command=self.check_memory())
+        #file_menu.add_command(label="Open", command=self.open_file())
+        #file_menu.add_command(label="Check memory", command=self.check_memory())
         
         
-        ai_menu.add_command(label="AI menu", command=self.open_ai_menu())
+        #ai_menu.add_command(label="AI menu", command=self.open_ai_menu())
         
-
+        
         """ 
         Top Buttons
         """
@@ -317,7 +317,7 @@ class DataWindow(tk.Frame):
         print(f"Current memory usage: {memory_infor / 1024 / 1024:.2f} MB / {maximum_memory / 1024 / 1024:.2f} MB, Available memory: {available_memory / 1024 / 1024:.2f} MB")
        
     def open_ai_menu(self):
-        ai_window = AiWindow()
+        ai_window = tk.Toplevel(AiWindow)
         
 
 class NavigationToolbarMyTool(NavigationToolbar2Tk):
