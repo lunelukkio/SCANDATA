@@ -41,7 +41,12 @@ class Experiments:   # entity
         if filename_obj.extension == ".tsm":
             return TsmBuilderFactory()
         elif filename_obj.extension == ".tbn":
+<<<<<<< HEAD
             raise Exception("Select a .tsm file instead of a .tbn file!!!")
+=======
+            
+            print("Select .tsm instead of .tbn")
+>>>>>>> 33fc18279b56e0c1d2f9a60419048a5f72068398
         elif filename_obj.extension == ".da":
             return DaBuilderFactory()
         else:
