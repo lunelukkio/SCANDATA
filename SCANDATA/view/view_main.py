@@ -9,127 +9,12 @@ main for view
 import tkinter as tk
 from tkinter import ttk
 import tkinter.filedialog
-import os
+import json
 
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from SCANDATA.common_class import WholeFilename
-from SCANDATA.controller.controller_main import MainController
-
-
-class MainView(tk.Frame):
-    def __init__(self, master=None):
-        super().__init__(master)
-        self.__main_controller = MainController()
-        
-        self.__filename_obj_list = []
-        self.window = []
-        self.data_window = []  # data window obj
-        self.my_color_main = 'azure'
-
-        self.pack()
-        master.geometry('500x100')
-        master.title('SCANDATA')
-               
-        """
-        Widgit mapping
-        """
-        
-        "Top frame"
-        frame_top = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=0, bg = self.my_color_main)
-        button_open_data = tk.Button(frame_top,text='Open data',command=self.open_file,width=10)
-        button_open_data.place(x=110, y=150)
-        button_open_data.config(fg='black', bg='skyblue')
-        button_open_data.pack(side=tk.LEFT)
-        frame_top.pack(side=tk.TOP, fill=tk.X)
-        
-        button_memory = tk.Button(frame_top,text='Check memory',command=self.check_memory,width=10)
-        button_memory.place(x=110, y=150)
-        button_memory.config(fg='black', bg='skyblue')
-        button_memory.pack(side=tk.LEFT)
-        frame_top.pack(side=tk.TOP, fill=tk.X)
-        
-        "Bottom frame"
-        frame_bottom = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=0, bg = self.my_color_main)
-        button_open_data2 = tk.Button(frame_bottom,text='Open data',state='disable',command=self.open_file_with_list,width=10)
-        button_open_data2.place(x=110, y=150)
-        button_open_data2.config(fg='black', bg='skyblue')
-        button_exit = tk.Button(frame_bottom, text='Exit')
-        
-        button_open_data2.pack(side=tk.LEFT)
-        button_exit.pack(side=tk.RIGHT, padx=5)
-
-        frame_bottom.pack(side=tk.BOTTOM, fill=tk.X)
-        
-        "Middle frame"
-        frame_middle = tk.Frame(master, pady=0, padx=0, relief=tk.RAISED, bd=2, bg = self.my_color_main)
-        frame_middle.pack(side=tk.TOP, fill=tk.BOTH)
-
-        self.create_menu()
-
-    def create_menu(self):
-        menu_bar = tk.Menu(self)
- 
-        file_menu = tk.Menu(menu_bar, tearoff = tk.OFF)
-        menu_bar.add_cascade(label='File', menu = file_menu) 
-
-        file_menu.add_command(label = 'Open', command = self.open_file_with_list, accelerator = 'Ctrl+O')
-        file_menu.add_separator()
-        file_menu.add_command(label = 'Quit', command = self.master.destroy)
-        
-        # short cut
-        menu_bar.bind_all('<Control-o>', self.open_file_with_list)
-
-        # set to parent menu
-        self.master.config(menu = menu_bar)
-        
-    def check_memory(self):
-        memory_infor, maximum_memory, available_memory = self.__main_controller.get_memory_infor()
-        print(f"Current memory usage: {memory_infor / 1024 / 1024:.2f} MB / {maximum_memory / 1024 / 1024:.2f} MB, Available memory: {available_memory / 1024 / 1024:.2f} MB")
-        
-        
-    """
-    send to a button function class
-    """
-    def open_file_with_list(self, event=None):
-        fullname = self.button_fn.get_fullname()
-        filename_obj = WholeFilename(fullname)
-        self.__filename_obj_list.append(filename_obj)
-        
-        "make a tree_list"
-        tree_list = ttk.Treeview(self)
-        
-        # Define cuolumns   #0 is phantom column
-        tree_list['columns'] = ('Main File', 'File List')
-        tree_list.column('#0', width=20, minwidth=20, stretch=False)
-        tree_list.column('Main File', anchor='w', width=120)
-        tree_list.column('File List', anchor='w', width=120)
-        
-        # Headings
-        tree_list.heading('#0', text='', anchor='w')
-        tree_list.heading('Main File', text='File 001', anchor='w')
-        tree_list.heading('File List', text='File List', anchor='w')
-        
-        # Add data
-        tree_list.insert(parent='', index='end', iid=0, text='', values=os.path.basename(fullname))
-        #tree_list.insert(parent='Main File', index='end', iid=0, text='', values=filename_obj.filename_list)
-        
-        # for scrollbar
-        scrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL, command=tree_list.yview)
-        tree_list.configure(yscroll=scrollbar.set)
-        
-        # Pack                 
-        tree_list.pack(pady=0, fill=tk.BOTH, expand=True)  
-        
-        self.window.append(tk.Toplevel())
-        self.data_window.append(DataWindow(self.window[len(self.window)-1], filename_obj, self.__main_controller))
-
-    def open_file(self, event=None):
-        filename_obj = self.__main_controller.open_file()
-        self.__filename_obj_list.append(filename_obj)
-        # this should be collected in repository
-        data_window = DataWindow(tk.Toplevel())
-        #data_window.open_file(filename_obj)
+from SCANDATA.controller.controller_main import MainController, AiController
         
 
 class DataWindow(tk.Frame):
@@ -137,14 +22,38 @@ class DataWindow(tk.Frame):
         super().__init__(master)
         self.pack()
         self.__main_controller = MainController(self)
-        self.my_color = '#BCD2EE'
+        
+        # import a JSON setting file
+        try:
+            with open("../setting/system_setting.json", "r") as json_file:
+                setting = json.load(json_file)
+        except:
+            with open("./setting/system_setting.json", "r") as json_file:
+                setting = json.load(json_file)
+        
+        self.my_color = setting["main_window"]["color"]
         
         # for data window
-        master.geometry('1400x700')
+        master.geometry(setting["main_window"]["geometry"])
         master.configure(background=self.my_color)
         master.title('None')
 
-        #self.button_func = ButtonFunction(self)
+        # menubar
+        menubar = tk.Menu(master)
+        master.config(menu=menubar)
+        
+        file_menu = tk.Menu(menubar, tearoff=0)
+        ai_menu = tk.Menu(menubar, tearoff=0)
+        
+        menubar.add_cascade(label="File", menu=file_menu)
+        menubar.add_cascade(label="AI", menu=ai_menu)
+        
+        file_menu.add_command(label="Open", command=self.open_file())
+        file_menu.add_command(label="Check memory", command=self.check_memory())
+        
+        
+        ai_menu.add_command(label="AI menu", command=self.open_ai_menu())
+        
 
         """ 
         Top Buttons
@@ -290,6 +199,7 @@ class DataWindow(tk.Frame):
         toolbar_trace.update()
         canvas_trace.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         trace_fig.subplots_adjust(left=0.06, right=0.97, bottom=0.05, top=0.9)
+
         
     def open_file(self, filename_obj=None):
         filename_obj = self.__main_controller.open_file(filename_obj)  # make a model and get filename obj
@@ -402,6 +312,13 @@ class DataWindow(tk.Frame):
     def image_update_pass(self):
         self.__main_controller.ax_update_flag()
         
+    def check_memory(self):
+        memory_infor, maximum_memory, available_memory = self.__main_controller.get_memory_infor()
+        print(f"Current memory usage: {memory_infor / 1024 / 1024:.2f} MB / {maximum_memory / 1024 / 1024:.2f} MB, Available memory: {available_memory / 1024 / 1024:.2f} MB")
+       
+    def open_ai_menu(self):
+        ai_window = AiWindow()
+        
 
 class NavigationToolbarMyTool(NavigationToolbar2Tk):
     def __init__(self, canvas=None, master=None, my_color=None):
@@ -416,6 +333,12 @@ class NavigationToolbarMyTool(NavigationToolbar2Tk):
 
     def get_val(self):
         pass
+    
+class AiWindow:
+    def __init__(self, master=None):
+        super().__init__(master)
+        self.pack()
+        self.__ai_controller = AiController()
     
 
 if __name__ == '__main__':

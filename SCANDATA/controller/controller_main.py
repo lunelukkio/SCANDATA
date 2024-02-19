@@ -311,6 +311,9 @@ class MainController(ControllerInterface):
     def set_mod_val(self, mod_key, val):
         self.__model.set_mod_val(mod_key, val)
         
+class AiController:
+    def __init__(self):
+        self.__file_service = FileService()
 
 
 
