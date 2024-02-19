@@ -6,7 +6,7 @@ lunelukkio@gmail.com
 """
 
     
-from SCANDATA.view.view_main import MainView, DataWindow
+from SCANDATA.view.view_main import DataWindow
 import tkinter as tk
 import gc
 

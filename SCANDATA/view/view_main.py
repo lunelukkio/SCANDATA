@@ -48,11 +48,11 @@ class DataWindow(tk.Frame):
         menubar.add_cascade(label="File", menu=file_menu)
         menubar.add_cascade(label="AI", menu=ai_menu)
         
-        #file_menu.add_command(label="Open", command=self.open_file())
-        #file_menu.add_command(label="Check memory", command=self.check_memory())
+        file_menu.add_command(label="Open", command=self.open_file)
+        file_menu.add_command(label="Check memory", command=self.check_memory)
         
         
-        #ai_menu.add_command(label="AI menu", command=self.open_ai_menu())
+        ai_menu.add_command(label="AI menu", command=self.open_ai_menu)
         
         
         """ 
@@ -317,7 +317,7 @@ class DataWindow(tk.Frame):
         print(f"Current memory usage: {memory_infor / 1024 / 1024:.2f} MB / {maximum_memory / 1024 / 1024:.2f} MB, Available memory: {available_memory / 1024 / 1024:.2f} MB")
        
     def open_ai_menu(self):
-        ai_window = tk.Toplevel(AiWindow)
+        AiWindow(tk.Toplevel())
         
 
 class NavigationToolbarMyTool(NavigationToolbar2Tk):
@@ -339,6 +339,7 @@ class AiWindow:
         super().__init__(master)
         self.pack()
         self.__ai_controller = AiController()
+
     
 
 if __name__ == '__main__':
