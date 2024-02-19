@@ -9,10 +9,48 @@ import os
 import glob
 import copy
 import re
-  
+import tkinter as tk
+
+class FileService:
+    def open_file(self, *filename):  # it can catch variable num of filenames.
+        if filename == ():
+            fullname = self.get_fullname()  # This is str filename
+            if fullname == None:
+                print("No filename.")
+                return
+            new_full_filename = fullname
+        else:
+            new_full_filename = filename
+        return WholeFilename(new_full_filename)
+    
+    # Function to rename multiple files: https://www.youtube.com/watch?v=uhpnT8hGTnY&t=511s
+    def rename_for_nnunet(self):
+        folder_path = "C:/Users/lunel/Documents/python/nnUNetFrame/testfolder"
+        for count, filename in enumerate(sorted(os.listdir(folder_path))):
+            dst = "ABD_" + str(count).zfill(3) + ".nii.gz"
+            src = f"{folder_path}/{filename}"  # foldername/filename, if .py file
+            dst = f"{folder_path}/{dst}"
+            # rename() function will rename all the files
+            os.rename(src, dst)
+    
+    @staticmethod
+    def get_fullname(event=None):
+        # open file dialog
+        fullname = tk.filedialog.askopenfilename(
+            initialdir = os.getcwd(), # current dir
+            filetypes=(('All files', '*.*'), 
+                       ('Tsm files', '*.tsm'),
+                       ('Da files', '*.da'), 
+                       ('Axon files', '*.abf'),
+                       ('WinCP files', '*.wcp')
+                      ))
+        return fullname
+
+
 """
 Value object
 """
+
 class WholeFilename:  # Use it only in a view and controller
     def __init__(self, fullname: str):
         self.__fullname = os.path.join(fullname)  # replace separater for each OS
@@ -36,16 +74,6 @@ class WholeFilename:  # Use it only in a view and controller
         #print('.')
         #print('Deleted a ImageData object.' + '  myId= {}'.format(id(self)))
         pass
-    
-    # Function to rename multiple files: https://www.youtube.com/watch?v=uhpnT8hGTnY&t=511s
-    def rename_for_nnunet(self):
-        folder_path = "C:/Users/lunel/Documents/python/nnUNetFrame/testfolder"
-        for count, filename in enumerate(sorted(os.listdir(folder_path))):
-            dst = "ABD_" + str(count).zfill(3) + ".nii.gz"
-            src = f"{folder_path}/{filename}"  # foldername/filename, if .py file
-            dst = f"{folder_path}/{dst}"
-            # rename() function will rename all the files
-            os.rename(src, dst)
         
     @property
     def fullname(self) -> str:

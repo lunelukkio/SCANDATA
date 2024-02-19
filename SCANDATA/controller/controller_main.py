@@ -8,8 +8,7 @@ main for controller
 from abc import ABCMeta, abstractmethod
 from SCANDATA.model.model_main import DataService
 from SCANDATA.controller.controller_axes import TraceAxesController, ImageAxesController
-from SCANDATA.common_class import WholeFilename, SingletonKeyDict, FlagDict
-import tkinter as tk
+from SCANDATA.common_class import FileService, SingletonKeyDict, FlagDict
 import os
 import psutil  # for memory check
 
@@ -313,29 +312,5 @@ class MainController(ControllerInterface):
         self.__model.set_mod_val(mod_key, val)
         
 
-class FileService:
-    def open_file(self, *filename):  # it can catch variable num of filenames.
-        if filename == ():
-            fullname = self.get_fullname()  # This is str filename
-            if fullname == None:
-                print("No filename.")
-                return
-            new_full_filename = fullname
-        else:
-            new_full_filename = filename
-        return WholeFilename(new_full_filename)
-    
-    @staticmethod
-    def get_fullname(event=None):
-        # open file dialog
-        fullname = tk.filedialog.askopenfilename(
-            initialdir = os.getcwd(), # current dir
-            filetypes=(('All files', '*.*'), 
-                       ('Tsm files', '*.tsm'),
-                       ('Da files', '*.da'), 
-                       ('Axon files', '*.abf'),
-                       ('WinCP files', '*.wcp')
-                      ))
-        return fullname
 
 
