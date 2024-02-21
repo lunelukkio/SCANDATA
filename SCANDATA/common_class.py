@@ -24,7 +24,7 @@ class FileService:
         return WholeFilename(new_full_filename)
     
     # Function to rename multiple files: https://www.youtube.com/watch?v=uhpnT8hGTnY&t=511s
-    def rename_for_nnunet(self):
+    def rename_files(self):
         folder_path = "C:/Users/lunel/Documents/python/nnUNetFrame/testfolder"
         for count, filename in enumerate(sorted(os.listdir(folder_path))):
             dst = "ABD_" + str(count).zfill(3) + ".nii.gz"

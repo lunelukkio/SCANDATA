@@ -5,7 +5,6 @@ Created on Tue Sep 12 17:20:25 2023
 @author: lunelukkio@gmail.com
 """
 import numpy as np
-import matplotlib.pyplot as plt
     
 class TsmFileIo:
     #load a .tsn file

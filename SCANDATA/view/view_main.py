@@ -25,10 +25,10 @@ class DataWindow(tk.Frame):
         
         # import a JSON setting file
         try:
-            with open("../setting/system_setting.json", "r") as json_file:
+            with open("../setting/data_window_setting.json", "r") as json_file:
                 setting = json.load(json_file)
         except:
-            with open("./setting/system_setting.json", "r") as json_file:
+            with open("./setting/data_window_setting.json", "r") as json_file:
                 setting = json.load(json_file)
         
         self.my_color = setting["main_window"]["color"]
@@ -36,7 +36,7 @@ class DataWindow(tk.Frame):
         # for data window
         master.geometry(setting["main_window"]["geometry"])
         master.configure(background=self.my_color)
-        master.title('None')
+        master.title('ScanData')
         
         # menubar
         menubar = tk.Menu(master)
@@ -51,9 +51,7 @@ class DataWindow(tk.Frame):
         file_menu.add_command(label="Open", command=self.open_file)
         file_menu.add_command(label="Check memory", command=self.check_memory)
         
-        
         ai_menu.add_command(label="AI menu", command=self.open_ai_menu)
-        
         
         """ 
         Top Buttons
@@ -334,11 +332,39 @@ class NavigationToolbarMyTool(NavigationToolbar2Tk):
     def get_val(self):
         pass
     
-class AiWindow:
+class AiWindow(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.pack()
         self.__ai_controller = AiController()
+        
+        # import a JSON setting file
+        try:
+            with open("../setting/data_window_setting.json", "r") as json_file:
+                setting = json.load(json_file)
+        except:
+            with open("./setting/data_window_setting.json", "r") as json_file:
+                setting = json.load(json_file)
+        
+        my_color = setting["main_window"]["color"]
+        
+        # for data window
+        master.geometry("500x500")
+        master.configure(background=my_color)
+        master.title('AI')
+        
+        # menubar
+        menubar = tk.Menu(master)
+        master.config(menu=menubar)
+        
+        file_menu = tk.Menu(menubar, tearoff=0)
+        
+        menubar.add_cascade(label="File", menu=file_menu)
+        
+        file_menu.add_command(label="Rename Files", command=self.__ai_controller.rename_files)
+        
+        
+        
 
     
 

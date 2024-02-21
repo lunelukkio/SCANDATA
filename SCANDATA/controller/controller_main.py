@@ -314,6 +314,9 @@ class MainController(ControllerInterface):
 class AiController:
     def __init__(self):
         self.__file_service = FileService()
+        
+    def rename_files(self):
+        self.__file_service.rename_files()
 
 
 
