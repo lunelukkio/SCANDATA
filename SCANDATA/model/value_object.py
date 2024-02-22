@@ -6,6 +6,8 @@ Created on Sun Jan  1 10:04:06 2023
 """
 
 import numpy as np
+import pyqtgraph as pg
+from PyQt5.QtWidgets import QApplication, QMainWindow
 import matplotlib.pyplot as plt
 import inspect
 
@@ -59,7 +61,10 @@ class FramesData:
         return self.__data_type
     
     def show_data(self, frame_num=0, plt=plt) -> object:  # plt shold be an axes in a view class object = AxesImage
-        return plt.imshow(self.__data[:, :, frame_num], cmap='gray', interpolation='none')
+        try:
+            return
+        except:
+            return plt.imshow(self.__data[:, :, frame_num], cmap='gray', interpolation='none')
     
     
 class ImageData:

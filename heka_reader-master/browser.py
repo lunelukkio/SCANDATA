@@ -1,5 +1,6 @@
 import os, sys
 import pyqtgraph as pg
+from pyqtgraph.Qt import QtWidgets
 import numpy as np
 import heka_reader
 
@@ -9,24 +10,24 @@ app = pg.mkQApp()
 # Configure Qt GUI:
 
 # Main window + splitters to let user resize panes
-win = pg.QtGui.QWidget()
-layout = pg.QtGui.QGridLayout()
+win = QtWidgets.QWidget()
+layout = QtWidgets.QGridLayout()
 win.setLayout(layout)
-hsplit = pg.QtGui.QSplitter(pg.QtCore.Qt.Horizontal)
+hsplit = QtWidgets.QSplitter(pg.QtCore.Qt.Horizontal)
 layout.addWidget(hsplit, 0, 0)
-vsplit = pg.QtGui.QSplitter(pg.QtCore.Qt.Vertical)
+vsplit = QtWidgets.QSplitter(pg.QtCore.Qt.Vertical)
 hsplit.addWidget(vsplit)
-w1 = pg.QtGui.QWidget()
-w1l = pg.QtGui.QGridLayout()
+w1 = QtWidgets.QWidget()
+w1l = QtWidgets.QGridLayout()
 w1.setLayout(w1l)
 vsplit.addWidget(w1)
 
 # Button for loading .dat file
-load_btn = pg.QtGui.QPushButton("Load...")
+load_btn = QtWidgets.QPushButton("Load...")
 w1l.addWidget(load_btn, 0, 0)
 
 # Tree for displaying .pul structure
-tree = pg.QtGui.QTreeWidget()
+tree = QtWidgets.QTreeWidget()
 tree.setHeaderLabels(['Node', 'Label'])
 tree.setColumnWidth(0, 200)
 w1l.addWidget(tree, 1, 0)
@@ -48,7 +49,7 @@ win.show()
 
 def load_clicked():
     # Display a file dialog to select a .dat file
-    file_name = pg.QtGui.QFileDialog.getOpenFileName()
+    file_name = QtWidgets.QFileDialog.getOpenFileName()[0]
     if file_name == '':
         return
     load(file_name)
@@ -92,7 +93,7 @@ def update_tree(root_item, index):
         node_label = node.Label
     except AttributeError:
         node_label = ''
-    item = pg.QtGui.QTreeWidgetItem([node_type, node_label])
+    item = QtWidgets.QTreeWidgetItem([node_type, node_label])
     root_item.addChild(item)
     item.node = node
     item.index = index

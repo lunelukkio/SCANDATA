@@ -7,7 +7,7 @@ Created on Wed Sep 27 11:47:25 2023
 
 from abc import ABCMeta, abstractmethod
 from SCANDATA.model.value_object import FramesData, ImageData, TraceData
-from SCANDATA.model.file_io import TsmFileIo, DaFileIo
+from SCANDATA.model.file_io import TsmFileIo, DaFileIo, HekaFileIO
 
 """
 Entity
@@ -23,7 +23,7 @@ class Experiments:   # entity
 
         self.__txt_data = builder.get_infor()
         self.__frames_dict = builder.get_frame()  # {FramsData:val_obj}
-        self.__image_dict = builder.get_image()   # ImageData:val_obj}
+        self.__image_dict = builder.get_image()   # {ImageData:val_obj}
         self.__trace_dict = builder.get_trace()  # {Trace_Data:val_obj}
         
 
@@ -44,6 +44,8 @@ class Experiments:   # entity
             raise Exception("Select a .tsm file instead of a .tbn file!!!")
         elif filename_obj.extension == ".da":
             return DaBuilderFactory()
+        elif filename_obj.extension == ".dat":
+            return HekaBuilderFactory()
         else:
             raise Exception("This file is an undefineded file!!!")
 
@@ -105,6 +107,10 @@ class TsmBuilderFactory(BuilderFactory):
 class DaBuilderFactory(BuilderFactory):
     def create_builder(self, filename_obj):
         return DaBuilder(filename_obj)
+    
+class HekaBuilderFactory(BuilderFactory):
+    def create_builder(self, filename_obj):
+        return HekaBuilder(filename_obj)
 
 
 class Builder(metaclass=ABCMeta):
@@ -257,3 +263,28 @@ class DaBuilder(Builder):
     def get_default_data_structure(self):
         return self.__default_data_structure
     
+class HekaBuilder(Builder):
+    def __init__(self, filename_obj):
+        file_io = HekaFileIO(filename_obj)
+        
+        # get and set data from files
+        self.data_infor_dict = dict(zip("Meta_data", file_io.get_infor()))   # make an interval dict
+        self.frames = None
+        self.image = None
+        self.elec_data = file_io.get_1d()
+        print(self.data_infor_dict)
+
+        def get_infor(self, filename_obj):
+            return self.data_infor_dict
+
+        def get_frame(self, filename_obj):
+            print("No frame data")
+            
+        def get_image(self, filename_obj):
+            print("No image data")
+            
+        def get_trace(self, filename_obj):
+            return self.elec_data
+            
+        def get_default_data_structure(self, filename_obj):
+            raise NotImplementedError()

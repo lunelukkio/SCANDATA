@@ -3,16 +3,27 @@
 Created on Tue Sep 12 17:20:25 2023
 
 @author: lunelukkio@gmail.com
+
+See def __factory_selector in Experiments class
+see builder factory and builder classes
 """
+
+import sys
+sys.path.append('../heka_reader-master')
+
 import numpy as np
+try:
+    from heka_reader import Bundle
+except:
+    pass
     
 class TsmFileIo:
     #load a .tsn file
-    def __init__(self, filename, num_fluo_ch=2):
+    def __init__(self, filename_obj, num_fluo_ch=2):
         # about file
-        self.filename = filename.name
-        self.file_path = filename.path
-        self.full_filename = filename.fullname
+        self.filename = filename_obj.name
+        self.file_path = filename_obj.path
+        self.full_filename = filename_obj.fullname
         self.header = 0 # byte: it needs to chage to str [self.header.decode()]
         
         #about fluo frames
@@ -34,7 +45,7 @@ class TsmFileIo:
         # read data
         self.read_infor()
         self.read_data()
-        self.elec_data_obj = TbnFileIo(filename, 
+        self.elec_data_obj = TbnFileIo(filename_obj, 
                                    self.full_frame_interval, 
                                    self.num_full_frames)
         
@@ -163,11 +174,11 @@ class TsmFileIo:
 
         
 class TbnFileIo:
-    def __init__(self, filename, full_frame_interval, num_full_frames):
+    def __init__(self, filename_obj, full_frame_interval, num_full_frames):
         # about file
-        self.filename = filename.name
-        self.file_path = filename.path
-        self.full_filename = filename.fullname
+        self.filename = filename_obj.name
+        self.file_path = filename_obj.path
+        self.full_filename = filename_obj.fullname
         
         # from a .tsm file
         self.full_frame_interval = full_frame_interval
@@ -241,11 +252,11 @@ class TbnFileIo:
         
 class DaFileIo:
     #load a .da file
-    def __init__(self, filename, num_fluo_ch=2):
+    def __init__(self, filename_obj, num_fluo_ch=2):
         # about file
-        self.filename = filename.name
-        self.file_path = filename.path
-        self.full_filename = filename.fullname
+        self.filename = filename_obj.name
+        self.file_path = filename_obj.path
+        self.full_filename = filename_obj.fullname
         self.header = 0 # byte: it needs to chage to str [self.header.decode()]
         
         #about fluo frames
@@ -398,5 +409,26 @@ class DaFileIo:
         print('full_3D_size = ' + str(self.full_3D_size))
         print('ch_3D_size = ' + str(self.ch_3D_size))
         print('data_pixel = ' + str(self.data_pixel))
+        
+class HekaFileIO:
+    def __init__(self, filename_obj):
+        filename = filename_obj.name
+        file_path = filename_obj.path
+        full_filename = filename_obj.fullname
+        self.bundle = Bundle(full_filename)
+        
+        self.trace = bundle.pul[group_ind][series_ind][sweep_ind][trace_ind]
+        self.data = bundle.data[group_id, series_id, sweep_ind, trace_ind]
+        
+        print("4444444444444444444")
+        print(trace)
+        
+    def get_infor(self):
+        return self.trace
+    
+    
+    def get_1d(self):
+        return self.data
+        
     
 

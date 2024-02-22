@@ -631,7 +631,6 @@ class Bundle(object):
     def __init__(self, file_name):
         self.file_name = file_name
         fh = open(file_name, 'rb')
-        
         # Read header assuming little endiam
         endian = '<'
         self.header = BundleHeader(fh, endian)
@@ -651,7 +650,7 @@ class Bundle(object):
             item.instance = None
             ext = item.Extension
             self.catalog[ext] = item
-            
+        print(self.catalog)
         fh.close()
 
     @property

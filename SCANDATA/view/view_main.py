@@ -10,11 +10,12 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.filedialog
 import json
+from SCANDATA.common_class import WholeFilename
+from SCANDATA.controller.controller_main import MainController, AiController
 
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-from SCANDATA.common_class import WholeFilename
-from SCANDATA.controller.controller_main import MainController, AiController
+
         
 
 class DataWindow(tk.Frame):
