@@ -6,19 +6,100 @@ lunelukkio@gmail.com
 main for view
 """
 
+
+import json
+import sys
+from SCANDATA.common_class import WholeFilename
+from SCANDATA.controller.controller_main import MainController, AiController
+try:
+    from PyQt5 import QtWidgets, QtCore
+    import pyqtgraph as pg
+except:
+    pass
 import tkinter as tk
 from tkinter import ttk
 import tkinter.filedialog
-import json
-from SCANDATA.common_class import WholeFilename
-from SCANDATA.controller.controller_main import MainController, AiController
-
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+    
 
+class QtDataWindow(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.__main_controller = MainController(self)
+        self.setWindowTitle('SCANDATA')
+
+
+        # import a JSON setting file
+        try:
+            with open("../setting/data_window_setting.json", "r") as json_file:
+                setting = json.load(json_file)
+        except:
+            with open("./setting/data_window_setting.json", "r") as json_file:
+                setting = json.load(json_file)
+
+        # window color, position and size
+        self.setStyleSheet("background-color: " + 
+                           setting["main_window"]["color"] + 
+                           ";")
+        self.setGeometry(setting["main_window"]["window_posX"], 
+                         setting["main_window"]["window_posY"],
+                         setting["main_window"]["geometryX"], 
+                         setting["main_window"]["geometryY"])
         
+        # set sentral widget
+        centralWidget = QtWidgets.QWidget()
+        self.setCentralWidget(centralWidget)
+        mainLayout = QtWidgets.QVBoxLayout(centralWidget)
 
-class DataWindow(tk.Frame):
+        # image window
+        self.imageView = pg.ImageView()
+        self.imageView.ui.histogram.hide()  # hide contrast bar
+        self.imageView.ui.menuBtn.hide()  # hide a menu button
+        self.imageView.ui.roiBtn.hide() # hide a ROI button
+        view = self.imageView.getView()
+        view.setBackgroundColor(setting["main_window"]["color"])
+        
+        self.horizontalSplitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
+        self.verticalSplitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
+
+        self.plot1 = pg.PlotWidget()
+        self.plot2 = pg.PlotWidget()
+        self.verticalSplitter.addWidget(self.plot1)
+        self.verticalSplitter.addWidget(self.plot2)
+        
+        self.plot1.setBackground("white")
+        self.plot2.setBackground("white")
+        self.plot1.getAxis('bottom').setPen(pg.mkPen(color=(0, 0, 0), width=2))
+        self.plot1.getAxis('left').setPen(pg.mkPen(color=(0, 0, 0), width=2))
+        self.plot2.getAxis('bottom').setPen(pg.mkPen(color=(0, 0, 0), width=2))
+        self.plot2.getAxis('left').setPen(pg.mkPen(color=(0, 0, 0), width=2))
+        self.plot2.setLabel('bottom', 'Time (ms)', color='black', size=20, width=2)
+
+        self.horizontalSplitter.addWidget(self.imageView)
+        self.horizontalSplitter.addWidget(self.verticalSplitter)
+
+        mainLayout.addWidget(self.horizontalSplitter)
+
+        self.horizontalSplitter.setSizes([600, 1000])
+        self.verticalSplitter.setSizes([450, 150])
+        
+        load_btn = QtWidgets.QPushButton("Load...")
+        mainLayout.addWidget(load_btn)
+        load_btn.clicked.connect(lambda: self.open_file())
+
+    def open_file(self, filename_obj=None):
+        filename_obj = self.__main_controller.open_file(filename_obj)  # make a model and get filename obj
+        self.default_view_data(filename_obj.name)
+        self.__main_controller.update()
+        self.__main_controller.print_infor()
+        
+        # set image view update. No need!!!!!!
+        self.__main_controller.ax_update_flag("IMAGE_AXES", True)
+        self.__main_controller.ax_update_flag("FLUO_AXES", True)
+        self.__main_controller.ax_update_flag("ELEC_AXES", True)
+
+class TkDataWindow(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.pack()
@@ -35,7 +116,10 @@ class DataWindow(tk.Frame):
         self.my_color = setting["main_window"]["color"]
         
         # for data window
-        master.geometry(setting["main_window"]["geometry"])
+        x = str(setting["main_window"]["geometryX"])
+        y = str(setting["main_window"]["geometryY"])
+        
+        master.geometry(x + "x" + y)
         master.configure(background=self.my_color)
         master.title('ScanData')
         
@@ -374,7 +458,7 @@ if __name__ == '__main__':
     filename_obj = WholeFilename(fullname)
     root = tk.Tk()
     root.title("SCANDATA")
-    view = DataWindow(root)
+    view = TkDataWindow(root)
     view.open_file(filename_obj)
     root.mainloop()
     

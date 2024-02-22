@@ -1,6 +1,10 @@
 {
  "main_window": {
-     "geometry" : "1400x700",
+     "window_posX": 100,
+     "window_posY": 100,
+     "geometryX" : 1400,
+     "geometryY" : 700,
+     
      "color"    : "#BCD2EE"
      
  }

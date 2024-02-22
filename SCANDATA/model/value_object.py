@@ -15,7 +15,7 @@ import inspect
 """
 Value object
 """
-
+    
 class FramesData:
     def __init__(self, val: np.ndarray, interval = 0, pixel_size = [0, 0], data_type=None):  # need *args, **kwargs for constracting
         if val.ndim != 3: 
@@ -62,7 +62,7 @@ class FramesData:
     
     def show_data(self, frame_num=0, plt=plt) -> object:  # plt shold be an axes in a view class object = AxesImage
         try:
-            return
+            return plt.setImage(self.__data[:, :, frame_num])
         except:
             return plt.imshow(self.__data[:, :, frame_num], cmap='gray', interpolation='none')
     
@@ -107,7 +107,10 @@ class ImageData:
         return self.__data_type
     
     def show_data(self, plt=plt) -> object:    # plt shold be an axes in a view class object = AxesImage
-        return plt.imshow(self.__data, cmap='gray', interpolation='none')
+        try:
+            return plt.setImage(self.__data)    
+        except:
+            return plt.imshow(self.__data, cmap='gray', interpolation='none')
     
     
 class TraceData:
@@ -224,10 +227,12 @@ class TraceData:
     def check_length(self, data: object) -> bool:
         return bool(self.__length == data.length)
     
-    def show_data(self, plt=plt) -> list:  # plt shold be an axes in a view class object = [matplotlib.lines.Line2D]
-        return plt.plot(self.__time, self.__data ,linewidth=0.7) 
+    def show_data(self, plt=plt) -> list:  # plt shold be an axes in a view class object = [matplotlib.lines.Line2D]   
+        try:
+            return plt.plot(self.__time, self.__data) 
+        except:    
+            return plt.plot(self.__time, self.__data ,linewidth=0.7) 
 
-    
 
 """
 Value object for controller

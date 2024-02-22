@@ -30,7 +30,6 @@ class AxesController(metaclass=ABCMeta):
         try:
             with open("../setting/axes_data_setting.json", "r") as json_file:
                 setting = json.load(json_file)
-                
         except:
             with open("./setting/axes_data_setting.json", "r") as json_file:
                 setting = json.load(json_file)

@@ -10,6 +10,11 @@ import unittest
 from SCANDATA.common_class import WholeFilename
 from SCANDATA.model.value_object import ImageData
 from SCANDATA.model.file_io import TsmFileIo
+try:
+    import pyqtgraph as pg
+    from PyQt5.QtWidgets import QApplication, QMainWindow
+except:
+    pass
 
 
 filename_obj = WholeFilename('..\\220408\\20408B002.tsm')  # this isa a value object
@@ -28,7 +33,16 @@ class Test(unittest.TestCase):
         
         test = ImageData(data)
         
-        test.show_data()
+
+        
+        try:
+            app = QApplication([])
+            image_view = pg.ImageView()
+            test.show_data(image_view)
+            image_view.show()
+            app.exec_()
+        except:
+            test.show_data()
 
 
 if __name__ == '__main__':

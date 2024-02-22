@@ -650,7 +650,6 @@ class Bundle(object):
             item.instance = None
             ext = item.Extension
             self.catalog[ext] = item
-        print(self.catalog)
         fh.close()
 
     @property

@@ -6,10 +6,14 @@ Created on Mon Oct  2 13:42:38 2023
 """
 
 import os
+import sys
 import glob
 import copy
 import re
-import tkinter as tk
+try:
+    from PyQt5.QtWidgets import QFileDialog, QApplication
+except:
+    import tkinter as tk
 
 class FileService:
     def open_file(self, *filename):  # it can catch variable num of filenames.
@@ -35,15 +39,32 @@ class FileService:
     
     @staticmethod
     def get_fullname(event=None):
-        # open file dialog
-        fullname = tk.filedialog.askopenfilename(
-            initialdir = os.getcwd(), # current dir
-            filetypes=(('All files', '*.*'), 
-                       ('Tsm files', '*.tsm'),
-                       ('Da files', '*.da'), 
-                       ('Axon files', '*.abf'),
-                       ('WinCP files', '*.wcp')
-                      ))
+        
+        try:
+            app = QApplication.instance()
+            if app is None:
+                app = QApplication(sys.argv)
+
+            fullname, _ = QFileDialog.getOpenFileName(
+            None,
+            "Open File",
+            os.getcwd(),
+            "All files (*.*);;"
+            "Tsm files (*.tsm);;"
+            "Da files (*.da);;"
+            "Axon files (*.abf);;"
+            "WinCP files (*.wcp)"
+            )
+        except:
+            # open file dialog
+            fullname = tk.filedialog.askopenfilename(
+                initialdir = os.getcwd(), # current dir
+                filetypes=(('All files', '*.*'), 
+                           ('Tsm files', '*.tsm'),
+                           ('Da files', '*.da'), 
+                           ('Axon files', '*.abf'),
+                           ('WinCP files', '*.wcp')
+                          ))
         return fullname
 
 
