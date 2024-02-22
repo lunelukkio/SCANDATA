@@ -144,6 +144,9 @@ class MainController(ControllerInterface):
         self.__singleton_key_dict.copy_dict(self.__model.get_default_data_structure(filename_key))
         # set filename key to key_dict
         self.__singleton_key_dict.set_filename(filename_key)
+        
+        self.__default_view_data(filename_key)
+        
         if filename_obj is None:
             print("Failed to open the file")
         else:
@@ -186,6 +189,52 @@ class MainController(ControllerInterface):
         
     def set_operating_controller_val(self, controller_key, ch_key, bool_val=None):
         self.__operating_controller_set.set_val(controller_key, ch_key, bool_val)
+        
+    def __default_view_data(self, filename_key):
+        print("=============================================")
+        print("========== Start default settings. ==========")
+        print("=============================================")
+        
+        self.set_observer("ROI0", "FLUO_AXES")   #background for bg_comp, (controller_key, AXES number)
+        self.set_observer("ROI1", "FLUO_AXES")
+        self.set_observer("IMAGE_CONTROLLER0", "IMAGE_AXES")  # base image for difference image
+        self.set_observer("IMAGE_CONTROLLER1", "IMAGE_AXES")  # for difference image
+        self.set_observer("ELEC_TRACE_CONTROLLER0", "ELEC_AXES")  # no use
+        self.set_observer("ELEC_TRACE_CONTROLLER1", "ELEC_AXES")
+
+        # set axes controllers view flages
+        self.set_view_flag("ALL", "ALL", "ALL", False)  # (ax, controller_key, data_key, value) 
+        self.set_view_flag("FLUO_AXES", "ROI1", "CH1", True)  # (ax, controller_key, data_key, value)
+        self.set_view_flag("IMAGE_AXES", "IMAGE_CONTROLLER1", "CH1", True)  # (ax, controller_key, data_key, value) 
+        self.set_view_flag("ELEC_AXES", "ELEC_TRACE_CONTROLLER1", "ELEC0", True)  # (ax, controller_key, data_key, value) 
+        # set maincontroller keys "CH1", "ELEC0"
+        self.set_operating_controller_val("ALL", "ALL", False)  # All flag is False
+        self.set_operating_controller_val("ROI0", "CH1", True)  # This is for difference image
+        self.set_operating_controller_val("ROI0", "CH2", True)  # This is for difference image
+        self.set_operating_controller_val("ROI1", "CH1", True)  # This is for difference image
+        self.set_operating_controller_val("ROI1", "CH2", True)  # This is for difference image
+        self.set_operating_controller_val("IMAGE_CONTROLLER1", "CH1", True)  # This is for a cell image
+        self.set_operating_controller_val("IMAGE_CONTROLLER1", "CH2", True)  # This is for a cell image
+        self.set_operating_controller_val("ELEC_TRACE_CONTROLLER1", "ELEC0", True)  # This is for a elec trace
+
+        """ about mod"""
+        self.set_mod_val("BGCOMP", filename_key)
+        self.set_mod_key("ROI1", "DFOVERF")
+        self.set_mod_key("ROI1", "BGCOMP")
+        # Set ROI0 as background in ROI1 controller
+        # send background ROI. but it done outside of the model.
+        #background_dict = self.get_controller_data("ROI0")
+        #self.set_mod_val("ROI1", "BGCOMP", background_dict)
+        # Turn on the flag of BGCOMP for ROI1.
+        #self.set_mod_key("ROI1", "BGCOMP")
+        """
+        # set background roi to the mod class
+        self.set_mod_val("ROI1", "BgCompMod")
+        
+        # set mod
+        self.set_mod_key("ROI2", "BGCOMP")
+        """
+        print("========== End of default settings ==========")
     
     def get_memory_infor(self):
         pid = os.getpid()

@@ -53,30 +53,30 @@ class QtDataWindow(QtWidgets.QMainWindow):
         mainLayout = QtWidgets.QVBoxLayout(centralWidget)
 
         # image window
-        self.imageView = pg.ImageView()
-        self.imageView.ui.histogram.hide()  # hide contrast bar
-        self.imageView.ui.menuBtn.hide()  # hide a menu button
-        self.imageView.ui.roiBtn.hide() # hide a ROI button
-        view = self.imageView.getView()
+        image_ax = pg.ImageView()
+        image_ax.ui.histogram.hide()  # hide contrast bar
+        image_ax.ui.menuBtn.hide()  # hide a menu button
+        image_ax.ui.roiBtn.hide() # hide a ROI button
+        view = image_ax.getView()
         view.setBackgroundColor(setting["main_window"]["color"])
         
         self.horizontalSplitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
         self.verticalSplitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
 
-        self.plot1 = pg.PlotWidget()
-        self.plot2 = pg.PlotWidget()
-        self.verticalSplitter.addWidget(self.plot1)
-        self.verticalSplitter.addWidget(self.plot2)
+        trace_ax1 = pg.PlotWidget()
+        trace_ax2 = pg.PlotWidget()
+        self.verticalSplitter.addWidget(trace_ax1)
+        self.verticalSplitter.addWidget(trace_ax2)
         
-        self.plot1.setBackground("white")
-        self.plot2.setBackground("white")
-        self.plot1.getAxis('bottom').setPen(pg.mkPen(color=(0, 0, 0), width=2))
-        self.plot1.getAxis('left').setPen(pg.mkPen(color=(0, 0, 0), width=2))
-        self.plot2.getAxis('bottom').setPen(pg.mkPen(color=(0, 0, 0), width=2))
-        self.plot2.getAxis('left').setPen(pg.mkPen(color=(0, 0, 0), width=2))
-        self.plot2.setLabel('bottom', 'Time (ms)', color='black', size=20, width=2)
+        trace_ax1.setBackground("white")
+        trace_ax2.setBackground("white")
+        trace_ax1.getAxis('bottom').setPen(pg.mkPen(color=(0, 0, 0), width=2))
+        trace_ax1.getAxis('left').setPen(pg.mkPen(color=(0, 0, 0), width=2))
+        trace_ax2.getAxis('bottom').setPen(pg.mkPen(color=(0, 0, 0), width=2))
+        trace_ax2.getAxis('left').setPen(pg.mkPen(color=(0, 0, 0), width=2))
+        trace_ax2.setLabel('bottom', 'Time (ms)', color='black', size=20, width=2)
 
-        self.horizontalSplitter.addWidget(self.imageView)
+        self.horizontalSplitter.addWidget(image_ax)
         self.horizontalSplitter.addWidget(self.verticalSplitter)
 
         mainLayout.addWidget(self.horizontalSplitter)
@@ -87,10 +87,15 @@ class QtDataWindow(QtWidgets.QMainWindow):
         load_btn = QtWidgets.QPushButton("Load...")
         mainLayout.addWidget(load_btn)
         load_btn.clicked.connect(lambda: self.open_file())
+        print("44444444444444444444")
+        print(image_ax)
+        
+        self.__main_controller.add_axes("IMAGE", "IMAGE_AXES", self, image_ax)  # ax_dict["ImageAxes"]
+        self.__main_controller.add_axes("TRACE", "FLUO_AXES",self, trace_ax1)
+        self.__main_controller.add_axes("TRACE", "ELEC_AXES",self, trace_ax2)
 
     def open_file(self, filename_obj=None):
-        filename_obj = self.__main_controller.open_file(filename_obj)  # make a model and get filename obj
-        self.default_view_data(filename_obj.name)
+        self.__main_controller.open_file(filename_obj)  # make a model and get filename obj
         self.__main_controller.update()
         self.__main_controller.print_infor()
         
@@ -285,8 +290,7 @@ class TkDataWindow(tk.Frame):
 
         
     def open_file(self, filename_obj=None):
-        filename_obj = self.__main_controller.open_file(filename_obj)  # make a model and get filename obj
-        self.default_view_data(filename_obj.name)
+        self.__main_controller.open_file(filename_obj)  # make a model and get filename obj
         self.__main_controller.update()
         self.__main_controller.print_infor()
         
@@ -295,52 +299,6 @@ class TkDataWindow(tk.Frame):
         self.__main_controller.ax_update_flag("IMAGE_AXES", True)
         self.__main_controller.ax_update_flag("FLUO_AXES", True)
         self.__main_controller.ax_update_flag("ELEC_AXES", True)
-        
-    def default_view_data(self, filename_key):
-        print("=============================================")
-        print("========== Start default settings. ==========")
-        print("=============================================")
-        
-        self.__main_controller.set_observer("ROI0", "FLUO_AXES")   #background for bg_comp, (controller_key, AXES number)
-        self.__main_controller.set_observer("ROI1", "FLUO_AXES")
-        self.__main_controller.set_observer("IMAGE_CONTROLLER0", "IMAGE_AXES")  # base image for difference image
-        self.__main_controller.set_observer("IMAGE_CONTROLLER1", "IMAGE_AXES")  # for difference image
-        self.__main_controller.set_observer("ELEC_TRACE_CONTROLLER0", "ELEC_AXES")  # no use
-        self.__main_controller.set_observer("ELEC_TRACE_CONTROLLER1", "ELEC_AXES")
-
-        # set axes controllers view flages
-        self.__main_controller.set_view_flag("ALL", "ALL", "ALL", False)  # (ax, controller_key, data_key, value) 
-        self.__main_controller.set_view_flag("FLUO_AXES", "ROI1", "CH1", True)  # (ax, controller_key, data_key, value)
-        self.__main_controller.set_view_flag("IMAGE_AXES", "IMAGE_CONTROLLER1", "CH1", True)  # (ax, controller_key, data_key, value) 
-        self.__main_controller.set_view_flag("ELEC_AXES", "ELEC_TRACE_CONTROLLER1", "ELEC0", True)  # (ax, controller_key, data_key, value) 
-        # set maincontroller keys "CH1", "ELEC0"
-        self.__main_controller.set_operating_controller_val("ALL", "ALL", False)  # All flag is False
-        self.__main_controller.set_operating_controller_val("ROI0", "CH1", True)  # This is for difference image
-        self.__main_controller.set_operating_controller_val("ROI0", "CH2", True)  # This is for difference image
-        self.__main_controller.set_operating_controller_val("ROI1", "CH1", True)  # This is for difference image
-        self.__main_controller.set_operating_controller_val("ROI1", "CH2", True)  # This is for difference image
-        self.__main_controller.set_operating_controller_val("IMAGE_CONTROLLER1", "CH1", True)  # This is for a cell image
-        self.__main_controller.set_operating_controller_val("IMAGE_CONTROLLER1", "CH2", True)  # This is for a cell image
-        self.__main_controller.set_operating_controller_val("ELEC_TRACE_CONTROLLER1", "ELEC0", True)  # This is for a elec trace
-
-        """ about mod"""
-        self.__main_controller.set_mod_val("BGCOMP", filename_key)
-        self.__main_controller.set_mod_key("ROI1", "DFOVERF")
-        self.__main_controller.set_mod_key("ROI1", "BGCOMP")
-        # Set ROI0 as background in ROI1 controller
-        # send background ROI. but it done outside of the model.
-        #background_dict = self.__main_controller.get_controller_data("ROI0")
-        #self.__main_controller.set_mod_val("ROI1", "BGCOMP", background_dict)
-        # Turn on the flag of BGCOMP for ROI1.
-        #self.__main_controller.set_mod_key("ROI1", "BGCOMP")
-        """
-        # set background roi to the mod class
-        self.__main_controller.set_mod_val("ROI1", "BgCompMod")
-        
-        # set mod
-        self.__main_controller.set_mod_key("ROI2", "BGCOMP")
-        """
-        print("========== End of default settings ==========")
 
     def select_ch(self, ch_key):
         # send flags to ax.

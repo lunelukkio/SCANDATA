@@ -26,7 +26,7 @@ class Main:
         if view == "qt":
             try:
                 import PyQt5
-                print(f"PyQt5 is installed. Version: {PyQt5.QtCore.QT_VERSION_STR}")
+                #print(f"PyQt5 is installed. Version: {PyQt5.QtCore.QT_VERSION_STR}")
                 scandata = PyQt5.QtWidgets.QApplication(sys.argv)
                 mainWindow = QtDataWindow()
                 mainWindow.show()
@@ -36,13 +36,13 @@ class Main:
             except ImportError:
                 try:
                     import PyQt6
-                    print(f"PyQt6 is installed. Version: {PyQt6.QtCore.QT_VERSION_STR}")
+                    #print(f"PyQt6 is installed. Version: {PyQt6.QtCore.QT_VERSION_STR}")
                 except ImportError:
                     print("Neither PyQt5 nor PyQt6 is installed.")
                     try:
                         import tkinter as tk
-                        print("tkinter is installed.")
-                        print("Use Tkinter")
+                        #print("tkinter is installed.")
+                        #print("Use Tkinter")
                         root = tk.Tk()
                         root.title("SCANDATA")
                         TkDataWindow(root)
@@ -52,8 +52,8 @@ class Main:
                     
         elif view == "tk":
             import tkinter as tk
-            print("tkinter is installed.")
-            print("Use Tkinter")
+            #print("tkinter is installed.")
+            #print("Use Tkinter")
             root = tk.Tk()
             root.title("SCANDATA")
             TkDataWindow(root)
