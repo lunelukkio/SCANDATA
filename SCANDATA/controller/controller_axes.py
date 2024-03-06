@@ -7,8 +7,8 @@ Created on Fri Dec 15 09:01:53 2023
 
 from abc import ABCMeta, abstractmethod
 from SCANDATA.common_class import FlagDict
-import matplotlib.patches as patches
-from matplotlib.image import AxesImage
+#import matplotlib.patches as patches
+#from matplotlib.image import AxesImage
 import json
 
 
@@ -97,6 +97,7 @@ class TraceAxesController(AxesController):
             for controller_key in controller_true_dict:
                 ch_data_dict = self._model.get_data(filename_key, controller_key)
                 if ch_data_dict is None:
+                    print("Ch data dict is None")
                     return
                 # get only True ch data flag from the dict.
                 ch_true_list = self._view_flag_set.find_true_ch_keys(controller_key)
@@ -110,6 +111,15 @@ class TraceAxesController(AxesController):
                         ax_data.set_color(self._ch_color[ch_key])
                     elif self.mode == "ROI_MODE":
                         ax_data.set_color(self._ch_color[controller_key])
+                        
+                        
+        
+            plot.setLabels(bottom=('Time', trace.XUnit), left=(trace.Label, trace.YUnit))
+
+            data = bundle.data[index]
+            time = np.linspace(trace.XStart, trace.XStart + trace.XInterval * (len(data)-1), len(data)) 
+            plot.plot(time, data, pen='k')
+            
                         
     def set_marker(self):
         # get flag data from FLUO_AXES
@@ -137,7 +147,12 @@ class TraceAxesController(AxesController):
     # override
     def update(self):  # It is overrided by ImageAx
         if self.update_flag is True:
-            self._ax_obj.cla()  # clear ax
+            self._ax_obj.clear()
+            self._ax_obj.setBackground('w')
+
+
+            
+
             self.set_view_data()  # See each subclass.
             self.set_marker() # for ROIBOX
             self._ax_obj.relim()

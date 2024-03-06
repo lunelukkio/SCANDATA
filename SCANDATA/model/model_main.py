@@ -81,6 +81,9 @@ class ModelInterface(metaclass=ABCMeta):
     def get_default_data_structure(self, filename_key):
         raise NotImplementedError()
         
+    def print_infor(self, filename_key):
+        raise NotImplementedError()
+        
     @abstractmethod
     def help(self):
         raise NotImplementedError() 
@@ -183,6 +186,7 @@ class DataService(ModelInterface):
         controller_key = controller_key.upper()
         data_dict = self.__data_repository.find_by_name(filename_key, controller_key)
         if data_dict is None:
+            print(f"Can't find {filename_key}, {controller_key}")
             return
         # apply mod 
         if self.__mod_flag is True:
@@ -311,7 +315,6 @@ class RepositoryInterface(metaclass=ABCMeta):
             #print(f"Found {key} in {self.__class__.__name__}.")
             return self._data[key]
         else:
-            print(f"There is no {key} in {self.__class__.__name__}. Try to make a new {key}.")
             return None
     
     def delete(self, key: str):

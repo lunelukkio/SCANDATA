@@ -7,8 +7,7 @@ Created on Sun Jan  1 10:04:06 2023
 
 import numpy as np
 import pyqtgraph as pg
-from PyQt5.QtWidgets import QApplication, QMainWindow
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as pg   # for using matplotlib
 import inspect
 
         
@@ -60,7 +59,7 @@ class FramesData:
     def data_type(self) -> str:
         return self.__data_type
     
-    def show_data(self, frame_num=0, plt=plt) -> object:  # plt shold be an axes in a view class object = AxesImage
+    def show_data(self, frame_num=0, plt=pg) -> object:  # plt shold be an axes in a view class object = AxesImage
         try:
             return plt.setImage(self.__data[:, :, frame_num])
         except:
@@ -105,8 +104,8 @@ class ImageData:
     @property
     def data_type(self) -> str:
         return self.__data_type
-    
-    def show_data(self, plt=plt) -> object:    # plt shold be an axes in a view class object = AxesImage
+
+    def show_data(self, plt=pg) -> object:    # plt shold be an axes in a view class object = AxesImage
         try:
             return plt.setImage(self.__data)    
         except:
@@ -227,7 +226,7 @@ class TraceData:
     def check_length(self, data: object) -> bool:
         return bool(self.__length == data.length)
     
-    def show_data(self, plt=plt) -> list:  # plt shold be an axes in a view class object = [matplotlib.lines.Line2D]   
+    def show_data(self, plt=pg) -> list:  # plt shold be an axes in a view class object = [matplotlib.lines.Line2D]   
         try:
             return plt.plot(self.__time, self.__data) 
         except:    

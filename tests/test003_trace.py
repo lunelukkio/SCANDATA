@@ -9,11 +9,10 @@ import sys
 from SCANDATA.common_class import WholeFilename
 from SCANDATA.model.value_object import TraceData
 from SCANDATA.model.file_io import TsmFileIo
-try:
-    import pyqtgraph as pg
-    from PyQt5.QtWidgets import QApplication, QMainWindow
-except:
-    pass
+import pyqtgraph as pg
+from PyQt5.QtWidgets import QApplication, QMainWindow
+
+
 
 
 filename_obj = WholeFilename('..\\220408\\20408B002.tsm')  # this isa a value object
@@ -37,7 +36,7 @@ class Test(unittest.TestCase):
         
         app = QApplication([])
         #app = pg.mkQApp("My Application")
-        
+
         try:
             plot_window = pg.plot(title="Simple Plot Example")
             test.show_data(plot_window)

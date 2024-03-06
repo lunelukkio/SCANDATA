@@ -11,11 +11,9 @@ import json
 import sys
 from SCANDATA.common_class import WholeFilename
 from SCANDATA.controller.controller_main import MainController, AiController
-try:
-    from PyQt5 import QtWidgets, QtCore
-    import pyqtgraph as pg
-except:
-    pass
+import PyQt5
+from PyQt5 import QtWidgets, QtCore
+import pyqtgraph as pg
 import tkinter as tk
 from tkinter import ttk
 import tkinter.filedialog
@@ -414,11 +412,22 @@ class AiWindow(tk.Frame):
 if __name__ == '__main__':
     fullname = '..\\..\\220408\\20408B002.tsm'
     filename_obj = WholeFilename(fullname)
+    
+    scandata = PyQt5.QtWidgets.QApplication(sys.argv)
+    mainWindow = QtDataWindow()
+    mainWindow.open_file(filename_obj)
+    mainWindow.show()
+    
+    if sys.flags.interactive == 0:
+        scandata.exec_()
+    
+    """
     root = tk.Tk()
     root.title("SCANDATA")
     view = TkDataWindow(root)
     view.open_file(filename_obj)
     root.mainloop()
+    """
     
     print("＝＝＝to do list＝＝＝")
     print("second trace time shift ")

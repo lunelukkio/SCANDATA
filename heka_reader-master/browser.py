@@ -111,6 +111,7 @@ def replot():
     """
     plot.clear()
     data_tree.clear()
+    plot.setBackground('w')
     
     selected = tree.selectedItems()
     if len(selected) < 1:
@@ -129,9 +130,10 @@ def replot():
         
         trace = sel.node
         plot.setLabels(bottom=('Time', trace.XUnit), left=(trace.Label, trace.YUnit))
+
         data = bundle.data[index]
         time = np.linspace(trace.XStart, trace.XStart + trace.XInterval * (len(data)-1), len(data)) 
-        plot.plot(time, data)
+        plot.plot(time, data, pen='k')
 
 
 # replot when ever the user selects a new item    

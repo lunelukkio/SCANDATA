@@ -138,7 +138,19 @@ class MainController(ControllerInterface):
         if filename_obj is None:
             filename_obj = self.__file_service.open_file()
         # make experiments data
-        self.create_experiments(filename_obj) 
+        open_experiments = self.create_experiments(filename_obj) 
+        if open_experiments is True:
+            print("============================================================")
+            print(f"========== Open {filename_obj.name}: suceeded!!! ==========")
+            print("============================================================")
+            self.__model.print_infor()
+            print("")
+        else:
+            print("=============================================")
+            print("========== Failed to open the file ==========")
+            print("=============================================")
+            print("")
+        
         filename_key = filename_obj.name
         # copy default controller names and data names from the model
         self.__singleton_key_dict.copy_dict(self.__model.get_default_data_structure(filename_key))
@@ -147,13 +159,7 @@ class MainController(ControllerInterface):
         
         self.__default_view_data(filename_key)
         
-        if filename_obj is None:
-            print("Failed to open the file")
-        else:
-            print("============================================================")
-            print(f"========== Open {filename_obj.name}: suceeded!!! ==========")
-            print("============================================================")
-            print("")
+
         return filename_obj
     
     def create_experiments(self, filename_obj: object):
@@ -163,8 +169,7 @@ class MainController(ControllerInterface):
         if self.__model == None:
             raise Exception('Failed to create a model.')
         else:
-            print('----------> MainController: Suceeded to read data from data files.')
-            print('')
+            return True
         
     def get_controller_infor(self, controller_key=None) -> dict:
         if controller_key is None:
