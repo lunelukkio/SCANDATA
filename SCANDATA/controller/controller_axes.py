@@ -104,8 +104,8 @@ class TraceAxesController(AxesController):
                 # Model can recieve not only data_list but also individual ch_key directly.
                 # Model can recieve not only data_list but also individual ch_key directly.
                 for ch_key in ch_true_list:
+                    ax_data = ch_data_dict[ch_key].show_data(self._ax_obj)
 
-                    ax_data, = ch_data_dict[ch_key].show_data(self._ax_obj)
                     # color setting
                     if self.mode == "CH_MODE":
                         ax_data.set_color(self._ch_color[ch_key])
@@ -119,6 +119,8 @@ class TraceAxesController(AxesController):
             data = bundle.data[index]
             time = np.linspace(trace.XStart, trace.XStart + trace.XInterval * (len(data)-1), len(data)) 
             plot.plot(time, data, pen='k')
+            plot_window = pg.plot(title="Simple Plot Example")
+            test.show_data(plot_window)
             
                         
     def set_marker(self):
