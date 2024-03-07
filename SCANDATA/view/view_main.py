@@ -85,8 +85,6 @@ class QtDataWindow(QtWidgets.QMainWindow):
         load_btn = QtWidgets.QPushButton("Load...")
         mainLayout.addWidget(load_btn)
         load_btn.clicked.connect(lambda: self.open_file())
-        print("44444444444444444444")
-        print(image_ax)
         
         self.__main_controller.add_axes("IMAGE", "IMAGE_AXES", self, image_ax)  # ax_dict["ImageAxes"]
         self.__main_controller.add_axes("TRACE", "FLUO_AXES",self, trace_ax1)

@@ -177,7 +177,6 @@ class DataService(ModelInterface):
         controller = self.__user_controller_repository.find_by_name(controller_key)
         ch_data_dict = controller.set_controller_data(experiments_obj, ch_key_list)
         self.__data_repository.save(filename_key, controller_key, ch_data_dict)
-        controller.observer.notify_observer()
         print("----------> Done: set_controller_data")
 
     # return a dict of value objects with filename.
@@ -202,6 +201,20 @@ class DataService(ModelInterface):
         controller = self.__user_controller_repository.find_by_name(controller_key)
         controller.set_observer(observer)
         print("----------> Done: set_observer")
+        
+    def update_observer(self, controller_key=None):
+        if controller_key is None:
+            print("DataService: update_observer (All user controller) ---------->")
+            controller_key_list = self.__user_controller_repository.get_infor()
+            for controller_key in controller_key_list:
+                controller = self.__user_controller_repository.find_by_name(controller_key)
+                controller.observer.notify_observer()
+        else:
+            print(f"DataService: update_observer ({controller_key}) ---------->")
+            controller = self.__user_controller_repository.find_by_name(controller_key)
+            controller.observer.notify_observer()
+        print("----------> Done: update_observer")
+            
 
     # Use this only for a test. return a controller object.
     def get_user_controller(self, controller_key):
@@ -304,7 +317,7 @@ Repository
 # Need refactoring using keys* and recursive function
 class RepositoryInterface(metaclass=ABCMeta):
     def __init__(self):
-        self._data = {}   # {key:entiry}
+        self._data = {}   # {key:entity}
         
     def save(self, key: str, data):
         self._data[key] = data

@@ -158,8 +158,6 @@ class MainController(ControllerInterface):
         self.__singleton_key_dict.set_filename(filename_key)
         
         self.__default_view_data(filename_key)
-        
-
         return filename_obj
     
     def create_experiments(self, filename_obj: object):
@@ -181,7 +179,7 @@ class MainController(ControllerInterface):
     #data_dict (e.g. CH1, ELEC0) shold be bandled because there are always come from the same controller values.
     # Calculate new data with the new controller values
     def update(self, controller=None) -> None:  # "controller" should not have numbers
-        # get a list with filename True.
+        # get a True tag list with filename.
         filename_true_list = self.__operating_controller_set.find_true_filename_keys()
         # get true flag controller list
         controller_true_list = self.__operating_controller_set.find_true_controller_keys(controller)
@@ -191,6 +189,7 @@ class MainController(ControllerInterface):
                 ch_key_list = self.__operating_controller_set.find_true_ch_keys(controller_key)
                 # Model can recieve not only data_list but also individual ch_key directly.
                 self.__model.set_controller_data(filename_key, controller_key, ch_key_list)
+        self.__model.update_observer()
         
     def set_operating_controller_val(self, controller_key, ch_key, bool_val=None):
         self.__operating_controller_set.set_val(controller_key, ch_key, bool_val)
@@ -223,9 +222,11 @@ class MainController(ControllerInterface):
         self.set_operating_controller_val("ELEC_TRACE_CONTROLLER1", "ELEC0", True)  # This is for a elec trace
 
         """ about mod"""
+        """
         self.set_mod_val("BGCOMP", filename_key)
         self.set_mod_key("ROI1", "DFOVERF")
         self.set_mod_key("ROI1", "BGCOMP")
+        """
         # Set ROI0 as background in ROI1 controller
         # send background ROI. but it done outside of the model.
         #background_dict = self.get_controller_data("ROI0")
@@ -240,6 +241,7 @@ class MainController(ControllerInterface):
         self.set_mod_key("ROI2", "BGCOMP")
         """
         print("========== End of default settings ==========")
+        print("")
     
     def get_memory_infor(self):
         pid = os.getpid()
