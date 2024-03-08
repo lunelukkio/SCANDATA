@@ -253,37 +253,34 @@ class MainController(ControllerInterface):
     
     def onclick_axes(self, event, axes_name):
         axes_name = axes_name.upper()
-        if event.dblclick is False:
-            true_flag = self.__operating_controller_set.find_true_controller_keys()
-            #if axes_name == "IMAGE_AXES":
-            if axes_name == "IMAGE_AXES":
-                if event.button == 1:  # left click
-                    x = round(event.xdata)
-                    y = round(event.ydata)
-                    val = [x, y, None, None]
-                    # set roi value in ROI
-                    roi_true_flag = [key for key in true_flag if "ROI" in key]
-                    for controller_key in roi_true_flag:
-                        self.__model.set_controller_val(controller_key, val)
-                    self.update("ROI")
-                elif event.button == 2:
-                    pass
-                # move to next controller
-                elif event.button == 3:
-                    # move and copy ch boolen value
-                    self.__operating_controller_set.next_controller_to_true("ROI")
-                    self.__ax_dict["FLUO_AXES"].next_controller_to_true("ROI")
-                    self.update("ROI")
-            elif axes_name == "FLUO_AXES":
-                if event.inaxes == self.__ax_dict["FLUO_AXES"]:
-                    raise NotImplementedError()
-                elif event.inaxes == self.__ax_dict["ELEC_AXES"]:
-                    raise NotImplementedError()
-            elif axes_name == "ELEC_AXES":
-                raise NotImplementedError() 
-        elif event.dblclick is True:
-            print("Double click is for ----")
-        print('')
+        true_flag = self.__operating_controller_set.find_true_controller_keys()
+
+        if axes_name == "IMAGE_AXES":
+            image_pos = self.__ax_dict["IMAGE_AXES"]._ax_obj.getView().mapSceneToView(event.scenePos())
+            if event.button() == 1:  # left click
+                x = round(image_pos.x())
+                y = round(image_pos.y())
+                val = [x, y, None, None]
+                # set roi value in ROI
+                roi_true_flag = [key for key in true_flag if "ROI" in key]
+                for controller_key in roi_true_flag:
+                    self.__model.set_controller_val(controller_key, val)
+                self.update("ROI")
+            elif event.button() == 2:
+                pass
+            # move to next controller
+            elif event.button() == 3:
+                # move and copy ch boolen value
+                self.__operating_controller_set.next_controller_to_true("ROI")
+                self.__ax_dict["FLUO_AXES"].next_controller_to_true("ROI")
+                self.update("ROI")
+        elif axes_name == "FLUO_AXES":
+            if event.inaxes == self.__ax_dict["FLUO_AXES"]:
+                raise NotImplementedError()
+            elif event.inaxes == self.__ax_dict["ELEC_AXES"]:
+                raise NotImplementedError()
+        elif axes_name == "ELEC_AXES":
+           raise NotImplementedError() 
         
     def change_roi_size(self, val:list):
         controller_true_list = self.__operating_controller_set.find_true_controller_keys("ROI")

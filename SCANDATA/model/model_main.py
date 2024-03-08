@@ -91,11 +91,11 @@ class ModelInterface(metaclass=ABCMeta):
         
 class DataService(ModelInterface):
     def __init__(self):
-        self.__experiments_repository = ExperimentsRepository()
-        self.__user_controller_repository = UserControllerRepository()
+        self.__experiments_repository = Repository()
+        self.__user_controller_repository = Repository()
         self.__data_repository = DataRepository()
         self.__mod_service = ModService(self)
-        self.__mod_flag = True  # This is for test.
+        self.__mod_flag = True # This is for test.
         
     def __create_filename_obj(self, fullname):
         filename_obj = WholeFilename(fullname)
@@ -343,15 +343,10 @@ class RepositoryInterface(metaclass=ABCMeta):
         return self._data
 
 
-class ExperimentsRepository(RepositoryInterface):
+class Repository(RepositoryInterface):
     def __init__(self):
         super().__init__()
 
-        
-class UserControllerRepository(RepositoryInterface):
-    def __init__(self):
-        super().__init__()
-        
         
 class DataRepository(RepositoryInterface):
     def __init__(self):

@@ -52,6 +52,7 @@ class QtDataWindow(QtWidgets.QMainWindow):
 
         # image window
         image_ax = pg.ImageView()
+        self.ax = image_ax
         image_ax.ui.histogram.hide()  # hide contrast bar
         image_ax.ui.menuBtn.hide()  # hide a menu button
         image_ax.ui.roiBtn.hide() # hide a ROI button
@@ -89,6 +90,9 @@ class QtDataWindow(QtWidgets.QMainWindow):
         self.__main_controller.add_axes("IMAGE", "IMAGE_AXES", self, image_ax)  # ax_dict["ImageAxes"]
         self.__main_controller.add_axes("TRACE", "FLUO_AXES",self, trace_ax1)
         self.__main_controller.add_axes("TRACE", "ELEC_AXES",self, trace_ax2)
+
+        # mouse click event
+        image_ax.getView().scene().sigMouseClicked.connect(lambda event: self.__main_controller.onclick_axes(event, "IMAGE_AXES"))
 
     def open_file(self, filename_obj=None):
         self.__main_controller.open_file(filename_obj)  # make a model and get filename obj

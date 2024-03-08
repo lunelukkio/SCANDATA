@@ -7,6 +7,8 @@ Created on Fri Dec 15 09:01:53 2023
 
 from abc import ABCMeta, abstractmethod
 from SCANDATA.common_class import FlagDict
+import pyqtgraph as pg
+from pyqtgraph.Qt import QtWidgets
 #import matplotlib.patches as patches
 #from matplotlib.image import AxesImage
 import json
@@ -20,6 +22,7 @@ class AxesController(metaclass=ABCMeta):
         self._main_controller = main_controller
         self._model = model
         
+        self.ax_item_list = {}  # {ch_key: plot from value_obj, }
         self._marker_obj = {}  # This is for makers in axes windows.
         
         self._view_flag_set = FlagDict()
@@ -105,24 +108,13 @@ class TraceAxesController(AxesController):
                 # Model can recieve not only data_list but also individual ch_key directly.
                 for ch_key in ch_true_list:
                     ax_data = ch_data_dict[ch_key].show_data(self._ax_obj)
-
+                    self.ax_item_list[ch_key] = ax_data
                     # color setting
                     if self.mode == "CH_MODE":
-                        ax_data.set_color(self._ch_color[ch_key])
+                        ax_data.setPen(pg.mkPen(color=self._ch_color[ch_key]))
                     elif self.mode == "ROI_MODE":
-                        ax_data.set_color(self._ch_color[controller_key])
-                        
-                        
-        
-            plot.setLabels(bottom=('Time', trace.XUnit), left=(trace.Label, trace.YUnit))
-
-            data = bundle.data[index]
-            time = np.linspace(trace.XStart, trace.XStart + trace.XInterval * (len(data)-1), len(data)) 
-            plot.plot(time, data, pen='k')
-            plot_window = pg.plot(title="Simple Plot Example")
-            test.show_data(plot_window)
+                        ax_data.setPen(pg.mkPen(color=self._ch_color[controller_key]))
             
-                        
     def set_marker(self):
         # get flag data from FLUO_AXES
         image_canvas, image_axes = self._main_controller.get_canvas_axes("IMAGE_AXES")
@@ -132,8 +124,8 @@ class TraceAxesController(AxesController):
         for controller_key in roi_true_controller:          
             roi_val = self._model.get_controller_val(controller_key).data
             # adjust for image data pixels 0.5
-            box_pos = [roi_val[0]-0.5, 
-                      roi_val[1]-0.5, 
+            box_pos = [roi_val[0], 
+                      roi_val[1], 
                       roi_val[2], 
                       roi_val[3]]
             if controller_key in self._marker_obj:
@@ -142,24 +134,17 @@ class TraceAxesController(AxesController):
                 self._marker_obj[controller_key] = RoiBox(self._controller_color[controller_key])
                 self._marker_obj[controller_key].set_roi(box_pos)
                 # put the ROI BOX on the top of images.
-                self._marker_obj[controller_key].rectangle_obj.set_zorder(1)
-                image_axes.add_patch(self._marker_obj[controller_key].rectangle_obj)
-        image_canvas.draw()
+                self._marker_obj[controller_key].rectangle_obj.setZValue(1)
+                image_axes.addItem(self._marker_obj[controller_key].rectangle_obj)
 
     # override
     def update(self):  # It is overrided by ImageAx
         if self.update_flag is True:
             self._ax_obj.clear()
             self._ax_obj.setBackground('w')
-
-
-            
-
             self.set_view_data()  # See each subclass.
             self.set_marker() # for ROIBOX
-            self._ax_obj.relim()
-            self._ax_obj.autoscale_view()
-            self._canvas.draw()
+            self._ax_obj.autoRange()
         else:
             pass
 
@@ -186,20 +171,14 @@ class ImageAxesController(AxesController):
                 for ch_key in ch_true_list:
                     value_data = ch_data_dict[ch_key]
                     value_data.show_data(self._ax_obj)
+                    self.ax_item_list[ch_key] = value_data
 
     # override    shold be in main conrtoller         
     def update(self) -> None:
         if self.update_flag is True:
             # delete old image objects
-            all_objects = self._ax_obj.get_children()
-            image_obj = [obj for obj in all_objects if isinstance(obj, AxesImage)]
-            print(image_obj)
-            if image_obj:
-                for image in image_obj:
-                    image.remove()
+            self.ax_item_list = {}
             self.set_view_data()  # This belong to Image Controller
-            self._ax_obj.set_axis_off()
-            self._canvas.draw()
         else:
             pass
 
@@ -210,21 +189,13 @@ class RoiBox():
 
     #""" instance method """
     def __init__(self, color):
-        self.__rectangle_obj = patches.Rectangle(xy=(40, 40), 
-                                                 width=1, 
-                                                 height=1,
-                                                 linewidth=0.7,
-                                                 ec=color, 
-                                                 fill=False)
+        self.__rectangle_obj = QtWidgets.QGraphicsRectItem(40, 40, 1, 1)
+        self.__rectangle_obj.setPen(pg.mkPen(color=color, width=0.7))
+        self.__rectangle_obj.setBrush(pg.mkBrush(None))
 
     def set_roi(self, roi_val):
-        x = roi_val[0]
-        y = roi_val[1]
-        self.__rectangle_obj.set_xy([x, y])
-        width = roi_val[2]
-        height = roi_val[3]
-        self.__rectangle_obj.set_width(width)
-        self.__rectangle_obj.set_height(height)
+        x, y, width, height = roi_val
+        self.__rectangle_obj.setRect(x, y, width, height)
         
     def delete(self):
         raise NotImplementedError()
