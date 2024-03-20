@@ -178,18 +178,19 @@ class MainController(ControllerInterface):
     
     #data_dict (e.g. CH1, ELEC0) shold be bandled because there are always come from the same controller values.
     # Calculate new data with the new controller values
-    def update(self, controller=None) -> None:  # "controller" should not have numbers
+    def update(self, controller_key=None) -> None:  # "controller" should not have numbers
         # get a True tag list with filename.
         filename_true_list = self.__operating_controller_set.find_true_filename_keys()
         # get true flag controller list
-        controller_true_list = self.__operating_controller_set.find_true_controller_keys(controller)
+        controller_true_list = self.__operating_controller_set.find_true_controller_keys(controller_key)
         for filename_key in filename_true_list:
             for controller_key in controller_true_list:
                 # get only True ch data flag from the dict.
                 ch_key_list = self.__operating_controller_set.find_true_ch_keys(controller_key)
                 # Model can recieve not only data_list but also individual ch_key directly.
                 self.__model.set_controller_data(filename_key, controller_key, ch_key_list)
-        self.__model.update_observer()
+        for controller_key in controller_true_list:
+            self.__model.update_observer(controller_key)
         
     def set_operating_controller_val(self, controller_key, ch_key, bool_val=None):
         self.__operating_controller_set.set_val(controller_key, ch_key, bool_val)
@@ -253,7 +254,6 @@ class MainController(ControllerInterface):
     
     def onclick_axes(self, event, axes_name):
         axes_name = axes_name.upper()
-        true_flag = self.__operating_controller_set.find_true_controller_keys()
 
         if axes_name == "IMAGE_AXES":
             image_pos = self.__ax_dict["IMAGE_AXES"]._ax_obj.getView().mapSceneToView(event.scenePos())
@@ -262,8 +262,7 @@ class MainController(ControllerInterface):
                 y = round(image_pos.y())
                 val = [x, y, None, None]
                 # set roi value in ROI
-                roi_true_flag = [key for key in true_flag if "ROI" in key]
-                for controller_key in roi_true_flag:
+                for controller_key in self.__operating_controller_set.find_true_controller_keys("ROI"):
                     self.__model.set_controller_val(controller_key, val)
                 self.update("ROI")
             elif event.button() == 2:
@@ -283,10 +282,10 @@ class MainController(ControllerInterface):
            raise NotImplementedError() 
         
     def change_roi_size(self, val:list):
-        controller_true_list = self.__operating_controller_set.find_true_controller_keys("ROI")
-        for controller_key in controller_true_list:
-            # set roi in user controller
-            self.__model.set_controller_val(controller_key, val)
+        for controller_key in self.__operating_controller_set.find_true_controller_keys("ROI"):    
+            roi_pos = self.__model.get_controller_val(controller_key).data
+            new_roi_pos = [roi_pos[0], roi_pos[1], roi_pos[2]+val[2], roi_pos[3]+val[3]]
+            self.__model.set_controller_val(controller_key, new_roi_pos)
         self.update("ROI")
             
     """

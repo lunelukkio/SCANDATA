@@ -49,6 +49,7 @@ class QtDataWindow(QtWidgets.QMainWindow):
         centralWidget = QtWidgets.QWidget()
         self.setCentralWidget(centralWidget)
         mainLayout = QtWidgets.QVBoxLayout(centralWidget)
+        size = centralWidget.size()
 
         # image window
         image_ax = pg.ImageView()
@@ -83,13 +84,31 @@ class QtDataWindow(QtWidgets.QMainWindow):
         self.horizontalSplitter.setSizes([600, 1000])
         self.verticalSplitter.setSizes([450, 150])
         
-        load_btn = QtWidgets.QPushButton("Load...")
-        mainLayout.addWidget(load_btn)
-        load_btn.clicked.connect(lambda: self.open_file())
-        
         self.__main_controller.add_axes("IMAGE", "IMAGE_AXES", self, image_ax)  # ax_dict["ImageAxes"]
         self.__main_controller.add_axes("TRACE", "FLUO_AXES",self, trace_ax1)
         self.__main_controller.add_axes("TRACE", "ELEC_AXES",self, trace_ax2)
+        
+        # main buttons
+        bottom_btn_layout = QtWidgets.QHBoxLayout(centralWidget)
+        spacer = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        
+        load_btn = QtWidgets.QPushButton("Load...")
+        load_btn.setFixedSize(30, 30)
+        bottom_btn_layout.addWidget(load_btn, alignment=QtCore.Qt.AlignLeft)
+        load_btn.clicked.connect(lambda: self.open_file())
+
+        large_btn = QtWidgets.QPushButton("Large")
+        large_btn.setFixedSize(100, 30)
+        bottom_btn_layout.addWidget(large_btn, alignment=QtCore.Qt.AlignLeft)
+        large_btn.clicked.connect(lambda: self.roi_size("large"))
+        
+        small_btn = QtWidgets.QPushButton("Small")
+        small_btn.setFixedSize(100, 30)
+        bottom_btn_layout.addWidget(small_btn, alignment=QtCore.Qt.AlignLeft)
+        small_btn.clicked.connect(lambda: self.roi_size("small"))
+        bottom_btn_layout.addSpacerItem(spacer)
+        
+        mainLayout.addLayout(bottom_btn_layout)
 
         # mouse click event
         image_ax.getView().scene().sigMouseClicked.connect(lambda event: self.__main_controller.onclick_axes(event, "IMAGE_AXES"))
@@ -103,6 +122,13 @@ class QtDataWindow(QtWidgets.QMainWindow):
         self.__main_controller.ax_update_flag("IMAGE_AXES", True)
         self.__main_controller.ax_update_flag("FLUO_AXES", True)
         self.__main_controller.ax_update_flag("ELEC_AXES", True)
+
+    def roi_size(self, command):
+        if command == "large":
+            val = [None, None, 1, 1]
+        elif command == "small":
+            val = [None, None, -1, -1]
+        self.__main_controller.change_roi_size(val)
 
 class TkDataWindow(tk.Frame):
     def __init__(self, master=None):
