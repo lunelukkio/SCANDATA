@@ -191,6 +191,8 @@ class MainController(ControllerInterface):
                 self.__model.set_controller_data(filename_key, controller_key, ch_key_list)
         for controller_key in controller_true_list:
             self.__model.update_observer(controller_key)
+        print("Update done")
+        print("")
         
     def set_operating_controller_val(self, controller_key, ch_key, bool_val=None):
         self.__operating_controller_set.set_val(controller_key, ch_key, bool_val)

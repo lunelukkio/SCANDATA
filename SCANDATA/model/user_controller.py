@@ -115,15 +115,18 @@ class Roi(UserController):
         self._val_obj = RoiVal(40, 40, 1, 1)
         
     # make a new Roi value object
-    def set_controller_val(self, roi_val: list):
-        if None not in roi_val:
-            pass
+    def set_controller_val(self, val: list):
+        roi_val = [None, None, None, None]
+        if None not in val:
+            roi_val = val
         else:
             for i in range(2):  # for x and y
-                if roi_val[i] == None:
+                if val[i] == None:
                     roi_val[i] = self._val_obj.data[i]
+                else:
+                    roi_val[i] = val[i]
             for i in range(2, 4):
-                if roi_val[i] == None:
+                if val[i] == None:
                     roi_val[i] = self._val_obj.data[i]# for width and hight
                 else:
                     roi_val[i] = self._val_obj.data[i] + roi_val[i]
@@ -177,7 +180,8 @@ class ImageController(UserController):
         #pass
 
         # make a new Roi value object
-    def set_controller_val(self, window_value_list: list):  #value_list = [start, width]
+    def set_controller_val(self, val: list):  #val = [start, width]
+        window_value_list = val
         start = window_value_list[0]
         width = window_value_list[1]
         self._val_obj = TimeWindowVal(start, width)  # replace the roi
@@ -232,7 +236,8 @@ class ElecTraceController(UserController):
         #pass
 
         # make a new Roi value object
-    def set_controller_val(self, window_value_list: list):  #value_list = [start, width]
+    def set_controller_val(self, val: list):  #val = [start, width]
+        window_value_list = val
         start = window_value_list[0]
         width = window_value_list[1]
         self._val_obj = TimeWindowVal(start, width)  # replace the roi
