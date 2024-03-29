@@ -459,6 +459,6 @@ if __name__ == '__main__':
     
     print("＝＝＝to do list＝＝＝")
     print("second trace time shift ")
-    print("make change roi size functions")
-    print("In the first setup, update in Axescontrollers are called twice.")
+    print("")
+    print("2024/03/29update in the user controllers are called the update method in the axes controllers again and again..")
     print("")

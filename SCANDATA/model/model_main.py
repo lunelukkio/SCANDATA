@@ -27,11 +27,6 @@ class ModelInterface(metaclass=ABCMeta):
     def create_user_controller(self, controller_key) -> str:
         raise NotImplementedError()
         
-    # return whole data_dict in experiments. It is used by user_controllers.
-    @abstractmethod
-    def get_experiments(self, filename_key) -> object:
-        raise NotImplementedError()
-        
     # set a new controller value.
     @abstractmethod
     def set_controller_val(self, controller_key: str, val: list):
@@ -120,7 +115,7 @@ class DataService(ModelInterface):
             self.__experiments_repository.delete(filename_obj.name)
         
     def make_default_controllers(self, filename_obj):
-        experiments_data = self.get_experiments(filename_obj.name)
+        experiments_data = self.__experiments_repository.find_by_name(filename_obj.name)
         default_data_structure = experiments_data.get_default_data_structure()
         for controller_key in default_data_structure.keys():
             controller_key_without_number = re.sub(r'\d+$', '', controller_key)
@@ -145,10 +140,6 @@ class DataService(ModelInterface):
             return new_key  # This is to tell the key name to axtive_controller_dict in MainController ax
         else:
             self.__user_controller_repository.delete(controller_key)
-            
-    def get_experiments(self, filename_key) -> object:  # return an experiments entity
-        experiments_entity = self.__experiments_repository.find_by_name(filename_key)
-        return experiments_entity
 
     # set controller value and set controller data using the new value
     def set_controller_val(self, controller_key: str, val: list):
@@ -172,7 +163,7 @@ class DataService(ModelInterface):
     # This method can receive a list or str as a ch_key, but usually it shold be data_list becase every data shold be produced by the same controller.
     def set_controller_data(self, filename_key:str, controller_key: str, ch_key_list):
         print(f"DataService: set_controller_data ({controller_key}) ---------->")
-        experiments_obj = self.get_experiments(filename_key)
+        experiments_obj = self.__experiments_repository.find_by_name(filename_key)
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
         ch_data_dict = controller.set_controller_data(experiments_obj, ch_key_list)
@@ -203,6 +194,12 @@ class DataService(ModelInterface):
         print("----------> Done: set_observer")
         
     def update_observer(self, controller_key=None):
+        
+        
+        
+        
+        
+        
         if controller_key is None:
             print("DataService: update_observer (All user controller) ---------->")
             controller_key_list = self.__user_controller_repository.get_infor()
