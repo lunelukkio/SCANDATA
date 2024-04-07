@@ -117,11 +117,11 @@ class QtDataWindow(QtWidgets.QMainWindow):
         self.__main_controller.open_file(filename_obj)  # make a model and get filename obj
         self.__main_controller.update()
         self.__main_controller.print_infor()
-        
+
         # set image view update. No need!!!!!!
-        self.__main_controller.ax_update_flag("IMAGE_AXES", True)
-        self.__main_controller.ax_update_flag("FLUO_AXES", True)
-        self.__main_controller.ax_update_flag("ELEC_AXES", True)
+        self.__main_controller.update_flag_lock("IMAGE_AXES", False)
+        self.__main_controller.update_flag_lock("FLUO_AXES", False)
+        self.__main_controller.update_flag_lock("ELEC_AXES", False)
 
     def roi_size(self, command):
         if command == "large":
