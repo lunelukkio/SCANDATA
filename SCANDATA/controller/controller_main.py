@@ -77,7 +77,7 @@ class ControllerInterface(metaclass=ABCMeta):
         raise NotImplementedError()
         
     @abstractmethod
-    def ax_update_flag(self, ax_key: str) -> None:
+    def update_flag_lock(self, ax_key, val) -> None:
         raise NotImplementedError()
         
     @abstractmethod
@@ -191,6 +191,9 @@ class MainController(ControllerInterface):
                 self.__model.set_controller_data(filename_key, controller_key, ch_key_list)
         for controller_key in controller_true_list:
             self.__model.update_observer(controller_key)
+        for axes in self.__ax_dict:
+            self.__ax_dict[axes].update()
+            self.__ax_dict[axes].set_update_flag(False)
         print("Update done")
         print("")
         
@@ -344,8 +347,8 @@ class MainController(ControllerInterface):
             else:
                 self.__ax_dict[ax_key].set_flag(controller_key, ch_key, bool_val)
 
-    def ax_update_flag(self, ax_key: str, val=None):
-        self.__ax_dict[ax_key].ax_update_flag(val)
+    def update_flag_lock(self, ax_key: str, val=None):
+        self.__ax_dict[ax_key].update_flag_lock(val)
         
     def ax_print_infor(self, ax_key):
         self.__ax_dict[ax_key].print_infor()

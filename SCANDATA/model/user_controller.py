@@ -299,7 +299,10 @@ class ControllerObserver:
             
     def notify_observer(self):
         for observer_name in self._observers:
-            observer_name.update()
+            # enable view axes update 
+            observer_name.set_update_flag(True)
+            # This is for direct view axes update
+            #observer_name.update()
         #print("Update Notification from Roi")
 
     @property

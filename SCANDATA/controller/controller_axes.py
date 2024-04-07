@@ -25,9 +25,10 @@ class AxesController(metaclass=ABCMeta):
         self.ax_item_list = {}  # {ch_key: plot from value_obj, }
         self._marker_obj = {}  # This is for makers in axes windows.
         
-        self._view_flag_set = FlagDict()
+        self._view_flag_set = FlagDict()  # see comon class
         self.sync_flag = False  # This flag is to show each data in each controllers.
-        self.update_flag = True  # This flag is for avoiding image view update. Ture or False or empty: flip flag.
+        self.update_flag = False  #  Ture or False or empty: flip flag.
+        self.update_flag_lock = False # to skip ImageAxe update
         
         # color selection for traces and RoiBoxes
         try:
@@ -67,13 +68,20 @@ class AxesController(metaclass=ABCMeta):
     def set_view_data(self, active_controller_dict):
             raise NotImplementedError()
 
-    def ax_update_flag(self, val=None) -> None:
+    def update_flag_lock(self, val=None) -> None:
         if val is True:
-            self.update_flag = True
+            self.update_flag_lock = True
         elif val is False:
-            self.update_flag = False
+            self.update_flag_lock = False
         else:
-            self.update_flag = not self.update_flag
+            self.update_flag_lock = not self.update_flag_lock
+       
+    # update flag from the UserController classes in the model
+    def set_update_flag(self, update_flag):
+        if self.update_flag_lock == True:
+            pass
+        else:
+            self.update_flag = update_flag
        
     @abstractmethod
     def update(self):  # It is overrided by ImageAx
@@ -136,7 +144,7 @@ class TraceAxesController(AxesController):
                 # put the ROI BOX on the top of images.
                 self._marker_obj[controller_key].rectangle_obj.setZValue(1)
                 image_axes.addItem(self._marker_obj[controller_key].rectangle_obj)
-
+    
     # override
     def update(self):  # It is overrided by ImageAx
         if self.update_flag is True:
