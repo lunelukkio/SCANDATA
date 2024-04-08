@@ -119,9 +119,9 @@ class QtDataWindow(QtWidgets.QMainWindow):
         self.__main_controller.print_infor()
 
         # set image view update. No need!!!!!!
-        self.__main_controller.update_flag_lock("IMAGE_AXES", False)
-        self.__main_controller.update_flag_lock("FLUO_AXES", False)
-        self.__main_controller.update_flag_lock("ELEC_AXES", False)
+        self.__main_controller.update_flag_lock_sw("IMAGE_AXES", False)
+        self.__main_controller.update_flag_lock_sw("FLUO_AXES", False)
+        self.__main_controller.update_flag_lock_sw("ELEC_AXES", False)
 
     def roi_size(self, command):
         if command == "large":

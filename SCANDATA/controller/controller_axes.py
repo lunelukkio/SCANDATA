@@ -68,7 +68,7 @@ class AxesController(metaclass=ABCMeta):
     def set_view_data(self, active_controller_dict):
             raise NotImplementedError()
 
-    def update_flag_lock(self, val=None) -> None:
+    def update_flag_lock_sw(self, val=None) -> None:
         if val is True:
             self.update_flag_lock = True
         elif val is False:
