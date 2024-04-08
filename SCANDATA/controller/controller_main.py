@@ -11,7 +11,7 @@ from SCANDATA.controller.controller_axes import TraceAxesController, ImageAxesCo
 from SCANDATA.common_class import FileService, SingletonKeyDict, FlagDict
 import os
 import psutil  # for memory check
-
+    
 
 class ControllerInterface(metaclass=ABCMeta):
     """
@@ -102,6 +102,10 @@ class ControllerInterface(metaclass=ABCMeta):
     @abstractmethod
     def set_mod_val(self, controller_key, mod_key, val):
         raise NotImplementedError() 
+        
+    @abstractmethod
+    def live_view(self):
+        raise NotImplementedError() 
 
 class MainController(ControllerInterface):
     def __init__(self, view=None):
@@ -115,6 +119,19 @@ class MainController(ControllerInterface):
         self.__singleton_key_dict.set_observer(self.__operating_controller_set)
         #print(f"Set operating controller list from singleton keys.")
         #print(self.__singleton_key_dict.get_dict())
+        
+        """
+        try:
+            from SCANDATA.controller.controller_live_view import PcoPanda
+            self.__live_view_camera = PcoPanda(self.__ax_dict["ImageAxes"])
+        except:
+            print("!!!!!!!!!!!!!!!!!!!!!!!!")
+            print("Failed to find a live camera!")
+            print("")
+        """
+        from SCANDATA.controller.controller_live_view import PcoPanda
+        self.__live_view_camera = PcoPanda(self.__ax_dict["IMAGE_AXES"])
+
         
     def __del__(self):
         print('.')
@@ -371,6 +388,9 @@ class MainController(ControllerInterface):
         
     def set_mod_val(self, mod_key, val):
         self.__model.set_mod_val(mod_key, val)
+        
+    def live_view(self):
+        self.__live_view_camera.start_live_view()
         
 class AiController:
     def __init__(self):
