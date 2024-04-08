@@ -48,7 +48,7 @@ class ModelInterface(metaclass=ABCMeta):
     def get_data(self, filename_key: str, controller_key) -> dict:
         raise NotImplementedError()
 
-    # set an axes observer of view into controller 
+    # set an axes observer of view into controller. If observer is empty, update all controllers.
     @abstractmethod
     def set_observer(self, controller_key, observer:object):
         raise NotImplementedError()
@@ -194,22 +194,16 @@ class DataService(ModelInterface):
         print("----------> Done: set_observer")
         
     def update_observer(self, controller_key=None):
-        
-        
-        
-        
-        
-        
         if controller_key is None:
             print("DataService: update_observer (All user controller) ---------->")
             controller_key_list = self.__user_controller_repository.get_infor()
             for controller_key in controller_key_list:
                 controller = self.__user_controller_repository.find_by_name(controller_key)
-                controller.observer.notify_observer()
+                controller.notify_observer()
         else:
             print(f"DataService: update_observer ({controller_key}) ---------->")
             controller = self.__user_controller_repository.find_by_name(controller_key)
-            controller.observer.notify_observer()
+            controller.notify_observer()
         print("----------> Done: update_observer")
             
 

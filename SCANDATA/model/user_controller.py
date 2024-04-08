@@ -81,6 +81,9 @@ class UserController(metaclass=ABCMeta):
 
     def set_observer(self, observer):
         self.observer.set_observer(observer)
+        
+    def notify_observer(self):
+        self.observer.notify_observer()
 
     def set_mod_key(self, mod_key):
         if mod_key in self.__mod_list:

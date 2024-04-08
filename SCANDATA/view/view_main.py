@@ -130,6 +130,7 @@ class QtDataWindow(QtWidgets.QMainWindow):
             val = [None, None, -1, -1]
         self.__main_controller.change_roi_size(val)
 
+
 class TkDataWindow(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
@@ -314,13 +315,11 @@ class TkDataWindow(tk.Frame):
         canvas_trace.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         trace_fig.subplots_adjust(left=0.06, right=0.97, bottom=0.05, top=0.9)
 
-        
     def open_file(self, filename_obj=None):
         self.__main_controller.open_file(filename_obj)  # make a model and get filename obj
         self.__main_controller.update()
         self.__main_controller.print_infor()
         
-
         # set image view update. No need!!!!!!
         self.__main_controller.ax_update_flag("IMAGE_AXES", True)
         self.__main_controller.ax_update_flag("FLUO_AXES", True)
@@ -383,59 +382,9 @@ class TkDataWindow(tk.Frame):
         memory_infor, maximum_memory, available_memory = self.__main_controller.get_memory_infor()
         print(f"Current memory usage: {memory_infor / 1024 / 1024:.2f} MB / {maximum_memory / 1024 / 1024:.2f} MB, Available memory: {available_memory / 1024 / 1024:.2f} MB")
        
-    def open_ai_menu(self):
-        AiWindow(tk.Toplevel())
-        
 
-class NavigationToolbarMyTool(NavigationToolbar2Tk):
-    def __init__(self, canvas=None, master=None, my_color=None):
-        super().__init__(canvas, master)   
-        self.canvas = canvas
-        self.master = master
-        self.bg_color = my_color
 
-        self['bg'] = self.bg_color
-        for item in self.winfo_children():
-           item['bg'] = self.bg_color
 
-    def get_val(self):
-        pass
-    
-class AiWindow(tk.Frame):
-    def __init__(self, master=None):
-        super().__init__(master)
-        self.pack()
-        self.__ai_controller = AiController()
-        
-        # import a JSON setting file
-        try:
-            with open("../setting/data_window_setting.json", "r") as json_file:
-                setting = json.load(json_file)
-        except:
-            with open("./setting/data_window_setting.json", "r") as json_file:
-                setting = json.load(json_file)
-        
-        my_color = setting["main_window"]["color"]
-        
-        # for data window
-        master.geometry("500x500")
-        master.configure(background=my_color)
-        master.title('AI')
-        
-        # menubar
-        menubar = tk.Menu(master)
-        master.config(menu=menubar)
-        
-        file_menu = tk.Menu(menubar, tearoff=0)
-        
-        menubar.add_cascade(label="File", menu=file_menu)
-        
-        file_menu.add_command(label="Rename Files", command=self.__ai_controller.rename_files)
-        
-        
-        
-
-    
 
 if __name__ == '__main__':
     fullname = '..\\..\\220408\\20408B002.tsm'
@@ -449,16 +398,9 @@ if __name__ == '__main__':
     if sys.flags.interactive == 0:
         scandata.exec_()
     
-    """
-    root = tk.Tk()
-    root.title("SCANDATA")
-    view = TkDataWindow(root)
-    view.open_file(filename_obj)
-    root.mainloop()
-    """
     
     print("＝＝＝to do list＝＝＝")
     print("second trace time shift ")
     print("")
-    print("2024/03/29update in the user controllers are called the update method in the axes controllers again and again..")
+    print("data_strage_dict shold have {filename:{controller_key:{data_key:ValueData}}}")
     print("")

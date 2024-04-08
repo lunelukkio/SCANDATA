@@ -192,8 +192,8 @@ class MainController(ControllerInterface):
         for controller_key in controller_true_list:
             self.__model.update_observer(controller_key)
         for axes in self.__ax_dict:
-            self.__ax_dict[axes].update()
-            self.__ax_dict[axes].set_update_flag(False)
+            self.__ax_dict[axes].update()  # to redraw screen traces
+            self.__ax_dict[axes].set_update_flag(False)  # return to deactive
         print("Update done")
         print("")
         
@@ -211,21 +211,25 @@ class MainController(ControllerInterface):
         self.set_observer("IMAGE_CONTROLLER1", "IMAGE_AXES")  # for difference image
         self.set_observer("ELEC_TRACE_CONTROLLER0", "ELEC_AXES")  # no use
         self.set_observer("ELEC_TRACE_CONTROLLER1", "ELEC_AXES")
-
-        # set axes controllers view flages
-        self.set_view_flag("ALL", "ALL", "ALL", False)  # (ax, controller_key, data_key, value) 
-        self.set_view_flag("FLUO_AXES", "ROI1", "CH1", True)  # (ax, controller_key, data_key, value)
-        self.set_view_flag("IMAGE_AXES", "IMAGE_CONTROLLER1", "CH1", True)  # (ax, controller_key, data_key, value) 
-        self.set_view_flag("ELEC_AXES", "ELEC_TRACE_CONTROLLER1", "ELEC0", True)  # (ax, controller_key, data_key, value) 
-        # set maincontroller keys "CH1", "ELEC0"
+        
+        # Reset controller flags
         self.set_operating_controller_val("ALL", "ALL", False)  # All flag is False
-        self.set_operating_controller_val("ROI0", "CH1", True)  # This is for difference image
-        self.set_operating_controller_val("ROI0", "CH2", True)  # This is for difference image
-        self.set_operating_controller_val("ROI1", "CH1", True)  # This is for difference image
-        self.set_operating_controller_val("ROI1", "CH2", True)  # This is for difference image
+        self.set_view_flag("ALL", "ALL", "ALL", False)  # (ax, controller_key, data_key, value) 
+
+        # set maincontroller keys "CH1", "ELEC0"
+        self.set_operating_controller_val("ROI0", "CH1", True)
+        self.set_operating_controller_val("ROI0", "CH2", True)
+        self.set_operating_controller_val("ROI1", "CH1", True)
+        self.set_operating_controller_val("ROI1", "CH2", True)
         self.set_operating_controller_val("IMAGE_CONTROLLER1", "CH1", True)  # This is for a cell image
         self.set_operating_controller_val("IMAGE_CONTROLLER1", "CH2", True)  # This is for a cell image
         self.set_operating_controller_val("ELEC_TRACE_CONTROLLER1", "ELEC0", True)  # This is for a elec trace
+
+        # set axes controllers view flages
+        self.set_view_flag("FLUO_AXES", "ROI0", "CH1", True)  # (ax, controller_key, data_key, value)
+        self.set_view_flag("FLUO_AXES", "ROI1", "CH1", True)  # (ax, controller_key, data_key, value)
+        self.set_view_flag("IMAGE_AXES", "IMAGE_CONTROLLER1", "CH1", True)  # (ax, controller_key, data_key, value) 
+        self.set_view_flag("ELEC_AXES", "ELEC_TRACE_CONTROLLER1", "ELEC0", True)  # (ax, controller_key, data_key, value) 
 
         """ about mod"""
         """

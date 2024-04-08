@@ -5,6 +5,7 @@ Created on Mon Oct  2 13:42:38 2023
 @author: lunelukkio@gmail.com
 """
 
+from abc import ABCMeta, abstractmethod
 import os
 import sys
 import glob
@@ -134,7 +135,7 @@ class WholeFilename:  # Use it only in a view and controller
         print('The file name list in the same folder = ' + str(self.__filename_list))
         
 
-class SingletonKeyDict:
+class SingletonKeyDict:  # _dict = {"CONTROLLER": ["data_keys"], "CH": ["data_keys"]} 
     _instance = None
 
     def __new__(cls):
@@ -225,49 +226,21 @@ class SingletonKeyDict:
         print("----------> End")
 
 
-class FlagDict:
+class DataDict(metaclass=ABCMeta):
     def __init__(self):
-        self.__data_dict = {}
-        self.__filename_dict = {}
+        self._data_dict = {}
+        self._filename_dict = {}
 
+    @abstractmethod
     def update(self, key_dict):
-        old_dict = self.__data_dict
-        new_dict = {}
-        # make a new dict from the key list
-        for controller_key, data_list in key_dict.items():
-            if data_list is not None: 
-                new_dict[controller_key] = {data_key: old_dict[controller_key][data_key] 
-                                            if data_key in old_dict 
-                                            else True for data_key in data_list}
-            else:
-                new_dict[controller_key] = None
-        self.__data_dict = new_dict
+        raise NotImplementedError()
 
+    @abstractmethod
     def set_val(self, controller_key, data_key, val):  # "ALL" in controller and data key is acceptable.
-        if controller_key == "ALL":
-            for controller_key in self.__data_dict.keys():
-                self.__set_val(controller_key, data_key, val)
-        else:
-            self.__set_val(controller_key, data_key, val)
-        
-    def __set_val(self, controller_key, data_key, val=None):  # "ALL" in data_key is acceptable.
-        if controller_key not in self.__data_dict:
-            print(f"Controller key: {controller_key} doesn't exist.")
-        else:
-            if data_key == "ALL":
-                for data_key in self.__data_dict[controller_key].keys():
-                    self.__data_dict[controller_key][data_key] = val
-            elif data_key not in self.__data_dict[controller_key]:
-                print(f"Data key: {data_key} doesn't exist in {controller_key}")
-                return
-            else:
-                if val is None:
-                    self.__data_dict[controller_key][data_key] = not self.__data_dict[controller_key][data_key]
-                else:
-                    self.__data_dict[controller_key][data_key] = val
+        raise NotImplementedError()
                     
     def update_filename(self, filename_list):
-        old_dict = self.__filename_dict
+        old_dict = self._filename_dict
         new_dict = {}
         copy_list = copy.deepcopy(filename_list)
         # make a new dict from the keylist
@@ -276,43 +249,98 @@ class FlagDict:
                 new_dict[filename_key] = old_dict[filename_key]
             else:
                 new_dict[filename_key] = True
-        self.__filename_dict = new_dict
+        self._filename_dict = new_dict
         
     def set_filename_val(self, filename_key, val=None):
-        if filename_key not in self.__filename_dict:
+        if filename_key not in self._filename_dict:
             print(f"Filename key: {filename_key} doesn't exist.")
         else:
             if val is None:
-                self.__filename_dict[filename_key] = not self.__filename_dict[filename_key]
+                self._filename_dict[filename_key] = not self._filename_dict[filename_key]
             else:
-                self.__filename_dict[filename_key] = val
+                self._filename_dict[filename_key] = val
         
     def get_dict(self):
-        return self.__data_dict
+        return self._data_dict
     
     def get_filename_dict(self):
-        return self.__filename_dict
+        return self._filename_dict
     
+    def print_infor(self):
+        print(f"Data Flags: {self._data_dict}")
+        print(f"Filename flags: {self._filename_dict}")
+        print("")
+
+    @staticmethod
+    def data_dict_to_key_dict(data_dict) -> dict:
+        if isinstance(data_dict, dict):
+            if all(not isinstance(value, dict) for value in data_dict.values()):
+                return list(data_dict.keys())
+            else:
+                return {key: FlagDict.data_dict_to_key_dict(value) for key, value in data_dict.items()}
+        return data_dict
+
+class FlagDict(DataDict):
+    def __init__(self):
+        super().__init__()
+        
+    def update(self, key_dict):
+        old_dict = self._data_dict  # old_dict = {controller_key:{data_key:boolen}}
+        new_dict = {}
+        # make a new dict from the key list
+        for controller_key, data_list in key_dict.items():  # key_dict = {"CONTROLLER": ["data_keys"], "CH": ["data_keys"]} 
+            if data_list is not None:
+                # If data_key is in old_dict, just copy, else make True in new data_key
+                new_dict[controller_key] = {data_key: old_dict[controller_key][data_key] 
+                                            if data_key in old_dict
+                                            else True for data_key in data_list}
+            else:
+                new_dict[controller_key] = None
+        self._data_dict = new_dict
+        
+    def set_val(self, controller_key, data_key, val=None):
+        if controller_key == "ALL":
+            controllers = self._data_dict.keys()
+        elif controller_key in self._data_dict:
+            controllers = [controller_key]
+        else:
+            print(f"Controller key: {controller_key} doesn't exist.")
+            return
+        
+        for target_controller_key in controllers:
+            if data_key == "ALL":
+                data_keys = self._data_dict[target_controller_key].keys()
+            elif data_key in self._data_dict[target_controller_key]:
+                data_keys = [data_key]
+            else:
+                print(f"Data key: {data_key} doesn't exist in {target_controller_key}.")
+                continue  # next controller_key
+            for target_data_key in data_keys:
+                if val is None:
+                    self._data_dict[target_controller_key][target_data_key] = not self._data_dict[target_controller_key][target_data_key]
+                else:
+                    self._data_dict[target_controller_key][target_data_key] = val
+                    
     # find only controller keys which have true in ch data.
     def find_true_controller_keys(self, controller=None) -> list:
         if controller is None or controller == "ALL":
-            return [key for key, value in self.__data_dict.items() if any(value.values())]
+            return [key for key, value in self._data_dict.items() if any(value.values())]
         else:
             controller = controller.upper()
-            true_list = [key for key, value in self.__data_dict.items() if any(value.values())]
+            true_list = [key for key, value in self._data_dict.items() if any(value.values())]
             return [key for key in true_list if controller in key]
     
     def find_true_ch_keys(self, controller_key) -> list:
-        return [key for key, value in self.__data_dict[controller_key].items() if value]
+        return [key for key, value in self._data_dict[controller_key].items() if value]
     
     def find_true_filename_keys(self) -> list:
         return [filename_key 
                 for filename_key, bool_val 
-                in self.__filename_dict.items() 
+                in self._filename_dict.items() 
                 if bool_val]
     
     def next_controller_to_true(self, controller):
-        controller_whole_list = [key for key in self.__data_dict.keys() if controller in key]
+        controller_whole_list = [key for key in self._data_dict.keys() if controller in key]
         controller_true_key_list = self.find_true_controller_keys(controller)
         targeted_controller_key = controller_true_key_list[-1]  # the last key
         if targeted_controller_key in controller_whole_list:
@@ -325,26 +353,49 @@ class FlagDict:
             #print(f"Switch to the next controller = {next_element}")
             ch_list = self.find_true_ch_keys(targeted_controller_key)
             for ch_key in ch_list:
-                original_val = self.__data_dict[targeted_controller_key][ch_key]
-                self.__data_dict[targeted_controller_key][ch_key] = False
-                self.__data_dict[next_element][ch_key] = original_val
+                original_val = self._data_dict[targeted_controller_key][ch_key]
+                self._data_dict[targeted_controller_key][ch_key] = False
+                self._data_dict[next_element][ch_key] = original_val
         else:
             print(f"There is no {targeted_controller_key}")
-
-    
-    def print_infor(self):
-        print(f"Data Flags: {self.__data_dict}")
-        print(f"Filename flags: {self.__filename_dict}")
-        print("")
-
-    @staticmethod
-    def data_dict_to_key_dict(data_dict) -> dict:
-        if isinstance(data_dict, dict):
-            if all(not isinstance(value, dict) for value in data_dict.values()):
-                return list(data_dict.keys())
+        
+        
+class DataStrageDict(DataDict):
+    def __init__(self):
+        super().__init__()
+        
+    def update(self, key_dict):
+        old_dict = self._data_dict
+        new_dict = {}
+        # make a new dict from the key list
+        for controller_key, data_list in key_dict.items():
+            if data_list is not None: 
+                new_dict[controller_key] = {data_key: old_dict[controller_key][data_key] 
+                                            if data_key in old_dict
+                                            else None for data_key in data_list}
             else:
-                return {key: FlagDict.data_dict_to_key_dict(value) for key, value in data_dict.items()}
-        return data_dict
-
-
-            
+                new_dict[controller_key] = None
+        self._data_dict = new_dict
+        
+    def set_val(self, controller_key, data_key, val:object):
+        if controller_key == "ALL":
+            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            print("This method can not use ALL as controller_key.")
+        elif controller_key in self._data_dict:
+            controllers = [controller_key]
+        else:
+            print(f"Controller key: {controller_key} doesn't exist.")
+            return
+        
+        for target_controller_key in controllers:
+            if data_key == "ALL":
+                print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                print("This method can not use ALL as data_key.")
+            elif data_key in self._data_dict[target_controller_key]:
+                data_keys = [data_key]
+            else:
+                print(f"Data key: {data_key} doesn't exist in {target_controller_key}.")
+                continue  # next controller_key
+            for target_data_key in data_keys:
+                self._data_dict[target_controller_key][target_data_key] = val
+    

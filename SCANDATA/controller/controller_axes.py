@@ -26,7 +26,6 @@ class AxesController(metaclass=ABCMeta):
         self._marker_obj = {}  # This is for makers in axes windows.
         
         self._view_flag_set = FlagDict()  # see comon class
-        self.sync_flag = False  # This flag is to show each data in each controllers.
         self.update_flag = False  #  Ture or False or empty: flip flag.
         self.update_flag_lock = False # to skip ImageAxe update
         
@@ -66,7 +65,7 @@ class AxesController(metaclass=ABCMeta):
 
     @abstractmethod
     def set_view_data(self, active_controller_dict):
-            raise NotImplementedError()
+        raise NotImplementedError()
 
     def update_flag_lock_sw(self, val=None) -> None:
         if val is True:
@@ -113,15 +112,18 @@ class TraceAxesController(AxesController):
                 # get only True ch data flag from the dict.
                 ch_true_list = self._view_flag_set.find_true_ch_keys(controller_key)
                 # Model can recieve not only data_list but also individual ch_key directly.
-                # Model can recieve not only data_list but also individual ch_key directly.
                 for ch_key in ch_true_list:
-                    ax_data = ch_data_dict[ch_key].show_data(self._ax_obj)
-                    self.ax_item_list[ch_key] = ax_data
-                    # color setting
-                    if self.mode == "CH_MODE":
-                        ax_data.setPen(pg.mkPen(color=self._ch_color[ch_key]))
-                    elif self.mode == "ROI_MODE":
-                        ax_data.setPen(pg.mkPen(color=self._ch_color[controller_key]))
+                    if ch_key not in ch_data_dict:
+                        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                        print("No data. Check the opperating controller list in the ControllerMain Class")
+                    else:
+                        ax_data = ch_data_dict[ch_key].show_data(self._ax_obj)
+                        self.ax_item_list[ch_key] = ax_data
+                        # color setting
+                        if self.mode == "CH_MODE":
+                            ax_data.setPen(pg.mkPen(color=self._ch_color[ch_key]))
+                        elif self.mode == "ROI_MODE":
+                            ax_data.setPen(pg.mkPen(color=self._ch_color[controller_key]))
             
     def set_marker(self):
         # get flag data from FLUO_AXES
