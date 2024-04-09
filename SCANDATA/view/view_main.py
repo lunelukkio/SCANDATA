@@ -21,6 +21,7 @@ class QtDataWindow(QtWidgets.QMainWindow):
         super().__init__()
         self.__main_controller = MainController(self)
         self.setWindowTitle('SCANDATA')
+        self.__live_image_view = None
 
 
         # import a JSON setting file
@@ -48,12 +49,12 @@ class QtDataWindow(QtWidgets.QMainWindow):
 
         # image window
         image_ax = pg.ImageView()
-        self.ax = image_ax
         image_ax.ui.histogram.hide()  # hide contrast bar
         image_ax.ui.menuBtn.hide()  # hide a menu button
         image_ax.ui.roiBtn.hide() # hide a ROI button
         view = image_ax.getView()
         view.setBackgroundColor(setting["main_window"]["color"])
+
         
         self.horizontalSplitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
         self.verticalSplitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
@@ -90,7 +91,7 @@ class QtDataWindow(QtWidgets.QMainWindow):
         # check boxes
         self.live_view_checkbox = QtWidgets.QCheckBox("Live View")
         self.live_view_checkbox.setChecked(False)  # default
-        self.live_view_checkbox.stateChanged.connect(lambda: self.__main_controller.live_view())
+        self.live_view_checkbox.stateChanged.connect(lambda: self.__live_image_view.start_live_view())
         mainLayout.addWidget(self.live_view_checkbox)
         
         load_btn = QtWidgets.QPushButton("Load...")
@@ -110,19 +111,41 @@ class QtDataWindow(QtWidgets.QMainWindow):
         bottom_btn_layout.addSpacerItem(spacer)
         
         mainLayout.addLayout(bottom_btn_layout)
-            
+        
+        
+        # override with live camera view
+        from SCANDATA.controller.controller_live_view import PcoPanda
+        self.__live_image_view = PcoPanda() 
+        self.__live_image_view.set_axes(image_ax)
+        """
+        try:
+            from SCANDATA.controller.controller_live_view import PcoPanda
+            self.__live_image_view = PcoPanda() 
+            self.__live_image_view.set_axes(image_ax)
+        except:
+            print("!!!!!!!!!!!!!!!!!!!!!!!!")
+            print("Failed to find a live camera!")
+            print("")
+        
+
         # mouse click event
         image_ax.getView().scene().sigMouseClicked.connect(lambda event: self.__main_controller.onclick_axes(event, "IMAGE_AXES"))
+       
+        
        
     def open_file(self, filename_obj=None):
         self.__main_controller.open_file(filename_obj)  # make a model and get filename obj
         self.__main_controller.update()
         self.__main_controller.print_infor()
+        """
 
         # set image view update. No need!!!!!!
         self.__main_controller.update_flag_lock_sw("IMAGE_AXES", False)
         self.__main_controller.update_flag_lock_sw("FLUO_AXES", False)
         self.__main_controller.update_flag_lock_sw("ELEC_AXES", False)
+        
+    def live_view(self):
+        self.__live_image_view.start_live_view()
 
     def roi_size(self, command):
         if command == "large":
