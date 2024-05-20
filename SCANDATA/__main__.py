@@ -7,7 +7,7 @@ lunelukkio@gmail.com
 
 import sys
 import gc
-from SCANDATA.view.view_main import TkDataWindow, QtDataWindow
+from SCANDATA.view.view_main import QtDataWindow
 
 
 

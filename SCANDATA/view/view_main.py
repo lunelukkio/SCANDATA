@@ -10,7 +10,7 @@ main for view
 import json
 import sys
 from SCANDATA.common_class import WholeFilename
-from SCANDATA.controller.controller_main import MainController, AiController
+from SCANDATA.controller.controller_main import MainController
 import PyQt5
 from PyQt5 import QtWidgets, QtCore
 import pyqtgraph as pg
@@ -21,7 +21,8 @@ class QtDataWindow(QtWidgets.QMainWindow):
         super().__init__()
         self.__main_controller = MainController(self)
         self.setWindowTitle('SCANDATA')
-        self.__live_image_view = None
+        self.__live_camera_mode = False
+        self.__live_camera_view = None
 
 
         # import a JSON setting file
@@ -91,7 +92,8 @@ class QtDataWindow(QtWidgets.QMainWindow):
         # check boxes
         self.live_view_checkbox = QtWidgets.QCheckBox("Live View")
         self.live_view_checkbox.setChecked(False)  # default
-        self.live_view_checkbox.stateChanged.connect(lambda: self.__live_image_view.start_live_view())
+        if self.__live_camera_mode == True:
+            self.live_view_checkbox.stateChanged.connect(lambda: self.__live_camera_view.start_live_view())
         mainLayout.addWidget(self.live_view_checkbox)
         
         load_btn = QtWidgets.QPushButton("Load...")
@@ -112,20 +114,21 @@ class QtDataWindow(QtWidgets.QMainWindow):
         
         mainLayout.addLayout(bottom_btn_layout)
         
-        
-        # override with live camera view
-        from SCANDATA.controller.controller_live_view import PcoPanda
-        self.__live_image_view = PcoPanda() 
-        self.__live_image_view.set_axes(image_ax)
-        """
-        try:
+        if self.__live_camera_mode == True:
+            # override with live camera view
             from SCANDATA.controller.controller_live_view import PcoPanda
-            self.__live_image_view = PcoPanda() 
-            self.__live_image_view.set_axes(image_ax)
-        except:
-            print("!!!!!!!!!!!!!!!!!!!!!!!!")
-            print("Failed to find a live camera!")
-            print("")
+            self.__live_camera_view = PcoPanda() 
+            self.__live_camera_view.set_axes(image_ax)
+            """
+            try:
+                from SCANDATA.controller.controller_live_view import PcoPanda
+                self.__live_camera_view = PcoPanda() 
+                self.__live_camera_view.set_axes(image_ax)
+                except:
+                    print("!!!!!!!!!!!!!!!!!!!!!!!!")
+                    print("Failed to find a live camera!")
+                    print("")
+            """
         
 
         # mouse click event
@@ -137,7 +140,17 @@ class QtDataWindow(QtWidgets.QMainWindow):
         self.__main_controller.open_file(filename_obj)  # make a model and get filename obj
         self.__main_controller.update()
         self.__main_controller.print_infor()
-        """
+        
+
+        # set image view update. No need!!!!!!
+        self.__main_controller.update_flag_lock_sw("IMAGE_AXES", False)
+        self.__main_controller.update_flag_lock_sw("FLUO_AXES", False)
+        self.__main_controller.update_flag_lock_sw("ELEC_AXES", False)
+        
+    def open_file(self, filename_obj=None):
+        self.__main_controller.open_file(filename_obj)  # make a model and get filename obj
+        self.__main_controller.update()
+        self.__main_controller.print_infor()
 
         # set image view update. No need!!!!!!
         self.__main_controller.update_flag_lock_sw("IMAGE_AXES", False)
@@ -145,7 +158,7 @@ class QtDataWindow(QtWidgets.QMainWindow):
         self.__main_controller.update_flag_lock_sw("ELEC_AXES", False)
         
     def live_view(self):
-        self.__live_image_view.start_live_view()
+        self.__live_camera_view.start_live_view()
 
     def roi_size(self, command):
         if command == "large":
@@ -153,9 +166,7 @@ class QtDataWindow(QtWidgets.QMainWindow):
         elif command == "small":
             val = [None, None, -1, -1]
         self.__main_controller.change_roi_size(val)
-        
-    def live_view(self):
-        self.__main_controller.live_view()
+
 
 
 if __name__ == '__main__':
