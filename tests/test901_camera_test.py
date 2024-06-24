@@ -22,12 +22,12 @@ class CameraWindow(QtWidgets.QMainWindow):
         
         self.cam.default_configuration()
         self.cam.configuration = {'exposure time': 10e-3,
-                                  'roi': (1, 1, 512, 512),
+                                  'roi': (1, 1, 2048, 2048),
                                   'delay time': 0,
                                   'trigger': 'auto sequence',
                                   'acquire': 'auto',
                                   'noise filter': 'on',
-                                  'binning': (2, 2)}
+                                  'binning': (1, 1)}
         
         print(self.cam.configuration)
         
