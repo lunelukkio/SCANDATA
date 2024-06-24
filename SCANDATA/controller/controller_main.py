@@ -117,8 +117,6 @@ class MainController(ControllerInterface):
         #print(f"Set operating controller list from singleton keys.")
         #print(self.__singleton_key_dict.get_dict())
     
-
-        
     def __del__(self):
         print('.')
         #print('Deleted a MainController.' + '  myId= {}'.format(id(self)))

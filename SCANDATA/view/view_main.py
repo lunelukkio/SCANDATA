@@ -142,17 +142,7 @@ class QtDataWindow(QtWidgets.QMainWindow):
         self.__main_controller.print_infor()
         
 
-        # set image view update. No need!!!!!!
-        self.__main_controller.update_flag_lock_sw("IMAGE_AXES", False)
-        self.__main_controller.update_flag_lock_sw("FLUO_AXES", False)
-        self.__main_controller.update_flag_lock_sw("ELEC_AXES", False)
-        
-    def open_file(self, filename_obj=None):
-        self.__main_controller.open_file(filename_obj)  # make a model and get filename obj
-        self.__main_controller.update()
-        self.__main_controller.print_infor()
-
-        # set image view update. No need!!!!!!
+        # set image view update. No need!!!!!! need for reset?
         self.__main_controller.update_flag_lock_sw("IMAGE_AXES", False)
         self.__main_controller.update_flag_lock_sw("FLUO_AXES", False)
         self.__main_controller.update_flag_lock_sw("ELEC_AXES", False)

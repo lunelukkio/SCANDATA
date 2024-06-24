@@ -183,6 +183,7 @@ class DataService(ModelInterface):
             controller = self.__user_controller_repository.find_by_name(controller_key)
             mod_list = controller.get_mod_list()
             data_dict = self.__mod_service.apply_mod(data_dict, mod_list)
+            print("Data modified")
         print("----------> Done: get_data")
         return data_dict
             
