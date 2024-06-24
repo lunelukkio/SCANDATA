@@ -184,6 +184,8 @@ if __name__ == '__main__':
     
     print("＝＝＝to do list＝＝＝")
     print("second trace time shift ")
-    print("")
+    print("make dF/F mod")
+    print("fix re-open method")
+    print("make difference image functions")
     print("data_strage_dict shold have {filename:{controller_key:{data_key:ValueData}}}")
     print("")
