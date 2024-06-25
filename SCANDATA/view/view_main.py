@@ -139,13 +139,11 @@ class QtDataWindow(QtWidgets.QMainWindow):
     def open_file(self, filename_obj=None):
         self.__main_controller.open_file(filename_obj)  # make a model and get filename obj
         self.__main_controller.update()
+        "The first time need ROI0 data because of dF/F"
+        self.__main_controller.set_operating_controller_val("ROI0", "CH1", False)  # This is for breach comp, so it should be always on.
+        self.__main_controller.set_operating_controller_val("ROI0", "CH2", False)  # This is for breach comp, so it should be always on.
+        #self.__main_controller.set_view_flag("FLUO_AXES", "ROI0", "CH1", True)  # This is for showing ROI0 data.
         self.__main_controller.print_infor()
-        
-
-        # set image view update. No need!!!!!! need for reset?
-        self.__main_controller.update_flag_lock_sw("IMAGE_AXES", False)
-        self.__main_controller.update_flag_lock_sw("FLUO_AXES", False)
-        self.__main_controller.update_flag_lock_sw("ELEC_AXES", False)
         
     def live_view(self):
         self.__live_camera_view.start_live_view()

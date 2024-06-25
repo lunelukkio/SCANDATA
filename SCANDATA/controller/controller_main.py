@@ -37,6 +37,10 @@ class ControllerInterface(metaclass=ABCMeta):
     @abstractmethod
     def update(self, controller_list, filename_list, ch_list):
         raise NotImplementedError()
+    
+    @abstractmethod
+    def set_operating_controller_val(self, controller_key, ch_key, bool_val=None):
+        raise NotImplementedError()
         
     """
     Delegation to the Model
@@ -218,8 +222,8 @@ class MainController(ControllerInterface):
         self.set_view_flag("ALL", "ALL", "ALL", False)  # (ax, controller_key, data_key, value) 
 
         # set maincontroller keys "CH1", "ELEC0"
-        self.set_operating_controller_val("ROI0", "CH1", True)
-        self.set_operating_controller_val("ROI0", "CH2", True)
+        self.set_operating_controller_val("ROI0", "CH1", True)  # This is for breach comp, so it should be always on.
+        self.set_operating_controller_val("ROI0", "CH2", True)  # This is for breach comp, so it should be always on.
         self.set_operating_controller_val("ROI1", "CH1", True)
         self.set_operating_controller_val("ROI1", "CH2", True)
         self.set_operating_controller_val("IMAGE_CONTROLLER1", "CH1", True)  # This is for a cell image
@@ -227,7 +231,6 @@ class MainController(ControllerInterface):
         self.set_operating_controller_val("ELEC_TRACE_CONTROLLER1", "ELEC0", True)  # This is for a elec trace
 
         # set axes controllers view flages
-        self.set_view_flag("FLUO_AXES", "ROI0", "CH1", True)  # (ax, controller_key, data_key, value)
         self.set_view_flag("FLUO_AXES", "ROI1", "CH1", True)  # (ax, controller_key, data_key, value)
         self.set_view_flag("IMAGE_AXES", "IMAGE_CONTROLLER1", "CH1", True)  # (ax, controller_key, data_key, value) 
         self.set_view_flag("ELEC_AXES", "ELEC_TRACE_CONTROLLER1", "ELEC0", True)  # (ax, controller_key, data_key, value) 
@@ -353,7 +356,7 @@ class MainController(ControllerInterface):
                 self.__ax_dict[ax_key].set_flag(controller_key, ch_key, bool_val)
 
     def update_flag_lock_sw(self, ax_key, val):
-        self.__ax_dict[ax_key].update_flag_lock_sw(val)
+        self.__ax_dict[ax_key].update_flag_lock_sw(val)  # see AxesController class in conrtoller_axes.py
         
     def ax_print_infor(self, ax_key):
         self.__ax_dict[ax_key].print_infor()
