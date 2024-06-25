@@ -42,7 +42,7 @@ class UserController(metaclass=ABCMeta):
     def __init__(self):
         self.observer = ControllerObserver()
         self._val_obj = None
-        self.__mod_list = []
+        self.__mod_key_dict = {}
         
     def __del__(self):  #make a message when this object is deleted.
         print('.')
@@ -85,20 +85,14 @@ class UserController(metaclass=ABCMeta):
     def notify_observer(self):
         self.observer.notify_observer()
 
-    def set_mod_key(self, mod_key):
-        if mod_key in self.__mod_list:
-            self.__mod_list.remove(mod_key)
+    def set_mod_key_dict(self, mod_key, mod_val=None):
+        if mod_key in self.__mod_key_dict:
+            del self.__mod_key_dict[mod_key]
         else:
-            self.__mod_list.append(mod_key)
+            self.__mod_key_dict[mod_key] = mod_val
 
-    def get_mod_list(self):
-        return self.__mod_list
-        
-    def set_mod_val(self, mod_key, val):
-        if self.__mod_flag is True:
-            self.__mod_service.set_mod_val(mod_key, val)
-        else:
-            pass
+    def get_mod_key_dict(self):
+        return self.__mod_key_dict
     
     @abstractmethod
     def reset(self):

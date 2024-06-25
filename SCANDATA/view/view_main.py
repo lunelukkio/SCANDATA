@@ -145,6 +145,10 @@ class QtDataWindow(QtWidgets.QMainWindow):
         #self.__main_controller.set_view_flag("FLUO_AXES", "ROI0", "CH1", True)  # This is for showing ROI0 data.
         self.__main_controller.print_infor()
         
+        "This is temporal. shold be deleted later"
+        self.__main_controller.set_mod_key("ROI1", "BLCOMP", "ROI0")
+        
+        
     def live_view(self):
         self.__live_camera_view.start_live_view()
 

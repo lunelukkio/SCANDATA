@@ -100,11 +100,7 @@ class ControllerInterface(metaclass=ABCMeta):
     Delegation to the Model
     """
     @abstractmethod
-    def set_mod_key(self, controller_key, mod_key):
-        raise NotImplementedError() 
-        
-    @abstractmethod
-    def set_mod_val(self, controller_key, mod_key, val):
+    def set_mod_key(self, controller_key, mod_key, val=None):
         raise NotImplementedError() 
         
 
@@ -370,11 +366,8 @@ class MainController(ControllerInterface):
     """
     Delegation to the ModController
     """        
-    def set_mod_key(self, controller_key, mod_key):
-        self.__model.set_mod_key(controller_key, mod_key)
-        
-    def set_mod_val(self, mod_key, val):
-        self.__model.set_mod_val(mod_key, val)
+    def set_mod_key(self, controller_key, mod_key, mod_val=None):
+        self.__model.set_mod_key(controller_key, mod_key, mod_val)
         
         
 class AiController:

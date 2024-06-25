@@ -53,14 +53,9 @@ class ModelInterface(metaclass=ABCMeta):
     def set_observer(self, controller_key, observer:object):
         raise NotImplementedError()
 
-    # set a mod key to the mod list
+    # set or delete a mod key to the mod list with value in user controller. If there is no val, it will be None.
     @abstractmethod
-    def set_mod_key(self, controller_key, mod_key) -> None:
-        raise NotImplementedError()
-        
-    # set background controller to the mod class.
-    @abstractmethod
-    def set_mod_val(self, controller_key, mod_key, val) -> None:
+    def set_mod_key(self, controller_key, mod_key, val) -> None:
         raise NotImplementedError()
         
     # reset controller_val
@@ -181,8 +176,8 @@ class DataService(ModelInterface):
         # apply mod 
         if self.__mod_flag is True:
             controller = self.__user_controller_repository.find_by_name(controller_key)
-            mod_list = controller.get_mod_list()
-            data_dict = self.__mod_service.apply_mod(data_dict, mod_list)
+            mod_dict = controller.get_mod_key_dict()
+            data_dict = self.__mod_service.apply_mod(data_dict, mod_dict)
             print("Data modified")
         print("----------> Done: get_data")
         return data_dict
@@ -216,17 +211,14 @@ class DataService(ModelInterface):
         return self.__user_controller_repository.data[controller_key]
     
         
-    def set_mod_key(self,controller_key, mod_key) -> None:
-        print(f"DataService: set_mod_key ({mod_key} in {controller_key})")
+    def set_mod_key(self,controller_key, mod_key, mod_val=None) -> None:  # val is for special values in each mod.
+        print(f"DataService: set_mod_key ({mod_key} in {controller_key} with {mod_val})")
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
-        controller.set_mod_key(mod_key)
+        controller.set_mod_key_dict(mod_key, mod_val)
+        print("eeeeeeeeeeeeeee")
+        print(controller.get_mod_key_dict())
         print("----------> Done: set_mod_key")
-
-    def set_mod_val(self, mod_key, val):
-        print(f"DataService: set_mod_val ({val} to {mod_key})")
-        self.__mod_service.set_mod_val(mod_key, val)
-        print("----------> Done: set_mod_val")
     
     def reset(self, controller_key):
         print(f"DataService: reset ({controller_key}) ---------->")
