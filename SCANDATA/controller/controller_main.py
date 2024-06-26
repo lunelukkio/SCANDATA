@@ -354,6 +354,8 @@ class MainController(ControllerInterface):
         elif selected_text == "BLCOMP":
             self.__model.mod_flag = True
             self.__model.set_mod_key("ROI1", "BLCOMP", [self.__operating_controller_set.find_true_filename_keys()[0], "ROI0"])
+        print("check this is resonable update or not. Can I update only trace axes?")
+        self.update() 
         
     """
     Delegation to the AxesController
