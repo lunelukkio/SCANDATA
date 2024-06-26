@@ -102,6 +102,10 @@ class ControllerInterface(metaclass=ABCMeta):
     @abstractmethod
     def set_mod_key(self, controller_key, mod_key, val=None):
         raise NotImplementedError() 
+    
+    @abstractmethod
+    def set_trace_type(self, selected_test):
+        raise NotImplementedError() 
         
 
 class MainController(ControllerInterface):
@@ -111,7 +115,7 @@ class MainController(ControllerInterface):
         self.__ax_dict = {}  # {"ImageAxes": ImageAxsis class, FluoAxes: TraceAx class, ElecAxes: TraceAx class}\
         
         self.__singleton_key_dict = SingletonKeyDict()  #singleton. It has filename- and controller- and data-keys.
-        self.__operating_controller_set = FlagDict()  #observer. It has filename- and controller- and data-keys.
+        self.__operating_controller_set = FlagDict()  #observer. It has self.filename_dict:filename- and self.data_dict: controller- and data-keys.
         
         self.__singleton_key_dict.set_observer(self.__operating_controller_set)
         #print(f"Set operating controller list from singleton keys.")
@@ -337,6 +341,19 @@ class MainController(ControllerInterface):
     @property
     def operating_controller_set(self):
         return self.__operating_controller_set
+    
+    def set_trace_type(self, selected_text):
+        if selected_text == "Original":
+            self.__model.mod_flag = False
+        elif selected_text == "dFoF":
+            self.__model.mod_flag = True
+            # take the first of the filename list.
+            self.__model.set_mod_key("ROI1", "dFoF")
+        elif selected_text == "dF":
+            raise NotImplementedError()
+        elif selected_text == "BLCOMP":
+            self.__model.mod_flag = True
+            self.__model.set_mod_key("ROI1", "BLCOMP", [self.__operating_controller_set.find_true_filename_keys()[0], "ROI0"])
         
     """
     Delegation to the AxesController

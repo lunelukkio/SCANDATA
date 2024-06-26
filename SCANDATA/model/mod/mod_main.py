@@ -68,24 +68,24 @@ class BlCompMod(ModHandler):
         mod_key = mod_key.upper()
         if mod_key == 'BLCOMP':
             # separate a data from dict
-            bg_trace = self.__get_bl_trace(original_ch_key, mod_val)
-            if bg_trace is None:
+            bl_trace = self.__get_bl_trace(original_ch_key, mod_val)
+            if bl_trace is None:
                 return super().handle_request(mod_key, mod_val, original_data, original_ch_key)
-            blComp_trace_obj = self.trace_calc.create_blComp(original_data, bg_trace)
+            blComp_trace_obj = self.trace_calc.create_blComp(original_data, bl_trace)
             return blComp_trace_obj
         else:
             return super().handle_request(mod_key, mod_val, original_data, original_ch_key)
 
     def __get_bl_trace(self, ch_key, mod_val):
-        data_dict = self.__data_service.get_data(self.bl_filename_key, mod_val)
+        data_dict = self.__data_service.get_data(mod_val[0], mod_val[1])
         if data_dict is None:
             return
         if ch_key in data_dict:
-            bg_trace = data_dict[ch_key]
+            bl_trace = data_dict[ch_key]
         else:
             print(f"There is no {ch_key} in the background dict.")
-            bg_trace = None
-        return bg_trace
+            bl_trace = None
+        return bl_trace
 
 
 class DFOverFMod(ModHandler):
@@ -95,7 +95,7 @@ class DFOverFMod(ModHandler):
         
     def apply_mod(self, mod_key: str, mod_val, original_data: dict, original_ch_key: str) -> dict:
         mod_key = mod_key.upper()
-        if mod_key == 'DFOVERF':
+        if mod_key == 'DFOF':
             df_over_f = self.trace_calc.create_df_over_f(original_data)
             mod_trace_obj = df_over_f
             return mod_trace_obj
@@ -194,14 +194,14 @@ class TraceCalculation:
         norm_obj = pre_trace_obj/max_val
         return norm_obj
     
-    def delta_f(self, trace_obj, bg_trace_obj):
-        return trace_obj - bg_trace_obj
+    def delta_f(self, trace_obj, bl_trace_obj):
+        return trace_obj - bl_trace_obj
     
-    def create_blComp(self, trace_obj, bg_trace_obj):
+    def create_blComp(self, trace_obj, bl_trace_obj):
         f = self.f_value(trace_obj)
-        delta_F_trace = self.delta_f(trace_obj, bg_trace_obj)
-        trace_obj.show_data()
-        delta_F_trace.show_data()
+        delta_F_trace = self.delta_f(trace_obj, bl_trace_obj)
+        #trace_obj.show_data()
+        #delta_F_trace.show_data()
         blComp_trace = delta_F_trace + f
         return blComp_trace
 

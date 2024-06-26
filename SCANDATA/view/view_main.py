@@ -96,6 +96,28 @@ class QtDataWindow(QtWidgets.QMainWindow):
             self.live_view_checkbox.stateChanged.connect(lambda: self.__live_camera_view.start_live_view())
         mainLayout.addWidget(self.live_view_checkbox)
         
+        # radio check buttons
+        self.origin_trace = QtWidgets.QRadioButton("Original")
+        self.dFoverF_trace = QtWidgets.QRadioButton("dFoF")
+        self.dF_trace = QtWidgets.QRadioButton("dF")
+        # make a group
+        self.trace_type = QtWidgets.QButtonGroup()
+        self.trace_type.addButton(self.origin_trace)
+        self.trace_type.addButton(self.dFoverF_trace)
+        self.trace_type.addButton(self.dF_trace)
+        # default setting
+        self.origin_trace.setChecked(True)
+        # add buttons in the widgte
+        mainLayout.addWidget(self.origin_trace)
+        mainLayout.addWidget(self.dFoverF_trace)
+        mainLayout.addWidget(self.dF_trace)
+            # label
+        self.label = QtWidgets.QLabel("Selected: None")
+        mainLayout.addWidget(self.label)
+        # send a signal for selected
+        self.trace_type.buttonClicked.connect(self.dFoverF)
+        
+        # file buttons
         load_btn = QtWidgets.QPushButton("Load...")
         load_btn.setFixedSize(30, 30)
         bottom_btn_layout.addWidget(load_btn, alignment=QtCore.Qt.AlignLeft)
@@ -134,8 +156,6 @@ class QtDataWindow(QtWidgets.QMainWindow):
         # mouse click event
         image_ax.getView().scene().sigMouseClicked.connect(lambda event: self.__main_controller.onclick_axes(event, "IMAGE_AXES"))
        
-        
-       
     def open_file(self, filename_obj=None):
         self.__main_controller.open_file(filename_obj)  # make a model and get filename obj
         self.__main_controller.update()
@@ -146,11 +166,19 @@ class QtDataWindow(QtWidgets.QMainWindow):
         self.__main_controller.print_infor()
         
         "This is temporal. shold be deleted later"
-        self.__main_controller.set_mod_key("ROI1", "BLCOMP", "ROI0")
+        #self.dFoverF_trace.setChecked(True)
+        #self.dFoverF()
+        
         
         
     def live_view(self):
         self.__live_camera_view.start_live_view()
+        
+    def dFoverF(self):
+        selected_button = self.trace_type.checkedButton()
+        if selected_button:
+            self.label.setText(f"Selected: {selected_button.text()}")
+            self.__main_controller.set_trace_type(selected_button.text())
 
     def roi_size(self, command):
         if command == "large":

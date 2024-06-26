@@ -85,7 +85,7 @@ class DataService(ModelInterface):
         self.__user_controller_repository = Repository()
         self.__data_repository = DataRepository()
         self.__mod_service = ModService(self)
-        self.__mod_flag = True # This is for test.
+        self.__mod_flag = False
         
     def __create_filename_obj(self, fullname):
         filename_obj = WholeFilename(fullname)
@@ -216,9 +216,7 @@ class DataService(ModelInterface):
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
         controller.set_mod_key_dict(mod_key, mod_val)
-        print("eeeeeeeeeeeeeee")
-        print(controller.get_mod_key_dict())
-        print("----------> Done: set_mod_key")
+        print(f"----------> Done: set_mod_key: {controller.get_mod_key_dict()}")
     
     def reset(self, controller_key):
         print(f"DataService: reset ({controller_key}) ---------->")
@@ -285,6 +283,14 @@ class DataService(ModelInterface):
                     break
             new_key = controller_key + str(min_missing_number)
         return new_key
+    
+    @property
+    def mod_flag(self):
+        return self.__mod_flag
+    
+    @mod_flag.setter
+    def mod_flag(self, flag: bool) -> None:  
+        self.__mod_flag = flag
     
     def help(self):
         
