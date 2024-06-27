@@ -85,16 +85,26 @@ class QtDataWindow(QtWidgets.QMainWindow):
         self.__main_controller.add_axes("TRACE", "FLUO_AXES",self, trace_ax1)
         self.__main_controller.add_axes("TRACE", "ELEC_AXES",self, trace_ax2)
         
+        # connect x axis of windows
+        self.__main_controller.ax_dict["FLUO_AXES"].ax_obj.sigXRangeChanged.connect(self.sync_x_axes)
+        self.__main_controller.ax_dict["ELEC_AXES"].ax_obj.sigXRangeChanged.connect(self.sync_x_axes)
+        
         # main buttons
         bottom_btn_layout = QtWidgets.QHBoxLayout(centralWidget)
         spacer = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         
-        # check boxes
+        # live view
         self.live_view_checkbox = QtWidgets.QCheckBox("Live View")
         self.live_view_checkbox.setChecked(False)  # default
         if self.__live_camera_mode == True:
             self.live_view_checkbox.stateChanged.connect(lambda: self.__live_camera_view.start_live_view())
         mainLayout.addWidget(self.live_view_checkbox)
+        
+        # baseline compensation
+        self.bl_comp_checkbox = QtWidgets.QCheckBox("Baseline Comp")
+        self.bl_comp_checkbox.setChecked(False)  # default
+        self.bl_comp_checkbox.stateChanged.connect(self.bl_comp)
+        mainLayout.addWidget(self.bl_comp_checkbox)
         
         # radio check buttons
         self.origin_trace = QtWidgets.QRadioButton("Original")
@@ -169,10 +179,25 @@ class QtDataWindow(QtWidgets.QMainWindow):
         #self.dFoverF_trace.setChecked(True)
         #self.dFoverF()
         
+        # connect x axis of windows
+    def sync_x_axes(self, view):
+        # get the x axis setting of the fluo axes
+        x_range1 = self.__main_controller.ax_dict["FLUO_AXES"].ax_obj.viewRange()[0]
         
+        # set the x axis of the elec axes
+        self.__main_controller.ax_dict["ELEC_AXES"].ax_obj.setXRange(x_range1[0], x_range1[1], padding=0)
         
+        # get the x axis setting of the elec axes
+        x_range2 = self.__main_controller.ax_dict["ELEC_AXES"].ax_obj.viewRange()[0]
+        
+        # set the x axis of the fluo axes
+        self.__main_controller.ax_dict["FLUO_AXES"].ax_obj.setXRange(x_range2[0], x_range2[1], padding=0)
+    
     def live_view(self):
         self.__live_camera_view.start_live_view()
+        
+    def bl_comp(self):
+            self.__main_controller.set_trace_type("BLCOMP")
         
     def dFoverF(self):
         selected_button = self.trace_type.checkedButton()

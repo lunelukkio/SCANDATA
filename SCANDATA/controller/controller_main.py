@@ -112,7 +112,7 @@ class MainController(ControllerInterface):
     def __init__(self, view=None):
         self.__model = DataService()
         self.__file_service = FileService()
-        self.__ax_dict = {}  # {"ImageAxes": ImageAxsis class, FluoAxes: TraceAx class, ElecAxes: TraceAx class}\
+        self.__ax_dict = {}  # {"IMAGE_AXES": ImageAxsis class, FLUO_AXES: TraceAx class, ELEC_AXES: TraceAx class}\
         
         self.__singleton_key_dict = SingletonKeyDict()  #singleton. It has filename- and controller- and data-keys.
         self.__operating_controller_set = FlagDict()  #observer. It has self.filename_dict:filename- and self.data_dict: controller- and data-keys.
@@ -120,7 +120,7 @@ class MainController(ControllerInterface):
         self.__singleton_key_dict.set_observer(self.__operating_controller_set)
         #print(f"Set operating controller list from singleton keys.")
         #print(self.__singleton_key_dict.get_dict())
-    
+        
     def __del__(self):
         print('.')
         #print('Deleted a MainController.' + '  myId= {}'.format(id(self)))
@@ -199,7 +199,7 @@ class MainController(ControllerInterface):
         for axes in self.__ax_dict:
             self.__ax_dict[axes].update()  # to redraw screen traces
             self.__ax_dict[axes].set_update_flag(False)  # return to deactive
-        print("Update done")
+        print("Main controller: Update done!")
         print("")
         
     def set_operating_controller_val(self, controller_key, ch_key, bool_val=None):
@@ -344,18 +344,15 @@ class MainController(ControllerInterface):
     
     def set_trace_type(self, selected_text):
         if selected_text == "Original":
-            self.__model.mod_flag = False
+            delete "original" or "dfof" or "df"
         elif selected_text == "dFoF":
-            self.__model.mod_flag = True
             # take the first of the filename list.
-            self.__model.set_mod_key("ROI1", "dFoF")
+            self.__model.set_mod_key(self.__operating_controller_set.find_true_controller_keys("ROI")[0], "dFoF")
         elif selected_text == "dF":
             raise NotImplementedError()
         elif selected_text == "BLCOMP":
-            self.__model.mod_flag = True
             self.__model.set_mod_key("ROI1", "BLCOMP", [self.__operating_controller_set.find_true_filename_keys()[0], "ROI0"])
-        print("check this is resonable update or not. Can I update only trace axes?")
-        self.update() 
+        self.update("ROI") 
         
     """
     Delegation to the AxesController

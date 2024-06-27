@@ -85,7 +85,7 @@ class DataService(ModelInterface):
         self.__user_controller_repository = Repository()
         self.__data_repository = DataRepository()
         self.__mod_service = ModService(self)
-        self.__mod_flag = False
+        self.__mod_flag = True  # This is for debug
         
     def __create_filename_obj(self, fullname):
         filename_obj = WholeFilename(fullname)
@@ -191,16 +191,16 @@ class DataService(ModelInterface):
         
     def update_observer(self, controller_key=None):
         if controller_key is None:
-            print("DataService: update_observer (All user controller) ---------->")
+            print("DataService: update the flags of user_controller_observers (All user controller) ---------->")
             controller_key_list = self.__user_controller_repository.get_infor()
             for controller_key in controller_key_list:
                 controller = self.__user_controller_repository.find_by_name(controller_key)
                 controller.notify_observer()
         else:
-            print(f"DataService: update_observer ({controller_key}) ---------->")
+            print(f"DataService: update the flags of user_controller_observers ({controller_key}) ---------->")
             controller = self.__user_controller_repository.find_by_name(controller_key)
             controller.notify_observer()
-        print("----------> Done: update_observer")
+        print("----------> Done: update flags of user_controller_observers")
             
 
     # Use this only for a test. return a controller object.

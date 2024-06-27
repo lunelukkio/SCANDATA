@@ -94,6 +94,11 @@ class AxesController(metaclass=ABCMeta):
     def view_flag_set(self):
         return self._view_flag_set
     
+    @property
+    def ax_obj(self):
+        return self._ax_obj
+    
+    
 class TraceAxesController(AxesController):
     def __init__(self, main_controller, model, canvas, ax):  # controller is for getting ROI information from FLU-AXES.
         super().__init__(main_controller, model, canvas, ax)
@@ -155,6 +160,7 @@ class TraceAxesController(AxesController):
             self.set_view_data()  # See each subclass.
             self.set_marker() # for ROIBOX
             self._ax_obj.autoRange()
+            print(f"AxesController: {self.__class__.__name__} updated")
         else:
             pass
 
@@ -189,6 +195,7 @@ class ImageAxesController(AxesController):
             # delete old image objects
             self.ax_item_list = {}
             self.set_view_data()  # This belong to Image Controller
+            print(f"AxesController: {self.__class__.__name__} updated")
         else:
             pass
 

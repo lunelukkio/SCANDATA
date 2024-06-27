@@ -322,7 +322,7 @@ class FlagDict(DataDict):
                     self._data_dict[target_controller_key][target_data_key] = val
                     
     # find only controller keys which have true in ch data.
-    def find_true_controller_keys(self, controller=None) -> list:
+    def find_true_controller_keys(self, controller=None) -> list:  # e.g. "ROI"
         if controller is None or controller == "ALL":
             return [key for key, value in self._data_dict.items() if any(value.values())]
         else:
