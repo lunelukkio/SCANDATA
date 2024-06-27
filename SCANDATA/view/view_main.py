@@ -49,7 +49,8 @@ class QtDataWindow(QtWidgets.QMainWindow):
         size = centralWidget.size()
 
         # image window
-        image_ax = pg.ImageView()
+        #image_ax = pg.ImageView()
+        image_ax = CustomImageView()
         image_ax.ui.histogram.hide()  # hide contrast bar
         image_ax.ui.menuBtn.hide()  # hide a menu button
         image_ax.ui.roiBtn.hide() # hide a ROI button
@@ -108,19 +109,19 @@ class QtDataWindow(QtWidgets.QMainWindow):
         
         # radio check buttons
         self.origin_trace = QtWidgets.QRadioButton("Original")
-        self.dFoverF_trace = QtWidgets.QRadioButton("dFoF")
-        self.dF_trace = QtWidgets.QRadioButton("dF")
+        self.dFoverF_trace = QtWidgets.QRadioButton("dF/F")
+        self.normalized_trace = QtWidgets.QRadioButton("NORMALIZE")
         # make a group
         self.trace_type = QtWidgets.QButtonGroup()
         self.trace_type.addButton(self.origin_trace)
         self.trace_type.addButton(self.dFoverF_trace)
-        self.trace_type.addButton(self.dF_trace)
+        self.trace_type.addButton(self.normalized_trace)
         # default setting
         self.origin_trace.setChecked(True)
         # add buttons in the widgte
         mainLayout.addWidget(self.origin_trace)
         mainLayout.addWidget(self.dFoverF_trace)
-        mainLayout.addWidget(self.dF_trace)
+        mainLayout.addWidget(self.normalized_trace)
             # label
         self.label = QtWidgets.QLabel("Selected: None")
         mainLayout.addWidget(self.label)
@@ -142,6 +143,11 @@ class QtDataWindow(QtWidgets.QMainWindow):
         small_btn.setFixedSize(100, 30)
         bottom_btn_layout.addWidget(small_btn, alignment=QtCore.Qt.AlignLeft)
         small_btn.clicked.connect(lambda: self.roi_size("small"))
+        
+        roi_change_btn = QtWidgets.QPushButton("ROI")
+        roi_change_btn.setFixedSize(30, 30)
+        bottom_btn_layout.addWidget(roi_change_btn, alignment=QtCore.Qt.AlignLeft)
+        roi_change_btn.clicked.connect(self.change_roi)
         bottom_btn_layout.addSpacerItem(spacer)
         
         mainLayout.addLayout(bottom_btn_layout)
@@ -197,13 +203,20 @@ class QtDataWindow(QtWidgets.QMainWindow):
         self.__live_camera_view.start_live_view()
         
     def bl_comp(self):
-            self.__main_controller.set_trace_type("BLCOMP")
+        self.__main_controller.set_trace_type("BLCOMP")
         
+    def change_roi(self, state):
+        self.__main_controller.operating_controller_set.next_controller_to_true("ROI")
+        self.__main_controller.set_view_flag("FLUO_AXES", "ROI0", "CH1")  # (ax, controller_key, data_key, value)
+
     def dFoverF(self):
         selected_button = self.trace_type.checkedButton()
         if selected_button:
-            self.label.setText(f"Selected: {selected_button.text()}")
-            self.__main_controller.set_trace_type(selected_button.text())
+            text = selected_button.text()
+            self.label.setText(f"Selected: {text}")
+            if selected_button.text() == "dF/F":
+                text = "DFOF"
+            self.__main_controller.set_trace_type(text)
 
     def roi_size(self, command):
         if command == "large":
@@ -211,8 +224,30 @@ class QtDataWindow(QtWidgets.QMainWindow):
         elif command == "small":
             val = [None, None, -1, -1]
         self.__main_controller.change_roi_size(val)
-
-
+        
+class CustomImageView(pg.ImageView):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+    
+    def mousePressEvent(self, event):
+        if event.button() == QtCore.Qt.RightButton:
+            print("111111111111111111111111111111")
+            event.ignore()
+        else:
+            super().mousePressEvent(event)
+    
+    def mouseMoveEvent(self, event):
+        event.ignore()
+    
+    def mouseReleaseEvent(self, event):
+        print("222222222222222222222222222222222222222222222")
+        print(event.button())
+        if event.button() == QtCore.Qt.RightButton:
+            print("3333333333333333333333333333333333333333333333333")
+            print(event.button())
+            event.ignore()
+        else:
+            super().mouseReleaseEvent(event)
 
 if __name__ == '__main__':
     fullname = '..\\..\\220408\\20408B002.tsm'

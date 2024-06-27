@@ -17,6 +17,8 @@ class ModService:  # Put every mods. Don't need to sepalate mods for each data t
         self.df_over_f = DFOverFMod()
         self.normalize = Normalize()
         self.error_mod = ErrorMod()
+        
+        self.mod_dict_order = ["BLCOMP", "DFOF", "NORMALIZE"]
 
         # Chain of resonsibility
         self.chain_of_responsibility = self.blComp. \
@@ -33,8 +35,9 @@ class ModService:  # Put every mods. Don't need to sepalate mods for each data t
             for original_ch_key in original_data_dict.keys():
                 # set each mod key to the chain of responsibility
                 original_data = original_data_dict[original_ch_key]
-                for mod_key, mod_val in mod_dict.items(): 
-                    original_data = self.blComp.apply_mod(mod_key, mod_val, original_data, original_ch_key)
+                for mod_key in self.mod_dict_order:
+                    if mod_key in mod_dict:
+                        original_data = self.blComp.apply_mod(mod_key, mod_dict[mod_key], original_data, original_ch_key)
                 mod_data_dict[original_ch_key] = original_data
         return mod_data_dict  
         
@@ -88,7 +91,7 @@ class BlCompMod(ModHandler):
         return bl_trace
 
 
-class DFOverFMod(ModHandler):
+class DFOverFMod(ModHandler):  # %
     def __init__(self):
         super().__init__()
         self.trace_calc = TraceCalculation()

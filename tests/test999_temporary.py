@@ -1,85 +1,46 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Jan 22 08:48:55 2024
-
-@author: lunel
-"""
-
-import numpy as np
-import pyqtgraph as pg
-from PyQt5 import QtWidgets
-import pco
 import sys
-from PyQt5 import QtCore
-
-class CameraWindow(QtWidgets.QMainWindow):
-    def __init__(self, parent=None):
-        super(CameraWindow, self).__init__(parent)
-        self.camera_status = "off"
-        
-        self.cam = pco.Camera()
-        print(self.cam.is_color)
-        
-        self.cam.default_configuration()
-        self.cam.configuration = {'exposure time': 10e-3,
-                                  'roi': (1, 1, 512, 512),
-                                  'delay time': 0,
-                                  'trigger': 'auto sequence',
-                                  'acquire': 'auto',
-                                  'noise filter': 'on',
-                                  'binning': (2, 2)}
-        
-        print(self.cam.configuration)
-        
-        self.cam.record(mode="sequence non blocking")
-        
-        self.central_widget = QtWidgets.QWidget()
-        self.setCentralWidget(self.central_widget)
-        
-        self.layout = QtWidgets.QVBoxLayout()
-        self.central_widget.setLayout(self.layout)
-        
-        self.view = pg.GraphicsLayoutWidget()
-        self.layout.addWidget(self.view)
-        
-        self.plot =self.view.addPlot()
-        
-        ini_image, meta = self.cam.image()
-        self.img = pg.ImageItem(ini_image)
-        self.plot.addItem(self.img)
-        
-        self.timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(self.update)
+from PyQt5.QtWidgets import QDialog, QApplication
+from  DemoButton import *
 
 
-    def update(self):
-        self.cam.record(mode="sequence")
-        data, meta = self.cam.image()
-        self.img.setImage(data)
-  
-    def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.Key_Space:
-
-            if self.camera_status == "off":
-                print("rrrrrrrrrrrrrrrrrrrrr")
-                self.camera_status = "on"
-                self.timer.start(50) 
-            elif self.camera_status == "on":
-                print("weeeeeeeeeeeeeeeeeer")
-                self.timer.stop()
-                self.cam.stop()
-                self.camera_status = "off"
+class MyForm(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.ui = Ui_Dialog()
+        self.ui.setupUi(self)
+        self.show()
+        self.ui.autoDefaultButton.clicked.connect(self.autoDefault_onClicked)
+        self.ui.defaultButton.clicked.connect(self.default_onClicked)
+        self.ui.noneButton.clicked.connect(self.none_onClicked)
+        self.ui.checkBox.stateChanged.connect(self.checkBox1_stateChanged)
+        self.ui.radioButton_1.toggled.connect(self.radioButton_toggle)
+        self.ui.radioButton_2.toggled.connect(self.radioButton_toggle)
+        self.ui.radioButton_3.toggled.connect(self.radioButton_toggle)
+    def updateLog(self,message): 
+        self.ui.LogEdit.append(message)        
+    def autoDefault_onClicked(self): 
+        self.updateLog('call autoDefault onClicked')
+    def default_onClicked(self): 
+        self.updateLog('call default onClicked')
+    def none_onClicked(self): 
+        self.updateLog('call none onClicked')
+    def checkBox1_stateChanged(self,state):
+        self.updateLog('call checkBox1 stateChanged.state is'+str(state))
+    def radioButton_toggle(self):
+        state = self.radioButtonState()
+        self.updateLog('Call radioButton_toggle.state is'+str(state))
+    def radioButtonState(self):
+        state = 0
+        if self.ui.radioButton_1.isChecked() == True: 
+            state = 0
+        elif self.ui.radioButton_2.isChecked() == True:
+            state = 1
         else:
-            super().keyPressEvent(event)
+            state = 2
+        return state
 
-
-
-def main():
-    app = QtWidgets.QApplication(sys.argv)
-    win = CameraWindow()
-    win.show()
+if __name__=="__main__":
+    app = QApplication(sys.argv)
+    w = MyForm()
+    w.show()
     sys.exit(app.exec_())
-
-if __name__ == '__main__':
-    main()
-        

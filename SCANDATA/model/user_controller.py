@@ -86,10 +86,15 @@ class UserController(metaclass=ABCMeta):
         self.observer.notify_observer()
 
     def set_mod_key_dict(self, mod_key, mod_val=None):
+        if mod_val == "DELETE":
+            if mod_key in self.__mod_key_dict:
+                del self.__mod_key_dict[mod_key]
+            return
         if mod_key in self.__mod_key_dict:
             del self.__mod_key_dict[mod_key]
         else:
             self.__mod_key_dict[mod_key] = mod_val
+        print(f"Current mod set[{self.__class__.__name__}]: {self.__mod_key_dict}")
 
     def get_mod_key_dict(self):
         return self.__mod_key_dict

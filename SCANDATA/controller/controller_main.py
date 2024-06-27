@@ -126,6 +126,14 @@ class MainController(ControllerInterface):
         #print('Deleted a MainController.' + '  myId= {}'.format(id(self)))
         #pass
         
+    @property
+    def ax_dict(self):
+        return self.__ax_dict
+    
+    @property
+    def operating_controller_set(self):
+        return self.__operating_controller_set
+        
     """
     MainController 
     """
@@ -138,10 +146,12 @@ class MainController(ControllerInterface):
         self.__singleton_key_dict.set_observer(new_axes_controller.view_flag_set)
     
     def open_file(self, filename_obj=None) -> dict:
-        print("========== Open a new file. ==========")
         # get filename object
         if filename_obj is None:
             filename_obj = self.__file_service.open_file()
+        if filename_obj.name == "":
+            print("MainController: File openning is Canceled!!")
+            return
         # make experiments data
         open_experiments = self.create_experiments(filename_obj) 
         if open_experiments is True:
@@ -166,7 +176,7 @@ class MainController(ControllerInterface):
         return filename_obj
     
     def create_experiments(self, filename_obj: object):
-        print("Make a model (experiments entities and controllers) ---------->")
+        print("MainController: Make a model (experiments entities and controllers) ---------->")
         self.__model.create_experiments(filename_obj.fullname)
         # create_model end proccess
         if self.__model == None:
@@ -333,23 +343,18 @@ class MainController(ControllerInterface):
     
     def get_canvas_axes(self, view_controller) -> object:
             return self.__ax_dict[view_controller].get_canvas_axes()
-        
-    @property
-    def ax_dict(self):
-        return self.__ax_dict
-    
-    @property
-    def operating_controller_set(self):
-        return self.__operating_controller_set
     
     def set_trace_type(self, selected_text):
         if selected_text == "Original":
-            delete "original" or "dfof" or "df"
-        elif selected_text == "dFoF":
+            self.__model.set_mod_key(self.__operating_controller_set.find_true_controller_keys("ROI")[0], "DFOF", "DELETE")
+            self.__model.set_mod_key(self.__operating_controller_set.find_true_controller_keys("ROI")[0], "NORMALIZE", "DELETE")
+        elif selected_text == "DFOF":
             # take the first of the filename list.
-            self.__model.set_mod_key(self.__operating_controller_set.find_true_controller_keys("ROI")[0], "dFoF")
-        elif selected_text == "dF":
-            raise NotImplementedError()
+            self.__model.set_mod_key(self.__operating_controller_set.find_true_controller_keys("ROI")[0], "NORMALIZE", "DELETE")
+            self.__model.set_mod_key(self.__operating_controller_set.find_true_controller_keys("ROI")[0], "DFOF")
+        elif selected_text == "NORMALIZE":
+            self.__model.set_mod_key(self.__operating_controller_set.find_true_controller_keys("ROI")[0], "DFOF", "DELETE")
+            self.__model.set_mod_key(self.__operating_controller_set.find_true_controller_keys("ROI")[0], "NORMALIZE")
         elif selected_text == "BLCOMP":
             self.__model.set_mod_key("ROI1", "BLCOMP", [self.__operating_controller_set.find_true_filename_keys()[0], "ROI0"])
         self.update("ROI") 

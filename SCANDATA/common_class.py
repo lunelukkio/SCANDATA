@@ -330,7 +330,7 @@ class FlagDict(DataDict):
             true_list = [key for key, value in self._data_dict.items() if any(value.values())]
             return [key for key in true_list if controller in key]
     
-    def find_true_ch_keys(self, controller_key) -> list:
+    def find_true_ch_keys(self, controller_key) -> list:  # e.g. "ROI"
         return [key for key, value in self._data_dict[controller_key].items() if value]
     
     def find_true_filename_keys(self) -> list:
@@ -339,7 +339,7 @@ class FlagDict(DataDict):
                 in self._filename_dict.items() 
                 if bool_val]
     
-    def next_controller_to_true(self, controller):
+    def next_controller_to_true(self, controller):  # e.g. "ROI"
         controller_whole_list = [key for key in self._data_dict.keys() if controller in key]
         controller_true_key_list = self.find_true_controller_keys(controller)
         targeted_controller_key = controller_true_key_list[-1]  # the last key

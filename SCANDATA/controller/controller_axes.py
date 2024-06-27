@@ -38,6 +38,14 @@ class AxesController(metaclass=ABCMeta):
                 setting = json.load(json_file)
         self._ch_color = setting.get("ch_color")
         self._controller_color = setting.get("controller_color")
+        
+    @property
+    def view_flag_set(self):
+        return self._view_flag_set
+    
+    @property
+    def ax_obj(self):
+        return self._ax_obj
             
     def set_flag(self, controller_key, ch_key, bool_val):
         self._view_flag_set.set_val(controller_key, ch_key, bool_val)
@@ -89,14 +97,6 @@ class AxesController(metaclass=ABCMeta):
     def print_infor(self):
         print(f"{self.__class__.__name__} current data list = ")
         self._view_flag_set.print_infor()
-
-    @property
-    def view_flag_set(self):
-        return self._view_flag_set
-    
-    @property
-    def ax_obj(self):
-        return self._ax_obj
     
     
 class TraceAxesController(AxesController):
