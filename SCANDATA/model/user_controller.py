@@ -42,6 +42,8 @@ class UserController(metaclass=ABCMeta):
     def __init__(self):
         self.observer = ControllerObserver()
         self._val_obj = None
+        
+        # currently no use. Moved mod_key_dict to controller_axes class.
         self.__mod_key_dict = {}
         
     def __del__(self):  #make a message when this object is deleted.
@@ -85,6 +87,7 @@ class UserController(metaclass=ABCMeta):
     def notify_observer(self):
         self.observer.notify_observer()
 
+    # currently no use. Moved mod_key_dict to controller_axes class.
     def set_mod_key_dict(self, mod_key, mod_val=None):
         if mod_val == "DELETE":
             if mod_key in self.__mod_key_dict:

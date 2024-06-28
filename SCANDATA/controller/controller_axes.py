@@ -29,6 +29,8 @@ class AxesController(metaclass=ABCMeta):
         self.update_flag = False  #  Ture or False or empty: flip flag.
         self.update_flag_lock = False # to skip ImageAxe update
         
+        self._mod_key_dict = {}
+        
         # color selection for traces and RoiBoxes
         try:
             with open("../setting/axes_data_setting.json", "r") as json_file:
@@ -71,6 +73,17 @@ class AxesController(metaclass=ABCMeta):
     def set_observer(self, controller_key) -> None:
         self._model.set_observer(controller_key, self)
 
+    def set_mod_key_dict(self, mod_key, mod_val=None):
+        if mod_val == "DELETE":
+            if mod_key in self._mod_key_dict:
+                del self._mod_key_dict[mod_key]
+            return
+        if mod_key in self._mod_key_dict:
+            del self._mod_key_dict[mod_key]
+        else:
+            self._mod_key_dict[mod_key] = mod_val
+        print(f"AxesController: Current mod set[{self.__class__.__name__}]: {self._mod_key_dict}")
+
     @abstractmethod
     def set_view_data(self, active_controller_dict):
         raise NotImplementedError()
@@ -110,7 +123,7 @@ class TraceAxesController(AxesController):
         for filename_key in filename_true_dict:
             # get only True user controller flag from the dict.
             for controller_key in controller_true_dict:
-                ch_data_dict = self._model.get_data(filename_key, controller_key)
+                ch_data_dict = self._model.get_data(filename_key, controller_key, self._mod_key_dict)
                 if ch_data_dict is None:
                     print("Ch data dict is None")
                     return
@@ -180,7 +193,7 @@ class ImageAxesController(AxesController):
         for filename_key in filename_true_dict:
             # get only True user controller flag from the dict.
             for controller_key in controller_true_dict:
-                ch_data_dict = self._model.get_data(filename_key, controller_key)
+                ch_data_dict = self._model.get_data(filename_key, controller_key, self._mod_key_dict)
                 # get only True ch data flag from the dict.
                 ch_true_list = self._view_flag_set.find_true_ch_keys(controller_key)
                 # Model can recieve not only data_list but also individual ch_key directly.

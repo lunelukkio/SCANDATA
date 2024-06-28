@@ -203,7 +203,7 @@ class QtDataWindow(QtWidgets.QMainWindow):
         self.__live_camera_view.start_live_view()
         
     def bl_comp(self):
-        self.__main_controller.set_trace_type("BLCOMP")
+        self.__main_controller.set_trace_type("FLUO_AXES", "BLCOMP")
         
     def switch_bl_roi(self, state):
         self.__main_controller.single_operation("ROI0", "ALL")
@@ -221,7 +221,7 @@ class QtDataWindow(QtWidgets.QMainWindow):
             self.label.setText(f"Selected: {text}")
             if selected_button.text() == "dF/F":
                 text = "DFOF"
-            self.__main_controller.set_trace_type(text)
+            self.__main_controller.set_trace_type("FLUO_AXES", text)
 
     def roi_size(self, command):
         if command == "large":

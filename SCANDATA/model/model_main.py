@@ -55,7 +55,7 @@ class ModelInterface(metaclass=ABCMeta):
 
     # set or delete a mod key to the mod list with value in user controller. If there is no val, it will be None.
     @abstractmethod
-    def set_mod_key(self, controller_key, mod_key, val) -> None:
+    def set_mod_key(self, veiw_axes_key, mod_key, val) -> None:
         raise NotImplementedError()
         
     # reset controller_val
@@ -167,7 +167,7 @@ class DataService(ModelInterface):
         print("----------> Done: set_controller_data")
 
     # return a dict of value objects with filename.
-    def get_data(self, filename_key, controller_key) -> dict:  # dict e.g.{'CH1': <SCANDATA.model.value_object.TraceData object at 0x000001905EC11850>, 'CH2': <SCANDATA.model.value_object.TraceData object at 0x000001905CC856D0>}
+    def get_data(self, filename_key, controller_key, mod_key_dict=None) -> dict:  # dict e.g.{'CH1': <SCANDATA.model.value_object.TraceData object at 0x000001905EC11850>, 'CH2': <SCANDATA.model.value_object.TraceData object at 0x000001905CC856D0>}
         print(f"DataService: get_data ({controller_key}) ---------->")
         controller_key = controller_key.upper()
         data_dict = self.__data_repository.find_by_name(filename_key, controller_key)
@@ -176,10 +176,12 @@ class DataService(ModelInterface):
             return
         # apply mod 
         if self.__mod_flag is True:
-            controller = self.__user_controller_repository.find_by_name(controller_key)
-            mod_dict = controller.get_mod_key_dict()
-            data_dict = self.__mod_service.apply_mod(data_dict, mod_dict)
-            print("Data modified")
+            if mod_key_dict is None:
+                pass
+            else:
+                print(f"DataService: Use {mod_key_dict.keys()} mod ---------->")
+                data_dict = self.__mod_service.apply_mod(data_dict, mod_key_dict)
+                print("Data modified")
         print("----------> Done: get_data")
         return data_dict
             
@@ -211,10 +213,10 @@ class DataService(ModelInterface):
         print("----------> Done: get_user_controller")
         return self.__user_controller_repository.data[controller_key]
     
-        
-    def set_mod_key(self,controller_key, mod_key, mod_val=None) -> None:  # val is for special values in each mod.
-        print(f"DataService: set_mod_key ({mod_key} in {controller_key} with {mod_val})")
-        controller_key = controller_key.upper()
+    # currently no use. Moved mod_dict to controller_axes class.
+    def set_mod_key(self, veiw_axes_key, mod_key, mod_val=None) -> None:  # val is for special values in each mod.
+        print(f"DataService: set_mod_key ({mod_key} in {veiw_axes_key} with {mod_val})")
+        controller_key = veiw_axes_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)
         controller.set_mod_key_dict(mod_key, mod_val)
         print(f"----------> Done: set_mod_key: {controller.get_mod_key_dict()}")

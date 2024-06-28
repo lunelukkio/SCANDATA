@@ -348,19 +348,21 @@ class MainController(ControllerInterface):
     def get_canvas_axes(self, view_controller) -> object:
             return self.__ax_dict[view_controller].get_canvas_axes()
     
-    def set_trace_type(self, selected_text):
+    def set_trace_type(self, controller_axes, selected_text):
         if selected_text == "Original":
-            self.__model.set_mod_key(self.__operating_controller_set.find_true_controller_keys("ROI")[0], "DFOF", "DELETE")
-            self.__model.set_mod_key(self.__operating_controller_set.find_true_controller_keys("ROI")[0], "NORMALIZE", "DELETE")
+            self.__ax_dict[controller_axes].set_mod_key_dict("DFOF", "DELETE")
+            self.__ax_dict[controller_axes].set_mod_key_dict("NORMALIZE", "DELETE")
         elif selected_text == "DFOF":
             # take the first of the filename list.
-            self.__model.set_mod_key(self.__operating_controller_set.find_true_controller_keys("ROI")[0], "NORMALIZE", "DELETE")
-            self.__model.set_mod_key(self.__operating_controller_set.find_true_controller_keys("ROI")[0], "DFOF")
+            self.__ax_dict[controller_axes].set_mod_key_dict("NORMALIZE", "DELETE")
+            self.__ax_dict[controller_axes].set_mod_key_dict("DFOF")
         elif selected_text == "NORMALIZE":
-            self.__model.set_mod_key(self.__operating_controller_set.find_true_controller_keys("ROI")[0], "DFOF", "DELETE")
-            self.__model.set_mod_key(self.__operating_controller_set.find_true_controller_keys("ROI")[0], "NORMALIZE")
+            self.__ax_dict[controller_axes].set_mod_key_dict("DFOF", "DELETE")
+            self.__ax_dict[controller_axes].set_mod_key_dict("NORMALIZE")
         elif selected_text == "BLCOMP":
-            self.__model.set_mod_key("ROI1", "BLCOMP", [self.__operating_controller_set.find_true_filename_keys()[0], "ROI0"])
+            self.__ax_dict[controller_axes].set_mod_key_dict("BLCOMP", 
+                                                             [self.__operating_controller_set.find_true_filename_keys()[0] ,
+                                                              "ROI0"])  # baseline trace is [filename, ROI0].
         self.update("ROI") 
         
     """
