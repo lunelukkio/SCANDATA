@@ -144,10 +144,10 @@ class QtDataWindow(QtWidgets.QMainWindow):
         bottom_btn_layout.addWidget(small_btn, alignment=QtCore.Qt.AlignLeft)
         small_btn.clicked.connect(lambda: self.roi_size("small"))
         
-        roi_change_btn = QtWidgets.QPushButton("ROI")
+        roi_change_btn = QtWidgets.QPushButton("BL ROI")
         roi_change_btn.setFixedSize(30, 30)
         bottom_btn_layout.addWidget(roi_change_btn, alignment=QtCore.Qt.AlignLeft)
-        roi_change_btn.clicked.connect(self.change_roi)
+        roi_change_btn.clicked.connect(self.change_bl_roi)
         bottom_btn_layout.addSpacerItem(spacer)
         
         mainLayout.addLayout(bottom_btn_layout)
@@ -205,9 +205,14 @@ class QtDataWindow(QtWidgets.QMainWindow):
     def bl_comp(self):
         self.__main_controller.set_trace_type("BLCOMP")
         
+    def change_bl_roi(self, state):
+        self.__main_controller.operating_controller_set.single_operation("ROI0", "ALL")
+        self.__main_controller.set_view_flag("FLUO_AXES", "ROI0", "CH1")  # (ax, controller_key, data_key, value)
+
     def change_roi(self, state):
         self.__main_controller.operating_controller_set.next_controller_to_true("ROI")
-        self.__main_controller.set_view_flag("FLUO_AXES", "ROI0", "CH1")  # (ax, controller_key, data_key, value)
+        # need modify
+        #self.__main_controller.set_view_flag("FLUO_AXES", "ROI0", "CH1")  # (ax, controller_key, data_key, value)
 
     def dFoverF(self):
         selected_button = self.trace_type.checkedButton()

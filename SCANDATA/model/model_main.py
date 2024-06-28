@@ -158,6 +158,7 @@ class DataService(ModelInterface):
     # This method can receive a list or str as a ch_key, but usually it shold be data_list becase every data shold be produced by the same controller.
     def set_controller_data(self, filename_key:str, controller_key: str, ch_key_list):
         print(f"DataService: set_controller_data ({controller_key}) ---------->")
+        # get experiments object from the repository
         experiments_obj = self.__experiments_repository.find_by_name(filename_key)
         controller_key = controller_key.upper()
         controller = self.__user_controller_repository.find_by_name(controller_key)

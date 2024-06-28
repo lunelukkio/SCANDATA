@@ -8,6 +8,7 @@ Created on Wed Sep 27 11:47:25 2023
 from abc import ABCMeta, abstractmethod
 from SCANDATA.model.value_object import FramesData, ImageData, TraceData
 from SCANDATA.model.file_io import TsmFileIo, DaFileIo, HekaFileIO
+import copy
 
 """
 Entity
@@ -21,12 +22,16 @@ class Experiments:   # entity
         builder = builder_factory.create_builder(self.filename_obj)
         self.__default_data_structure = builder.get_default_data_structure()
 
+        # These data are used by UserController class.
         self.__txt_data = builder.get_infor()
-        self.__frames_dict = builder.get_frame()  # {FramsData:val_obj}
-        self.__image_dict = builder.get_image()   # {ImageData:val_obj}
-        self.__trace_dict = builder.get_trace()  # {Trace_Data:val_obj}
+        self.__frames_dict = builder.get_frame()  # {ch_key:val_obj}
+        self.__image_dict = builder.get_image()   # {ch_key:val_obj}
+        self.__trace_dict = builder.get_trace()  # {ch_key:val_obj}
         
-
+        # This is to modify data. 
+        self.__original_frames_dict = copy.deepcopy(self.__frames_dict)
+        self.__original_image_dict = copy.deepcopy(self.__image_dict)
+        self.__original_trace_dict = copy.deepcopy(self.__trace_dict)
         
         print("----- Experiments: Successful data construction!!!")
         print("")

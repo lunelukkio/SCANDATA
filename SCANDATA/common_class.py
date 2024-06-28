@@ -230,6 +230,7 @@ class DataDict(metaclass=ABCMeta):
     def __init__(self):
         self._data_dict = {}
         self._filename_dict = {}
+        self._temp_dict = None
 
     @abstractmethod
     def update(self, key_dict):
@@ -280,6 +281,7 @@ class DataDict(metaclass=ABCMeta):
                 return {key: FlagDict.data_dict_to_key_dict(value) for key, value in data_dict.items()}
         return data_dict
 
+
 class FlagDict(DataDict):
     def __init__(self):
         super().__init__()
@@ -298,7 +300,7 @@ class FlagDict(DataDict):
                 new_dict[controller_key] = None
         self._data_dict = new_dict
         
-    def set_val(self, controller_key, data_key, val=None):
+    def set_val(self, controller_key, data_key, val=None):  # e.g. set_val("ROI1", "CH1", True)
         if controller_key == "ALL":
             controllers = self._data_dict.keys()
         elif controller_key in self._data_dict:
@@ -320,7 +322,35 @@ class FlagDict(DataDict):
                     self._data_dict[target_controller_key][target_data_key] = not self._data_dict[target_controller_key][target_data_key]
                 else:
                     self._data_dict[target_controller_key][target_data_key] = val
-                    
+                 
+    def single_operation(self, controller_key, data_key, val=None):
+        if val is True:
+            print("rrrrrrrrrrrrrrrrrrr")
+            print(self._data_dict)
+            self._temp_dict = copy.deepcopy(self._data_dict)
+            self.set_val("ALL", "ALL", False)
+            self.set_val(controller_key, data_key, True)
+            print(self._data_dict)
+            print("")
+        elif val is False:
+            self._data_dict = copy.deepcopy(self._temp_dict)
+            print(self._data_dict)
+            print("")
+        else:
+            first_value = self._data_dict[controller_key][next(iter(self._data_dict[controller_key]))]
+            if first_value is True:
+                self._data_dict = copy.deepcopy(self._temp_dict)
+                print(self._data_dict)
+                print("")
+            else:
+                print(self._data_dict)
+                self._temp_dict = copy.deepcopy(self._data_dict)
+                self.set_val("ALL", "ALL", False)
+                self.set_val(controller_key, data_key, True)
+                print(self._data_dict)
+                print("")
+                
+                 
     # find only controller keys which have true in ch data.
     def find_true_controller_keys(self, controller=None) -> list:  # e.g. "ROI"
         if controller is None or controller == "ALL":
@@ -359,7 +389,7 @@ class FlagDict(DataDict):
         else:
             print(f"There is no {targeted_controller_key}")
             
-        
+# currently no use
 class DataStrageDict(DataDict):
     def __init__(self):
         super().__init__()
@@ -398,4 +428,3 @@ class DataStrageDict(DataDict):
                 continue  # next controller_key
             for target_data_key in data_keys:
                 self._data_dict[target_controller_key][target_data_key] = val
-    

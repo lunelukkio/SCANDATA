@@ -150,7 +150,7 @@ class MainController(ControllerInterface):
         if filename_obj is None:
             filename_obj = self.__file_service.open_file()
         if filename_obj.name == "":
-            print("MainController: File openning is Canceled!!")
+            print("MainController: File openning is Cancelled!!")
             return
         # make experiments data
         open_experiments = self.create_experiments(filename_obj) 
