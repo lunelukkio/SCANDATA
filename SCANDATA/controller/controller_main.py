@@ -310,7 +310,11 @@ class MainController(ControllerInterface):
             new_roi_pos = [roi_pos[0], roi_pos[1], roi_pos[2]+val[2], roi_pos[3]+val[3]]
             self.__model.set_controller_val(controller_key, new_roi_pos)
         self.update("ROI")
-            
+    
+    def single_operation(self, controller_key, data_key, val=None):    
+        self.__operating_controller_set.single_operation(controller_key, data_key, val)
+
+        
     """
     Delegation to the Model
     """           

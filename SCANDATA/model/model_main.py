@@ -45,7 +45,7 @@ class ModelInterface(metaclass=ABCMeta):
 
     # return a dict of value objects with filename.
     @abstractmethod
-    def get_data(self, filename_key: str, controller_key) -> dict:
+    def get_data(self, filename_key: str, controller_key, mod_dict) -> dict:
         raise NotImplementedError()
 
     # set an axes observer of view into controller. If observer is empty, update all controllers.
